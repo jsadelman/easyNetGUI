@@ -70,7 +70,12 @@ SOURCES += driver.cpp nmConsole.cpp \
     querycontext.cpp \
     objexplorer.cpp \
     lazynutobj.cpp \
-    comboboxdelegate.cpp
+    comboboxdelegate.cpp \
+    arrow.cpp \
+    diagramitem.cpp \
+    diagramscene.cpp \
+    diagramtextitem.cpp \
+    designwindow.cpp
 
 HEADERS  += \
     scanner.h driver.h  FlexLexer.h nmConsole.h \
@@ -79,8 +84,15 @@ HEADERS  += \
     querycontext.h \
     objexplorer.h \
     comboboxdelegate.h \
-    lazynutobj.h
+    lazynutobj.h \
+    arrow.h \
+    diagramitem.h \
+    diagramscene.h \
+    diagramtextitem.h \
+    designwindow.h
   #  y.tab.h  location.hh position.hh stack.hh parserwindow.h tree.h
+
+RESOURCES   =	diagramscene.qrc
 
 QMAKE_CXXFLAGS += -std=c++11
 

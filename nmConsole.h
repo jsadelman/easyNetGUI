@@ -31,6 +31,7 @@ class ObjExplorer;
 namespace lazyNutOutput {
     class Driver;
 }
+class DesignWindow;
 QT_END_NAMESPACE
 
 class InputLine : public QLineEdit
@@ -201,7 +202,11 @@ private:
     QDockWidget     *dockEdit;
     QDockWidget     *dockParse;
     QDockWidget     *dockExplorer;
+    QDockWidget     *dockDesignWindow;
     QPlainTextEdit  *scriptEdit;
+    DesignWindow    *designWindow;
+
+
 //    CmdOutput       *parseOutput;
     QMenu           *fileMenu;
     QMenu           *runMenu;

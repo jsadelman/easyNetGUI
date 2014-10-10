@@ -17,6 +17,7 @@
 #include "treemodel.h"
 #include "lazynutobj.h"
 #include "objexplorer.h"
+#include "designwindow.h"
 
 InputLine::InputLine(QWidget *parent)
     : QLineEdit(parent)
@@ -293,6 +294,14 @@ NmConsole::NmConsole(QWidget *parent)
     dockExplorer->setAllowedAreas( Qt::BottomDockWidgetArea );
     dockExplorer->setWidget(objExplorer);
     addDockWidget(Qt::BottomDockWidgetArea,dockExplorer);
+
+    designWindow = new DesignWindow(this);
+    dockDesignWindow = new QDockWidget(tr("Design Window"), this);
+    dockDesignWindow->setAllowedAreas(  Qt::LeftDockWidgetArea |
+                                    Qt::RightDockWidgetArea);
+    dockDesignWindow->setWidget(designWindow);
+    addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
+        //dockDesignWindow->hide();
 
     // signals begin/endObjHashModified are defined in QueryProcessor and ObjExplorer.
     // When a description query is parsed by the QueryProcessor, it sends those signals
