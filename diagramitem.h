@@ -86,6 +86,12 @@ public:
     QPointF  connectionPoint(Arrow *arrow) const;
     QPainterPath  loopPath(Arrow *arrow) const;
     qreal loopRotation() const {return myLoopRotation;}
+    void setLabel(QString _label);
+    //QGraphicsSimpleTextItem getLabelItem() {return labelItem;}
+
+    void paint(QPainter *painter,
+               const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paintLabel(QPainter *painter);
 
 
 
@@ -93,6 +99,8 @@ protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void setGeometry();
+    //void paintLabel();
+
 
 //private:
     DiagramType myDiagramType;
@@ -107,6 +115,11 @@ protected:
     qreal dockingLineProportion;
     qreal loopDiameterProportion;
     QPainterPath loopBasePath;
+    QString label = "";
+    QGraphicsSimpleTextItem labelItem;
+    const double BOUNDINGRECTPADDING = 10;
+    qreal mywidth = 150;
+    qreal myheight = 100;
 
 
 };

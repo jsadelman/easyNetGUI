@@ -146,6 +146,40 @@ QueryProcessor::QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxon
     connect(this,SIGNAL(treeReady(QString)),parseOutput,SLOT(displayOutput(QString)));
 }
 
+void QueryProcessor::testDesignWindow()
+{
+    emit beginObjHashModified();
+    objHash->insert("layerA",new LazyNutObj());
+    (*objHash)["layerA"]->appendProperty(QString{"name"},QVariant{"layerA"});
+    (*objHash)["layerA"]->appendProperty("type","layer");
+    (*objHash)["layerA"]->appendProperty("subtype","iac_layer");
+    (*objHash)["layerA"]->appendProperty("length", 24);
+    (*objHash)["layerA"]->appendProperty("incoming connections","connectionBA");
+
+    objHash->insert("layerB",new LazyNutObj());
+    (*objHash)["layerB"]->appendProperty("name","layerB");
+    (*objHash)["layerB"]->appendProperty("type","layer");
+    (*objHash)["layerB"]->appendProperty("subtype","iac_layer");
+    (*objHash)["layerB"]->appendProperty("length", 24);
+    (*objHash)["layerB"]->appendProperty("incoming connections",QStringList{"connectionAB","biasAB"});
+
+    objHash->insert("connectionAB",new LazyNutObj());
+    (*objHash)["connectionAB"]->appendProperty("name","connectionAB");
+    (*objHash)["connectionAB"]->appendProperty("type","connection");
+    (*objHash)["connectionAB"]->appendProperty("subtype","connection");
+    (*objHash)["connectionAB"]->appendProperty("length", 24);
+    (*objHash)["connectionAB"]->appendProperty("Source","layerA");
+    (*objHash)["connectionAB"]->appendProperty("Target","layerB");
+
+    emit endObjHashModified();
+
+    emit beginObjHashModified();
+    objHash->remove("connectionAB");
+    emit endObjHashModified();
+
+}
+
+
 void QueryProcessor::getTree(const QString &lazyNutOutput)
 {
     lazyNutBuffer.append(lazyNutOutput);
@@ -328,6 +362,8 @@ NmConsole::NmConsole(QWidget *parent)
 
     readSettings();
 
+    //queryProcessor->testDesignWindow();
+
 
 
     //connect(scriptEdit->document(), SIGNAL(contentsChanged()),
@@ -398,8 +434,9 @@ void NmConsole::writeSettings()
     settings.setValue("pos", pos());
     settings.setValue("size", size());
     settings.setValue("scriptsDir",scriptsDir);
-  //  settings.setValue("nmExe",nmExe);
+    //  settings.setValue("nmExe",nmExe);
 }
+
 
 
 void NmConsole::closeEvent(QCloseEvent *event)

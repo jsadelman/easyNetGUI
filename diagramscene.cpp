@@ -156,6 +156,7 @@ void DiagramScene::syncToObjCatalogue()
         if (objHash->value(name)->type() == "layer")
         {
             DiagramItem *item = new DiagramItem(DiagramItem::Layer, myItemMenu);
+            item->setLabel(name);
             item->setBrush(myItemColor);
             addItem(item);
             item->setPos(defaultPosition);

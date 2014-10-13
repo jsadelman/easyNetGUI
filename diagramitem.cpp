@@ -104,14 +104,15 @@ void DiagramItem::setGeometry()
     case Layer:
     {
         // these properties will be exposed
-        qreal mywidth = 150;
-        qreal myheight = 100;
+        //qreal mywidth = 150;
+        //qreal myheight = 100;
         dockingLineProportion = 0.4;
         loopDiameterProportion = 0.3;
         qreal halfwidth = mywidth/2;
         qreal halfheight = myheight/2;
 
         // a rectangle
+        myPolygon.clear();
         myPolygon << QPointF(-halfwidth, -halfheight) << QPointF(halfwidth, -halfheight)
                   << QPointF(halfwidth, halfheight) << QPointF(-halfwidth, halfheight)
                   << QPointF(-halfwidth, -halfheight);
@@ -130,6 +131,7 @@ void DiagramItem::setGeometry()
     }
     case Diamond:
     {
+        // not maintained, only for test
         qreal myside = 50;
         dockingLineProportion = 0.4;
         loopDiameterProportion = 0.3;
@@ -217,7 +219,12 @@ void DiagramItem::setGeometry()
     loopBasePath.arcTo(loopRect,180 + angleOnRect,myLoopRotation);
 }
 
-
+//void DiagramItem::paintLabel()
+//{
+//    labelItem = QGraphicsSimpleTextItem(label,this);
+//    qreal halfwidth = labelItem.boundingRect().width()/2.0;
+//    labelItem.setPos(myCenter - QPointF(halfwidth,0));
+//}
 
 //! [1]
 void DiagramItem::removeArrow(Arrow *arrow)
@@ -355,6 +362,41 @@ QPainterPath DiagramItem::loopPath(Arrow *arrow) const
         return loopBasePath.translated(relativeLocationFirstPoint*selfLoopDockingSide.dx(),
                                        relativeLocationFirstPoint*selfLoopDockingSide.dy());
     }
+}
+
+void DiagramItem::setLabel(QString _label)
+{
+    label = _label;
+    //paintLabel();
+}
+
+void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    // check if label fits
+    QRectF * minBoundingRect = new QRectF;
+    painter->drawText(boundingRect(), Qt::AlignCenter | Qt::TextSingleLine, label,minBoundingRect);
+    if (boundingRect().width() < minBoundingRect->width() + 2 * BOUNDINGRECTPADDING)
+    {
+        prepareGeometryChange();
+        mywidth = minBoundingRect->width() + 2 * BOUNDINGRECTPADDING;
+        setGeometry();
+    }
+
+    QGraphicsPolygonItem::paint(painter, option, widget);
+    paintLabel(painter);
+}
+
+void DiagramItem::paintLabel(QPainter *painter)
+{
+    // inspired by Dunnart ShapeObj::paintLabel
+    painter->setPen(Qt::black);
+    painter->setRenderHint(QPainter::TextAntialiasing, true);
+    //QRectF * minBoundingRect = new QRectF;
+    painter->drawText(boundingRect(), Qt::AlignCenter | Qt::TextSingleLine, label);
+
+    //setSize(boundingRect().size().expandedTo(expandRect(*minBoundingRect,BOUNDINGRECTPADDING).size()));
+    //delete minBoundingRect;
+
 }
 //! [4]
 

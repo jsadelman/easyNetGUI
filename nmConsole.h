@@ -111,6 +111,7 @@ class QueryProcessor : public QSplitter
 
 public:
     QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent=0);
+    void testDesignWindow();
 
 signals:
   void treeReady(const QString & tree);
@@ -183,6 +184,7 @@ private:
     QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
+
 
 
     QString         nmExe;
