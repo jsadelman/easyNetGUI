@@ -296,12 +296,15 @@ NmConsole::NmConsole(QWidget *parent)
     addDockWidget(Qt::BottomDockWidgetArea,dockExplorer);
 
     designWindow = new DesignWindow(this);
+    designWindow->setObjCatalogue(objHash);
+    connect(queryProcessor,SIGNAL(endObjHashModified()),designWindow,SLOT(objCatalogueChanged()));
     dockDesignWindow = new QDockWidget(tr("Design Window"), this);
     dockDesignWindow->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                     Qt::RightDockWidgetArea);
     dockDesignWindow->setWidget(designWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
         //dockDesignWindow->hide();
+
 
     // signals begin/endObjHashModified are defined in QueryProcessor and ObjExplorer.
     // When a description query is parsed by the QueryProcessor, it sends those signals

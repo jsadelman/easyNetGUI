@@ -40,6 +40,7 @@
 
 #include "diagramscene.h"
 #include "arrow.h"
+#include "lazynutobj.h"
 
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
@@ -58,6 +59,12 @@ DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
     myItemColor = Qt::white;
     myTextColor = Qt::black;
     myLineColor = Qt::black;
+    itemHash = new QHash<QString,QGraphicsItem*>;
+}
+
+void DiagramScene::setObjCatalogue(const LazyNutObjCatalogue *_objHash)
+{
+    objHash = _objHash;
 }
 //! [0]
 
@@ -134,6 +141,71 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
     if (item->toPlainText().isEmpty()) {
         removeItem(item);
         item->deleteLater();
+    }
+}
+
+void DiagramScene::syncToObjCatalogue()
+{
+    QPoint defaultPosition(300,300);
+    if (objHash == nullptr)
+        return;
+    // display new layers, hold new connections in a list
+    QStringList newConnections{};
+    foreach(QString name, objHash->keys().toSet() - itemHash->keys().toSet())
+    {
+        if (objHash->value(name)->type() == "layer")
+        {
+            DiagramItem *item = new DiagramItem(DiagramItem::Layer, myItemMenu);
+            item->setBrush(myItemColor);
+            addItem(item);
+            item->setPos(defaultPosition);
+            emit itemInserted(item);
+            itemHash->insert(name,item);
+        }
+        else if (objHash->value(name)->type() == "connection")
+            newConnections << name;
+    }
+    // display new connections
+    foreach(QString name, newConnections)
+    {
+        DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
+                    (itemHash->value(objHash->value(name)->getValue("Source").toString()));
+        DiagramItem *endItem   = qgraphicsitem_cast<DiagramItem *>
+                    (itemHash->value(objHash->value(name)->getValue("Target").toString()));
+        Arrow *arrow = new Arrow(startItem, endItem, Arrow::Excitatory);
+        arrow->setColor(myLineColor);
+        startItem->addArrow(arrow);
+        if (startItem != endItem)
+            endItem->addArrow(arrow);
+        arrow->setZValue(-1000.0);
+        addItem(arrow);
+        itemHash->insert(name,arrow);
+    }
+    // remove deleted objects
+    // (see DesignWindow::deleteItem)
+    foreach (QString name, itemHash->keys().toSet() - objHash->keys().toSet())
+    {
+        QGraphicsItem* item = itemHash->value(name);
+        if (item->type() == Arrow::Type)
+        {
+            removeItem(item);
+            Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+            arrow->startItem()->removeArrow(arrow);
+            arrow->endItem()->removeArrow(arrow);
+            delete item;
+            itemHash->remove(name);
+        }
+    }
+    foreach (QString name, itemHash->keys().toSet() - objHash->keys().toSet())
+    {
+        QGraphicsItem* item = itemHash->value(name);
+        if (item->type() == DiagramItem::Type)
+        {
+            qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
+            removeItem(item);
+            delete item;
+            itemHash->remove(name);
+        }
     }
 }
 //! [5]

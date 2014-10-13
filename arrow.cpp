@@ -64,8 +64,8 @@ Arrow::Arrow(DiagramItem *startItem, DiagramItem *endItem, ArrowTipType arrowTip
     myArrowTipType = arrowTipType;
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     myColor = Qt::black;
-    penWidth = 3;
-    arrowSize = 15;
+    penWidth = 2;
+    arrowSize = 10;
     setPen(QPen(myColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 }
 //! [0]

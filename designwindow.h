@@ -62,6 +62,8 @@ class QFont;
 class QToolButton;
 class QAbstractButton;
 class QGraphicsView;
+class LazyNutObj;
+typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
 QT_END_NAMESPACE
 
 //! [0]
@@ -71,7 +73,10 @@ class DesignWindow : public QWidget
 
 public:
    DesignWindow(QWidget *parent = 0);
+   void setObjCatalogue(const LazyNutObjCatalogue* objHash);
 
+public slots:
+   void objCatalogueChanged();
 
 private slots:
 //    void backgroundButtonGroupClicked(QAbstractButton *button);

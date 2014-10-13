@@ -55,6 +55,8 @@ class QGraphicsLineItem;
 class QFont;
 class QGraphicsTextItem;
 class QColor;
+class LazyNutObj;
+typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
 QT_END_NAMESPACE
 
 //! [0]
@@ -66,6 +68,7 @@ public:
     enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
     explicit DiagramScene(QMenu *itemMenu, QObject *parent = 0);
+    void setObjCatalogue(const LazyNutObjCatalogue* _objHash);
     QFont font() const { return myFont; }
     QColor textColor() const { return myTextColor; }
     QColor itemColor() const { return myItemColor; }
@@ -80,6 +83,7 @@ public slots:
     void setItemType(DiagramItem::DiagramType type);
     void setArrowTipType(Arrow::ArrowTipType type);
     void editorLostFocus(DiagramTextItem *item);
+    void syncToObjCatalogue();
 
 signals:
     void itemInserted(DiagramItem *item);
@@ -92,6 +96,8 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
 private:
+    const LazyNutObjCatalogue *objHash;
+    QHash<QString,QGraphicsItem*> *itemHash;
     bool isItemChange(int type);
 
     DiagramItem::DiagramType myItemType;

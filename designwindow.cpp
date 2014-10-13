@@ -80,7 +80,17 @@ DesignWindow::DesignWindow(QWidget *parent)
 //    setWindowTitle(tr("Design Window"));
 //    setUnifiedTitleAndToolBarOnMac(true);
 
-    createTestDiagram();
+    //createTestDiagram();
+}
+
+void DesignWindow::setObjCatalogue(const LazyNutObjCatalogue *objHash)
+{
+    scene->setObjCatalogue(objHash);
+}
+
+void DesignWindow::objCatalogueChanged()
+{
+    scene->syncToObjCatalogue();
 }
 //! [0]
 
