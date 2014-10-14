@@ -54,6 +54,7 @@ public:
 signals:
     void beginObjHashModified();
     void endObjHashModified();
+    void objSelected(QString);
 
 public slots:
     void setObj(LazyNutObj* obj, LazyNutObjCatalogue *objHash);

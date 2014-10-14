@@ -181,4 +181,6 @@ void ObjExplorer::setObj(LazyNutObj* obj, LazyNutObjCatalogue *objHash)
     connect(lazyNutObjModel, SIGNAL(showObj(LazyNutObj*, LazyNutObjCatalogue*)),
             this, SLOT(setObj(LazyNutObj*, LazyNutObjCatalogue*)));\
 
+    emit (objSelected(objHash->key(obj)));
+
 }

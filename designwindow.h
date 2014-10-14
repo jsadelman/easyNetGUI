@@ -60,6 +60,7 @@ class QLineEdit;
 class QGraphicsTextItem;
 class QFont;
 class QToolButton;
+class QToolBar;
 class QAbstractButton;
 class QGraphicsView;
 class LazyNutObj;
@@ -73,10 +74,14 @@ class DesignWindow : public QWidget
 
 public:
    DesignWindow(QWidget *parent = 0);
-   void setObjCatalogue(const LazyNutObjCatalogue* objHash);
+   void setObjCatalogue(LazyNutObjCatalogue *objHash);
 
 public slots:
    void objCatalogueChanged();
+
+signals:
+    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);
+    void objSelected(QString);
 
 private slots:
 //    void backgroundButtonGroupClicked(QAbstractButton *button);
@@ -136,7 +141,7 @@ private:
 //    QToolBar *textToolBar;
 //    QToolBar *editToolBar;
 //    QToolBar *colorToolBar;
-//    QToolBar *pointerToolbar;
+    QToolBar *pointerToolbar;
 
     QComboBox *sceneScaleCombo;
 //    QComboBox *itemColorCombo;

@@ -59,6 +59,12 @@ DesignWindow::DesignWindow(QWidget *parent)
 
     scene = new DiagramScene(itemMenu, this);
     scene->setSceneRect(QRectF(0, 0, 1000, 1000));
+
+    connect(scene,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)),
+            this,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)));
+    connect(this,SIGNAL(objSelected(QString)),
+            scene,SLOT(objSelected(QString)));
+
 //    connect(scene, SIGNAL(itemInserted(DiagramItem*)),
 //            this, SLOT(itemInserted(DiagramItem*)));
 //    connect(scene, SIGNAL(textInserted(QGraphicsTextItem*)),
@@ -67,8 +73,8 @@ DesignWindow::DesignWindow(QWidget *parent)
 //            this, SLOT(itemSelected(QGraphicsItem*)));
     createToolbars();
 
-    QHBoxLayout *layout = new QHBoxLayout;
-//    layout->addWidget(toolBox);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(pointerToolbar);
     view = new QGraphicsView(scene);
 
     layout->addWidget(view);
@@ -83,7 +89,7 @@ DesignWindow::DesignWindow(QWidget *parent)
     //createTestDiagram();
 }
 
-void DesignWindow::setObjCatalogue(const LazyNutObjCatalogue *objHash)
+void DesignWindow::setObjCatalogue(LazyNutObjCatalogue *objHash)
 {
     scene->setObjCatalogue(objHash);
 }
@@ -612,10 +618,12 @@ void DesignWindow::createToolbars()
     connect(sceneScaleCombo, SIGNAL(currentIndexChanged(QString)),
             this, SLOT(sceneScaleChanged(QString)));
 
-//    pointerToolbar = addToolBar(tr("Pointer type"));
+
+
+    pointerToolbar = new QToolBar(tr("zoom"));
 //    pointerToolbar->addWidget(pointerButton);
 //    pointerToolbar->addWidget(linePointerButton);
-//    pointerToolbar->addWidget(sceneScaleCombo);
+    pointerToolbar->addWidget(sceneScaleCombo);
 ////! [27]
 }
 ////! [27]

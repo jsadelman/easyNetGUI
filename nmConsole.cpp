@@ -329,9 +329,17 @@ NmConsole::NmConsole(QWidget *parent)
     dockExplorer->setWidget(objExplorer);
     addDockWidget(Qt::BottomDockWidgetArea,dockExplorer);
 
+
+
     designWindow = new DesignWindow(this);
     designWindow->setObjCatalogue(objHash);
-    connect(queryProcessor,SIGNAL(endObjHashModified()),designWindow,SLOT(objCatalogueChanged()));
+    connect(queryProcessor,SIGNAL(endObjHashModified()),
+            designWindow,SLOT(objCatalogueChanged()));
+    connect(designWindow,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)),
+            objExplorer,SLOT(setObj(LazyNutObj*,LazyNutObjCatalogue*)));
+    connect(objExplorer,SIGNAL(objSelected(QString)),
+            designWindow,SIGNAL(objSelected(QString)));
+
     dockDesignWindow = new QDockWidget(tr("Design Window"), this);
     dockDesignWindow->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                     Qt::RightDockWidgetArea);

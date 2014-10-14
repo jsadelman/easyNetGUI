@@ -68,7 +68,7 @@ public:
     enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
     explicit DiagramScene(QMenu *itemMenu, QObject *parent = 0);
-    void setObjCatalogue(const LazyNutObjCatalogue* _objHash);
+    void setObjCatalogue(LazyNutObjCatalogue *_objHash);
     QFont font() const { return myFont; }
     QColor textColor() const { return myTextColor; }
     QColor itemColor() const { return myItemColor; }
@@ -84,19 +84,23 @@ public slots:
     void setArrowTipType(Arrow::ArrowTipType type);
     void editorLostFocus(DiagramTextItem *item);
     void syncToObjCatalogue();
+    void objSelected(QString name);
 
 signals:
     void itemInserted(DiagramItem *item);
     void textInserted(QGraphicsTextItem *item);
     void itemSelected(QGraphicsItem *item);
+    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);
+
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
 private:
-    const LazyNutObjCatalogue *objHash;
+    LazyNutObjCatalogue *objHash;
     QHash<QString,QGraphicsItem*> *itemHash;
     bool isItemChange(int type);
 

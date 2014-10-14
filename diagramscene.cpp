@@ -62,7 +62,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
     itemHash = new QHash<QString,QGraphicsItem*>;
 }
 
-void DiagramScene::setObjCatalogue(const LazyNutObjCatalogue *_objHash)
+void DiagramScene::setObjCatalogue(LazyNutObjCatalogue *_objHash)
 {
     objHash = _objHash;
 }
@@ -209,6 +209,19 @@ void DiagramScene::syncToObjCatalogue()
         }
     }
 }
+
+void DiagramScene::objSelected(QString name)
+{
+    if (itemHash->contains(name))
+    {
+        clearSelection();
+        foreach (QGraphicsItem *item, items())
+        {
+            if (item == itemHash->value(name))
+                item->setSelected(true);
+        }
+    }
+}
 //! [5]
 
 //! [6]
@@ -303,6 +316,20 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     line = 0;
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
+
+void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
+{
+    if (mouseEvent->button() != Qt::LeftButton)
+        return;
+    if (myMode == MoveItem)
+    {
+        QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
+        QString name = itemHash->key(item);
+        emit showObj(objHash->value(name),objHash);
+    }
+    QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+}
+
 //! [13]
 
 //! [14]
