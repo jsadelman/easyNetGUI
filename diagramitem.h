@@ -87,7 +87,6 @@ public:
     QPainterPath  loopPath(Arrow *arrow) const;
     qreal loopRotation() const {return myLoopRotation;}
     void setLabel(QString _label);
-    //QGraphicsSimpleTextItem getLabelItem() {return labelItem;}
 
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -120,6 +119,8 @@ protected:
     const double BOUNDINGRECTPADDING = 10;
     qreal mywidth = 150;
     qreal myheight = 100;
+    QColor myColor;
+    int penWidth;
 
 
 };

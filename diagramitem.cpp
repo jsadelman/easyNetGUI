@@ -59,7 +59,10 @@ DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
 {
     myDiagramType = diagramType;
     myContextMenu = contextMenu;
+    myColor = Qt::black;
+    penWidth = 2;
     setGeometry();
+
 
 /*    QPainterPath path;
     switch (myDiagramType) {
@@ -367,11 +370,13 @@ QPainterPath DiagramItem::loopPath(Arrow *arrow) const
 void DiagramItem::setLabel(QString _label)
 {
     label = _label;
-    //paintLabel();
+    update();
 }
 
 void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
     // check if label fits
     QRectF * minBoundingRect = new QRectF;
     painter->drawText(boundingRect(), Qt::AlignCenter | Qt::TextSingleLine, label,minBoundingRect);
@@ -381,8 +386,23 @@ void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
         mywidth = minBoundingRect->width() + 2 * BOUNDINGRECTPADDING;
         setGeometry();
     }
+    QPen myPen = pen();
+    myPen.setColor(myColor);
+    myPen.setWidth(penWidth);
+    painter->setPen(myPen);
+    painter->setBrush(QColor("white"));
+    painter->drawPolygon(polygon());
+    if (isSelected())
+    {
+        QColor selectionColor = QColor("yellow");
+        selectionColor.setAlpha(100);
+        painter->setPen(QPen(selectionColor,6,Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawPolygon(polygon());
+    }
 
-    QGraphicsPolygonItem::paint(painter, option, widget);
+
+    //QGraphicsPolygonItem::paint(painter, option, widget);
     paintLabel(painter);
 }
 
