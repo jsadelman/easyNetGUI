@@ -71,70 +71,13 @@ void NM::getNMError()
     emit outputReady(QString(bytes));
 }
 
-/*
-ParseTree::ParseTree(QWidget *parent)
-    : QTreeView(parent), treeModel(QStringList{"key","value"}, parent), //context(&treeModel), driver(context),
-      contextQuerySize(0), lazyNutBuffer(""), treeOutput(""), rxEND(".*END:[^\\n]*\n$")
-{
-    //qDebug() << treeModel.getRootItem()->childCount();
-    contextPtr = new QueryContext(&treeModel);
-    driverPtr = new lazyNutOutput::Driver(*contextPtr);
-    //treeView = new QTreeView(parent);
-    setModel(&treeModel);
-    //addWidget(treeView);
-    parseOutput = new CmdOutput(this);
-    parseOutput->setReadOnly(true);
-    addWidget(parseOutput);
 
-    connect(this,SIGNAL(treeReady(QString)),parseOutput,SLOT(displayOutput(QString)));
-
-}
-
-void ParseTree::getTree(const QString &lazyNutOutput)
-{
-    lazyNutBuffer.append(lazyNutOutput);
-    if (rxEND.exactMatch(lazyNutBuffer)) {
-        bool result = driverPtr->parse_string(lazyNutBuffer.toStdString(), "lazyNutOutput");
-        if (result)
-        {
-            if (treeModel.rowCount() > contextQuerySize)
-            {
-                contextQuerySize = treeModel.rowCount();
-                lazyNutBuffer = "";
-            }
-            treeOutput = "";
-            if (contextPtr->root->childCount() > contextQuerySize)
-            {
-                for (int qi = contextQuerySize; qi < contextPtr->root->childCount(); ++qi)
-                {
-                    contextPtr->root->child(qi)->print(treeOutput);
-                }
-                contextQuerySize = contextPtr->root->childCount();
-                lazyNutBuffer = "";
-            }
-            else
-            {
-                treeOutput += ".";
-            }
-            emit treeReady(treeOutput);
-        }
-        else
-        {
-            if (contextPtr->begin_query)
-            {
-                //context.root->removeLastChild();
-                contextPtr->treeModelPtr->removeRows(contextPtr->treeModelPtr->rowCount()-1,1);
-            }
-            contextPtr->begin_query = false;
-            lazyNutBuffer = ""; // to be deleted
-        }
-    }
-}
-*/
 
 QueryProcessor::QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent):
     QSplitter(parent), objHash(objHash), objTaxonomyModel(objTaxonomyModel),
-    contextQuerySize(0), lazyNutBuffer(""), treeOutput(""), rxEND(".*END:[^\\n]*\\n$")
+    contextQuerySize(0), lazyNutBuffer(""), treeOutput(""),
+    //rxEND(".*END:[^\\n]*\\n$")
+    rxEND("END:[^\\n]*\\n")
 {
     context = new QueryContext;
     driver = new lazyNutOutput::Driver(*context);
@@ -183,9 +126,16 @@ void QueryProcessor::testDesignWindow()
 void QueryProcessor::getTree(const QString &lazyNutOutput)
 {
     lazyNutBuffer.append(lazyNutOutput);
-    if (rxEND.exactMatch(lazyNutBuffer))
+    int indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
+    int lengthRemainder;
+    while (indexInLazyNutBuffer >=0)
     {
-        //qDebug() << "################## START \n" << rxEND.cap() << "############# END\n";
+        lengthRemainder = lazyNutBuffer.size() - indexInLazyNutBuffer - rxEND.matchedLength();
+        QString remainder = lazyNutBuffer.right(lengthRemainder);
+        lazyNutBuffer.chop(lengthRemainder);
+        //qDebug() << lazyNutBuffer;
+        //qDebug() << lengthRemainder;
+        //qDebug() << remainder;
         bool result = driver->parse_string(lazyNutBuffer.toStdString(), "lazyNutOutput");
         if (result)
         {
@@ -198,19 +148,23 @@ void QueryProcessor::getTree(const QString &lazyNutOutput)
                     context->root->child(qi)->print(treeOutput);
                 }
                 //contextQuerySize = context->root->childCount();
-                lazyNutBuffer = "";
+                //lazyNutBuffer = remainder; //"";
            }
            else
            {
-                treeOutput += ".";
+               // treeOutput += ".";
            }
+           //qDebug() << treeOutput;
            emit treeReady(treeOutput);
            processQueries();
-           lazyNutBuffer = "";
+           //lazyNutBuffer = remainder; //"";
            //context->clearQueries();
         }
         else
         {
+            //lazyNutBuffer.append(remainder);
+            //lazyNutBuffer = remainder;
+            qDebug() << "no result";
         /*    if (context->begin_query)
             {
                 context->root->removeLastChild();
@@ -218,6 +172,8 @@ void QueryProcessor::getTree(const QString &lazyNutOutput)
             context->begin_query = false;
             lazyNutBuffer = ""; // to be deleted */
         }
+        lazyNutBuffer = remainder;
+        indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
     }
 }
 
@@ -227,6 +183,7 @@ void QueryProcessor::processQueries()
     foreach (TreeItem* queryItem, context->root->children())
     {
         QString queryType = queryItem->data(0).toString();
+        //qDebug() << queryType;
         if (queryType == "subtypes")
         {
             QString objectType = queryItem->data(1).toString();
