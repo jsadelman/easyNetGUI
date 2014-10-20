@@ -168,7 +168,8 @@ private slots:
     void chopAndSend(const QString &text);
     void runScript();
     void runSelection();
-
+    void setEasyNetHome();
+    void setLazyNutBat();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -184,17 +185,20 @@ private:
     QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
+    void checkLazyNutBat();
 
 
 
-    QString         nmExe;
+
+    QString         lazyNutBat= "";
     QString         curFile;
     QString         scriptsDir;
+    QString         easyNetHome = "";
     QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};
 
 
     NmCmd           *nmCmd;
-    NM              *nm;
+    NM              *lazyNut;
     TreeModel       *objTaxonomyModel;
     LazyNutObjCatalogue  *objHash;
     //ParseTree       *parseTree;
@@ -212,6 +216,7 @@ private:
 //    CmdOutput       *parseOutput;
     QMenu           *fileMenu;
     QMenu           *runMenu;
+    QMenu           *settingsMenu;
     QToolBar        *fileToolBar;
     QToolBar        *runToolBar;
 //    QAction         *newAct;
@@ -221,6 +226,8 @@ private:
     QAction         *exitAct;
     QAction         *runScriptAct;
     QAction         *runSelectionAct;
+    QAction         *setEasyNetHomeAct;
+    QAction         *setLazyNutBatAct;
     QAction         *queryModeAct;
 };
 
