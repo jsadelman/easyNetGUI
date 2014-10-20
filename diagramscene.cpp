@@ -59,6 +59,10 @@ DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
     myItemColor = Qt::white;
     myTextColor = Qt::black;
     myLineColor = Qt::black;
+    defaultPosition = QPointF(300,300);
+    currentPosition = defaultPosition;
+    itemOffset = QPointF(30,30);
+
     itemHash = new QHash<QString,QGraphicsItem*>;
 }
 
@@ -146,7 +150,6 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
 
 void DiagramScene::syncToObjCatalogue()
 {
-    QPoint defaultPosition(300,300);
     if (objHash == nullptr)
         return;
     // display new layers, hold new connections in a list
@@ -159,7 +162,8 @@ void DiagramScene::syncToObjCatalogue()
             item->setLabel(name);
             item->setBrush(myItemColor);
             addItem(item);
-            item->setPos(defaultPosition);
+            item->setPos(currentPosition);
+            currentPosition += itemOffset;
             emit itemInserted(item);
             itemHash->insert(name,item);
         }
@@ -208,6 +212,7 @@ void DiagramScene::syncToObjCatalogue()
             itemHash->remove(name);
         }
     }
+    //
 }
 
 void DiagramScene::objSelected(QString name)

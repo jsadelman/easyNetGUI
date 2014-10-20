@@ -109,7 +109,10 @@ private:
     QMenu *myItemMenu;
     Mode myMode;
     bool leftButtonDown;
-    QPointF startPoint;
+    //QPointF startPoint;
+    QPointF defaultPosition;
+    QPointF currentPosition;
+    QPointF itemOffset;
     QGraphicsLineItem *line;
     QFont myFont;
     DiagramTextItem *textItem;
