@@ -159,6 +159,10 @@ class NmConsole : public QMainWindow
 public:
     NmConsole(QWidget *parent = 0);
 
+signals:
+    void savedLayoutToBeLoaded(QString);
+    void saveLayout();
+
 private slots:
     //void newFile();
     void open();
@@ -192,6 +196,7 @@ private:
 
     QString         lazyNutBat= "";
     QString         curFile;
+    QString         curJson;
     QString         scriptsDir;
     QString         easyNetHome = "";
     QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};

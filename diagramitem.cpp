@@ -53,10 +53,12 @@ const qreal Pi = 3.14;
 
 
 //! [0]
-DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
+DiagramItem::DiagramItem(DiagramType diagramType, QString name, QMenu *contextMenu,
              QGraphicsItem *parent)
     : QGraphicsPolygonItem(parent)
 {
+    myName = name;
+    label = myName;
     myDiagramType = diagramType;
     myContextMenu = contextMenu;
     myColor = Qt::black;
@@ -371,6 +373,22 @@ void DiagramItem::setLabel(QString _label)
 {
     label = _label;
     update();
+}
+
+void DiagramItem::read(const QJsonObject &json)
+{
+    myName = json["name"].toString();
+    QPointF position(json["x"].toDouble(),json["y"].toDouble());
+    if (!position.isNull())
+        setPos(position);
+}
+
+void DiagramItem::write(QJsonObject &json) const
+{
+    json["name"] = myName;
+    QPointF position = pos();
+    json["x"] = position.x();
+    json["y"] = position.y();
 }
 
 void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

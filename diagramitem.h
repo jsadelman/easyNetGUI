@@ -43,6 +43,7 @@
 
 #include <QGraphicsPixmapItem>
 #include <QList>
+#include <QJsonObject>
 
 QT_BEGIN_NAMESPACE
 class QPixmap;
@@ -68,7 +69,7 @@ public:
     enum { Type = UserType + 15 };
     enum DiagramType { Layer, Diamond };
 
-    DiagramItem(DiagramType diagramType, QMenu *contextMenu, QGraphicsItem *parent = 0);
+    DiagramItem(DiagramType diagramType, QString name, QMenu *contextMenu, QGraphicsItem *parent = 0);
     //DiagramItem(QMenu *contextMenu, QGraphicsItem *parent = 0);
 
 
@@ -86,7 +87,10 @@ public:
     QPointF  connectionPoint(Arrow *arrow) const;
     QPainterPath  loopPath(Arrow *arrow) const;
     qreal loopRotation() const {return myLoopRotation;}
+    QString name() const {return myName;}
     void setLabel(QString _label);
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
 
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -115,6 +119,7 @@ protected:
     qreal loopDiameterProportion;
     QPainterPath loopBasePath;
     QString label = "";
+    QString myName;
     QGraphicsSimpleTextItem labelItem;
     const double BOUNDINGRECTPADDING = 10;
     qreal mywidth = 150;

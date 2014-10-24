@@ -82,6 +82,9 @@ public slots:
 signals:
     void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);
     void objSelected(QString);
+    void savedLayoutToBeLoaded(QString);
+    void saveLayout();
+    void layoutSaveAttempted();
 
 private slots:
 //    void backgroundButtonGroupClicked(QAbstractButton *button);

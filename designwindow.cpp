@@ -64,6 +64,13 @@ DesignWindow::DesignWindow(QWidget *parent)
             this,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)));
     connect(this,SIGNAL(objSelected(QString)),
             scene,SLOT(objSelected(QString)));
+    connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),
+            scene,SLOT(savedLayoutToBeLoaded(QString)));
+    connect(this,SIGNAL(saveLayout()),
+            scene,SLOT(saveLayout()));
+    connect(scene,SIGNAL(layoutSaveAttempted()),
+            this,SIGNAL(layoutSaveAttempted()));
+
 
 //    connect(scene, SIGNAL(itemInserted(DiagramItem*)),
 //            this, SLOT(itemInserted(DiagramItem*)));
@@ -354,13 +361,13 @@ void DesignWindow::createTestDiagram()
     // two boxes and an arrow
    scene->setMode(DiagramScene::InsertItem);
     scene->setItemType(DiagramItem::Layer);
-    DiagramItem* startItem = new DiagramItem(DiagramItem::Layer, itemMenu);
+    DiagramItem* startItem = new DiagramItem(DiagramItem::Layer, "A", itemMenu);
     startItem->setBrush(scene->itemColor());
     scene->addItem(startItem);
     startItem->setPos(QPointF(100,100));
     emit scene->itemInserted(startItem);
     view->centerOn(QPointF(100,100));
-    DiagramItem* endItem = new DiagramItem(DiagramItem::Layer, itemMenu);
+    DiagramItem* endItem = new DiagramItem(DiagramItem::Layer, "B", itemMenu);
     endItem->setBrush(scene->itemColor());
     scene->addItem(endItem);
     endItem->setPos(QPointF(400,300));

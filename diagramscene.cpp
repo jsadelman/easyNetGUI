@@ -44,6 +44,9 @@
 
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QFileInfo>
 
 #include <QDebug>
 
@@ -118,6 +121,41 @@ void DiagramScene::setFont(const QFont &font)
             item->setFont(myFont);
     }
 }
+
+void DiagramScene::read(const QJsonObject &json)
+{
+    QJsonArray itemArray = json["diagramItems"].toArray();
+    for (int itemIndex = 0; itemIndex < itemArray.size(); ++itemIndex)
+    {
+        QJsonObject itemObject = itemArray[itemIndex].toObject();
+        QString name = itemObject["name"].toString();
+        if (itemHash->contains(name))
+        {
+            QGraphicsItem * item = itemHash->value(name);
+            if (item->type() == DiagramItem::Type) // it should always be true
+            {
+                DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
+                diagramItem->read(itemObject);
+            }
+        }
+    }
+}
+
+void DiagramScene::write(QJsonObject &json) const
+{
+    QJsonArray itemArray;
+    foreach (QGraphicsItem * item, items())
+    {
+        if (item->type() == DiagramItem::Type)
+        {
+            DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
+            QJsonObject itemObject;
+            diagramItem->write(itemObject);
+            itemArray.append(itemObject);
+        }
+    }
+    json["diagramItems"] = itemArray;
+}
 //! [4]
 
 void DiagramScene::setMode(Mode mode)
@@ -158,8 +196,8 @@ void DiagramScene::syncToObjCatalogue()
     {
         if (objHash->value(name)->type() == "layer")
         {
-            DiagramItem *item = new DiagramItem(DiagramItem::Layer, myItemMenu);
-            item->setLabel(name);
+            DiagramItem *item = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
+            //item->setLabel(name);
             item->setBrush(myItemColor);
             addItem(item);
             item->setPos(currentPosition);
@@ -212,7 +250,17 @@ void DiagramScene::syncToObjCatalogue()
             itemHash->remove(name);
         }
     }
-    //
+    if (!layoutLoaded)
+    {
+        QFile savedLayoutFile(savedLayout);
+        if (savedLayoutFile.open(QIODevice::ReadOnly))
+        {
+            QByteArray savedLayoutData = savedLayoutFile.readAll();
+            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
+            read(savedLayoutDoc.object());
+        }
+        //layoutLoaded = true;
+    }
 }
 
 void DiagramScene::objSelected(QString name)
@@ -227,6 +275,26 @@ void DiagramScene::objSelected(QString name)
         }
     }
 }
+
+void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
+{
+    savedLayout = _savedLayout;
+    layoutLoaded = !(QFileInfo(savedLayout).exists());
+}
+
+void DiagramScene::saveLayout()
+{
+    QFile savedLayoutFile(savedLayout);
+    if (savedLayoutFile.open(QIODevice::WriteOnly))
+    {
+        QJsonObject layoutObject;
+        write(layoutObject);
+        QJsonDocument savedLayoutDoc(layoutObject);
+        savedLayoutFile.write(savedLayoutDoc.toJson());
+    }
+    emit layoutSaveAttempted();
+    qDebug() << "emit layoutSaveAttempted";
+}
 //! [5]
 
 //! [6]
@@ -238,7 +306,7 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     DiagramItem *item;
     switch (myMode) {
         case InsertItem:
-            item = new DiagramItem(myItemType, myItemMenu);
+            item = new DiagramItem(myItemType, "", myItemMenu);
             item->setBrush(myItemColor);
             addItem(item);
             item->setPos(mouseEvent->scenePos());

@@ -4,6 +4,7 @@
 #include <QtDebug>
 #include <QTreeView>
 #include <QStringList>
+#include <QEventLoop>
 
 #include <iostream>
 #include <fstream>
@@ -180,6 +181,7 @@ void QueryProcessor::getTree(const QString &lazyNutOutput)
 void QueryProcessor::processQueries()
 {
     QStringList recentlyModified;
+    bool objHashModified = false;
     foreach (TreeItem* queryItem, context->root->children())
     {
         QString queryType = queryItem->data(0).toString();
@@ -228,9 +230,11 @@ void QueryProcessor::processQueries()
                         (*objHash)[objectName]->appendProperty(propertyKey,propertyValue);
                 }
             }
-            emit endObjHashModified();
+            objHashModified = true;
         }
     }
+    if (objHashModified)
+        emit endObjHashModified();
     context->clearQueries();
     foreach (QString objectName, recentlyModified)
     {
@@ -347,6 +351,10 @@ NmConsole::NmConsole(QWidget *parent)
             queryProcessor,SLOT(getTree(QString)));
     connect(queryProcessor,SIGNAL(commandReady(QString)),
             lazyNut,SLOT(sendCommand(QString)));
+    connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),
+            designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
+    connect(this,SIGNAL(saveLayout()),
+            designWindow,SIGNAL(saveLayout()));
 
 
     if (lazyNutBat.isEmpty())
@@ -395,16 +403,15 @@ void NmConsole::writeSettings()
 
 void NmConsole::closeEvent(QCloseEvent *event)
 {
-//    if (maybeSave()) {
-    //QSettings settings("QtEasyNet", "nmConsole");
-    //settings.clear();
         writeSettings();
-        //nm->terminate();
         lazyNut->kill();
+        // wait until the scene has saved its layout
+//        QEventLoop waitUntilLayoutSaved;
+//        connect(designWindow,SIGNAL(layoutSaveAttempted()),
+//                &waitUntilLayoutSaved,SLOT(quit()));
+        emit saveLayout();
+//        waitUntilLayoutSaved.exec();
         event->accept();
-    //} else {
-    //    event->ignore();
-    //}
 }
 
 /*void NmConsole::newFile()
@@ -461,6 +468,7 @@ void NmConsole::runScript()
     foreach (QString type, lazyNutObjTypes)
         lazyNut->sendCommand("query 1 subtypes " + type + "\n");
     lazyNut->sendCommand("query 1 recently_modified\n");
+    emit savedLayoutToBeLoaded(curJson);
 }
 
 void NmConsole::setEasyNetHome()
@@ -581,7 +589,7 @@ void NmConsole::loadFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("nm Console"),
+        QMessageBox::warning(this, tr("Warning"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(fileName)
                              .arg(file.errorString()));
@@ -635,10 +643,10 @@ void NmConsole::setCurrentFile(const QString &fileName)
     setWindowModified(false);
 
     QString shownName = curFile;
-    if (curFile.isEmpty())
-        shownName = "untitled.txt";
+    //if (curFile.isEmpty())
+    //    shownName = "untitled.txt";
     dockEdit->setWindowTitle(strippedName(shownName));
-
+    curJson = QFileInfo(curFile).dir().filePath(QFileInfo(curFile).completeBaseName().append(".json"));
 }
 
 QString NmConsole::strippedName(const QString &fullFileName)

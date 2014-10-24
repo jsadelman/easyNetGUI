@@ -77,6 +77,8 @@ public:
     void setTextColor(const QColor &color);
     void setItemColor(const QColor &color);
     void setFont(const QFont &font);
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
 
 public slots:
     void setMode(Mode mode);
@@ -85,12 +87,16 @@ public slots:
     void editorLostFocus(DiagramTextItem *item);
     void syncToObjCatalogue();
     void objSelected(QString name);
+    void savedLayoutToBeLoaded(QString _savedLayout);
+    void saveLayout();
+
 
 signals:
     void itemInserted(DiagramItem *item);
     void textInserted(QGraphicsTextItem *item);
     void itemSelected(QGraphicsItem *item);
     void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);
+    void layoutSaveAttempted();
 
 
 protected:
@@ -104,6 +110,8 @@ private:
     QHash<QString,QGraphicsItem*> *itemHash;
     bool isItemChange(int type);
 
+    QString savedLayout;
+    bool layoutLoaded = false;
     DiagramItem::DiagramType myItemType;
     Arrow::ArrowTipType myArrowTipType;
     QMenu *myItemMenu;
