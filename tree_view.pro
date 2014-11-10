@@ -7,10 +7,15 @@
 # flex and bison settings
 # http://hipersayanx.blogspot.co.uk/2013/03/using-flex-and-bison-with-qt.html
 
-FLEX_BISON_DIR = D:/Programs/win_flex_bison
+LOCAL_FLEX_BISON_DIR = $$(FLEX_BISON_DIR)
+isEmpty(LOCAL_FLEX_BISON_DIR) {
+error(Please set FLEX_BISON_DIR environment variable to the directory where the win_flex and win_bison exe files are located. Please use fwd slashes "/".)
+}
+
+#FLEX_BISON_DIR = D:/Programs/win_flex_bison
 #FLEX_BISON_DIR = C:/Users/Uasolo/faldone/programmi/win_flex_bison
-FLEX = $${FLEX_BISON_DIR}/win_flex
-BISON = $${FLEX_BISON_DIR}/win_bison
+FLEX = $${LOCAL_FLEX_BISON_DIR}/win_flex
+BISON = $${LOCAL_FLEX_BISON_DIR}/win_bison
 
 FLEXSOURCES = scanner.l
 BISONSOURCES = parser.y
