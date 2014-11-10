@@ -7,8 +7,8 @@
 # flex and bison settings
 # http://hipersayanx.blogspot.co.uk/2013/03/using-flex-and-bison-with-qt.html
 
-FLEX_BISON_DIR = D:/Programs/win_flex_bison
-#FLEX_BISON_DIR = C:/Users/Uasolo/faldone/programmi/win_flex_bison
+#FLEX_BISON_DIR = D:/Programs/win_flex_bison
+FLEX_BISON_DIR = "C:/Program Files (x86)/Flex_Bison"
 FLEX = $${FLEX_BISON_DIR}/win_flex
 BISON = $${FLEX_BISON_DIR}/win_bison
 
