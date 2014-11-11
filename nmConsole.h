@@ -189,12 +189,20 @@ private:
     QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
-    void checkLazyNutBat();
+    void runLazyNutBat();
 
 
 
 
     QString         lazyNutBat= "";
+#if defined(__linux__)
+    QString         lazyNutExt = "sh";
+    QString         binDir = "bin-linux";
+#elif defined(_WIN32)
+    QString         lazyNutExt = "bat";
+    QString         binDir = "bin";
+#endif
+    QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
     QString         curFile;
     QString         curJson;
     QString         scriptsDir;

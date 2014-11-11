@@ -356,24 +356,24 @@ NmConsole::NmConsole(QWidget *parent)
     connect(this,SIGNAL(saveLayout()),
             designWindow,SIGNAL(saveLayout()));
 
-
+    //easyNetHome = QString(qgetenv("EASYNET_HOME"));
+    //lazyNutBat = ""; // debug
+    //easyNetHome = ""; // debug
     if (lazyNutBat.isEmpty())
     {
-        easyNetHome = QString(qgetenv("EASYNET_HOME"));
-        lazyNutBat = easyNetHome.append("/bin/nm_files/lazyNut.bat");
+        if (easyNetHome.isEmpty())
+        {
+            QMessageBox::warning(this, "warning",QString("Please select a valid %1 file from the menu Settings -> Set %1\n"
+                                 "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
+        }
+        else
+        {
+            lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
+        }
     }
-    checkLazyNutBat();
+    if (!lazyNutBat.isEmpty())
+        runLazyNutBat();
 
-//    easyNetHome = QString(qgetenv("EASYNET_HOME"));
-//    if (easyNetHome.isEmpty())
-//        setEasyNetHome();
-
-    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
-    lazyNut->start(lazyNutBat);
-    if (lazyNut->state() != QProcess::Running)
-    {
-        QMessageBox::critical(this, "critical", "lazyNut.bat script not running or not found");
-    }
 }
 
 void NmConsole::readSettings()
@@ -383,7 +383,7 @@ void NmConsole::readSettings()
     lazyNutBat = settings.value("lazyNutBat","").toString();
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
-    scriptsDir = settings.value("scriptsDir",qgetenv("EASYNET_HOME") + "/Models").toString();
+    scriptsDir = settings.value("scriptsDir", easyNetHome + "/Models").toString();
     resize(size);
     move(pos);
 }
@@ -425,7 +425,7 @@ void NmConsole::closeEvent(QCloseEvent *event)
 void NmConsole::open()
 {
  //   if (maybeSave()) {
-        QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), scriptsDir, tr("Script Files (*.eNs *eNm)"));
+        QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), scriptsDir, tr("Script Files (*.eNs *.eNm)"));
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
@@ -473,24 +473,29 @@ void NmConsole::runScript()
 
 void NmConsole::setEasyNetHome()
 {
-    easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n\nNote: this directory will be remember in the next session. To override, set it again using the menu Settings -> Set easyNet home directory or set your environment variable EASYNET_HOME."));
-    lazyNutBat = easyNetHome.append("/bin/nm_files/lazyNut.bat");
-    checkLazyNutBat();
+    easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
+    lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
+    runLazyNutBat();
 }
 
 void NmConsole::setLazyNutBat()
 {
-    lazyNutBat = QFileDialog::getOpenFileName(this,tr("Please select your lazyNut.bat file."),"","(*.bat)");
-    checkLazyNutBat();
+    lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
+                                              easyNetHome,QString("*.%1").arg(lazyNutExt));
+    runLazyNutBat();
 }
 
-void NmConsole::checkLazyNutBat()
+
+void NmConsole::runLazyNutBat()
 {
-    if (!QFile::exists(lazyNutBat))
+    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
+    lazyNut->start(lazyNutBat);
+    if (lazyNut->state() == QProcess::NotRunning)
     {
-        QMessageBox::warning(this, "warning",QString("The specified (or default) lazyNut file:\n\"%1\"\ndoes not exist.\n").arg(lazyNutBat)+
-                             "Please select a valid lazyNut.bat file from the menu Settings -> Set lazyNut.bat\n"+
-                             "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory");
+        QMessageBox::critical(this, "critical",
+        QString("%1 script not running or not found.\n"
+                "Please select a valid %1 file from the menu Settings -> Set %1\n"
+                "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
     }
 }
 
@@ -549,8 +554,8 @@ void NmConsole::createActions()
     setEasyNetHomeAct->setStatusTip(tr("Set easyNet home directory"));
     connect(setEasyNetHomeAct,SIGNAL(triggered()),this, SLOT(setEasyNetHome()));
 
-    setLazyNutBatAct = new QAction(tr("Set lazyNut.bat"), this);
-    setLazyNutBatAct->setStatusTip(tr("Set lazyNut.bat"));
+    setLazyNutBatAct = new QAction(QString(tr("Set %1").arg(lazyNutBasename)), this);
+    setLazyNutBatAct->setStatusTip(QString(tr("Set %1").arg(lazyNutBasename)));
     connect(setLazyNutBatAct,SIGNAL(triggered()),this, SLOT(setLazyNutBat()));
 
 }
