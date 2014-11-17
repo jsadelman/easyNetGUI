@@ -214,10 +214,8 @@ private:
     NM              *lazyNut;
     TreeModel       *objTaxonomyModel;
     LazyNutObjCatalogue  *objHash;
-    //ParseTree       *parseTree;
     QueryProcessor   *queryProcessor;
     ObjExplorer      *objExplorer;
-    //DockEdit        *dockEdit;
     QDockWidget     *dockEdit;
     QDockWidget     *dockParse;
     QDockWidget     *dockExplorer;
@@ -226,7 +224,6 @@ private:
     DesignWindow    *designWindow;
 
 
-//    CmdOutput       *parseOutput;
     QMenu           *fileMenu;
     QMenu           *runMenu;
     QMenu           *settingsMenu;

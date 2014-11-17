@@ -185,7 +185,6 @@ void QueryProcessor::processQueries()
     foreach (TreeItem* queryItem, context->root->children())
     {
         QString queryType = queryItem->data(0).toString();
-        //qDebug() << queryType;
         if (queryType == "subtypes")
         {
             QString objectType = queryItem->data(1).toString();
