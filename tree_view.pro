@@ -87,7 +87,10 @@ SOURCES += driver.cpp nmConsole.cpp \
     diagramitem.cpp \
     diagramscene.cpp \
     diagramtextitem.cpp \
-    designwindow.cpp
+    designwindow.cpp \
+    lazynut.cpp \
+#    sessionmanager.cpp \
+    commandsequencer.cpp
 
 HEADERS  += \
     scanner.h driver.h  FlexLexer.h nmConsole.h \
@@ -101,7 +104,11 @@ HEADERS  += \
     diagramitem.h \
     diagramscene.h \
     diagramtextitem.h \
-    designwindow.h
+    designwindow.h \
+    jobqueue.h \
+    lazynut.h \
+#    sessionmanager.h \
+    commandsequencer.h
   #  y.tab.h  location.hh position.hh stack.hh parserwindow.h tree.h
 
 RESOURCES   =	diagramscene.qrc

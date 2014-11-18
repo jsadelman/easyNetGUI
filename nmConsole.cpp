@@ -19,16 +19,20 @@
 #include "lazynutobj.h"
 #include "objexplorer.h"
 #include "designwindow.h"
+#include "lazynut.h"
+#include "commandsequencer.h"
 
-InputLine::InputLine(QWidget *parent)
+InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
 {
+    connect(this,SIGNAL(returnPressed()),
+            this,SLOT(sendCommand()));
 }
 
-void InputLine::sendLine()
+void InputCmdLine::sendCommand()
 {
     QString line = text();
-    emit outputReady(line);
+    emit commandReady(line);
     clear();
 }
 
@@ -158,8 +162,8 @@ void QueryProcessor::getTree(const QString &lazyNutOutput)
            //qDebug() << treeOutput;
            emit treeReady(treeOutput);
            processQueries();
-           //lazyNutBuffer = remainder; //"";
-           //context->clearQueries();
+           emit resultAvailable(lazyNutBuffer);
+
         }
         else
         {
@@ -250,11 +254,11 @@ NmCmd::NmCmd(QWidget *parent)
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     cmdOutput = new CmdOutput(this);
     cmdOutput->setReadOnly(true);
-    inputLine = new InputLine(this);
+    inputCmdLine = new InputCmdLine(this);
     mainLayout->addWidget(cmdOutput);
-    mainLayout->addWidget(inputLine);
+    mainLayout->addWidget(inputCmdLine);
     setLayout(mainLayout);
-    setWindowTitle(tr("nm cmd[*]"));
+    setWindowTitle(tr("lazyNut cmd[*]"));
 }
 
 
@@ -337,19 +341,16 @@ NmConsole::NmConsole(QWidget *parent)
 
 
 
-    lazyNut = new NM(this);
-    connect(nmCmd->inputLine,SIGNAL(returnPressed()),
-            nmCmd->inputLine,SLOT(sendLine()));
-    connect(nmCmd->inputLine,SIGNAL(outputReady(QString)),
-            lazyNut,SLOT(sendCommand(QString)));
-    connect(lazyNut,SIGNAL(readyReadStandardError()),
-            lazyNut,SLOT(getNMError()));
+    //lazyNut = new NM(this);
+    lazyNut = new LazyNut(this);
+
+
+
     connect(lazyNut,SIGNAL(outputReady(QString)),
             nmCmd->cmdOutput,SLOT(displayOutput(QString)));
     connect(lazyNut,SIGNAL(outputReady(QString)),
             queryProcessor,SLOT(getTree(QString)));
-    connect(queryProcessor,SIGNAL(commandReady(QString)),
-            lazyNut,SLOT(sendCommand(QString)));
+
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),
             designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
     connect(this,SIGNAL(saveLayout()),
@@ -372,6 +373,14 @@ NmConsole::NmConsole(QWidget *parent)
     }
     if (!lazyNutBat.isEmpty())
         runLazyNutBat();
+
+    commandSequencer = new CommandSequencer(lazyNut,this);
+    connect(queryProcessor,SIGNAL(resultAvailable(QString)),
+            commandSequencer,SLOT(receiveResult(QString)));
+    connect(nmCmd->inputCmdLine,SIGNAL(commandReady(QString)),
+            commandSequencer,SLOT(runCommand(QString)));
+    connect(queryProcessor,SIGNAL(commandReady(QString)),
+            commandSequencer,SLOT(runCommand(QString)));
 
 }
 
@@ -464,9 +473,11 @@ void NmConsole::runSelection()
 void NmConsole::runScript()
 {
     chopAndSend(scriptEdit->toPlainText());
+    QStringList commandList;
     foreach (QString type, lazyNutObjTypes)
-        lazyNut->sendCommand("query 1 subtypes " + type + "\n");
-    lazyNut->sendCommand("query 1 recently_modified\n");
+        commandList.append("query 1 subtypes " + type);
+    commandList.append("query 1 recently_modified");
+    commandSequencer->runCommands(commandList);
     emit savedLayoutToBeLoaded(curJson);
 }
 
@@ -500,11 +511,13 @@ void NmConsole::runLazyNutBat()
 
 void NmConsole::chopAndSend(const QString & text)
 {
-    QStringList lines = text.split("\u2029");
-    foreach (QString line, lines)
-    {
-        lazyNut->sendCommand(line + "\n");
-    }
+    QStringList commandList = text.split("\u2029");
+    commandSequencer->runCommands(commandList);
+//    QStringList lines = text.split("\u2029");
+//    foreach (QString line, lines)
+//    {
+//        lazyNut->sendCommand(line + "\n");
+//    }
 }
 
 

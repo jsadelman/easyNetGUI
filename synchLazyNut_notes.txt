@@ -26,4 +26,12 @@ coherence of cmdCounter, internal state, etc.
 See if useful as subsitute of the current rxEND to deal with incomplete 
 output from lazyNut.
 
+18 Nov 
+
+partially implemented low level synch. 
+
+Main observation: loading a model becomes very slow. 
+Maybe two modalities are required, fast and debug mode
+the fast is without low level synch. 
+
 

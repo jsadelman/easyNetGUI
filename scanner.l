@@ -204,7 +204,7 @@ typedef lazyNutOutput::Parser::token_type token_type;
     return token::WORD;
  }
 
-<line>":\\" {
+<line>":\\"|":/" {
     return token::COLON_BACKSLASH;
  }
 

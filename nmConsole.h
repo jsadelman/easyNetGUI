@@ -32,20 +32,22 @@ namespace lazyNutOutput {
     class Driver;
 }
 class DesignWindow;
+class LazyNut;
+class CommandSequencer;
 QT_END_NAMESPACE
 
-class InputLine : public QLineEdit
+class InputCmdLine : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    InputLine(QWidget *parent = 0);
+    InputCmdLine(QWidget *parent = 0);
 
 public slots:
-    void sendLine();
+    void sendCommand();
 
 signals:
-    void outputReady(const QString & output);
+    void commandReady(const QString & command);
 
 };
 
@@ -116,6 +118,7 @@ public:
 signals:
   void treeReady(const QString & tree);
   void commandReady(const QString & output);
+  void resultAvailable(QString);
   void beginObjHashModified();
   void endObjHashModified();
 
@@ -141,13 +144,15 @@ private:
 
 class NmCmd : public QWidget
 {
+    // this class should be removed.
+    // A QGroupBox is enough.
     Q_OBJECT
 
 public:
     NmCmd(QWidget *parent = 0);
 
     CmdOutput       *cmdOutput;
-    InputLine       *inputLine;
+    InputCmdLine       *inputCmdLine;
 
 
 };
@@ -211,7 +216,9 @@ private:
 
 
     NmCmd           *nmCmd;
-    NM              *lazyNut;
+    //NM              *lazyNut;
+    LazyNut         *lazyNut;
+    CommandSequencer    *commandSequencer;
     TreeModel       *objTaxonomyModel;
     LazyNutObjCatalogue  *objHash;
     QueryProcessor   *queryProcessor;
