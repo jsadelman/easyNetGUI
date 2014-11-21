@@ -34,25 +34,43 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     cmdQueue = new CmdQueue(lazyNut);
     ready = true;
-    qDebug() << "READY";
+    //qDebug() << "READY";
 }
 
-void CommandSequencer::runCommands(QStringList commands)
+void CommandSequencer::runCommands(QStringList commands, bool synch)
 {
+    commandList.clear();
+    // clean up empty lines.
+    // In sinch mode, empty lines won't trigger any output from lazyNut
+    // hence they would stall cmdQueue.
+    // In non-synch mode, empty lines won't increase receivedCount,
+    // which would never reach commandList.size()
+    foreach (QString command, commands)
+    {
+        if (!emptyLineRex.exactMatch(command))
+            commandList.append(command);
+    }
+
+    if (commandList.size() == 0)
+        return;
+
+    synchMode = synch;
     ready = false;
     emit isReady(ready);
     //qDebug() << "BUSY";
 
-    commandList.clear();
-    commandList.append(commands);
-    for (int i = 0; i < commandList.size(); ++i)
+    if (synchMode)
     {
-        //commandList[i].prepend(QString("%1 ").arg(QString::number(++sentCount)));
-
-        // skip empty lines, which won't trigger any output from lazyNut
-        // hence they would stall cmdQueue
-        if (!emptyLineRex.exactMatch(commandList[i]))
+        for (int i = 0; i < commandList.size(); ++i)
+        {
+            //commandList[i].prepend(QString("%1 ").arg(QString::number(++sentCount)));
             cmdQueue->tryRun(&commandList[i]);
+        }
+    }
+    else
+    {
+        foreach (QString command, commandList)
+            lazyNut->sendCommand(command);
     }
 }
 
@@ -63,28 +81,29 @@ void CommandSequencer::runCommand(QString command)
 
 void CommandSequencer::receiveResult(QString result)
 {
-//    cmdCountRex.exactMatch(result);
-//    int received = cmdCountRex.cap(1).toInt();
-//    if (received == receivedCount + 1)
-//        emit currentReceivedCount(++receivedCount);
-//    else
-//        qDebug() << "error, wrong cmd count";
-
-//    emit commandExecuted(result);
-//    results.append(result+"\n");
-
-    //qDebug() << result;
-    if (cmdQueue->jobsInQueue() == 0)
+    if (synchMode)
     {
-//        emit resultsAvailable(results);
-//        results.clear();
-        ready = true;
-        emit isReady(ready);
-        //qDebug() << "READY";
-        emit commandsExecuted();
+        if (cmdQueue->jobsInQueue() == 0)
+        {
+            ready = true;
+            emit isReady(ready);
+            emit commandsExecuted();
+        }
+        cmdQueue->freeToRun();
     }
-    cmdQueue->freeToRun();
-
+    else
+    {
+        ++receivedCount;
+        qDebug() << receivedCount;
+        if (receivedCount == commandList.size())
+        {
+            receivedCount = 0;
+            ready = true;
+            emit isReady(ready);
+            //qDebug() << "READY";
+            emit commandsExecuted();
+        }
+    }
 }
 
 bool CommandSequencer::getStatus()

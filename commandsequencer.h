@@ -30,7 +30,7 @@ public:
     void currentReceivedCount();
 
 public slots:
-    void runCommands(QStringList commands);
+    void runCommands(QStringList commands, bool synch = false);
     void runCommand(QString command);
     void receiveResult(QString result);
     // status
@@ -55,6 +55,7 @@ signals:
 private:
 
     //int cmdCounter;
+    bool synchMode;
     int sentCount;
     int receivedCount;
     bool ready;
