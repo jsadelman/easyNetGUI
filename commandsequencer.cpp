@@ -37,14 +37,17 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
     //qDebug() << "READY";
 }
 
-void CommandSequencer::runCommands(QStringList commands, bool synch)
+void CommandSequencer::runCommands(QStringList commands, SynchMode mode)
 {
     commandList.clear();
     // clean up empty lines.
-    // In sinch mode, empty lines won't trigger any output from lazyNut
+    // In Synch mode, empty lines won't trigger any output from lazyNut
     // hence they would stall cmdQueue.
-    // In non-synch mode, empty lines won't increase receivedCount,
+    // In Asynch mode, empty lines won't increase receivedCount,
     // which would never reach commandList.size()
+    // Note: carrying out this cleanup here breaks the advantage of QStringList implicit sharing.
+    // Maybe better cleaning up when the list is created.
+
     foreach (QString command, commands)
     {
         if (!emptyLineRex.exactMatch(command))
@@ -54,35 +57,39 @@ void CommandSequencer::runCommands(QStringList commands, bool synch)
     if (commandList.size() == 0)
         return;
 
-    synchMode = synch;
+    qDebug() << "commandList size " << commandList.size();
+    synchMode = mode;
     ready = false;
     emit isReady(ready);
-    //qDebug() << "BUSY";
-
-    if (synchMode)
+    qDebug() << "BUSY";
+    switch (mode)
     {
+    case SynchMode::Synch:
         for (int i = 0; i < commandList.size(); ++i)
         {
             //commandList[i].prepend(QString("%1 ").arg(QString::number(++sentCount)));
             cmdQueue->tryRun(&commandList[i]);
         }
-    }
-    else
-    {
+        break;
+    case SynchMode::Asynch:
         foreach (QString command, commandList)
             lazyNut->sendCommand(command);
+        break;
+    default:
+        break;
     }
 }
 
-void CommandSequencer::runCommand(QString command)
+void CommandSequencer::runCommand(QString command, SynchMode mode)
 {
-    runCommands(QStringList{command});
+    runCommands(QStringList{command},mode);
 }
 
 void CommandSequencer::receiveResult(QString result)
 {
-    if (synchMode)
+    switch (synchMode)
     {
+    case SynchMode::Synch:
         if (cmdQueue->jobsInQueue() == 0)
         {
             ready = true;
@@ -90,9 +97,8 @@ void CommandSequencer::receiveResult(QString result)
             emit commandsExecuted();
         }
         cmdQueue->freeToRun();
-    }
-    else
-    {
+        break;
+    case SynchMode::Asynch:
         ++receivedCount;
         qDebug() << receivedCount;
         if (receivedCount == commandList.size())
@@ -100,9 +106,11 @@ void CommandSequencer::receiveResult(QString result)
             receivedCount = 0;
             ready = true;
             emit isReady(ready);
-            //qDebug() << "READY";
+            qDebug() << "READY";
             emit commandsExecuted();
         }
+    default:
+        break;
     }
 }
 

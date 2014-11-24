@@ -21,6 +21,7 @@
 #include "designwindow.h"
 #include "lazynut.h"
 #include "commandsequencer.h"
+#include "sessionmanager.h"
 
 InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
@@ -96,6 +97,8 @@ QueryProcessor::QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxon
 
 void QueryProcessor::testDesignWindow()
 {
+    // this member function should be removed and turned into a unit test.
+
     emit beginObjHashModified();
     objHash->insert("layerA",new LazyNutObj());
     (*objHash)["layerA"]->appendProperty(QString{"name"},QVariant{"layerA"});
@@ -267,12 +270,11 @@ NmConsole::NmConsole(QWidget *parent)
 {
     nmCmd = new NmCmd(this);
     setCentralWidget(nmCmd);
-    scriptEdit = new QPlainTextEdit(this);
-    scriptEdit->setReadOnly(true);
+    scriptEditor = new LazyNutScriptEditor(this);
     dockEdit = new QDockWidget(tr("my_nm_script"), this);
     dockEdit->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                 Qt::RightDockWidgetArea);
-    dockEdit->setWidget(scriptEdit);
+    dockEdit->setWidget(scriptEditor);
     addDockWidget(Qt::RightDockWidgetArea, dockEdit);
     dockEdit->hide();
 
@@ -283,10 +285,10 @@ NmConsole::NmConsole(QWidget *parent)
     foreach (QString type, lazyNutObjTypes)
         objTaxonomyModel->appendValue(type,parentIndex);
 
-    objHash = new LazyNutObjCatalogue();
+    objCatalogue = new LazyNutObjCatalogue();
 
-    queryProcessor = new QueryProcessor(objHash,objTaxonomyModel,this);
-    objExplorer = new ObjExplorer(objHash,objTaxonomyModel,this);
+    //queryProcessor = new QueryProcessor(objCatalogue,objTaxonomyModel,this);
+    objExplorer = new ObjExplorer(objCatalogue,objTaxonomyModel,this);
 
     dockExplorer = new QDockWidget(tr("Object Explorer"), this);
     dockExplorer->setAllowedAreas( Qt::BottomDockWidgetArea );
@@ -296,9 +298,7 @@ NmConsole::NmConsole(QWidget *parent)
 
 
     designWindow = new DesignWindow(this);
-    designWindow->setObjCatalogue(objHash);
-    connect(queryProcessor,SIGNAL(endObjHashModified()),
-            designWindow,SLOT(objCatalogueChanged()));
+    designWindow->setObjCatalogue(objCatalogue);
     connect(designWindow,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)),
             objExplorer,SLOT(setObj(LazyNutObj*,LazyNutObjCatalogue*)));
     connect(objExplorer,SIGNAL(objSelected(QString)),
@@ -312,19 +312,17 @@ NmConsole::NmConsole(QWidget *parent)
         //dockDesignWindow->hide();
 
 
-    // signals begin/endObjHashModified are defined in QueryProcessor and ObjExplorer.
-    // When a description query is parsed by the QueryProcessor, it sends those signals
+    // signals begin/endObjHashModified are defined in SessionManager and ObjExplorer.
+    // When a description query is parsed by the SessionManager, it sends those signals
     // to the ObjExplorer, which in turn trigger slots sendBegin/EndResetModel in
     // LazyNutObjTableModel that update its internal representation.
     // All this signal/slot chain is necessary in order to call
     // the protected functions QAbstractItemModel::begin/endResetModel.
-    // Those functions need to be called because QueryProcessor modifies
+    // Those functions need to be called because SessionManager modifies
     // the LazyNutObjCatalogue object directly, which is the underlying data structure
     // to LazyNutObjTableModel, i.e. it does not make use of the QAbstractTableModel
     // API implemented by LazyNutObjTableModel.
 
-    connect(queryProcessor,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
-    connect(queryProcessor,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
 
 
 
@@ -348,8 +346,8 @@ NmConsole::NmConsole(QWidget *parent)
 
     connect(lazyNut,SIGNAL(outputReady(QString)),
             nmCmd->cmdOutput,SLOT(displayOutput(QString)));
-    connect(lazyNut,SIGNAL(outputReady(QString)),
-            queryProcessor,SLOT(getTree(QString)));
+//    connect(lazyNut,SIGNAL(outputReady(QString)),
+//            queryProcessor,SLOT(getTree(QString)));
 
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),
             designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
@@ -374,14 +372,20 @@ NmConsole::NmConsole(QWidget *parent)
     if (!lazyNutBat.isEmpty())
         runLazyNutBat();
 
-    commandSequencer = new CommandSequencer(lazyNut,this);
-    connect(queryProcessor,SIGNAL(resultAvailable(QString)),
-            commandSequencer,SLOT(receiveResult(QString)));
-    connect(nmCmd->inputCmdLine,SIGNAL(commandReady(QString)),
-            commandSequencer,SLOT(runCommand(QString)));
-    connect(queryProcessor,SIGNAL(commandReady(QString)),
-            commandSequencer,SLOT(runCommand(QString)));
+    //    commandSequencer = new CommandSequencer(lazyNut,this);
+    //    connect(queryProcessor,SIGNAL(resultAvailable(QString)),
+    //            commandSequencer,SLOT(receiveResult(QString)));
+    //    connect(nmCmd->inputCmdLine,SIGNAL(commandReady(QString)),
+    //            commandSequencer,SLOT(runCommand(QString)));
+    //    connect(queryProcessor,SIGNAL(commandReady(QString)),
+    //            commandSequencer,SLOT(runCommand(QString)));
 
+    sessionManager = new SessionManager(lazyNut,objCatalogue,objTaxonomyModel,this);
+    connect(lazyNut,SIGNAL(outputReady(QString)),sessionManager,SLOT(parseLazyNutOutput(QString)));
+    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
+    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
+    connect(sessionManager,SIGNAL(endObjHashModified()),
+            designWindow,SLOT(objCatalogueChanged()));
 }
 
 void NmConsole::readSettings()
@@ -467,18 +471,13 @@ bool NmConsole::saveAs()
 
 void NmConsole::runSelection()
 {
-    chopAndSend(scriptEdit->textCursor().selectedText());
+    sessionManager->runSelection(scriptEditor->getSelectedText());
 }
 
-void NmConsole::runScript()
+void NmConsole::runModel()
 {
-    chopAndSend(scriptEdit->toPlainText());
-    QStringList commandList;
-    foreach (QString type, lazyNutObjTypes)
-        commandList.append("query 1 subtypes " + type);
-    commandList.append("query 1 recently_modified");
-    commandSequencer->runCommands(commandList);
-    emit savedLayoutToBeLoaded(curJson);
+    sessionManager->runModel(scriptEditor->getAllText());
+    //emit savedLayoutToBeLoaded(curJson);
 }
 
 void NmConsole::setEasyNetHome()
@@ -509,16 +508,16 @@ void NmConsole::runLazyNutBat()
     }
 }
 
-void NmConsole::chopAndSend(const QString & text)
-{
-    QStringList commandList = text.split("\u2029");
-    commandSequencer->runCommands(commandList);
+//void NmConsole::chopAndSend(const QString & text)
+//{
+//    QStringList commandList = text.split("\u2029");
+//    commandSequencer->runCommands(commandList);
 //    QStringList lines = text.split("\u2029");
 //    foreach (QString line, lines)
 //    {
 //        lazyNut->sendCommand(line + "\n");
 //    }
-}
+//}
 
 
 /*void NmConsole::documentWasModified()
@@ -560,7 +559,7 @@ void NmConsole::createActions()
 
     runScriptAct = new QAction(tr("&Run script"), this);
     runScriptAct->setStatusTip(tr("Run script"));
-    connect(runScriptAct,SIGNAL(triggered()),this, SLOT(runScript()));
+    connect(runScriptAct,SIGNAL(triggered()),this, SLOT(runModel()));
 
     setEasyNetHomeAct = new QAction(tr("Set easyNet home directory"), this);
     setEasyNetHomeAct->setStatusTip(tr("Set easyNet home directory"));
@@ -617,7 +616,7 @@ void NmConsole::loadFile(const QString &fileName)
 #ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
-    scriptEdit->setPlainText(in.readAll());
+    scriptEditor->setPlainText(in.readAll());
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
@@ -656,7 +655,7 @@ void NmConsole::loadFile(const QString &fileName)
 void NmConsole::setCurrentFile(const QString &fileName)
 {
     curFile = fileName;
-    scriptEdit->document()->setModified(false);
+    scriptEditor->document()->setModified(false);
     setWindowModified(false);
 
     QString shownName = curFile;
@@ -688,5 +687,24 @@ QString NmConsole::strippedName(const QString &fullFileName)
 }*/
 
 
+
+
+
+
+LazyNutScriptEditor::LazyNutScriptEditor(QWidget *parent)
+    : QPlainTextEdit(parent)
+{
+    setReadOnly(true);
+}
+
+QStringList LazyNutScriptEditor::getSelectedText()
+{
+    return textCursor().selectedText().split("\u2029");
+}
+
+QStringList LazyNutScriptEditor::getAllText()
+{
+    return toPlainText().split("\n");
+}
 
 

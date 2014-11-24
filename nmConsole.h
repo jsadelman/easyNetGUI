@@ -34,6 +34,8 @@ namespace lazyNutOutput {
 class DesignWindow;
 class LazyNut;
 class CommandSequencer;
+class SessionManager;
+
 QT_END_NAMESPACE
 
 class InputCmdLine : public QLineEdit
@@ -60,6 +62,19 @@ public:
 
 public slots:
     void displayOutput(const QString & output);
+
+};
+
+class LazyNutScriptEditor: public QPlainTextEdit
+{
+    Q_OBJECT
+
+public:
+    LazyNutScriptEditor(QWidget *parent = 0);
+
+public slots:
+    QStringList getSelectedText();
+    QStringList getAllText();
 
 };
 
@@ -174,8 +189,7 @@ private slots:
     //bool save();
     //bool saveAs();
     //void documentWasModified();
-    void chopAndSend(const QString &text);
-    void runScript();
+    void runModel();
     void runSelection();
     void setEasyNetHome();
     void setLazyNutBat();
@@ -219,15 +233,16 @@ private:
     //NM              *lazyNut;
     LazyNut         *lazyNut;
     CommandSequencer    *commandSequencer;
+    SessionManager      *sessionManager;
     TreeModel       *objTaxonomyModel;
-    LazyNutObjCatalogue  *objHash;
+    LazyNutObjCatalogue  *objCatalogue;
     QueryProcessor   *queryProcessor;
     ObjExplorer      *objExplorer;
     QDockWidget     *dockEdit;
     QDockWidget     *dockParse;
     QDockWidget     *dockExplorer;
     QDockWidget     *dockDesignWindow;
-    QPlainTextEdit  *scriptEdit;
+    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
 
 

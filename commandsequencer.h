@@ -6,6 +6,7 @@
 #include <QStringList>
 
 #include "jobqueue.h"
+#include "synchmode.h"
 
 class LazyNut;
 
@@ -21,6 +22,8 @@ private:
     LazyNut* lazyNut;
 };
 
+
+
 class CommandSequencer: public QObject
 {
     Q_OBJECT
@@ -29,9 +32,10 @@ public:
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
     void currentReceivedCount();
 
+
 public slots:
-    void runCommands(QStringList commands, bool synch = false);
-    void runCommand(QString command);
+    void runCommands(QStringList commands, SynchMode mode = SynchMode::Asynch);
+    void runCommand(QString command, SynchMode mode = SynchMode::Asynch);
     void receiveResult(QString result);
     // status
     bool getStatus();
@@ -45,8 +49,6 @@ signals:
     void commandExecuted(QString);
     void commandsExecuted();
     void currentReceivedCount(int);
-    // mock results availability
-    void resultsAvailable(QString);
     // ready state
     void isReady(bool);
     // errors
@@ -55,7 +57,7 @@ signals:
 private:
 
     //int cmdCounter;
-    bool synchMode;
+    SynchMode synchMode;
     int sentCount;
     int receivedCount;
     bool ready;

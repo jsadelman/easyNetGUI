@@ -74,7 +74,7 @@
 %token <integerVal> 	INTEGER		"integer"
 %token <doubleVal> 	DOUBLE		"double"
 %token <wordVal> 	WORD		"word"
-%token <wordVal> 	QUOTED		"quoted"
+/* %token <wordVal> 	QUOTED		"quoted" */
 %token <wordVal> 	OBJECT_TYPE	"object type"
 %token <wordVal> 	OBJECT_SUBTYPE	"object subtype"
 %token <wordVal> 	QUERY_TYPE	"query type"
@@ -138,12 +138,12 @@ string	: WORD
      	   {
 		$$ = $1;
 	   }
-	| QUOTED
+/*	| QUOTED
 	   {
      	     $$ = new std::string("\"" + (*$1) + "\"");
      	     delete $1;
            }
-	| number
+*/	| number
      	   {
 		$$ = $1;
 	   }
