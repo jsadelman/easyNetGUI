@@ -19,6 +19,8 @@ public:
     int jobsInQueue();
     void pause();
     void stop();
+    bool isPaused() const {return paused;}
+    bool isStopped() const {return stopped;}
 
 
 protected:
@@ -35,7 +37,7 @@ protected:
 
 template <class JOB, class DerivedQueue>
 JobQueue<JOB, DerivedQueue>::JobQueue()
-    : paused(false), stopped(false)
+    : paused(false), stopped(false), currentJob(nullptr)
 {
 }
 

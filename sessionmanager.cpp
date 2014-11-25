@@ -34,6 +34,12 @@ SessionManager::SessionManager(LazyNut* lazyNut, LazyNutObjCatalogue* objCatalog
             this,SIGNAL(isReady(bool)));
     connect(this,SIGNAL(commandExecuted(QString)),
             commandSequencer,SLOT(receiveResult(QString)));
+    // cmdQueue status signals relay
+    connect(commandSequencer,SIGNAL(cmdQueuePaused(bool)),
+            this,SIGNAL(cmdQueuePaused(bool)));
+    connect(commandSequencer,SIGNAL(cmdQueueStopped(bool)),
+            this,SIGNAL(cmdQueueStopped(bool)));
+
 }
 
 void SessionManager::parseLazyNutOutput(const QString &lazyNutOutput)
@@ -188,12 +194,14 @@ int SessionManager::getCurrentReceivedCount()
 void SessionManager::pause()
 {
     commandSequencer->pause();
+
 }
 
 void SessionManager::stop()
 {
     commandSequencer->stop();
     macroQueue->stop();
+    emit macroQueueStopped(macroQueue->isStopped());
 }
 
 void SessionManager::getSubtypes()
@@ -228,7 +236,7 @@ void SessionManager::getDescriptions()
         commandList.clear();
         foreach (QString obj, recentlyModified)
             commandList.append(QString("query 1 %1 description").arg(obj));
-        commandSequencer->runCommands(commandList);
+        commandSequencer->runCommands(commandList, synchMode);
         recentlyModified.clear();
     }
 }

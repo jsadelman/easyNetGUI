@@ -58,6 +58,11 @@ signals:
     void currentReceivedCount(int);
     void isReady(bool);
 
+    void cmdQueuePaused(bool);
+    void cmdQueueStopped(bool);
+    //void macroQueuePaused(bool);
+    void macroQueueStopped(bool);
+
     void synchModeChanged(SynchMode);
 
     void beginObjHashModified();
@@ -77,6 +82,15 @@ public slots:
     // controls
     void pause();
     void stop();
+
+    void setSynchMode(bool mode)
+    {
+        if (mode)
+            synchMode = SynchMode::Synch;
+        else
+            synchMode = SynchMode::Asynch;
+        emit synchModeChanged(synchMode);
+    }
 
 
 private slots:

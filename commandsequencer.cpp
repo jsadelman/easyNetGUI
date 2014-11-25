@@ -126,11 +126,20 @@ int CommandSequencer::getCurrentReceivedCount()
 
 void CommandSequencer::pause()
 {
-    cmdQueue->pause();
+    if (synchMode == SynchMode::Synch)
+    {
+        cmdQueue->pause();
+        emit cmdQueuePaused(cmdQueue->isPaused());
+    }
 }
 
 void CommandSequencer::stop()
 {
-    cmdQueue->stop();
+    if (synchMode == SynchMode::Synch)
+    {
+        cmdQueue->stop();
+        emit cmdQueueStopped(cmdQueue->isStopped());
+    }
+    // send OOB
 }
 

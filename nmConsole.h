@@ -5,7 +5,7 @@
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QProcess>
-#include <QDockWidget>
+//#include <QDockWidget>
 #include <QPlainTextEdit>
 #include <QRegExp>
 #include <QSplitter>
@@ -18,8 +18,8 @@
 //#include "querycontext.h"
 //#include "treemodel.h"
 
-
-
+class QGroupBox;
+class QDockWidget;
 
 QT_BEGIN_NAMESPACE
 class QueryContext;
@@ -78,99 +78,73 @@ public slots:
 
 };
 
-class NM : public QProcess
-{
-    Q_OBJECT
+//class NM : public QProcess
+//{
+//    Q_OBJECT
 
-  public:
-    NM(QObject *parent = 0);
-    ~NM();
+//  public:
+//    NM(QObject *parent = 0);
+//    ~NM();
 
-  signals:
-    void outputReady(const QString & line);
+//  signals:
+//    void outputReady(const QString & line);
 
-  public slots:
-    void sendCommand(const QString & line);
-    void getNMError();
+//  public slots:
+//    void sendCommand(const QString & line);
+//    void getNMError();
 
-};
-
-/*class ParseTree : public QTreeView //QSplitter
-{
-    Q_OBJECT
-
-public:
-    ParseTree(QWidget *parent = 0);
-//    ~ParseTree();
-
-signals:
-  void treeReady(const QString & tree);
-
-public slots:
-    void getTree(const QString & query);
-
-private:
-    QueryContext* contextPtr;
-    lazyNutOutput::Driver* driverPtr;
-    int contextQuerySize;
-    QString lazyNutBuffer;
-    QString treeOutput;
-    QRegExp rxEND;
-    TreeModel treeModel;
-    //QTreeView *treeView;
-    CmdOutput *parseOutput;
-
-};
-*/
-class QueryProcessor : public QSplitter
-{
-    Q_OBJECT
-
-public:
-    QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent=0);
-    void testDesignWindow();
-
-signals:
-  void treeReady(const QString & tree);
-  void commandReady(const QString & output);
-  void resultAvailable(QString);
-  void beginObjHashModified();
-  void endObjHashModified();
-
-public slots:
-    void getTree(const QString & query);
-
-private:
-    void processQueries();
-
-    QueryContext* context;
-    lazyNutOutput::Driver* driver;
-    LazyNutObjCatalogue* objHash;
-    TreeModel* objTaxonomyModel;
-    int contextQuerySize;
-    QString lazyNutBuffer;
-    QString treeOutput;
-    QRegExp rxEND;
-    CmdOutput *parseOutput;
+//};
 
 
-};
+//class QueryProcessor : public QSplitter
+//{
+//    Q_OBJECT
+
+//public:
+//    QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent=0);
+//    void testDesignWindow();
+
+//signals:
+//  void treeReady(const QString & tree);
+//  void commandReady(const QString & output);
+//  void resultAvailable(QString);
+//  void beginObjHashModified();
+//  void endObjHashModified();
+
+//public slots:
+//    void getTree(const QString & query);
+
+//private:
+//    void processQueries();
+
+//    QueryContext* context;
+//    lazyNutOutput::Driver* driver;
+//    LazyNutObjCatalogue* objHash;
+//    TreeModel* objTaxonomyModel;
+//    int contextQuerySize;
+//    QString lazyNutBuffer;
+//    QString treeOutput;
+//    QRegExp rxEND;
+//    CmdOutput *parseOutput;
 
 
-class NmCmd : public QWidget
-{
-    // this class should be removed.
-    // A QGroupBox is enough.
-    Q_OBJECT
-
-public:
-    NmCmd(QWidget *parent = 0);
-
-    CmdOutput       *cmdOutput;
-    InputCmdLine       *inputCmdLine;
+//};
 
 
-};
+//class NmCmd : public QWidget
+//{
+//    // this class should be removed.
+//    // A QGroupBox is enough.
+//    Q_OBJECT
+
+//public:
+//    NmCmd(QWidget *parent = 0);
+
+//    CmdOutput       *cmdOutput;
+//    InputCmdLine       *inputCmdLine;
+
+
+//};
 
 class NmConsole : public QMainWindow
 {
@@ -229,14 +203,17 @@ private:
     QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};
 
 
-    NmCmd           *nmCmd;
+    //NmCmd           *nmCmd;
+    QGroupBox       *lazyNutConsole;
+    CmdOutput       *cmdOutput;
+    InputCmdLine    *inputCmdLine;
     //NM              *lazyNut;
     LazyNut         *lazyNut;
     CommandSequencer    *commandSequencer;
     SessionManager      *sessionManager;
     TreeModel       *objTaxonomyModel;
     LazyNutObjCatalogue  *objCatalogue;
-    QueryProcessor   *queryProcessor;
+//    QueryProcessor   *queryProcessor;
     ObjExplorer      *objExplorer;
     QDockWidget     *dockEdit;
     QDockWidget     *dockParse;
@@ -258,9 +235,11 @@ private:
     QAction         *exitAct;
     QAction         *runScriptAct;
     QAction         *runSelectionAct;
+    QAction         *stopAct;
+    QAction         *pauseAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
-    QAction         *queryModeAct;
+    QAction         *synchModeAct;
 };
 
 #endif // NMCONSOLE_H

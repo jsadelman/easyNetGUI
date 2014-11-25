@@ -49,8 +49,10 @@ signals:
     void commandExecuted(QString);
     void commandsExecuted();
     void currentReceivedCount(int);
-    // ready state
+    // states
     void isReady(bool);
+    void cmdQueuePaused(bool);
+    void cmdQueueStopped(bool);
     // errors
     void missingCmdError();
 
