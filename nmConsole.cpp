@@ -505,6 +505,14 @@ void NmConsole::setLazyNutBat()
     runLazyNutBat();
 }
 
+void NmConsole::showPauseState(bool isPaused)
+{
+    if (isPaused)
+        pauseAct->setIconText("RESUME");
+    else
+        pauseAct->setIconText("PAUSE");
+}
+
 
 void NmConsole::runLazyNutBat()
 {
@@ -589,7 +597,7 @@ void NmConsole::createActions()
     connect(stopAct,SIGNAL(triggered()),sessionManager,SLOT(stop()));
     pauseAct = new QAction("PAUSE",this);
     connect(pauseAct,SIGNAL(triggered()),sessionManager,SLOT(pause()));
-
+    connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 }
 
 void NmConsole::createMenus()

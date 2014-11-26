@@ -20,7 +20,7 @@ public:
     void pause();
     void stop();
     bool isPaused() const {return paused;}
-    bool isStopped() const {return stopped;}
+    //bool isStopped() const {return stopped;}
 
 
 protected:
@@ -28,7 +28,7 @@ protected:
     QQueue<JOB*> queue;
     QMutex mutex;
     bool paused;
-    bool stopped;
+    //bool stopped;
     JOB* currentJob;
 
 };
@@ -37,32 +37,32 @@ protected:
 
 template <class JOB, class DerivedQueue>
 JobQueue<JOB, DerivedQueue>::JobQueue()
-    : paused(false), stopped(false), currentJob(nullptr)
+    : paused(false), currentJob(nullptr)
 {
 }
 
 template <class JOB, class DerivedQueue>
 void JobQueue<JOB, DerivedQueue>::tryRun(JOB *job)
 {
-    if (!stopped)
-    {
-        queue.enqueue(job);
-        tryRunNext();
-    }
+
+    queue.enqueue(job);
+    tryRunNext();
+
 }
 
 template <class JOB, class DerivedQueue>
 void JobQueue<JOB, DerivedQueue>::freeToRun()
 {
-    //qDebug() << jobsInQueue() << "jobsInQueue";
-    mutex.unlock();
+    if (currentJob)
+        mutex.unlock();
+    currentJob = nullptr;
     tryRunNext();
 }
 
 template <class JOB, class DerivedQueue>
 void JobQueue<JOB, DerivedQueue>::tryRunNext()
 {
-    if(!queue.isEmpty() && !(paused || stopped) && mutex.tryLock())
+    if(!queue.isEmpty() && !paused && mutex.tryLock())
     {
         DerivedQueue *derivedQueue = (DerivedQueue*)this;
         currentJob = queue.dequeue();
@@ -70,21 +70,29 @@ void JobQueue<JOB, DerivedQueue>::tryRunNext()
     }
 }
 
+
 template <class JOB, class DerivedQueue>
 bool JobQueue<JOB, DerivedQueue>::isReady()
 {
-    // this implementation is incorrect, maybe use a post return guard as in
-    // http://stackoverflow.com/questions/8763182/execution-of-code-in-a-function-after-the-return-statement-has-been-accessed-in
-
-    if (mutex.tryLock())
-    {
-        mutex.unlock();
-        // here mutex could be locked
-        return true;
-    }
-    else
-        return false;
+    return !currentJob;
 }
+
+
+//template <class JOB, class DerivedQueue>
+//bool JobQueue<JOB, DerivedQueue>::isReady()
+//{
+//    // this implementation is incorrect, maybe use a post return guard as in
+//    // http://stackoverflow.com/questions/8763182/execution-of-code-in-a-function-after-the-return-statement-has-been-accessed-in
+
+//    if (mutex.tryLock())
+//    {
+//        mutex.unlock();
+//        // here mutex could be locked
+//        return true;
+//    }
+//    else
+//        return false;
+//}
 
 template <class JOB, class DerivedQueue>
 int JobQueue<JOB, DerivedQueue>::jobsInQueue()
@@ -95,30 +103,20 @@ int JobQueue<JOB, DerivedQueue>::jobsInQueue()
 template <class JOB, class DerivedQueue>
 void JobQueue<JOB, DerivedQueue>::pause()
 {
-    paused = !paused;
-    if (!paused)
-        tryRunNext();
+    if (!queue.isEmpty())
+    {
+        paused = !paused;
+        if (!paused)
+            tryRunNext();
+    }
 }
 
 template <class JOB, class DerivedQueue>
 void JobQueue<JOB, DerivedQueue>::stop()
 {
-    stopped = !stopped;
     DerivedQueue *derivedQueue = (DerivedQueue*)this;
-
-    if (stopped)
-    {
-        derivedQueue->reset();
-    }
-    else
-    {
-
-        if (!isReady())
-        {
-            freeToRun();
-        }
-    }
-
+    derivedQueue->reset();
+    freeToRun();
 }
 
 

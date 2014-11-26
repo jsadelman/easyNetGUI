@@ -15,7 +15,6 @@ void CmdQueue::run(QString *cmd)
 
 void CmdQueue::reset()
 {
-    //qDebug() << "CmdQueue::reset()";
     queue.clear();
 }
 
@@ -37,7 +36,7 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
     //qDebug() << "READY";
 }
 
-void CommandSequencer::runCommands(QStringList commands, SynchMode mode)
+void CommandSequencer::runCommands(QStringList commands, JobOrigin origin, SynchMode mode)
 {
     commandList.clear();
     // clean up empty lines.
@@ -55,9 +54,13 @@ void CommandSequencer::runCommands(QStringList commands, SynchMode mode)
     }
 
     if (commandList.size() == 0)
+    {
+        emit commandsExecuted();
         return;
+    }
 
-    qDebug() << "commandList size " << commandList.size();
+    //qDebug() << "commandList size " << commandList.size();
+    jobOrigin = origin;
     synchMode = mode;
     ready = false;
     emit isReady(ready);
@@ -80,9 +83,9 @@ void CommandSequencer::runCommands(QStringList commands, SynchMode mode)
     }
 }
 
-void CommandSequencer::runCommand(QString command, SynchMode mode)
+void CommandSequencer::runCommand(QString command, JobOrigin origin, SynchMode mode)
 {
-    runCommands(QStringList{command},mode);
+    runCommands(QStringList{command}, origin, mode);
 }
 
 void CommandSequencer::receiveResult(QString result)
@@ -100,8 +103,8 @@ void CommandSequencer::receiveResult(QString result)
         break;
     case SynchMode::Asynch:
         ++receivedCount;
-        qDebug() << receivedCount;
-        if (receivedCount == commandList.size())
+        //qDebug() << receivedCount;
+        if (receivedCount == commandList.size() || commandList.size() == 0)
         {
             receivedCount = 0;
             ready = true;
@@ -126,20 +129,20 @@ int CommandSequencer::getCurrentReceivedCount()
 
 void CommandSequencer::pause()
 {
-    if (synchMode == SynchMode::Synch)
-    {
+    if (jobOrigin == JobOrigin::User && synchMode == SynchMode::Synch)
         cmdQueue->pause();
-        emit cmdQueuePaused(cmdQueue->isPaused());
-    }
 }
 
 void CommandSequencer::stop()
 {
-    if (synchMode == SynchMode::Synch)
+    if (jobOrigin == JobOrigin::User)
     {
-        cmdQueue->stop();
-        emit cmdQueueStopped(cmdQueue->isStopped());
+        if (synchMode == SynchMode::Synch)
+            cmdQueue->stop();
+//        else if (synchMode == SynchMode::Asynch)
+//            commandList.clear();
+
+        qDebug () << "OOB sent";
     }
-    // send OOB
 }
 

@@ -6,7 +6,7 @@
 #include <QStateMachine>
 
 #include "jobqueue.h"
-#include "synchmode.h"
+#include "enumclasses.h"
 
 class Macro;
 
@@ -47,6 +47,8 @@ public:
         synchMode = mode;
         emit synchModeChanged(synchMode);
     }
+    void setJobOrigin(JobOrigin origin) {currentJobOrigin = origin;}
+    JobOrigin getJobOrigin() {return currentJobOrigin;}
 
 signals:
     // decision signals
@@ -57,11 +59,13 @@ signals:
 
     void currentReceivedCount(int);
     void isReady(bool);
+    void isPaused(bool);
 
-    void cmdQueuePaused(bool);
+    //void cmdQueuePaused(bool);
     void cmdQueueStopped(bool);
     //void macroQueuePaused(bool);
     void macroQueueStopped(bool);
+
 
     void synchModeChanged(SynchMode);
 
@@ -127,6 +131,7 @@ private:
     QString lazyNutBuffer;
     QRegExp rxEND;
     SynchMode synchMode;
+    JobOrigin currentJobOrigin;
     QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};
 
 };
@@ -143,20 +148,60 @@ class Macro: public QStateMachine
 
 public:
     Macro(SessionManager *sm, QObject *parent=0);
+    void stop() {stopped = true;}
+    bool isStopped() {return stopped;}
+
 
 private:
     SessionManager *sessionManager;
+    bool stopped;
 };
 
-class QueryState: public QState
+class MacroState: public QState
 {
     Q_OBJECT
 
 public:
-    QueryState(SessionManager *sm, QState *parent=0);
+    MacroState(SessionManager *sm, Macro *macro, QState *parent=0);
 
-private:
+protected:
     SessionManager *sessionManager;
+    Macro *macro;
+};
+
+class UserState: public MacroState
+{
+    Q_OBJECT
+
+public:
+    UserState(SessionManager *sm, Macro *macro, QState *parent=0);
+
+private slots:
+    void setOriginUser();
+    void deleteIfStopped();
+};
+
+class GUIState: public MacroState
+{
+    Q_OBJECT
+
+public:
+    GUIState(SessionManager *sm, Macro *macro, QState *parent=0);
+
+private slots:
+    void setOriginGUI();
+};
+
+
+
+
+class QueryState: public GUIState
+{
+    Q_OBJECT
+
+public:
+    QueryState(SessionManager *sm, Macro *macro, QState *parent=0);
+
 };
 
 //class RunCommandsState: public QState

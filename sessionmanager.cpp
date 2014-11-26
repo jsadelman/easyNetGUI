@@ -34,12 +34,6 @@ SessionManager::SessionManager(LazyNut* lazyNut, LazyNutObjCatalogue* objCatalog
             this,SIGNAL(isReady(bool)));
     connect(this,SIGNAL(commandExecuted(QString)),
             commandSequencer,SLOT(receiveResult(QString)));
-    // cmdQueue status signals relay
-    connect(commandSequencer,SIGNAL(cmdQueuePaused(bool)),
-            this,SIGNAL(cmdQueuePaused(bool)));
-    connect(commandSequencer,SIGNAL(cmdQueueStopped(bool)),
-            this,SIGNAL(cmdQueueStopped(bool)));
-
 }
 
 void SessionManager::parseLazyNutOutput(const QString &lazyNutOutput)
@@ -122,7 +116,7 @@ void SessionManager::processLazyNutOutput()
 
 void SessionManager::runCommands()
 {
-    commandSequencer->runCommands(commandList, synchMode);
+    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
 }
 
 
@@ -131,7 +125,7 @@ void SessionManager::runModel(QStringList cmdList)
     commandList = cmdList;
     // states
     Macro * macro = new Macro(this,this);
-    QState * runCommandsState = new QState(macro);
+    UserState * runCommandsState = new UserState(this,macro);
     connect(runCommandsState,SIGNAL(entered()),this,SLOT(runCommands()));
     QueryState * getSubtypesState = new QueryState(this,macro);
     connect(getSubtypesState,SIGNAL(entered()),this,SLOT(getSubtypes()));
@@ -159,7 +153,7 @@ void SessionManager::runSelection(QStringList cmdList)
     commandList = cmdList;
     // states
     Macro * macro = new Macro(this,this);
-    QState * runCommandsState = new QState(macro);
+    UserState * runCommandsState = new UserState(this,macro);
     connect(runCommandsState,SIGNAL(entered()),this,SLOT(runCommands()));
     QueryState * getRecentlyModifiedState = new QueryState(this,macro);
     connect(getRecentlyModifiedState,SIGNAL(entered()),this,SLOT(getRecentlyModified()));
@@ -193,23 +187,23 @@ int SessionManager::getCurrentReceivedCount()
 
 void SessionManager::pause()
 {
+    macroQueue->pause();
     commandSequencer->pause();
-
+    emit isPaused(macroQueue->isPaused() || commandSequencer->isPaused());
 }
 
 void SessionManager::stop()
 {
-    commandSequencer->stop();
     macroQueue->stop();
-    emit macroQueueStopped(macroQueue->isStopped());
+    commandSequencer->stop();
 }
 
-void SessionManager::getSubtypes()
+void SessionManager:: getSubtypes()
 {
     commandList.clear();
     foreach (QString type, lazyNutObjTypes)
         commandList.append(QString("query 1 subtypes %1").arg(type));
-    commandSequencer->runCommands(commandList, synchMode);
+    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
 }
 
 void SessionManager::getRecentlyModified()
@@ -217,14 +211,14 @@ void SessionManager::getRecentlyModified()
     commandList.clear();
     commandList << "query 1 recently_modified"
                 << "query 1 clear_recently_modified";
-    commandSequencer->runCommands(commandList, synchMode);
+    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
 }
 
 void SessionManager::clearRecentlyModified()
 {
     commandList.clear();
     commandList << "query 1 clear_recently_modified";
-    commandSequencer->runCommands(commandList, synchMode);
+    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
 }
 
 void SessionManager::getDescriptions()
@@ -236,7 +230,7 @@ void SessionManager::getDescriptions()
         commandList.clear();
         foreach (QString obj, recentlyModified)
             commandList.append(QString("query 1 %1 description").arg(obj));
-        commandSequencer->runCommands(commandList, synchMode);
+        commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
         recentlyModified.clear();
     }
 }
@@ -255,7 +249,7 @@ void SessionManager::macroEnded()
 
 
 Macro::Macro(SessionManager *sm, QObject *parent)
-    : sessionManager(sm), QStateMachine(parent)
+    : sessionManager(sm), stopped(false), QStateMachine(parent)
 {
     connect(this,SIGNAL(started()),sessionManager,SLOT(macroStarted()));
     connect(this,SIGNAL(finished()),sessionManager,SLOT(macroEnded()));
@@ -264,8 +258,49 @@ Macro::Macro(SessionManager *sm, QObject *parent)
 
 
 
-QueryState::QueryState(SessionManager *sm, QState *parent)
-    : sessionManager(sm), QState(parent)
+MacroState::MacroState(SessionManager *sm, Macro *macro, QState *parent)
+    : sessionManager(sm), macro(macro), QState(parent ? parent : macro)
+{
+//    if (!parent)
+//        parent = macro;
+//    QState::QState(parent);
+}
+
+
+
+UserState::UserState(SessionManager *sm, Macro *macro, QState *parent)
+    : MacroState(sm, macro, parent)
+{
+    connect(this,SIGNAL(entered()),this,SLOT(setOriginUser()));
+    connect(this,SIGNAL(entered()),this,SLOT(deleteIfStopped()));
+}
+
+void UserState::setOriginUser()
+{
+    sessionManager->setJobOrigin(JobOrigin::User);
+}
+
+void UserState::deleteIfStopped()
+{
+    if (macro->isStopped())
+        macro->deleteLater();
+}
+
+
+GUIState::GUIState(SessionManager *sm, Macro *macro, QState *parent)
+    : MacroState(sm, macro, parent)
+{
+    connect(this,SIGNAL(entered()),this,SLOT(setOriginGUI()));
+}
+
+void GUIState::setOriginGUI()
+{
+    sessionManager->setJobOrigin(JobOrigin::GUI);
+}
+
+
+QueryState::QueryState(SessionManager *sm, Macro *macro, QState *parent)
+    : GUIState(sm, macro, parent)
 {
     connect(this,SIGNAL(exited()),sessionManager,SLOT(processLazyNutOutput()));
 }
@@ -325,22 +360,29 @@ QueryState::QueryState(SessionManager *sm, QState *parent)
 
 void MacroQueue::run(Macro *macro)
 {
+    qDebug() << "Jobs in MacroQueue:" << queue.size();
     macro->start();
 }
 
 void MacroQueue::reset()
 {
+    qDebug() << "RESET CALLED, Jobs in MacroQueue:" << queue.size();
     while (!queue.isEmpty())
     {
         delete queue.dequeue();
     }
-    delete currentJob;
+    if (currentJob)
+        currentJob->stop();
+    //delete currentJob;
 }
 
 QString MacroQueue::name()
 {
     return "MacroQueue";
 }
+
+
+
 
 
 

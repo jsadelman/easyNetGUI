@@ -167,6 +167,8 @@ private slots:
     void runSelection();
     void setEasyNetHome();
     void setLazyNutBat();
+    void showPauseState(bool isPaused);
+
 protected:
     void closeEvent(QCloseEvent *event);
 

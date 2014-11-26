@@ -109,7 +109,7 @@ HEADERS  += \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
-    synchmode.h
+    enumclasses.h
   #  y.tab.h  location.hh position.hh stack.hh parserwindow.h tree.h
 
 RESOURCES   =	diagramscene.qrc
