@@ -18,7 +18,7 @@ class LazyNutObj
     // LazyNutObj contains information on one LazyNut object, e.g. a layer.
     // It contains the information retrieved by issuing a description query to lazyNut.
     // Each object is represented by a list of pairs of property key-value (_properties).
-    // LazyNut objects have at least three properties: mane, type and subtype.
+    // LazyNut objects have at least three properties: name, type and subtype.
     // Further, an arbitrary number of properties is allowed.
     // A property value (a QVariant) is usually either a QString or a QStringList,
     // the latter case being exposed by rowsWithStringList to be used by views.
