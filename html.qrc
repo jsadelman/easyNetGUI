@@ -1,2 +1,5 @@
-<RCC/>
-
+<RCC>
+    <qresource prefix="/">
+        <file>../easyNet/Welcome to easyNet.html</file>
+    </qresource>
+</RCC>

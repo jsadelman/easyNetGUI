@@ -5,10 +5,12 @@
 #include <QTreeView>
 #include <QStringList>
 #include <QEventLoop>
+#include <QToolBar>
+#include <QWebView>
 
 #include <iostream>
 #include <fstream>
-
+#include <vector>
 
 #include "driver.h"
 //#include "parsenode.h"
@@ -19,6 +21,7 @@
 #include "lazynutobj.h"
 #include "objexplorer.h"
 #include "designwindow.h"
+#include "codeeditor.h"
 
 InputLine::InputLine(QWidget *parent)
     : QLineEdit(parent)
@@ -262,16 +265,84 @@ NmCmd::NmCmd(QWidget *parent)
 NmConsole::NmConsole(QWidget *parent)
     : QMainWindow(parent)
 {
-    nmCmd = new NmCmd(this);
-    setCentralWidget(nmCmd);
-    scriptEdit = new QPlainTextEdit(this);
-    scriptEdit->setReadOnly(true);
+    setWindowIcon(QIcon(":/images/zebra.png"));
+    QTextEdit* dummyEdit = new QTextEdit(this);
+    dummyEdit->hide();
+    setCentralWidget(dummyEdit);
+
+/*    welcomeScreen = new QTextEdit(this);
+    QFile myfile(":/images/Welcome.html");
+//    f = QFile("welcome.html");
+    if (myfile.exists())
+        myfile.open(QIODevice::ReadOnly);
+    else
+            int oops=1;
+    QTextStream textStream(&myfile);
+    QString line = textStream.readAll();
+    myfile.close();
+    welcomeScreen->insertHtml(line);
+*/
+    welcomeScreen = new QWebView(this);
+    webWelcomeScreen = new QWebView(this);
+
+    zebPic = new QLabel();
+    QPixmap image(":/images/zebra.png");
+    zebPic->setPixmap(image);
+
+/*    dockZeb = new QDockWidget(this);
+    dockZeb->setAllowedAreas(  Qt::RightDockWidgetArea);
+    dockZeb->setWidget(zebPic);
+    dockZeb->resize(200,200);
+    addDockWidget(Qt::RightDockWidgetArea, dockZeb);
+*/
+    dockWelcome = new QDockWidget(tr("Welcome"), this);
+    dockWelcome->setAllowedAreas(  Qt::TopDockWidgetArea );
+    dockWelcome->setWidget(welcomeScreen);
+    addDockWidget(Qt::TopDockWidgetArea, dockWelcome);
+
+    dockWebWelcome = new QDockWidget(this);
+    dockWebWelcome->setAllowedAreas(  Qt::BottomDockWidgetArea );
+    dockWebWelcome->setWidget(webWelcomeScreen);
+    addDockWidget(Qt::BottomDockWidgetArea, dockWebWelcome);
+
+
+   nmCmd = new NmCmd(this);
+    dockParse = new QDockWidget(tr("lazyNut interpreter"), this);
+//    dockParse->setAllowedAreas(  Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+    dockParse->setWidget(nmCmd);
+    addDockWidget(Qt::BottomDockWidgetArea, dockParse);
+    addDockWidget(Qt::RightDockWidgetArea, dockParse);
+
+    scriptEdit = new CodeEditor(this);
+    scriptEdit->setReadOnly(false);
+    highlighter = new Highlighter(scriptEdit->document());
+
     dockEdit = new QDockWidget(tr("my_nm_script"), this);
     dockEdit->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                 Qt::RightDockWidgetArea);
     dockEdit->setWidget(scriptEdit);
-    addDockWidget(Qt::RightDockWidgetArea, dockEdit);
-    dockEdit->hide();
+    addDockWidget(Qt::LeftDockWidgetArea, dockEdit);
+
+
+    CodeEditor *tmpEdit = new CodeEditor(this);
+    tmpEdit->setReadOnly(true);
+    highlighter = new Highlighter(tmpEdit->document());
+
+    dockOutput = new QDockWidget(tr("Output"), this);
+    dockOutput->setAllowedAreas(  Qt::LeftDockWidgetArea |
+                                    Qt::RightDockWidgetArea);
+//    dockOutput->setWidget(scriptEdit);
+    addDockWidget(Qt::LeftDockWidgetArea, dockOutput);
+
+    commandLog = new CodeEditor(this);
+    commandLog->setReadOnly(true);
+    highlighter2 = new Highlighter(commandLog->document());
+
+    dockCommandLog = new QDockWidget(tr("Command Log"), this);
+    dockCommandLog->setAllowedAreas(  Qt::LeftDockWidgetArea |
+                                        Qt::RightDockWidgetArea);
+    dockCommandLog->setWidget(commandLog);
+    addDockWidget(Qt::RightDockWidgetArea, dockCommandLog);
 
     objTaxonomyModel = new TreeModel(QStringList{"Object taxonomy"},this);
     objTaxonomyModel->appendValue(QString{"object"});
@@ -286,9 +357,9 @@ NmConsole::NmConsole(QWidget *parent)
     objExplorer = new ObjExplorer(objHash,objTaxonomyModel,this);
 
     dockExplorer = new QDockWidget(tr("Object Explorer"), this);
-    dockExplorer->setAllowedAreas( Qt::BottomDockWidgetArea );
+    dockExplorer->setAllowedAreas( Qt::RightDockWidgetArea );
     dockExplorer->setWidget(objExplorer);
-    addDockWidget(Qt::BottomDockWidgetArea,dockExplorer);
+    addDockWidget(Qt::RightDockWidgetArea,dockExplorer);
 
 
 
@@ -308,6 +379,7 @@ NmConsole::NmConsole(QWidget *parent)
     addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
         //dockDesignWindow->hide();
 
+    showWelcomeView();
 
     // signals begin/endObjHashModified are defined in QueryProcessor and ObjExplorer.
     // When a description query is parsed by the QueryProcessor, it sends those signals
@@ -430,6 +502,7 @@ void NmConsole::open()
         {
             loadFile(fileName);
             dockEdit->show();
+            showCodeView();
         }
  //   }
 }
@@ -512,6 +585,54 @@ void NmConsole::chopAndSend(const QString & text)
 
 void NmConsole::createActions()
 {
+    welcomeAction = new QAction(QIcon(":/images/zebra_64x64.png"), tr("&Welcome"),
+                               this);
+//    welcomeAction->setShortcuts(QKeySequence::New);
+    welcomeAction->setStatusTip(tr("Welcome to easyNet"));
+    connect(welcomeAction, SIGNAL(triggered()), this, SLOT(showWelcomeView()));
+
+    viewModelAction = new QAction(QIcon(":/images/layers-8x.png"), tr("&Model"),
+                               this);
+//    viewModelAction->setShortcuts(QKeySequence::New);
+    viewModelAction->setStatusTip(tr("Display model view"));
+    connect(viewModelAction, SIGNAL(triggered()), this, SLOT(showModelView()));
+
+    viewTrialAction = new QAction(QIcon(":/images/cog-8x.png"), tr("&Trial"),
+                               this);
+//    viewTrialAction->setShortcuts(QKeySequence::New);
+    viewTrialAction->setStatusTip(tr("Display trial editor"));
+    connect(viewTrialAction, SIGNAL(triggered()), this, SLOT(showTrialView()));
+
+    viewInputAction = new QAction(QIcon(":/images/list-8x.png"), tr("&Input"),
+                               this);
+//    viewInputAction->setShortcuts(QKeySequence::New);
+    viewInputAction->setStatusTip(tr("Display input view"));
+    connect(viewInputAction, SIGNAL(triggered()), this, SLOT(showInputView()));
+
+    viewOutputAction = new QAction(QIcon(":/images/bar-chart-8x.png"), tr("&Output"),
+                               this);
+//    viewOutputAction->setShortcuts(QKeySequence::New);
+    viewOutputAction->setStatusTip(tr("Display output view"));
+    connect(viewOutputAction, SIGNAL(triggered()), this, SLOT(showOutputView()));
+
+    viewParamsAction = new QAction(QIcon(":/images/dial-8x.png"), tr("&Parameters"),
+                               this);
+//    viewParamsAction->setShortcuts(QKeySequence::New);
+    viewParamsAction->setStatusTip(tr("Display parameter view"));
+    connect(viewParamsAction, SIGNAL(triggered()), this, SLOT(showParameterView()));
+
+    viewInterpreterAction = new QAction(QIcon(":/images/terminal-8x.png"), tr("&Interpreter"),
+                               this);
+//    viewInterpreterAction->setShortcuts(QKeySequence::New);
+    viewInterpreterAction->setStatusTip(tr("Display interpreter view"));
+    connect(viewInterpreterAction, SIGNAL(triggered()), this, SLOT(showInterpreterView()));
+
+    viewCodeAction = new QAction(QIcon(":/images/code-8x.png"), tr("&Code"),
+                               this);
+//    viewCodeAction->setShortcuts(QKeySequence::New);
+    viewCodeAction->setStatusTip(tr("Display code view"));
+    connect(viewCodeAction, SIGNAL(triggered()), this, SLOT(showCodeView()));
+
     //newAct = new QAction(tr("&New"), this);
     //newAct->setShortcuts(QKeySequence::New);
     //newAct->setStatusTip(tr("Create a new file"));
@@ -576,12 +697,80 @@ void NmConsole::createMenus()
 
 void NmConsole::createToolBars()
 {
-    fileToolBar = addToolBar(tr("File"));
+    QLabel *spacing = new QLabel(tr("TESTING"));
+/*    spacing->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    spacing->setContentsMargins(0,0,0,0);
+    spacing->setSizePolicy(QSizePolicy::MinimumExpanding,
+                           QSizePolicy::MinimumExpanding);
+*/
+
+/*    fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(openAct);
     runToolBar = addToolBar(tr("Run"));
     runToolBar->addAction(runSelectionAct);
     runToolBar->addAction(runScriptAct);
+*/
 
+
+    QWidget *w = new QWidget;
+    QVBoxLayout *vbox = new QVBoxLayout;
+
+    std::vector <QToolButton*> buttons;
+//    buttons = new std::vector <QToolButton>;
+//    QToolButton *button2;
+    int numButtons=8;
+    for (int i=0;i<numButtons;i++)
+    {
+        buttons.push_back(new QToolButton(this));
+        buttons[i]->setAutoRaise(true);
+        buttons[i]->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    }
+
+    buttons[0]->addAction(welcomeAction);
+    buttons[0]->setDefaultAction(welcomeAction);
+    buttons[1]->addAction(viewModelAction);
+    buttons[1]->setDefaultAction(viewModelAction);
+    buttons[2]->addAction(viewParamsAction);
+    buttons[2]->setDefaultAction(viewParamsAction);
+    buttons[3]->addAction(viewTrialAction);
+    buttons[3]->setDefaultAction(viewTrialAction);
+    buttons[4]->addAction(viewInputAction);
+    buttons[4]->setDefaultAction(viewInputAction);
+    buttons[5]->addAction(viewOutputAction);
+    buttons[5]->setDefaultAction(viewOutputAction);
+    buttons[6]->addAction(viewInterpreterAction);
+    buttons[6]->setDefaultAction(viewInterpreterAction);
+    buttons[7]->addAction(viewCodeAction);
+    buttons[7]->setDefaultAction(viewCodeAction);
+
+    infoToolBar = new QToolBar(this);
+    infoToolBar->setStyleSheet("QToolButton::menu-indicator {image: url(myindicator.png); } \
+//                subcontrol-position: right center; subcontrol-origin: padding; left: -2px;}"
+    "QToolButton {font-size: 9pt; color: \"white\"; icon-size: 30px; min-width: 5em; padding: 3px;} "
+    "QToolButton:pressed {border: 2px solid #8f8f91; border-radius: 6px; background-color:red;}"
+    "QLabel { font-size: 8pt; color: \"white\"; icon-size: 30px; } "
+    "QToolBar { background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1, "
+    "stop: 0 #66e, stop: 1 #bbf); background: qlineargradient(x1: 0, y1: 0.2, x2: 1, y2: 1, "
+    "stop: 0 #bbf, stop: 1 #55f) } ");
+
+/*    QComboBox* parametersCB = new QComboBox;
+    QLabel* modelLabel = new QLabel("IA");
+    QLabel* trialLabel = new QLabel("masked_priming_ldt");
+    QLabel* inputLabel = new QLabel("Davis_Lupker_06");
+*/
+    for (int i=0;i<numButtons;i++)
+    {
+        vbox->addWidget(buttons[i]);
+//        vbox->addWidget(spacing);
+    }
+//    vbox->addWidget(spacing);
+//    vbox->addWidget(modelLabel);
+//    vbox->addWidget(trialLabel);
+//    vbox->addWidget(inputLabel);
+
+    w->setLayout(vbox);
+    infoToolBar->addWidget(w);
+    addToolBar(Qt::LeftToolBarArea, infoToolBar);
 }
 
 
@@ -670,6 +859,85 @@ QString NmConsole::strippedName(const QString &fullFileName)
     return true;
 }*/
 
+void NmConsole::hideAllDocks()
+{
+//    dockZeb->hide();
+    dockWelcome->hide();
+    dockWebWelcome->hide();
+    dockEdit->hide();
+    dockParse->hide();
+//    dockInput->hide();
+    dockOutput->hide();
+    dockExplorer->hide();
+    dockDesignWindow->hide();
+    dockCommandLog->hide();
+}
+
+void NmConsole::showWelcomeView()
+{
+    hideAllDocks();
+    setCorner( Qt::TopLeftCorner, Qt::TopDockWidgetArea );
+    setCorner( Qt::TopRightCorner, Qt::RightDockWidgetArea );
+    setCorner( Qt::BottomLeftCorner, Qt::BottomDockWidgetArea );
+    setCorner( Qt::BottomRightCorner, Qt::BottomDockWidgetArea );
+
+//    dockZeb->show();
+    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
+    webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
+    dockWebWelcome->show();
+    dockWelcome->show();
+}
 
 
+void NmConsole::showCodeView()
+{
+    hideAllDocks();
+    dockEdit->show();
+    dockCommandLog->show();
+    dockParse->show();
+}
+
+void NmConsole::showModelView()
+{
+    hideAllDocks();
+    dockDesignWindow->show();
+    dockExplorer->show();
+//    dockDesignWindow->resize(500, dockDesignWindow->height());
+}
+
+void NmConsole::showTrialView()
+{
+    hideAllDocks();
+//    dockEdit->show();
+//    dockEdit->resize(500, dockEdit->height());
+}
+
+void NmConsole::showInputView()
+{
+    hideAllDocks();
+//    dockEdit->show();
+//    dockEdit->resize(500, dockEdit->height());
+}
+
+
+void NmConsole::showOutputView()
+{
+    hideAllDocks();
+    dockOutput->show();
+}
+
+void NmConsole::showParameterView()
+{
+    hideAllDocks();
+//    dockEdit->show();
+//    dockEdit->resize(500, dockEdit->height());
+}
+
+void NmConsole::showInterpreterView()
+{
+    hideAllDocks();
+    dockParse->show();
+}
+
+//QDockWidget     *dockExplorer;
 

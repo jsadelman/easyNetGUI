@@ -57,9 +57,11 @@ QMAKE_EXTRA_COMPILERS += bisonheader
 
 QT       += core gui
 
+QT       += webkit webkitwidgets
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = tree_view
+TARGET = easyNet
 TEMPLATE = app
 
 
@@ -75,7 +77,9 @@ SOURCES += driver.cpp nmConsole.cpp \
     diagramitem.cpp \
     diagramscene.cpp \
     diagramtextitem.cpp \
-    designwindow.cpp
+    designwindow.cpp \
+    highlighter.cpp \
+    codeeditor.cpp
 
 HEADERS  += \
     scanner.h driver.h  FlexLexer.h nmConsole.h \
@@ -89,10 +93,14 @@ HEADERS  += \
     diagramitem.h \
     diagramscene.h \
     diagramtextitem.h \
-    designwindow.h
+    designwindow.h \
+    highlighter.h \
+    codeeditor.h
   #  y.tab.h  location.hh position.hh stack.hh parserwindow.h tree.h
 
-RESOURCES   =	diagramscene.qrc
+RESOURCES   =	diagramscene.qrc \
+    icons.qrc \
+    html.qrc
 
 QMAKE_CXXFLAGS += -std=c++11
 

@@ -22,7 +22,7 @@ class QTableView;
 class QTreeView;
 //class QSplitter;
 class QGroupBox;
-class QHBoxLayout;
+class QVBoxLayout;
 class ComboBoxDelegate;
 
 
@@ -43,7 +43,7 @@ public:
     LazyNutObjTableProxyModel *lazyNutObjTableProxyModel;
 
     QSplitter *splitter;
-    QHBoxLayout *layout;
+    QVBoxLayout *layout;
     QTableView *lazyNutObjTableView;
     QTableView *lazyNutObjTableProxyView;
     QTableView *lazyNutObjView;

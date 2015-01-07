@@ -11,12 +11,17 @@
 #include <QSplitter>
 #include <QTreeView>
 #include <QHash>
-
+#include <QPixmap>
+#include <QWebView>
+#include <QLabel>
 
 //#include "driver.h"
 //#include "parsenode.h"
 //#include "querycontext.h"
 //#include "treemodel.h"
+
+#include "highlighter.h"
+#include "codeeditor.h"
 
 
 
@@ -164,6 +169,14 @@ signals:
     void saveLayout();
 
 private slots:
+    void showWelcomeView();
+    void showCodeView();
+    void showModelView();
+    void showTrialView();
+    void showInputView();
+    void showOutputView();
+    void showParameterView();
+    void showInterpreterView();
     //void newFile();
     void open();
     //bool save();
@@ -191,7 +204,7 @@ private:
     void writeSettings();
     void checkLazyNutBat();
 
-
+    void hideAllDocks();
 
 
     QString         lazyNutBat= "";
@@ -209,21 +222,45 @@ private:
     //ParseTree       *parseTree;
     QueryProcessor   *queryProcessor;
     ObjExplorer      *objExplorer;
-    //DockEdit        *dockEdit;
+    QLabel          *zebPic;
+
+    QDockWidget     *dockZeb;
+    QDockWidget     *dockWelcome;
+    QDockWidget     *dockWebWelcome;
     QDockWidget     *dockEdit;
+    QDockWidget     *dockCommandLog;
     QDockWidget     *dockParse;
     QDockWidget     *dockExplorer;
     QDockWidget     *dockDesignWindow;
-    QPlainTextEdit  *scriptEdit;
+    QDockWidget     *dockInput;
+    QDockWidget     *dockOutput;
+
+    QWebView        *welcomeScreen;
+    QWebView        *webWelcomeScreen;
+    CodeEditor      *scriptEdit;
+    CodeEditor      *commandLog;
+    Highlighter     *highlighter;
+    Highlighter     *highlighter2;
     DesignWindow    *designWindow;
+    QToolBar        *infoToolBar;
+//    QVBoxLayout     *vLayout;
 
 
 //    CmdOutput       *parseOutput;
     QMenu           *fileMenu;
     QMenu           *runMenu;
     QMenu           *settingsMenu;
-    QToolBar        *fileToolBar;
-    QToolBar        *runToolBar;
+//    QToolBar        *fileToolBar;
+//    QToolBar        *runToolBar;
+
+    QAction         *welcomeAction;
+    QAction         *viewModelAction;
+    QAction         *viewCodeAction;
+    QAction         *viewInterpreterAction;
+    QAction         *viewTrialAction;
+    QAction         *viewInputAction;
+    QAction         *viewOutputAction;
+    QAction         *viewParamsAction;
 //    QAction         *newAct;
     QAction         *openAct;
 //    QAction         *saveAct;
