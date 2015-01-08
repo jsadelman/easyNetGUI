@@ -311,12 +311,21 @@ NmConsole::NmConsole(QWidget *parent)
     dockWebWelcome->setWidget(webWelcomeScreen);
     addDockWidget(Qt::BottomDockWidgetArea, dockWebWelcome);
 
+    lazyNutConsole = new QGroupBox("lazyNut console", this);
+    cmdOutput = new CmdOutput(this);
+    cmdOutput->setReadOnly(true);
+    inputCmdLine = new InputCmdLine(this);
+    QVBoxLayout *consoleLayout = new QVBoxLayout;
+    consoleLayout->addWidget(cmdOutput);
+    consoleLayout->addWidget(inputCmdLine);
+    lazyNutConsole->setLayout(consoleLayout);
 
-   nmCmd = new NmCmd(this);
+
+//   nmCmd = new NmCmd(this);
     dockParse = new QDockWidget(tr("lazyNut interpreter"), this);
 //    dockParse->setAllowedAreas(  Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-    dockParse->setWidget(nmCmd);
-    addDockWidget(Qt::BottomDockWidgetArea, dockParse);
+    dockParse->setWidget(lazyNutConsole);
+    //addDockWidget(Qt::BottomDockWidgetArea, dockParse);
     addDockWidget(Qt::RightDockWidgetArea, dockParse);
 
     scriptEdit = new CodeEditor(this);
@@ -350,14 +359,7 @@ NmConsole::NmConsole(QWidget *parent)
     dockCommandLog->setWidget(commandLog);
     addDockWidget(Qt::RightDockWidgetArea, dockCommandLog);
 
-//    lazyNutConsole = new QGroupBox("lazyNut console", this);
-//    cmdOutput = new CmdOutput(this);
-//    cmdOutput->setReadOnly(true);
-//    inputCmdLine = new InputCmdLine(this);
-//    QVBoxLayout *consoleLayout = new QVBoxLayout;
-//    consoleLayout->addWidget(cmdOutput);
-//    consoleLayout->addWidget(inputCmdLine);
-//    lazyNutConsole->setLayout(consoleLayout);
+
 //    setCentralWidget(lazyNutConsole);
 // //    nmCmd = new NmCmd(this);
 // //    setCentralWidget(nmCmd);
@@ -566,12 +568,12 @@ bool NmConsole::saveAs()
 
 void NmConsole::runSelection()
 {
-    sessionManager->runSelection(scriptEditor->getSelectedText());
+    sessionManager->runSelection(scriptEdit->getSelectedText());
 }
 
 void NmConsole::runModel()
 {
-    sessionManager->runModel(scriptEditor->getAllText());
+    sessionManager->runModel(scriptEdit->getAllText());
     //emit savedLayoutToBeLoaded(curJson);
 }
 
@@ -850,7 +852,7 @@ void NmConsole::loadFile(const QString &fileName)
 #ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
-    scriptEditor->setPlainText(in.readAll());
+    scriptEdit->setPlainText(in.readAll());
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
@@ -889,7 +891,7 @@ void NmConsole::loadFile(const QString &fileName)
 void NmConsole::setCurrentFile(const QString &fileName)
 {
     curFile = fileName;
-    scriptEditor->document()->setModified(false);
+    scriptEdit->document()->setModified(false);
     setWindowModified(false);
 
     QString shownName = curFile;
