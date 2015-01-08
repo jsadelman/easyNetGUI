@@ -6,11 +6,23 @@
 
 # flex and bison settings
 # http://hipersayanx.blogspot.co.uk/2013/03/using-flex-and-bison-with-qt.html
+win32 {
+LOCAL_FLEX_BISON_DIR = $$(FLEX_BISON_DIR)
+isEmpty(LOCAL_FLEX_BISON_DIR) {
+error(Please set FLEX_BISON_DIR environment variable to the directory where the win_flex and win_bison exe files are located. Please use fwd slashes "/".)
+}
 
 #FLEX_BISON_DIR = D:/Programs/win_flex_bison
-FLEX_BISON_DIR = "C:/Program Files (x86)/Flex_Bison"
-FLEX = $${FLEX_BISON_DIR}/win_flex
-BISON = $${FLEX_BISON_DIR}/win_bison
+#FLEX_BISON_DIR = C:/Users/Uasolo/faldone/programmi/win_flex_bison
+FLEX = $${LOCAL_FLEX_BISON_DIR}/win_flex
+BISON = $${LOCAL_FLEX_BISON_DIR}/win_bison
+}
+unix {
+FLEX = $$system(which flex)
+BISON = $$system(which bison)
+}
+
+
 
 FLEXSOURCES = scanner.l
 BISONSOURCES = parser.y
@@ -79,7 +91,10 @@ SOURCES += driver.cpp nmConsole.cpp \
     diagramtextitem.cpp \
     designwindow.cpp \
     highlighter.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    lazynut.cpp \
+    sessionmanager.cpp \
+    commandsequencer.cpp
 
 HEADERS  += \
     scanner.h driver.h  FlexLexer.h nmConsole.h \
@@ -95,12 +110,17 @@ HEADERS  += \
     diagramtextitem.h \
     designwindow.h \
     highlighter.h \
-    codeeditor.h
+    codeeditor.h \
+    jobqueue.h \
+    lazynut.h \
+    sessionmanager.h \
+    commandsequencer.h \
+    enumclasses.h
   #  y.tab.h  location.hh position.hh stack.hh parserwindow.h tree.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
-    html.qrc
+    #html.qrc
 
 QMAKE_CXXFLAGS += -std=c++11
 

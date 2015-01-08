@@ -1,4 +1,4 @@
-/** \file parser.y Contains the lazyNutOpuput Bison parser source */
+/** \file parser.y Contains the lazyNutOutput Bison parser source */
 
 %{ /*** C/C++ Declarations ***/
 
@@ -51,7 +51,7 @@
     @$.begin.filename = @$.end.filename = &driver.streamname;
 };
 
-/* The driver is passed by reference to the parser and to the scanner. This
+/* The driver is passed by reference to the parser. This
  * provides a simple but effective pure interface, not relying on global
  * variables. */
 %parse-param { class Driver& driver }
@@ -59,7 +59,7 @@
 /* verbose error messages */
 %error-verbose
 
- /*** BEGIN LAZYNUTOUTPUT - Change the  grammar's tokens below ***/
+ /*** BEGIN LAZYNUTOUTPUT GRAMMAR TOKENS ***/
 
 %union {
     int  			integerVal;
@@ -74,7 +74,7 @@
 %token <integerVal> 	INTEGER		"integer"
 %token <doubleVal> 	DOUBLE		"double"
 %token <wordVal> 	WORD		"word"
-%token <wordVal> 	QUOTED		"quoted"
+/* %token <wordVal> 	QUOTED		"quoted" */
 %token <wordVal> 	OBJECT_TYPE	"object type"
 %token <wordVal> 	OBJECT_SUBTYPE	"object subtype"
 %token <wordVal> 	QUERY_TYPE	"query type"
@@ -98,7 +98,7 @@
 %destructor { delete $$; } label_content
 
 
- /*** END LAZYNUTOUTPUT - Change the grammar's tokens above ***/
+ /*** END LAZYNUTOUTPUT GRAMMAR TOKENS ***/
 
 %{
 
@@ -138,12 +138,12 @@ string	: WORD
      	   {
 		$$ = $1;
 	   }
-	| QUOTED
+/*	| QUOTED
 	   {
      	     $$ = new std::string("\"" + (*$1) + "\"");
      	     delete $1;
            }
-	| number
+*/	| number
      	   {
 		$$ = $1;
 	   }
