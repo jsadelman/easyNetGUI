@@ -466,8 +466,8 @@ NmConsole::NmConsole(QWidget *parent)
     //    commandSequencer = new CommandSequencer(lazyNut,this);
     //    connect(queryProcessor,SIGNAL(resultAvailable(QString)),
     //            commandSequencer,SLOT(receiveResult(QString)));
-    //    connect(nmCmd->inputCmdLine,SIGNAL(commandReady(QString)),
-    //            commandSequencer,SLOT(runCommand(QString)));
+        connect(inputCmdLine,SIGNAL(commandReady(QString)),
+                this,SLOT(runCmd(QString)));
     //    connect(queryProcessor,SIGNAL(commandReady(QString)),
     //            commandSequencer,SLOT(runCommand(QString)));
 
@@ -569,6 +569,11 @@ bool NmConsole::saveAs()
 void NmConsole::runSelection()
 {
     sessionManager->runSelection(scriptEdit->getSelectedText());
+}
+
+void NmConsole::runCmd(QString cmd)
+{
+    sessionManager->runSelection(QStringList(cmd));
 }
 
 void NmConsole::runModel()

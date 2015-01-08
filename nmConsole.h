@@ -182,6 +182,7 @@ private slots:
     //void documentWasModified();
     void runModel();
     void runSelection();
+    void runCmd(QString cmd);
     void setEasyNetHome();
     void setLazyNutBat();
     void showPauseState(bool isPaused);
