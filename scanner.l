@@ -198,8 +198,8 @@ typedef lazyNutOutput::Parser::token_type token_type;
     return token::DOUBLE;
  }
 
- /* note: double quotes are not special characters */
-<line>[A-Za-z_"\$][A-Za-z0-9_".?-]* {
+ /* note: double and single quotes are not special characters */
+<line>[A-Za-z_"\$][A-Za-z0-9_"'.?-]* {
     yylval->wordVal = new std::string(yytext, yyleng);
     return token::WORD;
  }
