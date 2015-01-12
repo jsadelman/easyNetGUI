@@ -57,8 +57,7 @@ private:
     QAction *cutAct;
     QAction *copyAct;
     QAction *pasteAct;
-    QAction *aboutAct;
-    QAction *aboutQtAct;
+    QAction *findAct;
 
     bool    cutAllowed, pasteAllowed;
 };

@@ -171,10 +171,10 @@ void plotWindow::refreshSvg()
 // reads the output into a byteArray, does some processing on it
 // then loads it into the svgWidget
 
-//     nm->echoCommand("plo get\n"); // nm should be an NM* (pointing to lazyNut)
+//     nm->sendCommand("plo get\n"); // nm should be an NM* (pointing to lazyNut)
 
-    int numBytes=48346; // this won't be here -- just happens to be what I get for current test.svg
-//    read number bytes into numBytes
+    int numBytes=48346; // this number won't be here -- just happens to be what I get for current test.svg
+//    read number bytes from interpreter into numBytes, then resize array accordingly
     plotByteArray.resize(numBytes);
 
 // read bytes into plotByteArray (presumably this will involve the parser)

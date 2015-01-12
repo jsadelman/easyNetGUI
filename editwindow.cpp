@@ -142,6 +142,15 @@ void editWindow::createActions()
 //                              "selection"));
     connect(pasteAct, SIGNAL(triggered()), textEdit, SLOT(paste()));
     }
+
+/*    findAct = new QAction(QIcon(":/images/find.png"), tr("&Find"), this);
+    copyAct->setShortcuts(QKeySequence::Find);
+//    copyAct->setStatusTip(tr("Find text in this window"));
+    connect(findAct, SIGNAL(triggered()), textEdit, SLOT(find()));
+    findAct->setEnabled(false);
+*/
+
+
 }
 
 /*
