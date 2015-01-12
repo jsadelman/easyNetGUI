@@ -186,7 +186,7 @@ private slots:
     //bool saveAs();
     //void documentWasModified();
 
-//    void echoCommand(const QString &line);
+    void echoCommand(const QString &line);
 //    void runScript();
     void runModel();
     void runSelection();

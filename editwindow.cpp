@@ -14,8 +14,8 @@ editWindow::editWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, b
     textEdit = new CodeEditor;
     setCentralWidget(textEdit);
 
-    newAct = p_newAct;
-    openAct = p_openAct;
+//    newAct = p_newAct;
+//    openAct = p_openAct;
 
     cutAllowed = a_cutAllowed;
     pasteAllowed = a_pasteAllowed;
@@ -90,7 +90,7 @@ void editWindow::documentWasModified()
 
 void editWindow::createActions()
 {
-/*    newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
+    newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
 //    newAct->setStatusTip(tr("Create a new file"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
@@ -100,7 +100,7 @@ void editWindow::createActions()
     openAct->setShortcuts(QKeySequence::Open);
 //    openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
-*/
+
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);

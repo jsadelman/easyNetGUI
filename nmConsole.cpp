@@ -276,7 +276,7 @@ NmConsole::NmConsole(QWidget *parent)
     QTextEdit* dummyEdit = new QTextEdit(this);
     dummyEdit->hide();
     setCentralWidget(dummyEdit);
-    createActions();
+//    createActions();
 
 /*    welcomeScreen = new QTextEdit(this);
     QFile myfile(":/images/Welcome.html");
@@ -602,7 +602,7 @@ bool NmConsole::saveAs()
 void NmConsole::runSelection()
 {
 
-    sessionManager->runSelection(scriptEdit->getSelectedText());
+    sessionManager->runSelection(scriptEdit->textEdit->getSelectedText());
 }
 
 void NmConsole::runCmd(QString cmd)
@@ -612,15 +612,17 @@ void NmConsole::runCmd(QString cmd)
 
 void NmConsole::runModel()
 {
-    sessionManager->runModel(scriptEdit->getAllText());
+    sessionManager->runModel(scriptEdit->textEdit->getAllText());
     //emit savedLayoutToBeLoaded(curJson);
 }
 
 void NmConsole::echoCommand(const QString &line)
 {
-    QString return_line = lazyNut->sendCommand(line);
-    if (return_line.size() > 1)
-        commandLog->textEdit->insertPlainText(return_line);
+//    QString return_line = runCmd(line);
+    runCmd(line);
+//    if (return_line.size() > 1)
+//    commandLog->textEdit->insertPlainText(return_line);
+        commandLog->textEdit->insertPlainText(line);
 }
 
 void NmConsole::setEasyNetHome()
@@ -1060,13 +1062,13 @@ void NmConsole::showInterpreterView()
 
 //QDockWidget     *dockExplorer;
 
-/*
+
 void NmConsole::run()
 {
-    runScript(); // ultimately this will have different action depending on which mode is active
+    runModel(); // ultimately this will have different action depending on which mode is active
 
 }
-*/
+
 
 
 LazyNutScriptEditor::LazyNutScriptEditor(QWidget *parent)
@@ -1086,4 +1088,3 @@ QStringList LazyNutScriptEditor::getAllText()
 }
 
 
->>>>>>> e0c62b1434fa105c709d9a829c395b4e3b6f866c

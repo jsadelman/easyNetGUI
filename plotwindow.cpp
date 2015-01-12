@@ -17,7 +17,7 @@ plotWindow::plotWindow(QWidget *parent)
 
     // Get the file name using a QFileDialog
 //    QFile file(QFileDialog::getOpenFileName(NULL, tr("Upload a file")));
-    QFile file("C:/Users/colind/Documents/Top/easyNET_GUI/lazyNutGUI/images/test.svg");
+    QFile file("C:/Top/Simulators/Qt/easyNet/lazyNutGUI/images/test.svg");
     int width, height;
 
     // If the selected file is valid, continue with the upload
