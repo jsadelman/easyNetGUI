@@ -37,12 +37,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include <QtWidgets>
 #include "highlighter.h"
 
 Highlighter::Highlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
+
     HighlightingRule rule;
 
     keywordFormat.setForeground(Qt::darkBlue);
@@ -67,7 +68,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 
 
     loadLibraryFormat.setForeground(Qt::blue);
-    rule.pattern = QRegExp(".+(.so)");
+    rule.pattern = QRegExp(".+(.so)"); // need to escape '.' ??
     rule.format = loadLibraryFormat;
     highlightingRules.append(rule);
 
@@ -101,6 +102,8 @@ Highlighter::Highlighter(QTextDocument *parent)
 
     commentStartExpression = QRegExp("/\\*");
     commentEndExpression = QRegExp("\\*/");
+
+
 }
 
 
@@ -135,3 +138,4 @@ void Highlighter::highlightBlock(const QString &text)
         startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
     }
 }
+

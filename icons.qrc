@@ -109,5 +109,17 @@
         <file>images/zebra_64x64.png</file>
         <file>images/Welcome.html</file>
         <file>images/Welcome_files/image001.jpg</file>
+        <file>images/new.png</file>
+        <file>images/save.png</file>
+        <file>images/copy.png</file>
+        <file>images/cut.png</file>
+        <file>images/open.png</file>
+        <file>images/paste.png</file>
+        <file>images/reload.png</file>
+        <file>images/reload-2x.png</file>
+        <file>images/reload-3x.png</file>
+        <file>images/reload-4x.png</file>
+        <file>images/reload-6x.png</file>
+        <file>images/reload-8x.png</file>
     </qresource>
 </RCC>

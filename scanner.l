@@ -199,7 +199,7 @@ typedef lazyNutOutput::Parser::token_type token_type;
  }
 
 
-<line>[A-Za-z_\$][A-Za-z0-9_.?-]* {
+<line>[\+A-Za-z_\$][\+A-Za-z0-9_.?-]* {
     yylval->wordVal = new std::string(yytext, yyleng);
     return token::WORD;
  }

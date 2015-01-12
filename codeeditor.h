@@ -68,10 +68,12 @@ public:
 protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
+
 
 private:
     QWidget *lineNumberArea;

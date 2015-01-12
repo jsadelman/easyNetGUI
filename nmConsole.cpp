@@ -26,6 +26,7 @@
 InputLine::InputLine(QWidget *parent)
     : QLineEdit(parent)
 {
+
 }
 
 void InputLine::sendLine()
@@ -38,6 +39,7 @@ void InputLine::sendLine()
 CmdOutput::CmdOutput(QWidget *parent)
     : QPlainTextEdit(parent)
 {
+    this->setStyleSheet("background-color : black; color : white;");
 }
 
 void CmdOutput::displayOutput(const QString & output)
@@ -63,9 +65,15 @@ NM::~NM()
     terminate();
 }
 
-void NM::sendCommand(const QString & line)
+QString NM::sendCommand(const QString & line)
 {
-    write(qPrintable(line + "\n"));
+    if (line.size()>1)
+      if ((line.at(0)!='#')) // don't send comments
+        {
+            write(qPrintable(line + "\n"));
+            return (line);
+        }
+    return("");
 }
 
 
@@ -255,6 +263,8 @@ NmCmd::NmCmd(QWidget *parent)
     cmdOutput = new CmdOutput(this);
     cmdOutput->setReadOnly(true);
     inputLine = new InputLine(this);
+    inputLine->setStyleSheet("background-color : black; color : white;");
+
     mainLayout->addWidget(cmdOutput);
     mainLayout->addWidget(inputLine);
     setLayout(mainLayout);
@@ -269,6 +279,7 @@ NmConsole::NmConsole(QWidget *parent)
     QTextEdit* dummyEdit = new QTextEdit(this);
     dummyEdit->hide();
     setCentralWidget(dummyEdit);
+    createActions();
 
 /*    welcomeScreen = new QTextEdit(this);
     QFile myfile(":/images/Welcome.html");
@@ -313,11 +324,12 @@ NmConsole::NmConsole(QWidget *parent)
     addDockWidget(Qt::BottomDockWidgetArea, dockParse);
     addDockWidget(Qt::RightDockWidgetArea, dockParse);
 
-    scriptEdit = new CodeEditor(this);
-    scriptEdit->setReadOnly(false);
-    highlighter = new Highlighter(scriptEdit->document());
+//    scriptEdit = new CodeEditor(this);
+    scriptEdit = new editWindow(this, newScriptAct, openAct);
+    scriptEdit->textEdit->setReadOnly(false);
+    highlighter = new Highlighter(scriptEdit->textEdit->document());
 
-    dockEdit = new QDockWidget(tr("my_nm_script"), this);
+    dockEdit = new QDockWidget(tr("Untitled"), this);
     dockEdit->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                 Qt::RightDockWidgetArea);
     dockEdit->setWidget(scriptEdit);
@@ -328,15 +340,28 @@ NmConsole::NmConsole(QWidget *parent)
     tmpEdit->setReadOnly(true);
     highlighter = new Highlighter(tmpEdit->document());
 
+    /*
+//    QGraphicsSvgItem *svgViewer = new QGraphicsSvgItem("example.svg");
+    QGraphicsScene *scene=new QGraphicsScene(QRect(10, 10, 680, 520));
+    QGraphicsView *view=new QGraphicsView(this);
+    QGraphicsPixmapItem *image1=new QGraphicsPixmapItem(QPixmap("zebra.png"));
+
+    scene ->addItem(image1);
+    view ->setScene(scene);
+    view ->setGeometry(QRect(270, 35, 700, 540));
+*/
+    plotForm = new plotWindow();
     dockOutput = new QDockWidget(tr("Output"), this);
     dockOutput->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                     Qt::RightDockWidgetArea);
-//    dockOutput->setWidget(scriptEdit);
+    dockOutput->setWidget(plotForm);
     addDockWidget(Qt::LeftDockWidgetArea, dockOutput);
 
-    commandLog = new CodeEditor(this);
-    commandLog->setReadOnly(true);
-    highlighter2 = new Highlighter(commandLog->document());
+//    commandLog = new CodeEditor(this);
+    commandLog = new editWindow(this, newLogAct, NULL, false, false); // no cut, no paste
+
+    commandLog->textEdit->setReadOnly(true);
+    highlighter2 = new Highlighter(commandLog->textEdit->document());
 
     dockCommandLog = new QDockWidget(tr("Command Log"), this);
     dockCommandLog->setAllowedAreas(  Qt::LeftDockWidgetArea |
@@ -397,7 +422,7 @@ NmConsole::NmConsole(QWidget *parent)
 
 
 
-    createActions();
+//    createActions();
     createMenus();
     createToolBars();
 
@@ -405,7 +430,7 @@ NmConsole::NmConsole(QWidget *parent)
 
     //queryProcessor->testDesignWindow();
 
-    setCurrentFile("");
+    setCurrentFile(scriptEdit,"Untitled");
 
 
 
@@ -486,13 +511,27 @@ void NmConsole::closeEvent(QCloseEvent *event)
         event->accept();
 }
 
-/*void NmConsole::newFile()
+void NmConsole::newScriptFile()
 {
-    if (maybeSave()) {
-        scriptEdit->clear();
-        setCurrentFile("");
+    newFile(scriptEdit);
+}
+
+void NmConsole::newLogFile()
+{
+    newFile(commandLog);
+}
+
+void NmConsole::newFile(editWindow* window)
+{
+    if (!(sender()))
+            return;
+    if (window->maybeSave())
+    {
+        window->textEdit->clear();
+        if (window==scriptEdit)
+            setCurrentFile(window,"");
     }
-}*/
+}
 
 void NmConsole::open()
 {
@@ -532,16 +571,23 @@ bool NmConsole::saveAs()
 
 void NmConsole::runSelection()
 {
-    chopAndSend(scriptEdit->textCursor().selectedText());
+    chopAndSend(scriptEdit->textEdit->textCursor().selectedText());
 }
 
 void NmConsole::runScript()
 {
-    chopAndSend(scriptEdit->toPlainText());
+    chopAndSend(scriptEdit->textEdit->toPlainText());
     foreach (QString type, lazyNutObjTypes)
         lazyNut->sendCommand("query 1 subtypes " + type + "\n");
     lazyNut->sendCommand("query 1 recently_modified\n");
     emit savedLayoutToBeLoaded(curJson);
+}
+
+void NmConsole::echoCommand(const QString &line)
+{
+    QString return_line = lazyNut->sendCommand(line);
+    if (return_line.size() > 1)
+        commandLog->textEdit->insertPlainText(return_line);
 }
 
 void NmConsole::setEasyNetHome()
@@ -569,11 +615,11 @@ void NmConsole::checkLazyNutBat()
 
 void NmConsole::chopAndSend(const QString & text)
 {
-    QStringList lines = text.split("\u2029");
+//    QStringList lines = text.split("\u2029"); // \u2029 doesn't seem to split into lines
+    QStringList lines = text.split("\n");
+
     foreach (QString line, lines)
-    {
-        lazyNut->sendCommand(line + "\n");
-    }
+        echoCommand(line + "\n");
 }
 
 
@@ -633,15 +679,26 @@ void NmConsole::createActions()
     viewCodeAction->setStatusTip(tr("Display code view"));
     connect(viewCodeAction, SIGNAL(triggered()), this, SLOT(showCodeView()));
 
-    //newAct = new QAction(tr("&New"), this);
-    //newAct->setShortcuts(QKeySequence::New);
-    //newAct->setStatusTip(tr("Create a new file"));
-    //connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
+    runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
+    runAction->setStatusTip(tr("Run"));
+    connect(runAction,SIGNAL(triggered()),this, SLOT(run()));
 
-    openAct = new QAction(tr("&Open..."), this);
+    newScriptAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
+    newScriptAct->setShortcuts(QKeySequence::New);
+//    newScriptAct->setStatusTip(tr("Create a new file"));
+    connect(newScriptAct, SIGNAL(triggered()), this, SLOT(newScriptFile()));
+
+    newLogAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
+    newLogAct->setShortcuts(QKeySequence::New);
+//    newLogAct->setStatusTip(tr("Create a new file"));
+    connect(newLogAct, SIGNAL(triggered()), this, SLOT(newLogFile()));
+
+    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+
+
 
     //saveAct = new QAction(tr("&Save"), this);
     //saveAct->setShortcuts(QKeySequence::Save);
@@ -697,7 +754,7 @@ void NmConsole::createMenus()
 
 void NmConsole::createToolBars()
 {
-    QLabel *spacing = new QLabel(tr("TESTING"));
+    QLabel *spacing = new QLabel(tr("____________"));
 /*    spacing->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     spacing->setContentsMargins(0,0,0,0);
     spacing->setSizePolicy(QSizePolicy::MinimumExpanding,
@@ -718,7 +775,7 @@ void NmConsole::createToolBars()
     std::vector <QToolButton*> buttons;
 //    buttons = new std::vector <QToolButton>;
 //    QToolButton *button2;
-    int numButtons=8;
+    int numButtons=9;
     for (int i=0;i<numButtons;i++)
     {
         buttons.push_back(new QToolButton(this));
@@ -742,6 +799,8 @@ void NmConsole::createToolBars()
     buttons[6]->setDefaultAction(viewInterpreterAction);
     buttons[7]->addAction(viewCodeAction);
     buttons[7]->setDefaultAction(viewCodeAction);
+    buttons[8]->addAction(runAction);
+    buttons[8]->setDefaultAction(runAction);
 
     infoToolBar = new QToolBar(this);
     infoToolBar->setStyleSheet("QToolButton::menu-indicator {image: url(myindicator.png); } \
@@ -761,7 +820,8 @@ void NmConsole::createToolBars()
     for (int i=0;i<numButtons;i++)
     {
         vbox->addWidget(buttons[i]);
-//        vbox->addWidget(spacing);
+        if (i==7)
+            vbox->addWidget(spacing);
     }
 //    vbox->addWidget(spacing);
 //    vbox->addWidget(modelLabel);
@@ -789,12 +849,12 @@ void NmConsole::loadFile(const QString &fileName)
 #ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
-    scriptEdit->setPlainText(in.readAll());
+    scriptEdit->textEdit->setPlainText(in.readAll());
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
 
-    setCurrentFile(fileName);
+    setCurrentFile(scriptEdit,fileName); // assuming that this is called by scriptEdit
     scriptsDir = QFileInfo(fileName).absolutePath();
 
     //statusBar()->showMessage(tr("File loaded"), 2000);
@@ -825,17 +885,13 @@ void NmConsole::loadFile(const QString &fileName)
     return true;
 }*/
 
-void NmConsole::setCurrentFile(const QString &fileName)
+void NmConsole::setCurrentFile(editWindow *window, const QString &fileName)
 {
-    curFile = fileName;
-    scriptEdit->document()->setModified(false);
+    window->setCurrentFile(fileName);
+    window->textEdit->document()->setModified(false);
     setWindowModified(false);
 
-    QString shownName = curFile;
-    //if (curFile.isEmpty())
-    //    shownName = "untitled.txt";
-    dockEdit->setWindowTitle(strippedName(shownName));
-    curJson = QFileInfo(curFile).dir().filePath(QFileInfo(curFile).completeBaseName().append(".json"));
+    curJson = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName().append(".json"));
 }
 
 QString NmConsole::strippedName(const QString &fullFileName)
@@ -941,3 +997,8 @@ void NmConsole::showInterpreterView()
 
 //QDockWidget     *dockExplorer;
 
+void NmConsole::run()
+{
+    runScript(); // ultimately this will have different action depending on which mode is active
+
+}

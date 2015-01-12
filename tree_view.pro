@@ -52,12 +52,9 @@ bisonheader.CONFIG += target_predeps no_link
 QMAKE_EXTRA_COMPILERS += bisonheader
 
 
-
-
-
-QT       += core gui
-
-QT       += webkit webkitwidgets
+QT      += core gui
+QT      += webkit webkitwidgets
+QT      += svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -79,7 +76,9 @@ SOURCES += driver.cpp nmConsole.cpp \
     diagramtextitem.cpp \
     designwindow.cpp \
     highlighter.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    editwindow.cpp \
+    plotwindow.cpp
 
 HEADERS  += \
     scanner.h driver.h  FlexLexer.h nmConsole.h \
@@ -95,7 +94,9 @@ HEADERS  += \
     diagramtextitem.h \
     designwindow.h \
     highlighter.h \
-    codeeditor.h
+    codeeditor.h \
+    editwindow.h \
+    plotwindow.h
   #  y.tab.h  location.hh position.hh stack.hh parserwindow.h tree.h
 
 RESOURCES   =	diagramscene.qrc \
@@ -103,6 +104,9 @@ RESOURCES   =	diagramscene.qrc \
     html.qrc
 
 QMAKE_CXXFLAGS += -std=c++11
+
+DISTFILES += \
+    images/test.svg
 
 
 

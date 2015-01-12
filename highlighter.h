@@ -58,6 +58,7 @@ public:
 protected:
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
+
 private:
     struct HighlightingRule
     {
@@ -78,6 +79,7 @@ private:
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat quotationFormat;
     QTextCharFormat functionFormat;
+
 };
 
 #endif // HIGHLIGHTER_H

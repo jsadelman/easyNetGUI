@@ -14,6 +14,9 @@
 #include <QPixmap>
 #include <QWebView>
 #include <QLabel>
+#include <QGraphicsSvgItem>
+#include <QtSvg>
+
 
 //#include "driver.h"
 //#include "parsenode.h"
@@ -22,8 +25,8 @@
 
 #include "highlighter.h"
 #include "codeeditor.h"
-
-
+#include "editwindow.h"
+#include "plotwindow.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -78,7 +81,7 @@ class NM : public QProcess
     void outputReady(const QString & line);
 
   public slots:
-    void sendCommand(const QString & line);
+    QString sendCommand(const QString & line);
     void getNMError();
 
 };
@@ -177,12 +180,15 @@ private slots:
     void showOutputView();
     void showParameterView();
     void showInterpreterView();
-    //void newFile();
+    void newScriptFile();
+    void newLogFile();
     void open();
+    void run();
     //bool save();
     //bool saveAs();
     //void documentWasModified();
     void chopAndSend(const QString &text);
+    void echoCommand(const QString &line);
     void runScript();
     void runSelection();
     void setEasyNetHome();
@@ -195,10 +201,11 @@ private:
     void createMenus();
     void createToolBars();
 //    bool maybeSave();
+    void newFile(editWindow*);
     void loadFile(const QString &fileName);
 //    bool saveFile(const QString &fileName);
 
-    void setCurrentFile(const QString &fileName);
+    void setCurrentFile(editWindow *window, const QString &fileName);
     QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
@@ -208,7 +215,7 @@ private:
 
 
     QString         lazyNutBat= "";
-    QString         curFile;
+//    QString         curFile;
     QString         curJson;
     QString         scriptsDir;
     QString         easyNetHome = "";
@@ -237,11 +244,14 @@ private:
 
     QWebView        *welcomeScreen;
     QWebView        *webWelcomeScreen;
-    CodeEditor      *scriptEdit;
-    CodeEditor      *commandLog;
+//    CodeEditor      *scriptEdit;
+    editWindow       *scriptEdit;
+//    CodeEditor      *commandLog;
+    editWindow       *commandLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
     DesignWindow    *designWindow;
+    plotWindow      *plotForm;
     QToolBar        *infoToolBar;
 //    QVBoxLayout     *vLayout;
 
@@ -261,11 +271,13 @@ private:
     QAction         *viewInputAction;
     QAction         *viewOutputAction;
     QAction         *viewParamsAction;
-//    QAction         *newAct;
+    QAction         *newScriptAct;
+    QAction         *newLogAct;
     QAction         *openAct;
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
+    QAction         *runAction;
     QAction         *runScriptAct;
     QAction         *runSelectionAct;
     QAction         *setEasyNetHomeAct;

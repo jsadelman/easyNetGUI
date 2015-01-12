@@ -42,8 +42,6 @@
 
 #include "codeeditor.h"
 
-//![constructor]
-
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
     lineNumberArea = new LineNumberArea(this);
@@ -54,11 +52,9 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+
 }
 
-//![constructor]
-
-//![extraAreaWidth]
 
 int CodeEditor::lineNumberAreaWidth()
 {
@@ -74,18 +70,12 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
-//![extraAreaWidth]
-
-//![slotUpdateExtraAreaWidth]
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
-//![slotUpdateExtraAreaWidth]
-
-//![slotUpdateRequest]
 
 void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
 {
@@ -98,9 +88,6 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
         updateLineNumberAreaWidth(0);
 }
 
-//![slotUpdateRequest]
-
-//![resizeEvent]
 
 void CodeEditor::resizeEvent(QResizeEvent *e)
 {
@@ -110,9 +97,6 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
-//![resizeEvent]
-
-//![cursorPositionChanged]
 
 void CodeEditor::highlightCurrentLine()
 {
@@ -133,25 +117,18 @@ void CodeEditor::highlightCurrentLine()
     setExtraSelections(extraSelections);
 }
 
-//![cursorPositionChanged]
 
-//![extraAreaPaintEvent_0]
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(lineNumberArea);
     painter.fillRect(event->rect(), Qt::lightGray);
 
-//![extraAreaPaintEvent_0]
-
-//![extraAreaPaintEvent_1]
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
     int bottom = top + (int) blockBoundingRect(block).height();
-//![extraAreaPaintEvent_1]
 
-//![extraAreaPaintEvent_2]
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
@@ -166,5 +143,4 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         ++blockNumber;
     }
 }
-//![extraAreaPaintEvent_2]
 
