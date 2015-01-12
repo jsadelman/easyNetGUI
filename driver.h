@@ -76,7 +76,7 @@ public:
     /** Reference to the calculator context filled during parsing of the
      * expressions. */
     //class Node* topNode;
-    class QueryContext& queryContext;
+    QueryContext& queryContext;
 };
 
 } // namespace lazyNutOutput

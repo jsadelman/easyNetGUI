@@ -50,11 +50,11 @@ typedef lazyNutOutput::Parser::token_type token_type;
  /* exclusive condition for lines to be tokenized */
 %x line
 
- /* exculsive condition for "quoted strings" */
-%x str
+ /* exculsive condition for "quoted strings" REMOVED */
+ /* %x str */
 
  /* exculsive condition for unmatched ")" in "ANSWER: 1) "*/
-%x num_backet
+%x unmatched_right_bracket
 
  /* exculsive condition for ".. is a type/subtype:" */
 %x is_a
@@ -73,16 +73,16 @@ typedef lazyNutOutput::Parser::token_type token_type;
  /* manage unmatched brackets in "ANSWER: 1)" */
 
 ^ANSWER:[ ]+/[0-9]+")" 	{
-			BEGIN(num_backet);
+			BEGIN(unmatched_right_bracket);
 			return token::ANSWER;
 			} 
 
-<num_backet>[0-9]+/")" 	{
+<unmatched_right_bracket>[0-9]+/")" 	{
 			yylval->integerVal = atoi(yytext);
     			return token::INTEGER;
 			}
 
-<num_backet>")"		{
+<unmatched_right_bracket>")"		{
 			BEGIN(line);
 			return static_cast<token_type>(':');
 			}
@@ -117,7 +117,7 @@ typedef lazyNutOutput::Parser::token_type token_type;
 
 
 
- /* manage "quoted strings" */
+ /* manage "quoted strings" ----- REMOVED
 <line>\" {
    	BEGIN(str);
  }
@@ -132,7 +132,7 @@ typedef lazyNutOutput::Parser::token_type token_type;
    	BEGIN(line);
 }
 
-
+ */
 
 
  /* new line ends <line> context */
@@ -198,13 +198,13 @@ typedef lazyNutOutput::Parser::token_type token_type;
     return token::DOUBLE;
  }
 
-
-<line>[\+A-Za-z_\$][\+A-Za-z0-9_.?-]* {
+ /* note: double and single quotes and + are not special characters */
+<line>[\+A-Za-z_"\$][\+A-Za-z0-9_"'.?-]* {
     yylval->wordVal = new std::string(yytext, yyleng);
     return token::WORD;
  }
 
-<line>":\\" {
+<line>":\\"|":/" {
     return token::COLON_BACKSLASH;
  }
 

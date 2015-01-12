@@ -5,7 +5,7 @@
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QProcess>
-#include <QDockWidget>
+//#include <QDockWidget>
 #include <QPlainTextEdit>
 #include <QRegExp>
 #include <QSplitter>
@@ -23,11 +23,15 @@
 //#include "querycontext.h"
 //#include "treemodel.h"
 
+
 #include "highlighter.h"
 #include "codeeditor.h"
 #include "editwindow.h"
 #include "plotwindow.h"
 
+
+class QGroupBox;
+class QDockWidget;
 
 QT_BEGIN_NAMESPACE
 class QueryContext;
@@ -40,20 +44,24 @@ namespace lazyNutOutput {
     class Driver;
 }
 class DesignWindow;
+class LazyNut;
+class CommandSequencer;
+class SessionManager;
+
 QT_END_NAMESPACE
 
-class InputLine : public QLineEdit
+class InputCmdLine : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    InputLine(QWidget *parent = 0);
+    InputCmdLine(QWidget *parent = 0);
 
 public slots:
-    void sendLine();
+    void sendCommand();
 
 signals:
-    void outputReady(const QString & output);
+    void commandReady(const QString & command);
 
 };
 
@@ -69,96 +77,86 @@ public slots:
 
 };
 
-class NM : public QProcess
-{
-    Q_OBJECT
-
-  public:
-    NM(QObject *parent = 0);
-    ~NM();
-
-  signals:
-    void outputReady(const QString & line);
-
-  public slots:
-    QString sendCommand(const QString & line);
-    void getNMError();
-
-};
-
-/*class ParseTree : public QTreeView //QSplitter
+class LazyNutScriptEditor: public QPlainTextEdit
 {
     Q_OBJECT
 
 public:
-    ParseTree(QWidget *parent = 0);
-//    ~ParseTree();
-
-signals:
-  void treeReady(const QString & tree);
+    LazyNutScriptEditor(QWidget *parent = 0);
 
 public slots:
-    void getTree(const QString & query);
-
-private:
-    QueryContext* contextPtr;
-    lazyNutOutput::Driver* driverPtr;
-    int contextQuerySize;
-    QString lazyNutBuffer;
-    QString treeOutput;
-    QRegExp rxEND;
-    TreeModel treeModel;
-    //QTreeView *treeView;
-    CmdOutput *parseOutput;
-
-};
-*/
-class QueryProcessor : public QSplitter
-{
-    Q_OBJECT
-
-public:
-    QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent=0);
-    void testDesignWindow();
-
-signals:
-  void treeReady(const QString & tree);
-  void commandReady(const QString & output);
-  void beginObjHashModified();
-  void endObjHashModified();
-
-public slots:
-    void getTree(const QString & query);
-
-private:
-    void processQueries();
-
-    QueryContext* context;
-    lazyNutOutput::Driver* driver;
-    LazyNutObjCatalogue* objHash;
-    TreeModel* objTaxonomyModel;
-    int contextQuerySize;
-    QString lazyNutBuffer;
-    QString treeOutput;
-    QRegExp rxEND;
-    CmdOutput *parseOutput;
-
+    QStringList getSelectedText();
+    QStringList getAllText();
 
 };
 
+//class NM : public QProcess
+//{
+//    Q_OBJECT
 
-class NmCmd : public QWidget
-{
-    Q_OBJECT
+//  public:
+//    NM(QObject *parent = 0);
+//    ~NM();
 
-public:
-    NmCmd(QWidget *parent = 0);
+//  signals:
+//    void outputReady(const QString & line);
 
-    CmdOutput       *cmdOutput;
-    InputLine       *inputLine;
+//  public slots:
+//    void sendCommand(const QString & line);
+//    void getNMError();
+
+//};
 
 
-};
+//class QueryProcessor : public QSplitter
+//{
+//    Q_OBJECT
+
+//public:
+//    QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent=0);
+//    void testDesignWindow();
+
+//signals:
+//  void treeReady(const QString & tree);
+//  void commandReady(const QString & output);
+//  void resultAvailable(QString);
+//  void beginObjHashModified();
+//  void endObjHashModified();
+
+//public slots:
+//    void getTree(const QString & query);
+
+//private:
+//    void processQueries();
+
+//    QueryContext* context;
+//    lazyNutOutput::Driver* driver;
+//    LazyNutObjCatalogue* objHash;
+//    TreeModel* objTaxonomyModel;
+//    int contextQuerySize;
+//    QString lazyNutBuffer;
+//    QString treeOutput;
+//    QRegExp rxEND;
+//    CmdOutput *parseOutput;
+
+
+//};
+
+
+//class NmCmd : public QWidget
+//{
+//    // this class should be removed.
+//    // A QGroupBox is enough.
+//    Q_OBJECT
+
+//public:
+//    NmCmd(QWidget *parent = 0);
+
+//    CmdOutput       *cmdOutput;
+//    InputCmdLine       *inputCmdLine;
+
+
+//};
 
 class NmConsole : public QMainWindow
 {
@@ -187,12 +185,16 @@ private slots:
     //bool save();
     //bool saveAs();
     //void documentWasModified();
-    void chopAndSend(const QString &text);
-    void echoCommand(const QString &line);
-    void runScript();
+
+//    void echoCommand(const QString &line);
+//    void runScript();
+    void runModel();
     void runSelection();
+    void runCmd(QString cmd);
     void setEasyNetHome();
     void setLazyNutBat();
+    void showPauseState(bool isPaused);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -209,25 +211,39 @@ private:
     QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
-    void checkLazyNutBat();
+    void runLazyNutBat();
 
     void hideAllDocks();
 
 
     QString         lazyNutBat= "";
 //    QString         curFile;
+#if defined(__linux__)
+    QString         lazyNutExt = "sh";
+    QString         binDir = "bin-linux";
+#elif defined(_WIN32)
+    QString         lazyNutExt = "bat";
+    QString         binDir = "bin";
+#endif
+    QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
+    QString         curFile;
     QString         curJson;
     QString         scriptsDir;
     QString         easyNetHome = "";
     QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};
 
 
-    NmCmd           *nmCmd;
-    NM              *lazyNut;
+    //NmCmd           *nmCmd;
+    QGroupBox       *lazyNutConsole;
+    CmdOutput       *cmdOutput;
+    InputCmdLine    *inputCmdLine;
+    //NM              *lazyNut;
+    LazyNut         *lazyNut;
+    CommandSequencer    *commandSequencer;
+    SessionManager      *sessionManager;
     TreeModel       *objTaxonomyModel;
-    LazyNutObjCatalogue  *objHash;
-    //ParseTree       *parseTree;
-    QueryProcessor   *queryProcessor;
+    LazyNutObjCatalogue  *objCatalogue;
+//    QueryProcessor   *queryProcessor;
     ObjExplorer      *objExplorer;
     QLabel          *zebPic;
 
@@ -250,13 +266,13 @@ private:
     editWindow       *commandLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
+//    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
     plotWindow      *plotForm;
     QToolBar        *infoToolBar;
 //    QVBoxLayout     *vLayout;
 
 
-//    CmdOutput       *parseOutput;
     QMenu           *fileMenu;
     QMenu           *runMenu;
     QMenu           *settingsMenu;
@@ -280,9 +296,11 @@ private:
     QAction         *runAction;
     QAction         *runScriptAct;
     QAction         *runSelectionAct;
+    QAction         *stopAct;
+    QAction         *pauseAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
-    QAction         *queryModeAct;
+    QAction         *synchModeAct;
 };
 
 #endif // NMCONSOLE_H

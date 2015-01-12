@@ -70,6 +70,22 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
+<<<<<<< HEAD
+=======
+QStringList CodeEditor::getSelectedText()
+{
+    return textCursor().selectedText().split("\u2029");
+}
+
+QStringList CodeEditor::getAllText()
+{
+    return toPlainText().split("\n");
+}
+
+//![extraAreaWidth]
+
+//![slotUpdateExtraAreaWidth]
+>>>>>>> e0c62b1434fa105c709d9a829c395b4e3b6f866c
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 {

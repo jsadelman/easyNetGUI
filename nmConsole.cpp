@@ -22,17 +22,21 @@
 #include "objexplorer.h"
 #include "designwindow.h"
 #include "codeeditor.h"
+#include "lazynut.h"
+#include "commandsequencer.h"
+#include "sessionmanager.h"
 
-InputLine::InputLine(QWidget *parent)
+InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
 {
-
+    connect(this,SIGNAL(returnPressed()),
+            this,SLOT(sendCommand()));
 }
 
-void InputLine::sendLine()
+void InputCmdLine::sendCommand()
 {
     QString line = text();
-    emit outputReady(line);
+    emit commandReady(line);
     clear();
 }
 
@@ -55,221 +59,214 @@ void CmdOutput::displayOutput(const QString & output)
 
 
 
-NM::NM(QObject *parent)
-    : QProcess(parent)
-{
-}
+//NM::NM(QObject *parent)
+//    : QProcess(parent)
+//{
+//}
 
-NM::~NM()
-{
-    terminate();
-}
+//NM::~NM()
+//{
+//    terminate();
+//}
 
-QString NM::sendCommand(const QString & line)
-{
-    if (line.size()>1)
-      if ((line.at(0)!='#')) // don't send comments
-        {
-            write(qPrintable(line + "\n"));
-            return (line);
-        }
-    return("");
-}
+//void NM::sendCommand(const QString & line)
+//{
+//    write(qPrintable(line + "\n"));
+//}
 
 
-void NM::getNMError()
-{
-    QByteArray bytes = readAllStandardError();
-    emit outputReady(QString(bytes));
-}
+//void NM::getNMError()
+//{
+//    QByteArray bytes = readAllStandardError();
+//    emit outputReady(QString(bytes));
+//}
 
 
 
-QueryProcessor::QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent):
-    QSplitter(parent), objHash(objHash), objTaxonomyModel(objTaxonomyModel),
-    contextQuerySize(0), lazyNutBuffer(""), treeOutput(""),
-    //rxEND(".*END:[^\\n]*\\n$")
-    rxEND("END:[^\\n]*\\n")
-{
-    context = new QueryContext;
-    driver = new lazyNutOutput::Driver(*context);
+//QueryProcessor::QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent):
+//    QSplitter(parent), objHash(objHash), objTaxonomyModel(objTaxonomyModel),
+//    contextQuerySize(0), lazyNutBuffer(""), treeOutput(""),
+//    //rxEND(".*END:[^\\n]*\\n$")
+//    rxEND("END:[^\\n]*\\n")
+//{
+//    context = new QueryContext;
+//    driver = new lazyNutOutput::Driver(*context);
 
-    parseOutput = new CmdOutput(this);
-    parseOutput->setReadOnly(true);
-    addWidget(parseOutput);
+//    parseOutput = new CmdOutput(this);
+//    parseOutput->setReadOnly(true);
+//    addWidget(parseOutput);
 
-    connect(this,SIGNAL(treeReady(QString)),parseOutput,SLOT(displayOutput(QString)));
-}
+//    connect(this,SIGNAL(treeReady(QString)),parseOutput,SLOT(displayOutput(QString)));
+//}
 
-void QueryProcessor::testDesignWindow()
-{
-    emit beginObjHashModified();
-    objHash->insert("layerA",new LazyNutObj());
-    (*objHash)["layerA"]->appendProperty(QString{"name"},QVariant{"layerA"});
-    (*objHash)["layerA"]->appendProperty("type","layer");
-    (*objHash)["layerA"]->appendProperty("subtype","iac_layer");
-    (*objHash)["layerA"]->appendProperty("length", 24);
-    (*objHash)["layerA"]->appendProperty("incoming connections","connectionBA");
+//void QueryProcessor::testDesignWindow()
+//{
+//    // this member function should be removed and turned into a unit test.
 
-    objHash->insert("layerB",new LazyNutObj());
-    (*objHash)["layerB"]->appendProperty("name","layerB");
-    (*objHash)["layerB"]->appendProperty("type","layer");
-    (*objHash)["layerB"]->appendProperty("subtype","iac_layer");
-    (*objHash)["layerB"]->appendProperty("length", 24);
-    (*objHash)["layerB"]->appendProperty("incoming connections",QStringList{"connectionAB","biasAB"});
+//    emit beginObjHashModified();
+//    objHash->insert("layerA",new LazyNutObj());
+//    (*objHash)["layerA"]->appendProperty(QString{"name"},QVariant{"layerA"});
+//    (*objHash)["layerA"]->appendProperty("type","layer");
+//    (*objHash)["layerA"]->appendProperty("subtype","iac_layer");
+//    (*objHash)["layerA"]->appendProperty("length", 24);
+//    (*objHash)["layerA"]->appendProperty("incoming connections","connectionBA");
 
-    objHash->insert("connectionAB",new LazyNutObj());
-    (*objHash)["connectionAB"]->appendProperty("name","connectionAB");
-    (*objHash)["connectionAB"]->appendProperty("type","connection");
-    (*objHash)["connectionAB"]->appendProperty("subtype","connection");
-    (*objHash)["connectionAB"]->appendProperty("length", 24);
-    (*objHash)["connectionAB"]->appendProperty("Source","layerA");
-    (*objHash)["connectionAB"]->appendProperty("Target","layerB");
+//    objHash->insert("layerB",new LazyNutObj());
+//    (*objHash)["layerB"]->appendProperty("name","layerB");
+//    (*objHash)["layerB"]->appendProperty("type","layer");
+//    (*objHash)["layerB"]->appendProperty("subtype","iac_layer");
+//    (*objHash)["layerB"]->appendProperty("length", 24);
+//    (*objHash)["layerB"]->appendProperty("incoming connections",QStringList{"connectionAB","biasAB"});
 
-    emit endObjHashModified();
+//    objHash->insert("connectionAB",new LazyNutObj());
+//    (*objHash)["connectionAB"]->appendProperty("name","connectionAB");
+//    (*objHash)["connectionAB"]->appendProperty("type","connection");
+//    (*objHash)["connectionAB"]->appendProperty("subtype","connection");
+//    (*objHash)["connectionAB"]->appendProperty("length", 24);
+//    (*objHash)["connectionAB"]->appendProperty("Source","layerA");
+//    (*objHash)["connectionAB"]->appendProperty("Target","layerB");
 
-    emit beginObjHashModified();
-    objHash->remove("connectionAB");
-    emit endObjHashModified();
+//    emit endObjHashModified();
 
-}
+//    emit beginObjHashModified();
+//    objHash->remove("connectionAB");
+//    emit endObjHashModified();
 
-
-void QueryProcessor::getTree(const QString &lazyNutOutput)
-{
-    lazyNutBuffer.append(lazyNutOutput);
-    int indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
-    int lengthRemainder;
-    while (indexInLazyNutBuffer >=0)
-    {
-        lengthRemainder = lazyNutBuffer.size() - indexInLazyNutBuffer - rxEND.matchedLength();
-        QString remainder = lazyNutBuffer.right(lengthRemainder);
-        lazyNutBuffer.chop(lengthRemainder);
-        //qDebug() << lazyNutBuffer;
-        //qDebug() << lengthRemainder;
-        //qDebug() << remainder;
-        bool result = driver->parse_string(lazyNutBuffer.toStdString(), "lazyNutOutput");
-        if (result)
-        {
-            contextQuerySize = 0;
-            treeOutput = "";
-            if (context->root->childCount() > contextQuerySize)
-            {
-                for (int qi = contextQuerySize; qi < context->root->childCount(); ++qi)
-                {
-                    context->root->child(qi)->print(treeOutput);
-                }
-                //contextQuerySize = context->root->childCount();
-                //lazyNutBuffer = remainder; //"";
-           }
-           else
-           {
-               // treeOutput += ".";
-           }
-           //qDebug() << treeOutput;
-           emit treeReady(treeOutput);
-           processQueries();
-           //lazyNutBuffer = remainder; //"";
-           //context->clearQueries();
-        }
-        else
-        {
-            //lazyNutBuffer.append(remainder);
-            //lazyNutBuffer = remainder;
-            qDebug() << "no result";
-        /*    if (context->begin_query)
-            {
-                context->root->removeLastChild();
-            }
-            context->begin_query = false;
-            lazyNutBuffer = ""; // to be deleted */
-        }
-        lazyNutBuffer = remainder;
-        indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
-    }
-}
-
-void QueryProcessor::processQueries()
-{
-    QStringList recentlyModified;
-    bool objHashModified = false;
-    foreach (TreeItem* queryItem, context->root->children())
-    {
-        QString queryType = queryItem->data(0).toString();
-        //qDebug() << queryType;
-        if (queryType == "subtypes")
-        {
-            QString objectType = queryItem->data(1).toString();
-            QModelIndex objectIndex = objTaxonomyModel->index(0,0);
-            int row = 0;
-            while (objTaxonomyModel->data(objTaxonomyModel->index(row,0,objectIndex),Qt::DisplayRole).toString() != objectType &&
-                   row < objTaxonomyModel->rowCount(objectIndex))
-                ++row;
-            QModelIndex typeIndex = objTaxonomyModel->index(row,0,objectIndex);
-            if (typeIndex.isValid())
-            {
-                foreach (TreeItem* subtypeItem, queryItem->children())
-                {
-                    objTaxonomyModel->appendValue(subtypeItem->data(1).toString(),typeIndex);
-                }
-            }
-        }
-        else if (queryType == "recently_modified")
-        {
-            foreach (TreeItem* objectItem, queryItem->children())
-            {
-                recentlyModified.append(objectItem->data(1).toString());
-            }
-        }
-        else if (queryType == "description")
-        {
-            emit beginObjHashModified();
-            foreach (TreeItem* objectItem, queryItem->children())
-            {
-                QString objectName = objectItem->data(1).toString();
-                objHash->insert(objectName,new LazyNutObj());
-                foreach (TreeItem* propertyItem, objectItem->children())
-                {
-                    QString propertyKey = propertyItem->data(0).toString();
-                    QString propertyValue = propertyItem->data(1).toString();
-                    if (propertyValue.startsWith('[') && propertyValue.endsWith(']'))
-                        // todo: generate query list
-                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue);
-                    else if (propertyValue.contains(','))
-                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue.split(", "));
-                    else
-                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue);
-                }
-            }
-            objHashModified = true;
-        }
-    }
-    if (objHashModified)
-        emit endObjHashModified();
-    context->clearQueries();
-    foreach (QString objectName, recentlyModified)
-    {
-        QString query = "query 1 " + objectName + " description";
-        emit commandReady(query);
-    }
-    recentlyModified.clear();
-}
+//}
 
 
-NmCmd::NmCmd(QWidget *parent)
-    : QWidget(parent)
-{
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    cmdOutput = new CmdOutput(this);
-    cmdOutput->setReadOnly(true);
-    inputLine = new InputLine(this);
-    inputLine->setStyleSheet("background-color : black; color : white;");
+//void QueryProcessor::getTree(const QString &lazyNutOutput)
+//{
+//    lazyNutBuffer.append(lazyNutOutput);
+//    int indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
+//    int lengthRemainder;
+//    while (indexInLazyNutBuffer >=0)
+//    {
+//        lengthRemainder = lazyNutBuffer.size() - indexInLazyNutBuffer - rxEND.matchedLength();
+//        QString remainder = lazyNutBuffer.right(lengthRemainder);
+//        lazyNutBuffer.chop(lengthRemainder);
+//        //qDebug() << lazyNutBuffer;
+//        //qDebug() << lengthRemainder;
+//        //qDebug() << remainder;
+//        bool result = driver->parse_string(lazyNutBuffer.toStdString(), "lazyNutOutput");
+//        if (result)
+//        {
+//            contextQuerySize = 0;
+//            treeOutput = "";
+//            if (context->root->childCount() > contextQuerySize)
+//            {
+//                for (int qi = contextQuerySize; qi < context->root->childCount(); ++qi)
+//                {
+//                    context->root->child(qi)->print(treeOutput);
+//                }
+//                //contextQuerySize = context->root->childCount();
+//                //lazyNutBuffer = remainder; //"";
+//           }
+//           else
+//           {
+//               // treeOutput += ".";
+//           }
+//           //qDebug() << treeOutput;
+//           emit treeReady(treeOutput);
+//           processQueries();
+//           emit resultAvailable(lazyNutBuffer);
 
-    mainLayout->addWidget(cmdOutput);
-    mainLayout->addWidget(inputLine);
-    setLayout(mainLayout);
-    setWindowTitle(tr("nm cmd[*]"));
-}
+//        }
+//        else
+//        {
+//            //lazyNutBuffer.append(remainder);
+//            //lazyNutBuffer = remainder;
+//            qDebug() << "no result";
+//        /*    if (context->begin_query)
+//            {
+//                context->root->removeLastChild();
+//            }
+//            context->begin_query = false;
+//            lazyNutBuffer = ""; // to be deleted */
+//        }
+//        lazyNutBuffer = remainder;
+//        indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
+//    }
+//}
+
+//void QueryProcessor::processQueries()
+//{
+//    QStringList recentlyModified;
+//    bool objHashModified = false;
+//    foreach (TreeItem* queryItem, context->root->children())
+//    {
+//        QString queryType = queryItem->data(0).toString();
+//        if (queryType == "subtypes")
+//        {
+//            QString objectType = queryItem->data(1).toString();
+//            QModelIndex objectIndex = objTaxonomyModel->index(0,0);
+//            int row = 0;
+//            while (objTaxonomyModel->data(objTaxonomyModel->index(row,0,objectIndex),Qt::DisplayRole).toString() != objectType &&
+//                   row < objTaxonomyModel->rowCount(objectIndex))
+//                ++row;
+//            QModelIndex typeIndex = objTaxonomyModel->index(row,0,objectIndex);
+//            if (typeIndex.isValid())
+//            {
+//                foreach (TreeItem* subtypeItem, queryItem->children())
+//                {
+//                    objTaxonomyModel->appendValue(subtypeItem->data(1).toString(),typeIndex);
+//                }
+//            }
+//        }
+//        else if (queryType == "recently_modified")
+//        {
+//            foreach (TreeItem* objectItem, queryItem->children())
+//            {
+//                recentlyModified.append(objectItem->data(1).toString());
+//            }
+//        }
+//        else if (queryType == "description")
+//        {
+//            emit beginObjHashModified();
+//            foreach (TreeItem* objectItem, queryItem->children())
+//            {
+//                QString objectName = objectItem->data(1).toString();
+//                objHash->insert(objectName,new LazyNutObj());
+//                foreach (TreeItem* propertyItem, objectItem->children())
+//                {
+//                    QString propertyKey = propertyItem->data(0).toString();
+//                    QString propertyValue = propertyItem->data(1).toString();
+//                    if (propertyValue.startsWith('[') && propertyValue.endsWith(']'))
+//                        // todo: generate query list
+//                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue);
+//                    else if (propertyValue.contains(','))
+//                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue.split(", "));
+//                    else
+//                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue);
+//                }
+//            }
+//            objHashModified = true;
+//        }
+//    }
+//    if (objHashModified)
+//        emit endObjHashModified();
+//    context->clearQueries();
+//    foreach (QString objectName, recentlyModified)
+//    {
+//        QString query = "query 1 " + objectName + " description";
+//        emit commandReady(query);
+//    }
+//    recentlyModified.clear();
+//}
+
+
+//NmCmd::NmCmd(QWidget *parent)
+//    : QWidget(parent)
+//{
+//    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+//    cmdOutput = new CmdOutput(this);
+//    cmdOutput->setReadOnly(true);
+//    inputCmdLine = new InputCmdLine(this);
+//    mainLayout->addWidget(cmdOutput);
+//    mainLayout->addWidget(inputCmdLine);
+//    setLayout(mainLayout);
+//    setWindowTitle(tr("lazyNut cmd[*]"));
+//}
 
 
 NmConsole::NmConsole(QWidget *parent)
@@ -316,12 +313,21 @@ NmConsole::NmConsole(QWidget *parent)
     dockWebWelcome->setWidget(webWelcomeScreen);
     addDockWidget(Qt::BottomDockWidgetArea, dockWebWelcome);
 
+    lazyNutConsole = new QGroupBox("lazyNut console", this);
+    cmdOutput = new CmdOutput(this);
+    cmdOutput->setReadOnly(true);
+    inputCmdLine = new InputCmdLine(this);
+    QVBoxLayout *consoleLayout = new QVBoxLayout;
+    consoleLayout->addWidget(cmdOutput);
+    consoleLayout->addWidget(inputCmdLine);
+    lazyNutConsole->setLayout(consoleLayout);
 
-   nmCmd = new NmCmd(this);
+
+//   nmCmd = new NmCmd(this);
     dockParse = new QDockWidget(tr("lazyNut interpreter"), this);
 //    dockParse->setAllowedAreas(  Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-    dockParse->setWidget(nmCmd);
-    addDockWidget(Qt::BottomDockWidgetArea, dockParse);
+    dockParse->setWidget(lazyNutConsole);
+    //addDockWidget(Qt::BottomDockWidgetArea, dockParse);
     addDockWidget(Qt::RightDockWidgetArea, dockParse);
 
 //    scriptEdit = new CodeEditor(this);
@@ -369,6 +375,18 @@ NmConsole::NmConsole(QWidget *parent)
     dockCommandLog->setWidget(commandLog);
     addDockWidget(Qt::RightDockWidgetArea, dockCommandLog);
 
+
+//    setCentralWidget(lazyNutConsole);
+// //    nmCmd = new NmCmd(this);
+// //    setCentralWidget(nmCmd);
+//    scriptEditor = new LazyNutScriptEditor(this);
+//    dockEdit = new QDockWidget(tr("my_nm_script"), this);
+//    dockEdit->setAllowedAreas(  Qt::LeftDockWidgetArea |
+//                                Qt::RightDockWidgetArea);
+//    dockEdit->setWidget(scriptEditor);
+//    addDockWidget(Qt::RightDockWidgetArea, dockEdit);
+//    dockEdit->hide();
+
     objTaxonomyModel = new TreeModel(QStringList{"Object taxonomy"},this);
     objTaxonomyModel->appendValue(QString{"object"});
     // type
@@ -376,10 +394,10 @@ NmConsole::NmConsole(QWidget *parent)
     foreach (QString type, lazyNutObjTypes)
         objTaxonomyModel->appendValue(type,parentIndex);
 
-    objHash = new LazyNutObjCatalogue();
+    objCatalogue = new LazyNutObjCatalogue();
 
-    queryProcessor = new QueryProcessor(objHash,objTaxonomyModel,this);
-    objExplorer = new ObjExplorer(objHash,objTaxonomyModel,this);
+    //queryProcessor = new QueryProcessor(objCatalogue,objTaxonomyModel,this);
+    objExplorer = new ObjExplorer(objCatalogue,objTaxonomyModel,this);
 
     dockExplorer = new QDockWidget(tr("Object Explorer"), this);
     dockExplorer->setAllowedAreas( Qt::RightDockWidgetArea );
@@ -389,9 +407,7 @@ NmConsole::NmConsole(QWidget *parent)
 
 
     designWindow = new DesignWindow(this);
-    designWindow->setObjCatalogue(objHash);
-    connect(queryProcessor,SIGNAL(endObjHashModified()),
-            designWindow,SLOT(objCatalogueChanged()));
+    designWindow->setObjCatalogue(objCatalogue);
     connect(designWindow,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)),
             objExplorer,SLOT(setObj(LazyNutObj*,LazyNutObjCatalogue*)));
     connect(objExplorer,SIGNAL(objSelected(QString)),
@@ -406,25 +422,23 @@ NmConsole::NmConsole(QWidget *parent)
 
     showWelcomeView();
 
-    // signals begin/endObjHashModified are defined in QueryProcessor and ObjExplorer.
-    // When a description query is parsed by the QueryProcessor, it sends those signals
+    // signals begin/endObjHashModified are defined in SessionManager and ObjExplorer.
+    // When a description query is parsed by the SessionManager, it sends those signals
     // to the ObjExplorer, which in turn trigger slots sendBegin/EndResetModel in
     // LazyNutObjTableModel that update its internal representation.
     // All this signal/slot chain is necessary in order to call
     // the protected functions QAbstractItemModel::begin/endResetModel.
-    // Those functions need to be called because QueryProcessor modifies
+    // Those functions need to be called because SessionManager modifies
     // the LazyNutObjCatalogue object directly, which is the underlying data structure
     // to LazyNutObjTableModel, i.e. it does not make use of the QAbstractTableModel
     // API implemented by LazyNutObjTableModel.
 
-    connect(queryProcessor,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
-    connect(queryProcessor,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
 
 
 
 //    createActions();
-    createMenus();
-    createToolBars();
+//    createMenus();
+//    createToolBars();
 
     readSettings();
 
@@ -435,42 +449,58 @@ NmConsole::NmConsole(QWidget *parent)
 
 
 
-    lazyNut = new NM(this);
-    connect(nmCmd->inputLine,SIGNAL(returnPressed()),
-            nmCmd->inputLine,SLOT(sendLine()));
-    connect(nmCmd->inputLine,SIGNAL(outputReady(QString)),
-            lazyNut,SLOT(sendCommand(QString)));
-    connect(lazyNut,SIGNAL(readyReadStandardError()),
-            lazyNut,SLOT(getNMError()));
+    //lazyNut = new NM(this);
+    lazyNut = new LazyNut(this);
+
+
+
     connect(lazyNut,SIGNAL(outputReady(QString)),
-            nmCmd->cmdOutput,SLOT(displayOutput(QString)));
-    connect(lazyNut,SIGNAL(outputReady(QString)),
-            queryProcessor,SLOT(getTree(QString)));
-    connect(queryProcessor,SIGNAL(commandReady(QString)),
-            lazyNut,SLOT(sendCommand(QString)));
+            cmdOutput,SLOT(displayOutput(QString)));
+//    connect(lazyNut,SIGNAL(outputReady(QString)),
+//            queryProcessor,SLOT(getTree(QString)));
+
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),
             designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
     connect(this,SIGNAL(saveLayout()),
             designWindow,SIGNAL(saveLayout()));
 
-
+    //easyNetHome = QString(qgetenv("EASYNET_HOME"));
+    //lazyNutBat = ""; // debug
+    //easyNetHome = ""; // debug
     if (lazyNutBat.isEmpty())
     {
-        easyNetHome = QString(qgetenv("EASYNET_HOME"));
-        lazyNutBat = easyNetHome.append("/bin/nm_files/lazyNut.bat");
+        if (easyNetHome.isEmpty())
+        {
+            QMessageBox::warning(this, "warning",QString("Please select a valid %1 file from the menu Settings -> Set %1\n"
+                                 "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
+        }
+        else
+        {
+            lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
+        }
     }
-    checkLazyNutBat();
+    if (!lazyNutBat.isEmpty())
+        runLazyNutBat();
 
-//    easyNetHome = QString(qgetenv("EASYNET_HOME"));
-//    if (easyNetHome.isEmpty())
-//        setEasyNetHome();
+    //    commandSequencer = new CommandSequencer(lazyNut,this);
+    //    connect(queryProcessor,SIGNAL(resultAvailable(QString)),
+    //            commandSequencer,SLOT(receiveResult(QString)));
+        connect(inputCmdLine,SIGNAL(commandReady(QString)),
+                this,SLOT(runCmd(QString)));
+    //    connect(queryProcessor,SIGNAL(commandReady(QString)),
+    //            commandSequencer,SLOT(runCommand(QString)));
 
-    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
-    lazyNut->start(lazyNutBat);
-    if (lazyNut->state() != QProcess::Running)
-    {
-        QMessageBox::critical(this, "critical", "lazyNut.bat script not running or not found");
-    }
+    sessionManager = new SessionManager(lazyNut,objCatalogue,objTaxonomyModel,this);
+    connect(lazyNut,SIGNAL(outputReady(QString)),sessionManager,SLOT(parseLazyNutOutput(QString)));
+    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
+    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
+    connect(sessionManager,SIGNAL(endObjHashModified()),
+            designWindow,SLOT(objCatalogueChanged()));
+
+    createActions();
+    createMenus();
+    createToolBars();
+
 }
 
 void NmConsole::readSettings()
@@ -480,7 +510,7 @@ void NmConsole::readSettings()
     lazyNutBat = settings.value("lazyNutBat","").toString();
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
-    scriptsDir = settings.value("scriptsDir",qgetenv("EASYNET_HOME") + "/Models").toString();
+    scriptsDir = settings.value("scriptsDir", easyNetHome + "/Models").toString();
     resize(size);
     move(pos);
 }
@@ -536,7 +566,7 @@ void NmConsole::newFile(editWindow* window)
 void NmConsole::open()
 {
  //   if (maybeSave()) {
-        QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), scriptsDir, tr("Script Files (*.eNs *eNm)"));
+        QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), scriptsDir, tr("Script Files (*.eNs *.eNm)"));
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
@@ -571,16 +601,19 @@ bool NmConsole::saveAs()
 
 void NmConsole::runSelection()
 {
-    chopAndSend(scriptEdit->textEdit->textCursor().selectedText());
+
+    sessionManager->runSelection(scriptEdit->getSelectedText());
 }
 
-void NmConsole::runScript()
+void NmConsole::runCmd(QString cmd)
 {
-    chopAndSend(scriptEdit->textEdit->toPlainText());
-    foreach (QString type, lazyNutObjTypes)
-        lazyNut->sendCommand("query 1 subtypes " + type + "\n");
-    lazyNut->sendCommand("query 1 recently_modified\n");
-    emit savedLayoutToBeLoaded(curJson);
+    sessionManager->runSelection(QStringList(cmd));
+}
+
+void NmConsole::runModel()
+{
+    sessionManager->runModel(scriptEdit->getAllText());
+    //emit savedLayoutToBeLoaded(curJson);
 }
 
 void NmConsole::echoCommand(const QString &line)
@@ -592,35 +625,50 @@ void NmConsole::echoCommand(const QString &line)
 
 void NmConsole::setEasyNetHome()
 {
-    easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n\nNote: this directory will be remember in the next session. To override, set it again using the menu Settings -> Set easyNet home directory or set your environment variable EASYNET_HOME."));
-    lazyNutBat = easyNetHome.append("/bin/nm_files/lazyNut.bat");
-    checkLazyNutBat();
+    easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
+    lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
+    runLazyNutBat();
 }
 
 void NmConsole::setLazyNutBat()
 {
-    lazyNutBat = QFileDialog::getOpenFileName(this,tr("Please select your lazyNut.bat file."),"","(*.bat)");
-    checkLazyNutBat();
+    lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
+                                              easyNetHome,QString("*.%1").arg(lazyNutExt));
+    runLazyNutBat();
 }
 
-void NmConsole::checkLazyNutBat()
+void NmConsole::showPauseState(bool isPaused)
 {
-    if (!QFile::exists(lazyNutBat))
+    if (isPaused)
+        pauseAct->setIconText("RESUME");
+    else
+        pauseAct->setIconText("PAUSE");
+}
+
+
+void NmConsole::runLazyNutBat()
+{
+    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
+    lazyNut->start(lazyNutBat);
+    if (lazyNut->state() == QProcess::NotRunning)
     {
-        QMessageBox::warning(this, "warning",QString("The specified (or default) lazyNut file:\n\"%1\"\ndoes not exist.\n").arg(lazyNutBat)+
-                             "Please select a valid lazyNut.bat file from the menu Settings -> Set lazyNut.bat\n"+
-                             "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory");
+        QMessageBox::critical(this, "critical",
+        QString("%1 script not running or not found.\n"
+                "Please select a valid %1 file from the menu Settings -> Set %1\n"
+                "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
     }
 }
 
-void NmConsole::chopAndSend(const QString & text)
-{
-//    QStringList lines = text.split("\u2029"); // \u2029 doesn't seem to split into lines
-    QStringList lines = text.split("\n");
-
-    foreach (QString line, lines)
-        echoCommand(line + "\n");
-}
+//void NmConsole::chopAndSend(const QString & text)
+//{
+//    QStringList commandList = text.split("\u2029");
+//    commandSequencer->runCommands(commandList);
+//    QStringList lines = text.split("\u2029");
+//    foreach (QString line, lines)
+//    {
+//        lazyNut->sendCommand(line + "\n");
+//    }
+//}
 
 
 /*void NmConsole::documentWasModified()
@@ -721,16 +769,26 @@ void NmConsole::createActions()
 
     runScriptAct = new QAction(tr("&Run script"), this);
     runScriptAct->setStatusTip(tr("Run script"));
-    connect(runScriptAct,SIGNAL(triggered()),this, SLOT(runScript()));
+    connect(runScriptAct,SIGNAL(triggered()),this, SLOT(runModel()));
 
     setEasyNetHomeAct = new QAction(tr("Set easyNet home directory"), this);
     setEasyNetHomeAct->setStatusTip(tr("Set easyNet home directory"));
     connect(setEasyNetHomeAct,SIGNAL(triggered()),this, SLOT(setEasyNetHome()));
 
-    setLazyNutBatAct = new QAction(tr("Set lazyNut.bat"), this);
-    setLazyNutBatAct->setStatusTip(tr("Set lazyNut.bat"));
+    setLazyNutBatAct = new QAction(QString(tr("Set %1").arg(lazyNutBasename)), this);
+    setLazyNutBatAct->setStatusTip(QString(tr("Set %1").arg(lazyNutBasename)));
     connect(setLazyNutBatAct,SIGNAL(triggered()),this, SLOT(setLazyNutBat()));
 
+    synchModeAct = new QAction("run in synch mode",this);
+    synchModeAct->setCheckable(true);
+    synchModeAct->setChecked(false);
+    connect(synchModeAct,SIGNAL(toggled(bool)),sessionManager,SLOT(setSynchMode(bool)));
+
+    stopAct = new QAction("STOP",this);
+    connect(stopAct,SIGNAL(triggered()),sessionManager,SLOT(stop()));
+    pauseAct = new QAction("PAUSE",this);
+    connect(pauseAct,SIGNAL(triggered()),sessionManager,SLOT(pause()));
+    connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 }
 
 void NmConsole::createMenus()
@@ -746,10 +804,13 @@ void NmConsole::createMenus()
     runMenu = menuBar()->addMenu(tr("&Run"));
     runMenu->addAction(runSelectionAct);
     runMenu->addAction(runScriptAct);
+    runMenu->addAction(pauseAct);
+    runMenu->addAction(stopAct);
 
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
     settingsMenu->addAction(setEasyNetHomeAct);
     settingsMenu->addAction(setLazyNutBatAct);
+    settingsMenu->addAction(synchModeAct);
 }
 
 void NmConsole::createToolBars()
@@ -768,6 +829,8 @@ void NmConsole::createToolBars()
     runToolBar->addAction(runScriptAct);
 */
 
+//    runToolBar->addAction(pauseAct);
+//    runToolBar->addAction(stopAct);
 
     QWidget *w = new QWidget;
     QVBoxLayout *vbox = new QVBoxLayout;
@@ -997,8 +1060,30 @@ void NmConsole::showInterpreterView()
 
 //QDockWidget     *dockExplorer;
 
+/*
 void NmConsole::run()
 {
     runScript(); // ultimately this will have different action depending on which mode is active
 
 }
+*/
+
+
+LazyNutScriptEditor::LazyNutScriptEditor(QWidget *parent)
+    : QPlainTextEdit(parent)
+{
+    setReadOnly(true);
+}
+
+QStringList LazyNutScriptEditor::getSelectedText()
+{
+    return textCursor().selectedText().split("\u2029");
+}
+
+QStringList LazyNutScriptEditor::getAllText()
+{
+    return toPlainText().split("\n");
+}
+
+
+>>>>>>> e0c62b1434fa105c709d9a829c395b4e3b6f866c

@@ -12,7 +12,7 @@
      // - contains data in QVector<QVariant> itemData
      // - points to its parent in TreeItem *parentItem
      // - points to its children in QList<TreeItem*> childItems
-     // Member functions use words row and column to suggest
+     // In member functions, words "row" and "column" are used to suggest
      // correspondence with QAbstractItemModel.
 
      // This class is largely inspired by the Editable Tree Model Example
