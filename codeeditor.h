@@ -66,8 +66,8 @@ public:
     int lineNumberAreaWidth();
 
 public slots:
-    QStringList getSelectedText();
-    QStringList getAllText();
+    QStringList getSelectedText(); // added
+    QStringList getAllText(); // added
 
 protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;

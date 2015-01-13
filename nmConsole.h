@@ -203,11 +203,11 @@ private:
     void createMenus();
     void createToolBars();
 //    bool maybeSave();
-    void newFile(editWindow*);
+    void newFile(EditWindow*);
     void loadFile(const QString &fileName);
 //    bool saveFile(const QString &fileName);
 
-    void setCurrentFile(editWindow *window, const QString &fileName);
+    void setCurrentFile(EditWindow *window, const QString &fileName);
     QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
@@ -234,7 +234,7 @@ private:
 
 
     //NmCmd           *nmCmd;
-    QGroupBox       *lazyNutConsole;
+    QGroupBox       *lazyNutInterpreter;
     CmdOutput       *cmdOutput;
     InputCmdLine    *inputCmdLine;
     //NM              *lazyNut;
@@ -252,7 +252,7 @@ private:
     QDockWidget     *dockWebWelcome;
     QDockWidget     *dockEdit;
     QDockWidget     *dockCommandLog;
-    QDockWidget     *dockParse;
+    QDockWidget     *dockInterpreter;
     QDockWidget     *dockExplorer;
     QDockWidget     *dockDesignWindow;
     QDockWidget     *dockInput;
@@ -261,14 +261,14 @@ private:
     QWebView        *welcomeScreen;
     QWebView        *webWelcomeScreen;
 //    CodeEditor      *scriptEdit;
-    editWindow       *scriptEdit;
+    EditWindow       *scriptEdit;
 //    CodeEditor      *commandLog;
-    editWindow       *commandLog;
+    EditWindow       *commandLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
 //    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
-    plotWindow      *plotForm;
+    PlotWindow      *plotForm;
     QToolBar        *infoToolBar;
 //    QVBoxLayout     *vLayout;
 

@@ -4,11 +4,15 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#include <QSvgWidget>
+
 
 #include "plotwindow.h"
+#include "codeeditor.h"
 
 
-plotWindow::plotWindow(QWidget *parent)
+PlotWindow::PlotWindow(QWidget *parent)
+    : QMainWindow(parent)
 
 {
 //    textEdit = new QPlainTextEdit;
@@ -44,7 +48,7 @@ plotWindow::plotWindow(QWidget *parent)
         plot_svg->load(plotByteArray);
     }
 
-    textEdit = new CodeEditor;
+    textEdit = new CodeEditor(this);
     setCentralWidget(plot_svg);
 
     createActions();
@@ -62,7 +66,7 @@ plotWindow::plotWindow(QWidget *parent)
     setUnifiedTitleAndToolBarOnMac(true);
 }
 
-int plotWindow::getValueFromByteArray(QByteArray ba, QString key)
+int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
 {
     QMessageBox msgBox;
     QByteArray w;
@@ -92,7 +96,7 @@ int plotWindow::getValueFromByteArray(QByteArray ba, QString key)
 }
 
 
-void plotWindow::createActions()
+void PlotWindow::createActions()
 {
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
@@ -154,7 +158,7 @@ void plotWindow::createMenus()
 }
 */
 
-void plotWindow::createToolBars()
+void PlotWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(refreshAct);
@@ -165,7 +169,7 @@ void plotWindow::createToolBars()
 //    editToolBar->addAction(copyAct);
 }
 
-void plotWindow::refreshSvg()
+void PlotWindow::refreshSvg()
 {
 // This function sends a "plo get" command to the inpterpreter,
 // reads the output into a byteArray, does some processing on it

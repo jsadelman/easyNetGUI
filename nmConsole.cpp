@@ -43,7 +43,7 @@ void InputCmdLine::sendCommand()
 CmdOutput::CmdOutput(QWidget *parent)
     : QPlainTextEdit(parent)
 {
-    this->setStyleSheet("background-color : black; color : white;");
+    setStyleSheet("background-color : black; color : white;");
 }
 
 void CmdOutput::displayOutput(const QString & output)
@@ -313,26 +313,26 @@ NmConsole::NmConsole(QWidget *parent)
     dockWebWelcome->setWidget(webWelcomeScreen);
     addDockWidget(Qt::BottomDockWidgetArea, dockWebWelcome);
 
-    lazyNutConsole = new QGroupBox("lazyNut console", this);
+    lazyNutInterpreter = new QGroupBox(this);
     cmdOutput = new CmdOutput(this);
     cmdOutput->setReadOnly(true);
     inputCmdLine = new InputCmdLine(this);
-    QVBoxLayout *consoleLayout = new QVBoxLayout;
-    consoleLayout->addWidget(cmdOutput);
-    consoleLayout->addWidget(inputCmdLine);
-    lazyNutConsole->setLayout(consoleLayout);
+    QVBoxLayout *interpreterLayout = new QVBoxLayout;
+    interpreterLayout->addWidget(cmdOutput);
+    interpreterLayout->addWidget(inputCmdLine);
+    lazyNutInterpreter->setLayout(interpreterLayout);
 
 
 //   nmCmd = new NmCmd(this);
-    dockParse = new QDockWidget(tr("lazyNut interpreter"), this);
+    dockInterpreter = new QDockWidget(tr("lazyNut interpreter"), this);
 //    dockParse->setAllowedAreas(  Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-    dockParse->setWidget(lazyNutConsole);
+    dockInterpreter->setWidget(lazyNutInterpreter);
     //addDockWidget(Qt::BottomDockWidgetArea, dockParse);
-    addDockWidget(Qt::RightDockWidgetArea, dockParse);
+    addDockWidget(Qt::RightDockWidgetArea, dockInterpreter);
 
 //    scriptEdit = new CodeEditor(this);
-    scriptEdit = new editWindow(this, newScriptAct, openAct);
-    scriptEdit->textEdit->setReadOnly(false);
+    scriptEdit = new EditWindow(this, newScriptAct, openAct, false);
+    //scriptEdit->textEdit->setReadOnly(false);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 
     dockEdit = new QDockWidget(tr("Untitled"), this);
@@ -342,9 +342,9 @@ NmConsole::NmConsole(QWidget *parent)
     addDockWidget(Qt::LeftDockWidgetArea, dockEdit);
 
 
-    CodeEditor *tmpEdit = new CodeEditor(this);
-    tmpEdit->setReadOnly(true);
-    highlighter = new Highlighter(tmpEdit->document());
+//    CodeEditor *tmpEdit = new CodeEditor(this);
+//    tmpEdit->setReadOnly(true);
+//    highlighter = new Highlighter(tmpEdit->document());
 
     /*
 //    QGraphicsSvgItem *svgViewer = new QGraphicsSvgItem("example.svg");
@@ -356,7 +356,7 @@ NmConsole::NmConsole(QWidget *parent)
     view ->setScene(scene);
     view ->setGeometry(QRect(270, 35, 700, 540));
 */
-    plotForm = new plotWindow();
+    plotForm = new PlotWindow();
     dockOutput = new QDockWidget(tr("Output"), this);
     dockOutput->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                     Qt::RightDockWidgetArea);
@@ -364,9 +364,9 @@ NmConsole::NmConsole(QWidget *parent)
     addDockWidget(Qt::LeftDockWidgetArea, dockOutput);
 
 //    commandLog = new CodeEditor(this);
-    commandLog = new editWindow(this, newLogAct, NULL, false, false); // no cut, no paste
+    commandLog = new EditWindow(this, newLogAct, NULL, true); // no cut, no paste
 
-    commandLog->textEdit->setReadOnly(true);
+    //commandLog->textEdit->setReadOnly(true);
     highlighter2 = new Highlighter(commandLog->textEdit->document());
 
     dockCommandLog = new QDockWidget(tr("Command Log"), this);
@@ -551,7 +551,7 @@ void NmConsole::newLogFile()
     newFile(commandLog);
 }
 
-void NmConsole::newFile(editWindow* window)
+void NmConsole::newFile(EditWindow* window)
 {
     if (!(sender()))
             return;
@@ -950,7 +950,7 @@ void NmConsole::loadFile(const QString &fileName)
     return true;
 }*/
 
-void NmConsole::setCurrentFile(editWindow *window, const QString &fileName)
+void NmConsole::setCurrentFile(EditWindow *window, const QString &fileName)
 {
     window->setCurrentFile(fileName);
     window->textEdit->document()->setModified(false);
@@ -986,7 +986,7 @@ void NmConsole::hideAllDocks()
     dockWelcome->hide();
     dockWebWelcome->hide();
     dockEdit->hide();
-    dockParse->hide();
+    dockInterpreter->hide();
 //    dockInput->hide();
     dockOutput->hide();
     dockExplorer->hide();
@@ -1015,7 +1015,7 @@ void NmConsole::showCodeView()
     hideAllDocks();
     dockEdit->show();
     dockCommandLog->show();
-    dockParse->show();
+    dockInterpreter->show();
 }
 
 void NmConsole::showModelView()
@@ -1057,7 +1057,7 @@ void NmConsole::showParameterView()
 void NmConsole::showInterpreterView()
 {
     hideAllDocks();
-    dockParse->show();
+    dockInterpreter->show();
 }
 
 //QDockWidget     *dockExplorer;

@@ -1,20 +1,17 @@
 #ifndef PLOTWINDOW
 #define PLOTWINDOW
 
-#include <QSvgWidget>
 #include <QMainWindow>
-#include <QFile>
-#include <QSize>
 
-#include "editwindow.h"
+class QSvgWidget;
+class CodeEditor;
 
-
-class plotWindow : public QMainWindow
+class PlotWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    plotWindow(QWidget *parent = 0);
+    PlotWindow(QWidget *parent = 0);
     QSvgWidget *plot_svg;
     CodeEditor      *textEdit;
 //    bool maybeSave();

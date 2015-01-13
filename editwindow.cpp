@@ -6,19 +6,22 @@
 #include <QtWidgets>
 
 #include "editwindow.h"
+#include "codeeditor.h"
 
-editWindow::editWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, bool a_cutAllowed, bool a_pasteAllowed)
+EditWindow::EditWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, bool isReadOnly)
+    : QMainWindow(parent), isReadOnly(isReadOnly)
 
 {
 //    textEdit = new QPlainTextEdit;
-    textEdit = new CodeEditor;
+    textEdit = new CodeEditor(this);
     setCentralWidget(textEdit);
+    textEdit->setReadOnly(isReadOnly);
 
 //    newAct = p_newAct;
 //    openAct = p_openAct;
 
-    cutAllowed = a_cutAllowed;
-    pasteAllowed = a_pasteAllowed;
+    //cutAllowed = a_cutAllowed;
+    //pasteAllowed = a_pasteAllowed;
     createActions();
 //    createMenus();
     createToolBars();
@@ -33,7 +36,7 @@ editWindow::editWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, b
     setUnifiedTitleAndToolBarOnMac(true);
 }
 
-void editWindow::closeEvent(QCloseEvent *event)
+void EditWindow::closeEvent(QCloseEvent *event)
 {
     if (maybeSave()) {
 //        writeSettings();
@@ -43,7 +46,7 @@ void editWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-void editWindow::newFile()
+void EditWindow::newFile()
 {
     if (maybeSave()) {
         textEdit->clear();
@@ -51,7 +54,7 @@ void editWindow::newFile()
     }
 }
 
-void editWindow::open()
+void EditWindow::open()
 {
     if (maybeSave()) {
         QString fileName = QFileDialog::getOpenFileName(this);
@@ -60,7 +63,7 @@ void editWindow::open()
     }
 }
 
-bool editWindow::save()
+bool EditWindow::save()
 {
     if (curFile.isEmpty()) {
         return saveAs();
@@ -69,7 +72,7 @@ bool editWindow::save()
     }
 }
 
-bool editWindow::saveAs()
+bool EditWindow::saveAs()
 {
     QFileDialog dialog(this);
     dialog.setWindowModality(Qt::WindowModal);
@@ -83,12 +86,12 @@ bool editWindow::saveAs()
     return saveFile(files.at(0));
 }
 
-void editWindow::documentWasModified()
+void EditWindow::documentWasModified()
 {
     setWindowModified(textEdit->document()->isModified());
 }
 
-void editWindow::createActions()
+void EditWindow::createActions()
 {
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
@@ -112,7 +115,7 @@ void editWindow::createActions()
 //    saveAsAct->setStatusTip(tr("Save the document under a new name"));
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
-    if (cutAllowed)
+    if (!isReadOnly)
     {
     cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
     cutAct->setShortcuts(QKeySequence::Cut);
@@ -134,7 +137,7 @@ void editWindow::createActions()
     connect(textEdit, SIGNAL(copyAvailable(bool)),
             copyAct, SLOT(setEnabled(bool)));
 
-    if (pasteAllowed)
+    if (!isReadOnly)
     {
     pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste"), this);
     pasteAct->setShortcuts(QKeySequence::Paste);
@@ -179,7 +182,7 @@ void editWindow::createMenus()
 }
 */
 
-void editWindow::createToolBars()
+void EditWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     if (newAct)
@@ -189,10 +192,10 @@ void editWindow::createToolBars()
     fileToolBar->addAction(saveAct);
 
     editToolBar = addToolBar(tr("Edit"));
-    if (cutAllowed)
+    if (!isReadOnly)
         editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
-    if (pasteAllowed)
+    if (!isReadOnly)
         editToolBar->addAction(pasteAct);
 }
 
@@ -219,7 +222,7 @@ void editWindow::writeSettings()
 }
 */
 
-bool editWindow::maybeSave()
+bool EditWindow::maybeSave()
 {
     if (textEdit->document()->isModified()) {
         QMessageBox::StandardButton ret;
@@ -235,7 +238,7 @@ bool editWindow::maybeSave()
     return true;
 }
 
-void editWindow::loadFile(const QString &fileName)
+void EditWindow::loadFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -259,7 +262,7 @@ void editWindow::loadFile(const QString &fileName)
 //    statusBar()->showMessage(tr("File loaded"), 2000);
 }
 
-bool editWindow::saveFile(const QString &fileName)
+bool EditWindow::saveFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -284,7 +287,7 @@ bool editWindow::saveFile(const QString &fileName)
     return true;
 }
 
-void editWindow::setCurrentFile(const QString &fileName)
+void EditWindow::setCurrentFile(const QString &fileName)
 {
     curFile = fileName;
     textEdit->document()->setModified(false);
@@ -298,7 +301,8 @@ void editWindow::setCurrentFile(const QString &fileName)
 
 }
 
-QString editWindow::strippedName(const QString &fullFileName)
+
+QString EditWindow::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 }

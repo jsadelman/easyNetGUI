@@ -2,20 +2,21 @@
 #define EDITWINDOW
 
 #include <QMainWindow>
-#include "codeeditor.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
 class QPlainTextEdit;
+class CodeEditor;
+class NmConsole;
 QT_END_NAMESPACE
 
-class editWindow : public QMainWindow
+class EditWindow : public QMainWindow
 {
     Q_OBJECT
-
+    friend class NmConsole;
 public:
-    editWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool cutAllowed=true, bool pasteAllowed=true);
+    EditWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool isReadOnly = false);
     CodeEditor      *textEdit;
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
@@ -59,7 +60,8 @@ private:
     QAction *pasteAct;
     QAction *findAct;
 
-    bool    cutAllowed, pasteAllowed;
+    bool isReadOnly;
+    //bool    cutAllowed, pasteAllowed;
 };
 
 
