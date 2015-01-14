@@ -163,21 +163,36 @@ class NmConsole : public QMainWindow
     Q_OBJECT
 
 public:
+    enum ViewMode
+    {
+        ViewMode_BEGIN,
+        Welcome = ViewMode_BEGIN,
+        Model,
+        Trial,
+        Input,
+        Output,
+        Params,
+        Interpreter,
+        Code,
+        ViewMode_END
+    };
     NmConsole(QWidget *parent = 0);
 
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
+    void viewModeClicked(int);
 
 private slots:
-    void showWelcomeView();
-    void showCodeView();
-    void showModelView();
-    void showTrialView();
-    void showInputView();
-    void showOutputView();
-    void showParameterView();
-    void showInterpreterView();
+    void showViewMode(int viewModeInt);
+//    void showWelcomeView();
+//    void showCodeView();
+//    void showModelView();
+//    void showTrialView();
+//    void showInputView();
+//    void showOutputView();
+//    void showParameterView();
+//    void showInterpreterView();
     void newScriptFile();
     void newLogFile();
     void open();
@@ -199,6 +214,8 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
+    void initViewActions();
+    void createViewActions();
     void createActions();
     void createMenus();
     void createToolBars();
@@ -272,21 +289,27 @@ private:
     QToolBar        *infoToolBar;
 //    QVBoxLayout     *vLayout;
 
-
+    QSignalMapper   *viewModeSignalMapper;
+    QList<QToolButton*> viewModeButtons;
     QMenu           *fileMenu;
     QMenu           *runMenu;
     QMenu           *settingsMenu;
 //    QToolBar        *fileToolBar;
 //    QToolBar        *runToolBar;
 
-    QAction         *welcomeAction;
-    QAction         *viewModelAction;
-    QAction         *viewCodeAction;
-    QAction         *viewInterpreterAction;
-    QAction         *viewTrialAction;
-    QAction         *viewInputAction;
-    QAction         *viewOutputAction;
-    QAction         *viewParamsAction;
+    QList<QIcon*>   viewActionIcons;
+    QStringList     viewActionTexts;
+    QStringList     viewActionStatusTips;
+    QList<QAction*> viewActions;
+
+//    QAction         *welcomeAction;
+//    QAction         *viewModelAction;
+//    QAction         *viewCodeAction;
+//    QAction         *viewInterpreterAction;
+//    QAction         *viewTrialAction;
+//    QAction         *viewInputAction;
+//    QAction         *viewOutputAction;
+//    QAction         *viewParamsAction;
     QAction         *newScriptAct;
     QAction         *newLogAct;
     QAction         *openAct;

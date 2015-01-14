@@ -58,47 +58,6 @@ void CmdOutput::displayOutput(const QString & output)
 
 
 
-
-//NM::NM(QObject *parent)
-//    : QProcess(parent)
-//{
-//}
-
-//NM::~NM()
-//{
-//    terminate();
-//}
-
-//void NM::sendCommand(const QString & line)
-//{
-//    write(qPrintable(line + "\n"));
-//}
-
-
-//void NM::getNMError()
-//{
-//    QByteArray bytes = readAllStandardError();
-//    emit outputReady(QString(bytes));
-//}
-
-
-
-//QueryProcessor::QueryProcessor(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel,  QWidget *parent):
-//    QSplitter(parent), objHash(objHash), objTaxonomyModel(objTaxonomyModel),
-//    contextQuerySize(0), lazyNutBuffer(""), treeOutput(""),
-//    //rxEND(".*END:[^\\n]*\\n$")
-//    rxEND("END:[^\\n]*\\n")
-//{
-//    context = new QueryContext;
-//    driver = new lazyNutOutput::Driver(*context);
-
-//    parseOutput = new CmdOutput(this);
-//    parseOutput->setReadOnly(true);
-//    addWidget(parseOutput);
-
-//    connect(this,SIGNAL(treeReady(QString)),parseOutput,SLOT(displayOutput(QString)));
-//}
-
 //void QueryProcessor::testDesignWindow()
 //{
 //    // this member function should be removed and turned into a unit test.
@@ -134,139 +93,6 @@ void CmdOutput::displayOutput(const QString & output)
 
 //}
 
-
-//void QueryProcessor::getTree(const QString &lazyNutOutput)
-//{
-//    lazyNutBuffer.append(lazyNutOutput);
-//    int indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
-//    int lengthRemainder;
-//    while (indexInLazyNutBuffer >=0)
-//    {
-//        lengthRemainder = lazyNutBuffer.size() - indexInLazyNutBuffer - rxEND.matchedLength();
-//        QString remainder = lazyNutBuffer.right(lengthRemainder);
-//        lazyNutBuffer.chop(lengthRemainder);
-//        //qDebug() << lazyNutBuffer;
-//        //qDebug() << lengthRemainder;
-//        //qDebug() << remainder;
-//        bool result = driver->parse_string(lazyNutBuffer.toStdString(), "lazyNutOutput");
-//        if (result)
-//        {
-//            contextQuerySize = 0;
-//            treeOutput = "";
-//            if (context->root->childCount() > contextQuerySize)
-//            {
-//                for (int qi = contextQuerySize; qi < context->root->childCount(); ++qi)
-//                {
-//                    context->root->child(qi)->print(treeOutput);
-//                }
-//                //contextQuerySize = context->root->childCount();
-//                //lazyNutBuffer = remainder; //"";
-//           }
-//           else
-//           {
-//               // treeOutput += ".";
-//           }
-//           //qDebug() << treeOutput;
-//           emit treeReady(treeOutput);
-//           processQueries();
-//           emit resultAvailable(lazyNutBuffer);
-
-//        }
-//        else
-//        {
-//            //lazyNutBuffer.append(remainder);
-//            //lazyNutBuffer = remainder;
-//            qDebug() << "no result";
-//        /*    if (context->begin_query)
-//            {
-//                context->root->removeLastChild();
-//            }
-//            context->begin_query = false;
-//            lazyNutBuffer = ""; // to be deleted */
-//        }
-//        lazyNutBuffer = remainder;
-//        indexInLazyNutBuffer = rxEND.indexIn(lazyNutBuffer);
-//    }
-//}
-
-//void QueryProcessor::processQueries()
-//{
-//    QStringList recentlyModified;
-//    bool objHashModified = false;
-//    foreach (TreeItem* queryItem, context->root->children())
-//    {
-//        QString queryType = queryItem->data(0).toString();
-//        if (queryType == "subtypes")
-//        {
-//            QString objectType = queryItem->data(1).toString();
-//            QModelIndex objectIndex = objTaxonomyModel->index(0,0);
-//            int row = 0;
-//            while (objTaxonomyModel->data(objTaxonomyModel->index(row,0,objectIndex),Qt::DisplayRole).toString() != objectType &&
-//                   row < objTaxonomyModel->rowCount(objectIndex))
-//                ++row;
-//            QModelIndex typeIndex = objTaxonomyModel->index(row,0,objectIndex);
-//            if (typeIndex.isValid())
-//            {
-//                foreach (TreeItem* subtypeItem, queryItem->children())
-//                {
-//                    objTaxonomyModel->appendValue(subtypeItem->data(1).toString(),typeIndex);
-//                }
-//            }
-//        }
-//        else if (queryType == "recently_modified")
-//        {
-//            foreach (TreeItem* objectItem, queryItem->children())
-//            {
-//                recentlyModified.append(objectItem->data(1).toString());
-//            }
-//        }
-//        else if (queryType == "description")
-//        {
-//            emit beginObjHashModified();
-//            foreach (TreeItem* objectItem, queryItem->children())
-//            {
-//                QString objectName = objectItem->data(1).toString();
-//                objHash->insert(objectName,new LazyNutObj());
-//                foreach (TreeItem* propertyItem, objectItem->children())
-//                {
-//                    QString propertyKey = propertyItem->data(0).toString();
-//                    QString propertyValue = propertyItem->data(1).toString();
-//                    if (propertyValue.startsWith('[') && propertyValue.endsWith(']'))
-//                        // todo: generate query list
-//                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue);
-//                    else if (propertyValue.contains(','))
-//                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue.split(", "));
-//                    else
-//                        (*objHash)[objectName]->appendProperty(propertyKey,propertyValue);
-//                }
-//            }
-//            objHashModified = true;
-//        }
-//    }
-//    if (objHashModified)
-//        emit endObjHashModified();
-//    context->clearQueries();
-//    foreach (QString objectName, recentlyModified)
-//    {
-//        QString query = "query 1 " + objectName + " description";
-//        emit commandReady(query);
-//    }
-//    recentlyModified.clear();
-//}
-
-
-//NmCmd::NmCmd(QWidget *parent)
-//    : QWidget(parent)
-//{
-//    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-//    cmdOutput = new CmdOutput(this);
-//    cmdOutput->setReadOnly(true);
-//    inputCmdLine = new InputCmdLine(this);
-//    mainLayout->addWidget(cmdOutput);
-//    mainLayout->addWidget(inputCmdLine);
-//    setLayout(mainLayout);
-//    setWindowTitle(tr("lazyNut cmd[*]"));
-//}
 
 
 NmConsole::NmConsole(QWidget *parent)
@@ -356,7 +182,7 @@ NmConsole::NmConsole(QWidget *parent)
     view ->setScene(scene);
     view ->setGeometry(QRect(270, 35, 700, 540));
 */
-    plotForm = new PlotWindow();
+    plotForm = new PlotWindow(this);
     dockOutput = new QDockWidget(tr("Output"), this);
     dockOutput->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                     Qt::RightDockWidgetArea);
@@ -420,7 +246,6 @@ NmConsole::NmConsole(QWidget *parent)
     addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
         //dockDesignWindow->hide();
 
-    showWelcomeView();
 
     // signals begin/endObjHashModified are defined in SessionManager and ObjExplorer.
     // When a description query is parsed by the SessionManager, it sends those signals
@@ -436,20 +261,9 @@ NmConsole::NmConsole(QWidget *parent)
 
 
 
-//    createActions();
-//    createMenus();
-//    createToolBars();
-
     readSettings();
-
-    //queryProcessor->testDesignWindow();
-
     setCurrentFile(scriptEdit,"Untitled");
 
-
-
-
-    //lazyNut = new NM(this);
     lazyNut = new LazyNut(this);
 
 
@@ -464,9 +278,7 @@ NmConsole::NmConsole(QWidget *parent)
     connect(this,SIGNAL(saveLayout()),
             designWindow,SIGNAL(saveLayout()));
 
-    //easyNetHome = QString(qgetenv("EASYNET_HOME"));
-    //lazyNutBat = ""; // debug
-    //easyNetHome = ""; // debug
+
     if (lazyNutBat.isEmpty())
     {
         if (easyNetHome.isEmpty())
@@ -497,11 +309,14 @@ NmConsole::NmConsole(QWidget *parent)
     connect(sessionManager,SIGNAL(endObjHashModified()),
             designWindow,SLOT(objCatalogueChanged()));
 
+
     createActions();
     createMenus();
     createToolBars();
 
+    showViewMode(Welcome);
 }
+
 
 void NmConsole::readSettings()
 {
@@ -523,7 +338,6 @@ void NmConsole::writeSettings()
     settings.setValue("pos", pos());
     settings.setValue("size", size());
     settings.setValue("scriptsDir",scriptsDir);
-    //  settings.setValue("nmExe",nmExe);
 }
 
 
@@ -539,6 +353,58 @@ void NmConsole::closeEvent(QCloseEvent *event)
         emit saveLayout();
 //        waitUntilLayoutSaved.exec();
         event->accept();
+}
+
+void NmConsole::initViewActions()
+{
+    viewActionIcons.insert(Welcome, new QIcon(":/images/zebra_64x64.png"));
+    viewActionIcons.insert(Model, new QIcon(":/images/layers-8x.png"));
+    viewActionIcons.insert(Trial, new QIcon(":/images/cog-8x.png"));
+    viewActionIcons.insert(Input, new QIcon(":/images/list-8x.png"));
+    viewActionIcons.insert(Output, new QIcon(":/images/bar-chart-8x.png"));
+    viewActionIcons.insert(Params, new QIcon(":/images/dial-8x.png"));
+    viewActionIcons.insert(Interpreter, new QIcon(":/images/terminal-8x.png"));
+    viewActionIcons.insert(Code, new QIcon(":/images/code-8x.png"));
+
+    viewActionTexts.insert(Welcome, tr("&Welcome"));
+    viewActionTexts.insert(Model, tr("&Model"));
+    viewActionTexts.insert(Trial, tr("&Trial"));
+    viewActionTexts.insert(Input, tr("&Input"));
+    viewActionTexts.insert(Output, tr("&Output"));
+    viewActionTexts.insert(Params, tr("&Parameters"));
+    viewActionTexts.insert(Interpreter, tr("&Interpreter"));
+    viewActionTexts.insert(Code, tr("&Code"));
+
+    viewActionStatusTips.insert(Welcome, tr("Welcome to easyNet"));
+    viewActionStatusTips.insert(Model, tr("Display model view"));
+    viewActionStatusTips.insert(Trial, tr("Display trial editor"));
+    viewActionStatusTips.insert(Input, tr("Display input view"));
+    viewActionStatusTips.insert(Output, tr("Display output view"));
+    viewActionStatusTips.insert(Params, tr("Display parameter view"));
+    viewActionStatusTips.insert(Interpreter, tr("Display interpreter view"));
+    viewActionStatusTips.insert(Code, tr("Display code view"));
+}
+
+void NmConsole::createViewActions()
+{
+    initViewActions();
+    viewModeSignalMapper = new QSignalMapper(this);
+    // iterate over ViewMode enum
+    // http://stackoverflow.com/questions/261963/how-can-i-iterate-over-an-enum
+    // http://stackoverflow.com/questions/1390703/enumerate-over-an-enum-in-c
+    for (int viewModeInt = ViewMode_BEGIN; viewModeInt != ViewMode_END; viewModeInt++)
+    {
+        // ViewMode viewMode = static_cast<ViewMode>(viewModeInt);
+        QAction *action = new QAction(this);
+        viewActions.insert(viewModeInt, action);
+        action->setIcon(*viewActionIcons.at(viewModeInt));
+        action->setText(viewActionTexts.at(viewModeInt));
+        action->setStatusTip(viewActionStatusTips.at(viewModeInt));
+        connect(action, SIGNAL(triggered()), viewModeSignalMapper, SLOT(map()));
+        viewModeSignalMapper->setMapping(action, viewModeInt);
+    }
+    connect(viewModeSignalMapper,SIGNAL(mapped(int)),this,SIGNAL(viewModeClicked(int)));
+    connect(this,SIGNAL(viewModeClicked(int)),this,SLOT(showViewMode(int)));
 }
 
 void NmConsole::newScriptFile()
@@ -570,8 +436,9 @@ void NmConsole::open()
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
-            dockEdit->show();
-            showCodeView();
+//            dockEdit->show();
+//            showCodeView();
+            showViewMode(Code);
         }
  //   }
 }
@@ -661,73 +528,11 @@ void NmConsole::runLazyNutBat()
     }
 }
 
-//void NmConsole::chopAndSend(const QString & text)
-//{
-//    QStringList commandList = text.split("\u2029");
-//    commandSequencer->runCommands(commandList);
-//    QStringList lines = text.split("\u2029");
-//    foreach (QString line, lines)
-//    {
-//        lazyNut->sendCommand(line + "\n");
-//    }
-//}
-
-
-/*void NmConsole::documentWasModified()
-{
-    setWindowModified(scriptEdit->document()->isModified());
-}*/
 
 
 void NmConsole::createActions()
 {
-    welcomeAction = new QAction(QIcon(":/images/zebra_64x64.png"), tr("&Welcome"),
-                               this);
-//    welcomeAction->setShortcuts(QKeySequence::New);
-    welcomeAction->setStatusTip(tr("Welcome to easyNet"));
-    connect(welcomeAction, SIGNAL(triggered()), this, SLOT(showWelcomeView()));
-
-    viewModelAction = new QAction(QIcon(":/images/layers-8x.png"), tr("&Model"),
-                               this);
-//    viewModelAction->setShortcuts(QKeySequence::New);
-    viewModelAction->setStatusTip(tr("Display model view"));
-    connect(viewModelAction, SIGNAL(triggered()), this, SLOT(showModelView()));
-
-    viewTrialAction = new QAction(QIcon(":/images/cog-8x.png"), tr("&Trial"),
-                               this);
-//    viewTrialAction->setShortcuts(QKeySequence::New);
-    viewTrialAction->setStatusTip(tr("Display trial editor"));
-    connect(viewTrialAction, SIGNAL(triggered()), this, SLOT(showTrialView()));
-
-    viewInputAction = new QAction(QIcon(":/images/list-8x.png"), tr("&Input"),
-                               this);
-//    viewInputAction->setShortcuts(QKeySequence::New);
-    viewInputAction->setStatusTip(tr("Display input view"));
-    connect(viewInputAction, SIGNAL(triggered()), this, SLOT(showInputView()));
-
-    viewOutputAction = new QAction(QIcon(":/images/bar-chart-8x.png"), tr("&Output"),
-                               this);
-//    viewOutputAction->setShortcuts(QKeySequence::New);
-    viewOutputAction->setStatusTip(tr("Display output view"));
-    connect(viewOutputAction, SIGNAL(triggered()), this, SLOT(showOutputView()));
-
-    viewParamsAction = new QAction(QIcon(":/images/dial-8x.png"), tr("&Parameters"),
-                               this);
-//    viewParamsAction->setShortcuts(QKeySequence::New);
-    viewParamsAction->setStatusTip(tr("Display parameter view"));
-    connect(viewParamsAction, SIGNAL(triggered()), this, SLOT(showParameterView()));
-
-    viewInterpreterAction = new QAction(QIcon(":/images/terminal-8x.png"), tr("&Interpreter"),
-                               this);
-//    viewInterpreterAction->setShortcuts(QKeySequence::New);
-    viewInterpreterAction->setStatusTip(tr("Display interpreter view"));
-    connect(viewInterpreterAction, SIGNAL(triggered()), this, SLOT(showInterpreterView()));
-
-    viewCodeAction = new QAction(QIcon(":/images/code-8x.png"), tr("&Code"),
-                               this);
-//    viewCodeAction->setShortcuts(QKeySequence::New);
-    viewCodeAction->setStatusTip(tr("Display code view"));
-    connect(viewCodeAction, SIGNAL(triggered()), this, SLOT(showCodeView()));
+    createViewActions();
 
     runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
     runAction->setStatusTip(tr("Run"));
@@ -817,7 +622,7 @@ void NmConsole::createMenus()
 
 void NmConsole::createToolBars()
 {
-    QLabel *spacing = new QLabel(tr("____________"));
+
 /*    spacing->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     spacing->setContentsMargins(0,0,0,0);
     spacing->setSizePolicy(QSizePolicy::MinimumExpanding,
@@ -834,38 +639,7 @@ void NmConsole::createToolBars()
 //    runToolBar->addAction(pauseAct);
 //    runToolBar->addAction(stopAct);
 
-    QWidget *w = new QWidget;
-    QVBoxLayout *vbox = new QVBoxLayout;
 
-    std::vector <QToolButton*> buttons;
-//    buttons = new std::vector <QToolButton>;
-//    QToolButton *button2;
-    int numButtons=9;
-    for (int i=0;i<numButtons;i++)
-    {
-        buttons.push_back(new QToolButton(this));
-        buttons[i]->setAutoRaise(true);
-        buttons[i]->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    }
-
-    buttons[0]->addAction(welcomeAction);
-    buttons[0]->setDefaultAction(welcomeAction);
-    buttons[1]->addAction(viewModelAction);
-    buttons[1]->setDefaultAction(viewModelAction);
-    buttons[2]->addAction(viewParamsAction);
-    buttons[2]->setDefaultAction(viewParamsAction);
-    buttons[3]->addAction(viewTrialAction);
-    buttons[3]->setDefaultAction(viewTrialAction);
-    buttons[4]->addAction(viewInputAction);
-    buttons[4]->setDefaultAction(viewInputAction);
-    buttons[5]->addAction(viewOutputAction);
-    buttons[5]->setDefaultAction(viewOutputAction);
-    buttons[6]->addAction(viewInterpreterAction);
-    buttons[6]->setDefaultAction(viewInterpreterAction);
-    buttons[7]->addAction(viewCodeAction);
-    buttons[7]->setDefaultAction(viewCodeAction);
-    buttons[8]->addAction(runAction);
-    buttons[8]->setDefaultAction(runAction);
 
     infoToolBar = new QToolBar(this);
     infoToolBar->setStyleSheet("QToolButton::menu-indicator {image: url(myindicator.png); } \
@@ -877,24 +651,48 @@ void NmConsole::createToolBars()
     "stop: 0 #66e, stop: 1 #bbf); background: qlineargradient(x1: 0, y1: 0.2, x2: 1, y2: 1, "
     "stop: 0 #bbf, stop: 1 #55f) } ");
 
+
+    QWidget *viewModeButtonsWidget = new QWidget;
+    QVBoxLayout *viewModeLayout = new QVBoxLayout;
+
+    viewModeSignalMapper = new QSignalMapper(this);
+
+    for (int viewModeInt = ViewMode_BEGIN; viewModeInt != ViewMode_END; viewModeInt++)
+    {
+        // ViewMode viewMode = static_cast<ViewMode>(viewModeInt);
+        QToolButton *button = new QToolButton(this);
+        button->setAutoRaise(true);
+        button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        viewModeButtons.insert(viewModeInt, button);
+        button->addAction(viewActions.at(viewModeInt));
+        button->setDefaultAction(viewActions.at(viewModeInt));
+        viewModeLayout->addWidget(button);
+    }
+
+    QLabel *spacing = new QLabel(tr("____________"));
+    viewModeLayout->addWidget(spacing);
+
+    QToolButton *button = new QToolButton(this);
+    button->setAutoRaise(true);
+    button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    viewModeLayout->addWidget(button);
+    button->addAction(runAction);
+    button->setDefaultAction(runAction);
+    viewModeLayout->addWidget(button);
+
 /*    QComboBox* parametersCB = new QComboBox;
     QLabel* modelLabel = new QLabel("IA");
     QLabel* trialLabel = new QLabel("masked_priming_ldt");
     QLabel* inputLabel = new QLabel("Davis_Lupker_06");
 */
-    for (int i=0;i<numButtons;i++)
-    {
-        vbox->addWidget(buttons[i]);
-        if (i==7)
-            vbox->addWidget(spacing);
-    }
+
 //    vbox->addWidget(spacing);
 //    vbox->addWidget(modelLabel);
 //    vbox->addWidget(trialLabel);
 //    vbox->addWidget(inputLabel);
 
-    w->setLayout(vbox);
-    infoToolBar->addWidget(w);
+    viewModeButtonsWidget->setLayout(viewModeLayout);
+    infoToolBar->addWidget(viewModeButtonsWidget);
     addToolBar(Qt::LeftToolBarArea, infoToolBar);
 }
 
@@ -994,73 +792,42 @@ void NmConsole::hideAllDocks()
     dockCommandLog->hide();
 }
 
-void NmConsole::showWelcomeView()
+
+void NmConsole::showViewMode(int viewModeInt)
 {
     hideAllDocks();
-    setCorner( Qt::TopLeftCorner, Qt::TopDockWidgetArea );
-    setCorner( Qt::TopRightCorner, Qt::RightDockWidgetArea );
-    setCorner( Qt::BottomLeftCorner, Qt::BottomDockWidgetArea );
-    setCorner( Qt::BottomRightCorner, Qt::BottomDockWidgetArea );
-
-//    dockZeb->show();
-    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
-    webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
-    dockWebWelcome->show();
-    dockWelcome->show();
+    switch (viewModeInt) {
+    case Welcome:
+        welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
+        webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
+        dockWebWelcome->show();
+        dockWelcome->show();
+        break;
+    case Model:
+        dockDesignWindow->show();
+        dockExplorer->show();
+        break;
+    case Trial:
+        break;
+    case Input:
+        break;
+    case Output:
+        dockOutput->show();
+        break;
+    case Params:
+        break;
+    case Interpreter:
+        dockInterpreter->show();
+        break;
+    case Code:
+        dockEdit->show();
+        dockCommandLog->show();
+        dockInterpreter->show();
+        break;
+    default:
+        break;
+    }
 }
-
-
-void NmConsole::showCodeView()
-{
-    hideAllDocks();
-    dockEdit->show();
-    dockCommandLog->show();
-    dockInterpreter->show();
-}
-
-void NmConsole::showModelView()
-{
-    hideAllDocks();
-    dockDesignWindow->show();
-    dockExplorer->show();
-//    dockDesignWindow->resize(500, dockDesignWindow->height());
-}
-
-void NmConsole::showTrialView()
-{
-    hideAllDocks();
-//    dockEdit->show();
-//    dockEdit->resize(500, dockEdit->height());
-}
-
-void NmConsole::showInputView()
-{
-    hideAllDocks();
-//    dockEdit->show();
-//    dockEdit->resize(500, dockEdit->height());
-}
-
-
-void NmConsole::showOutputView()
-{
-    hideAllDocks();
-    dockOutput->show();
-}
-
-void NmConsole::showParameterView()
-{
-    hideAllDocks();
-//    dockEdit->show();
-//    dockEdit->resize(500, dockEdit->height());
-}
-
-void NmConsole::showInterpreterView()
-{
-    hideAllDocks();
-    dockInterpreter->show();
-}
-
-//QDockWidget     *dockExplorer;
 
 
 void NmConsole::run()
@@ -1068,7 +835,6 @@ void NmConsole::run()
     runModel(); // ultimately this will have different action depending on which mode is active
 
 }
-
 
 
 LazyNutScriptEditor::LazyNutScriptEditor(QWidget *parent)
