@@ -114,26 +114,44 @@ void SessionManager::processLazyNutOutput()
     context->clearQueries();
 }
 
-void SessionManager::runCommands()
+
+
+void SessionManager::runCommands(JobOrigin jobOrigin)
 {
-    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
+    commandSequencer->runCommands(commandList, jobOrigin, synchMode);
+}
+
+Macro *SessionManager::buildMacro()
+{
+    Macro * macro = new Macro(this);
+    connect(macro,SIGNAL(started()),this,SLOT(macroStarted()));
+    connect(macro,SIGNAL(finished()),this,SLOT(macroEnded()));
+    connect(macro,SIGNAL(finished()),macro,SLOT(deleteLater()));
+    return macro;
+}
+
+QueryState *SessionManager::buildQueryState(Macro *macro)
+{
+    QueryState * queryState = new QueryState(macro);
+    connect(queryState,SIGNAL(exited()),this,SLOT(processLazyNutOutput()));
+    return queryState;
 }
 
 
 void SessionManager::runModel(QStringList cmdList)
 {
     commandList = cmdList;
+    Macro * macro = buildMacro();
     // states
-    Macro * macro = new Macro(this,this);
-    UserState * runCommandsState = new UserState(this,macro);
-    connect(runCommandsState,SIGNAL(entered()),this,SLOT(runCommands()));
-    QueryState * getSubtypesState = new QueryState(this,macro);
-    connect(getSubtypesState,SIGNAL(entered()),this,SLOT(getSubtypes()));
-    QueryState * getRecentlyModifiedState = new QueryState(this,macro);
-    connect(getRecentlyModifiedState,SIGNAL(entered()),this,SLOT(getRecentlyModified()));
+    UserState * runCommandsState = new UserState(macro);
+    connect(runCommandsState,SIGNAL(enteredWithJobOrigin(JobOrigin)),this,SLOT(runCommands(JobOrigin)));
+    QueryState * getSubtypesState = buildQueryState(macro);
+    connect(getSubtypesState,SIGNAL(enteredWithJobOrigin(JobOrigin)),this,SLOT(getSubtypes(JobOrigin)));
+    QueryState * getRecentlyModifiedState = buildQueryState(macro);
+    connect(getRecentlyModifiedState,SIGNAL(enteredWithJobOrigin(JobOrigin)),this,SLOT(getRecentlyModified(JobOrigin)));
 
-    QueryState * getDescriptionsState = new QueryState(this,macro);
-    connect(getDescriptionsState,SIGNAL(entered()),this,SLOT(getDescriptions()));
+    QueryState * getDescriptionsState = buildQueryState(macro);
+    connect(getDescriptionsState,SIGNAL(enteredWithJobOrigin(JobOrigin)),this,SLOT(getDescriptions(JobOrigin)));
     QFinalState *finalState = new QFinalState(macro);
     macro->setInitialState(runCommandsState);
 
@@ -151,15 +169,15 @@ void SessionManager::runModel(QStringList cmdList)
 void SessionManager::runSelection(QStringList cmdList)
 {
     commandList = cmdList;
+    Macro * macro = buildMacro();
     // states
-    Macro * macro = new Macro(this,this);
-    UserState * runCommandsState = new UserState(this,macro);
-    connect(runCommandsState,SIGNAL(entered()),this,SLOT(runCommands()));
-    QueryState * getRecentlyModifiedState = new QueryState(this,macro);
-    connect(getRecentlyModifiedState,SIGNAL(entered()),this,SLOT(getRecentlyModified()));
+    UserState * runCommandsState = new UserState(macro);
+    connect(runCommandsState,SIGNAL(enteredWithJobOrigin(JobOrigin)),this,SLOT(runCommands(JobOrigin)));
+    QueryState * getRecentlyModifiedState = buildQueryState(macro);
+    connect(getRecentlyModifiedState,SIGNAL(enteredWithJobOrigin(JobOrigin)),this,SLOT(getRecentlyModified(JobOrigin)));
 
-    QueryState * getDescriptionsState = new QueryState(this,macro);
-    connect(getDescriptionsState,SIGNAL(entered()),this,SLOT(getDescriptions()));
+    QueryState * getDescriptionsState = buildQueryState(macro);
+    connect(getDescriptionsState,SIGNAL(enteredWithJobOrigin(JobOrigin)),this,SLOT(getDescriptions(JobOrigin)));
     QFinalState *finalState = new QFinalState(macro);
     macro->setInitialState(runCommandsState);
 
@@ -198,30 +216,30 @@ void SessionManager::stop()
     commandSequencer->stop();
 }
 
-void SessionManager:: getSubtypes()
+void SessionManager:: getSubtypes(JobOrigin jobOrigin)
 {
     commandList.clear();
     foreach (QString type, lazyNutObjTypes)
         commandList.append(QString("query 1 subtypes %1").arg(type));
-    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
+    commandSequencer->runCommands(commandList, jobOrigin, synchMode);
 }
 
-void SessionManager::getRecentlyModified()
+void SessionManager::getRecentlyModified(JobOrigin jobOrigin)
 {
     commandList.clear();
     commandList << "query 1 recently_modified"
                 << "query 1 clear_recently_modified";
-    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
+    commandSequencer->runCommands(commandList, jobOrigin, synchMode);
 }
 
-void SessionManager::clearRecentlyModified()
+void SessionManager::clearRecentlyModified(JobOrigin jobOrigin)
 {
     commandList.clear();
     commandList << "query 1 clear_recently_modified";
-    commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
+    commandSequencer->runCommands(commandList, jobOrigin, synchMode);
 }
 
-void SessionManager::getDescriptions()
+void SessionManager::getDescriptions(JobOrigin jobOrigin)
 {
     if (recentlyModified.isEmpty())
         emit skipDescriptions();
@@ -230,7 +248,7 @@ void SessionManager::getDescriptions()
         commandList.clear();
         foreach (QString obj, recentlyModified)
             commandList.append(QString("query 1 %1 description").arg(obj));
-        commandSequencer->runCommands(commandList, currentJobOrigin, synchMode);
+        commandSequencer->runCommands(commandList, jobOrigin, synchMode);
         recentlyModified.clear();
     }
 }
@@ -248,113 +266,55 @@ void SessionManager::macroEnded()
 }
 
 
-Macro::Macro(SessionManager *sm, QObject *parent)
-    : sessionManager(sm), stopped(false), QStateMachine(parent)
+Macro::Macro(QObject *parent)
+    : QStateMachine(parent), stopped(false)
 {
-    connect(this,SIGNAL(started()),sessionManager,SLOT(macroStarted()));
-    connect(this,SIGNAL(finished()),sessionManager,SLOT(macroEnded()));
-    connect(this,SIGNAL(finished()),this,SLOT(deleteLater()));
+//    connect(this,SIGNAL(started()),sessionManager,SLOT(macroStarted()));
+//    connect(this,SIGNAL(finished()),sessionManager,SLOT(macroEnded()));
+//    connect(this,SIGNAL(finished()),this,SLOT(deleteLater()));
 }
 
 
 
-MacroState::MacroState(SessionManager *sm, Macro *macro, QState *parent)
-    : sessionManager(sm), macro(macro), QState(parent ? parent : macro)
+MacroState::MacroState(Macro *macro, JobOrigin jobOrigin)
+    : QState(macro), macro(macro), jobOrigin(jobOrigin)
 {
-//    if (!parent)
-//        parent = macro;
-//    QState::QState(parent);
+    connect(this,SIGNAL(entered()),this,SLOT(emitEnteredWithJobOrigin()));
+}
+
+void MacroState::emitEnteredWithJobOrigin()
+{
+    emit enteredWithJobOrigin(jobOrigin);
 }
 
 
 
-UserState::UserState(SessionManager *sm, Macro *macro, QState *parent)
-    : MacroState(sm, macro, parent)
+UserState::UserState(Macro *macro, JobOrigin jobOrigin)
+    : MacroState(macro, jobOrigin)
 {
-    connect(this,SIGNAL(entered()),this,SLOT(setOriginUser()));
     connect(this,SIGNAL(entered()),this,SLOT(deleteIfStopped()));
 }
 
-void UserState::setOriginUser()
-{
-    sessionManager->setJobOrigin(JobOrigin::User);
-}
+
 
 void UserState::deleteIfStopped()
 {
-    if (macro->isStopped())
+    if (jobOrigin == JobOrigin::User && macro->isStopped())
         macro->deleteLater();
 }
 
 
-GUIState::GUIState(SessionManager *sm, Macro *macro, QState *parent)
-    : MacroState(sm, macro, parent)
+GUIState::GUIState(Macro *macro, JobOrigin jobOrigin)
+    : MacroState(macro, jobOrigin)
 {
-    connect(this,SIGNAL(entered()),this,SLOT(setOriginGUI()));
-}
-
-void GUIState::setOriginGUI()
-{
-    sessionManager->setJobOrigin(JobOrigin::GUI);
 }
 
 
-QueryState::QueryState(SessionManager *sm, Macro *macro, QState *parent)
-    : GUIState(sm, macro, parent)
+QueryState::QueryState(Macro *macro, JobOrigin jobOrigin)
+    : GUIState(macro, jobOrigin)
 {
-    connect(this,SIGNAL(exited()),sessionManager,SLOT(processLazyNutOutput()));
+    connect(this,SIGNAL(exited()),this,SIGNAL(triggerProcessLazyNutOutput()));
 }
-
-
-//RunCommandsState::RunCommandsState(SessionManager *sm, QState *parent)
-//    : sessionManager(sm), QState(parent)
-//{
-//    connect(this,SIGNAL(entered()),sessionManager,SLOT(runCommands()));
-//}
-
-
-//GetRecentlyModifiedState::GetRecentlyModifiedState(SessionManager *sm, QState *parent)
-//    : sessionManager(sm), QState(parent)
-//{
-//    connect(this,SIGNAL(entered()),sessionManager,SLOT(getRecentlyModified()));
-//    connect(this,SIGNAL(exited()),sessionManager,SLOT(setRecentlyModified()));
-//}
-
-//ClearRecentlyModifiedState::ClearRecentlyModifiedState(SessionManager *sm, QState *parent)
-//    : sessionManager(sm), QState(parent)
-//{
-//    connect(this,SIGNAL(entered()),sessionManager,SLOT(clearRecentlyModified()));
-//}
-
-
-//GetRecentlyModifiedAndClearState::GetRecentlyModifiedAndClearState(SessionManager *sm, QState *parent)
-//    : sessionManager(sm), QState(parent)
-//{
-//    GetRecentlyModifiedState *getRecentlyModifiedState = new GetRecentlyModifiedState(sm,this);
-//    ClearRecentlyModifiedState *clearRecentlyModifiedState = new ClearRecentlyModifiedState(sm,this);
-//    setInitialState(getRecentlyModifiedState);
-//    getRecentlyModifiedState->addTransition(sessionManager->getCommandSequencer(),SIGNAL(commandsExecuted()),clearRecentlyModifiedState);
-
-
-//}
-
-
-//GetDescriptionsState::GetDescriptionsState(SessionManager *sm, QState *parent)
-//    : sessionManager(sm), QState(parent)
-//{
-//    connect(this,SIGNAL(entered()),sessionManager,SLOT(getDescriptions()));
-//    connect(this,SIGNAL(exited()),sessionManager,SLOT(processLazyNutOutput()));
-//}
-
-
-
-//GetSubtypesState::GetSubtypesState(SessionManager *sm, QState *parent)
-//    : sessionManager(sm), QState(parent)
-//{
-//    connect(this,SIGNAL(entered()),sessionManager,SLOT(getSubtypes()));
-//    connect(this,SIGNAL(exited()),sessionManager,SLOT(processLazyNutOutput()));
-//}
-
 
 
 

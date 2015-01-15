@@ -9,6 +9,7 @@
 #include "enumclasses.h"
 
 class Macro;
+class QueryState;
 
 class MacroQueue: public JobQueue<Macro,MacroQueue>
 {
@@ -47,8 +48,8 @@ public:
         synchMode = mode;
         emit synchModeChanged(synchMode);
     }
-    void setJobOrigin(JobOrigin origin) {currentJobOrigin = origin;}
-    JobOrigin getJobOrigin() {return currentJobOrigin;}
+//    void setJobOrigin(JobOrigin origin) {currentJobOrigin = origin;}
+//    JobOrigin getJobOrigin() {return currentJobOrigin;}
 
 signals:
     // decision signals
@@ -106,17 +107,20 @@ private slots:
 
 
     // lazyNut operations (entering a Macro state)
-    void runCommands();
-    void getSubtypes();
-    void getRecentlyModified();
-    void clearRecentlyModified();
-    void getDescriptions();
+    void runCommands(JobOrigin jobOrigin);
+    void getSubtypes(JobOrigin jobOrigin);
+    void getRecentlyModified(JobOrigin jobOrigin);
+    void clearRecentlyModified(JobOrigin jobOrigin);
+    void getDescriptions(JobOrigin jobOrigin);
 
     // LazyNut output processing
     void parseLazyNutOutput(const QString & lazyNutOutput);
     void processLazyNutOutput(); // (exiting a Macro state)
 
 private:
+
+    Macro *buildMacro();
+    QueryState *buildQueryState(Macro *macro);
 
     MacroQueue *macroQueue;
     CommandSequencer *commandSequencer;
@@ -131,7 +135,6 @@ private:
     QString lazyNutBuffer;
     QRegExp rxEND;
     SynchMode synchMode;
-    JobOrigin currentJobOrigin;
     QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};
 
 };
@@ -147,13 +150,12 @@ class Macro: public QStateMachine
     Q_OBJECT
 
 public:
-    Macro(SessionManager *sm, QObject *parent=0);
+    Macro(QObject *parent=0);
     void stop() {stopped = true;}
     bool isStopped() {return stopped;}
 
 
 private:
-    SessionManager *sessionManager;
     bool stopped;
 };
 
@@ -162,11 +164,18 @@ class MacroState: public QState
     Q_OBJECT
 
 public:
-    MacroState(SessionManager *sm, Macro *macro, QState *parent=0);
+    MacroState(Macro *macro, JobOrigin jobOrigin = JobOrigin::User);
+
+
+signals:
+    void enteredWithJobOrigin(JobOrigin);
+
+protected slots:
+    void emitEnteredWithJobOrigin();
 
 protected:
-    SessionManager *sessionManager;
     Macro *macro;
+    JobOrigin jobOrigin;
 };
 
 class UserState: public MacroState
@@ -174,10 +183,9 @@ class UserState: public MacroState
     Q_OBJECT
 
 public:
-    UserState(SessionManager *sm, Macro *macro, QState *parent=0);
+    UserState(Macro *macro, JobOrigin jobOrigin = JobOrigin::User);
 
 private slots:
-    void setOriginUser();
     void deleteIfStopped();
 };
 
@@ -186,13 +194,9 @@ class GUIState: public MacroState
     Q_OBJECT
 
 public:
-    GUIState(SessionManager *sm, Macro *macro, QState *parent=0);
+    GUIState(Macro *macro, JobOrigin jobOrigin = JobOrigin::GUI);
 
-private slots:
-    void setOriginGUI();
 };
-
-
 
 
 class QueryState: public GUIState
@@ -200,8 +204,10 @@ class QueryState: public GUIState
     Q_OBJECT
 
 public:
-    QueryState(SessionManager *sm, Macro *macro, QState *parent=0);
+    QueryState(Macro *macro, JobOrigin jobOrigin = JobOrigin::GUI);
 
+signals:
+    void triggerProcessLazyNutOutput();
 };
 
 //class RunCommandsState: public QState
