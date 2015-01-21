@@ -121,5 +121,6 @@
         <file>images/reload-4x.png</file>
         <file>images/reload-6x.png</file>
         <file>images/reload-8x.png</file>
+        <file>images/test.svg</file>
     </qresource>
 </RCC>

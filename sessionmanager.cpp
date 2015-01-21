@@ -313,7 +313,6 @@ GUIState::GUIState(Macro *macro, JobOrigin jobOrigin)
 QueryState::QueryState(Macro *macro, JobOrigin jobOrigin)
     : GUIState(macro, jobOrigin)
 {
-    connect(this,SIGNAL(exited()),this,SIGNAL(triggerProcessLazyNutOutput()));
 }
 
 

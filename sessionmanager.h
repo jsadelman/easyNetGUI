@@ -206,8 +206,6 @@ class QueryState: public GUIState
 public:
     QueryState(Macro *macro, JobOrigin jobOrigin = JobOrigin::GUI);
 
-signals:
-    void triggerProcessLazyNutOutput();
 };
 
 //class RunCommandsState: public QState

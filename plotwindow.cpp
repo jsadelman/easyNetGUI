@@ -17,11 +17,14 @@ PlotWindow::PlotWindow(QWidget *parent)
 {
 //    textEdit = new QPlainTextEdit;
     plot_svg = new QSvgWidget(this);
+//    plot_svg->load(QString(":/images/test.svg"));
 //    plot_svg->load(QString("C:/Users/colind/Documents/Top/easyNET_GUI/lazyNutGUI/images/test.svg"));
 
     // Get the file name using a QFileDialog
 //    QFile file(QFileDialog::getOpenFileName(NULL, tr("Upload a file")));
-    QFile file("C:/Top/Simulators/Qt/easyNet/lazyNutGUI/images/test.svg");
+//    QFile file("C:/Users/mm14722/Dropbox/scambio_temp/work/Qt/parser/tree_view/tree_view/images/test.svg");
+    QFile file(":/images/test.svg");
+
     int width, height;
 
     // If the selected file is valid, continue with the upload

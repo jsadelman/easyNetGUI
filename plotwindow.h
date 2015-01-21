@@ -18,6 +18,8 @@ public:
 //    void setCurrentFile(const QString &fileName);
     int getValueFromByteArray(QByteArray ba, QString key);
 
+signals:
+    void sendPloGet();
 
 //protected:
 //    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
