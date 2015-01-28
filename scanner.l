@@ -7,8 +7,8 @@
 #include "scanner.h"
 
 /* import the parser's token type into a local typedef */
-typedef lazyNutOutput::Parser::token token;
-typedef lazyNutOutput::Parser::token_type token_type;
+typedef lazyNutOutputParser::Parser::token token;
+typedef lazyNutOutputParser::Parser::token_type token_type;
 
 /* By default yylex returns int, we use token_type. Unfortunately yyterminate
  * by default returns 0, which is not of token_type. */
@@ -226,7 +226,7 @@ typedef lazyNutOutput::Parser::token_type token_type;
 
 %% /*** Additional Code ***/
 
-namespace lazyNutOutput {
+namespace lazyNutOutputParser {
 
 Scanner::Scanner(std::istream* in,
 		 std::ostream* out)

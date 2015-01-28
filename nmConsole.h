@@ -40,7 +40,7 @@ class TreeItem;
 class LazyNutObj;
 typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
 class ObjExplorer;
-namespace lazyNutOutput {
+namespace lazyNutOutputParser {
     class Driver;
 }
 class DesignWindow;
@@ -210,6 +210,8 @@ private slots:
     void setLazyNutBat();
     void showPauseState(bool isPaused);
 
+    void lazyNutNotRunning();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -228,7 +230,7 @@ private:
     QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
-    void runLazyNutBat();
+//    void runLazyNutBat();
 
     void hideAllDocks();
 
@@ -323,7 +325,7 @@ private:
     QAction         *pauseAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
-    QAction         *synchModeAct;
+//    QAction         *synchModeAct;
 };
 
 #endif // NMCONSOLE_H

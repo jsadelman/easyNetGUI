@@ -11,7 +11,7 @@ class QueryContext;
 
 /** The lazyNutOutput namespace is used to encapsulate the three parser classes
  * lazyNutOutput::Parser, lazyNutOutput::Scanner and lazyNutOutput::Driver */
-namespace lazyNutOutput {
+namespace lazyNutOutputParser {
 
 /** The Driver class brings together all components. It creates an instance of
  * the Parser and Scanner classes and connects them. Then the input stream is

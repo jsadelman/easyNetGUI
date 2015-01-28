@@ -9,10 +9,10 @@
 #ifndef YY_DECL
 
 #define	YY_DECL						\
-    lazyNutOutput::Parser::token_type				\
-    lazyNutOutput::Scanner::lex(				\
-	lazyNutOutput::Parser::semantic_type* yylval,		\
-	lazyNutOutput::Parser::location_type* yylloc		\
+    lazyNutOutputParser::Parser::token_type				\
+    lazyNutOutputParser::Scanner::lex(				\
+    lazyNutOutputParser::Parser::semantic_type* yylval,		\
+    lazyNutOutputParser::Parser::location_type* yylloc		\
     )
 #endif
 
@@ -24,7 +24,7 @@
 
 #include "parser.h"
 
-namespace lazyNutOutput {
+namespace lazyNutOutputParser {
 
 /** Scanner is a derived class to add some extra function to the scanner
  * class. Flex itself creates a class named yyFlexLexer, which is renamed using
@@ -55,7 +55,7 @@ public:
     void set_debug(bool b);
 };
 
-} // namespace lazyNutOutput
+} // namespace lazyNutOutputParser
 
 #endif // LAZYNUTOUTPUT_SCANNER_H
 

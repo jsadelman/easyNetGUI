@@ -7,7 +7,7 @@
 #include "scanner.h"
 #include "querycontext.h"
 
-namespace lazyNutOutput {
+namespace lazyNutOutputParser {
 
 Driver::Driver(class QueryContext& qc)
     : trace_scanning(false),

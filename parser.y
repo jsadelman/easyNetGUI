@@ -38,7 +38,7 @@
 %skeleton "lalr1.cc"
 
 /* namespace to enclose parser in */
-%name-prefix="lazyNutOutput"
+%name-prefix="lazyNutOutputParser"
 
 /* set the parser's class identifier */
 %define "parser_class_name" "Parser"
@@ -424,7 +424,7 @@ start	: /* empty */
 
 %% /*** Additional Code ***/
 
-void lazyNutOutput::Parser::error(const Parser::location_type& l,
+void lazyNutOutputParser::Parser::error(const Parser::location_type& l,
 			    const std::string& m)
 {
     driver.error(l, m);

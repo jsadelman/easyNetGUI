@@ -93,7 +93,7 @@ SOURCES += driver.cpp nmConsole.cpp \
     plotwindow.cpp \
     lazynut.cpp \
     sessionmanager.cpp \
-    commandsequencer.cpp \
+    commandsequencer.cpp
 
 HEADERS  += \
     scanner.h driver.h  FlexLexer.h nmConsole.h \

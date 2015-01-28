@@ -264,12 +264,15 @@ NmConsole::NmConsole(QWidget *parent)
     readSettings();
     setCurrentFile(scriptEdit,"Untitled");
 
-    lazyNut = new LazyNut(this);
+//    lazyNut = new LazyNut(this);
 
-
-
-    connect(lazyNut,SIGNAL(outputReady(QString)),
-            cmdOutput,SLOT(displayOutput(QString)));
+    sessionManager = new SessionManager(objCatalogue,objTaxonomyModel,this);
+//    connect(lazyNut,SIGNAL(outputReady(QString)),sessionManager,SLOT(parseLazyNutOutput(QString)));
+    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
+    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
+    connect(sessionManager,SIGNAL(endObjHashModified()),designWindow,SLOT(objCatalogueChanged()));
+    connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),cmdOutput,SLOT(displayOutput(QString)));
+    connect(sessionManager,SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
 //    connect(lazyNut,SIGNAL(outputReady(QString)),
 //            queryProcessor,SLOT(getTree(QString)));
 
@@ -292,8 +295,7 @@ NmConsole::NmConsole(QWidget *parent)
         }
     }
     if (!lazyNutBat.isEmpty())
-        runLazyNutBat();
-
+        sessionManager->startLazyNut(lazyNutBat);
     //    commandSequencer = new CommandSequencer(lazyNut,this);
     //    connect(queryProcessor,SIGNAL(resultAvailable(QString)),
     //            commandSequencer,SLOT(receiveResult(QString)));
@@ -302,12 +304,6 @@ NmConsole::NmConsole(QWidget *parent)
     //    connect(queryProcessor,SIGNAL(commandReady(QString)),
     //            commandSequencer,SLOT(runCommand(QString)));
 
-    sessionManager = new SessionManager(lazyNut,objCatalogue,objTaxonomyModel,this);
-    connect(lazyNut,SIGNAL(outputReady(QString)),sessionManager,SLOT(parseLazyNutOutput(QString)));
-    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
-    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
-    connect(sessionManager,SIGNAL(endObjHashModified()),
-            designWindow,SLOT(objCatalogueChanged()));
 
 
     createActions();
@@ -468,7 +464,6 @@ bool NmConsole::saveAs()
 
 void NmConsole::runSelection()
 {
-
     sessionManager->runSelection(scriptEdit->textEdit->getSelectedText());
 }
 
@@ -496,14 +491,14 @@ void NmConsole::setEasyNetHome()
 {
     easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
     lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
-    runLazyNutBat();
+    sessionManager->startLazyNut(lazyNutBat);
 }
 
 void NmConsole::setLazyNutBat()
 {
     lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
                                               easyNetHome,QString("*.%1").arg(lazyNutExt));
-    runLazyNutBat();
+    sessionManager->startLazyNut(lazyNutBat);
 }
 
 void NmConsole::showPauseState(bool isPaused)
@@ -514,19 +509,27 @@ void NmConsole::showPauseState(bool isPaused)
         pauseAct->setIconText("PAUSE");
 }
 
-
-void NmConsole::runLazyNutBat()
+void NmConsole::lazyNutNotRunning()
 {
-    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
-    lazyNut->start(lazyNutBat);
-    if (lazyNut->state() == QProcess::NotRunning)
-    {
-        QMessageBox::critical(this, "critical",
-        QString("%1 script not running or not found.\n"
-                "Please select a valid %1 file from the menu Settings -> Set %1\n"
-                "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
-    }
+    QMessageBox::critical(this, "critical",
+    QString("%1 script not running or not found.\n"
+            "Please select a valid %1 file from the menu Settings -> Set %1\n"
+            "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
 }
+
+
+//void NmConsole::runLazyNutBat()
+//{
+//    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
+//    lazyNut->start(lazyNutBat);
+//    if (lazyNut->state() == QProcess::NotRunning)
+//    {
+//        QMessageBox::critical(this, "critical",
+//        QString("%1 script not running or not found.\n"
+//                "Please select a valid %1 file from the menu Settings -> Set %1\n"
+//                "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
+//    }
+//}
 
 
 
@@ -586,10 +589,10 @@ void NmConsole::createActions()
     setLazyNutBatAct->setStatusTip(QString(tr("Set %1").arg(lazyNutBasename)));
     connect(setLazyNutBatAct,SIGNAL(triggered()),this, SLOT(setLazyNutBat()));
 
-    synchModeAct = new QAction("run in synch mode",this);
-    synchModeAct->setCheckable(true);
-    synchModeAct->setChecked(false);
-    connect(synchModeAct,SIGNAL(toggled(bool)),sessionManager,SLOT(setSynchMode(bool)));
+//    synchModeAct = new QAction("run in synch mode",this);
+//    synchModeAct->setCheckable(true);
+//    synchModeAct->setChecked(false);
+//    connect(synchModeAct,SIGNAL(toggled(bool)),sessionManager,SLOT(setSynchMode(bool)));
 
     stopAct = new QAction("STOP",this);
     connect(stopAct,SIGNAL(triggered()),sessionManager,SLOT(stop()));
@@ -617,7 +620,7 @@ void NmConsole::createMenus()
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
     settingsMenu->addAction(setEasyNetHomeAct);
     settingsMenu->addAction(setLazyNutBatAct);
-    settingsMenu->addAction(synchModeAct);
+//    settingsMenu->addAction(synchModeAct);
 }
 
 void NmConsole::createToolBars()
