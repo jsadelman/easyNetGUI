@@ -132,18 +132,9 @@ ObjExplorer::ObjExplorer(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyMod
             lazyNutObjTableProxyModel,SLOT(mapIndexToSourceModel(QModelIndex)));
 
 
-    layout = new QVBoxLayout;
-
-    //splitter = new QSplitter(this);
-    layout->addWidget(objTaxonomyView);
     addWidget(objTaxonomyView);
-    //splitter->addWidget(lazyNutObjTableView);
-    layout->addWidget(lazyNutObjTableProxyView);
     addWidget(lazyNutObjTableProxyView);
-    layout->addWidget(lazyNutObjView);
     addWidget(lazyNutObjView);
-    setLayout(layout);
-    //setCentralWidget(splitter);
     lazyNutObjModel = new LazyNutObjModel(new LazyNutObj,objHash,this);
 
 

@@ -43,7 +43,7 @@ public:
     LazyNutObjTableProxyModel *lazyNutObjTableProxyModel;
 
     QSplitter *splitter;
-    QVBoxLayout *layout;
+//    QVBoxLayout *layout;
     QTableView *lazyNutObjTableView;
     QTableView *lazyNutObjTableProxyView;
     QTableView *lazyNutObjView;

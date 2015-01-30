@@ -65,10 +65,10 @@ private:
         QRegExp pattern;
         QTextCharFormat format;
     };
-    QVector<HighlightingRule> highlightingRules;
+    QList<QList<HighlightingRule> > highlightingRules;
 
-    QRegExp commentStartExpression;
-    QRegExp commentEndExpression;
+//    QRegExp commentStartExpression;
+//    QRegExp commentEndExpression;
 
     QTextCharFormat keywordFormat;
     QTextCharFormat classFormat;

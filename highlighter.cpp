@@ -44,64 +44,95 @@ Highlighter::Highlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
 
-    HighlightingRule rule;
+    // highlighting rules are applied layer after layer, here two layers.
+    // E.g. a keyword rule is applied first, then the line comment rule.
+    // In this way keywords in commented lines no not get highlighted.
+    // This solution is not completely general, but it's ok as long as
+    // higher layers cover more than lower layers, pretty much like layers of paint.
 
+    // first level rules
+    QList<HighlightingRule> ruleList;
+
+    HighlightingRule rule;
     keywordFormat.setForeground(Qt::darkBlue);
     keywordFormat.setFontWeight(QFont::Bold);
-    QStringList keywordPatterns;
-    keywordPatterns << "\\blayer\\b" << "\\bconnection\\b" << "\\bdatabase\\b"
-                    << "\\bfile\\b" << "\\bpattern\\b" << "\\bobserver\\b"
-                    << "\\bconversion\\b" << "\\bparameterset\\b" << "\\bsteps\\b"
-                    << "\\brepresentation\\b" << "\\bgroup\\b";
+//    QStringList keywordPatterns;
+//    keywordPatterns << "\\blayer\\b" << "\\bconnection\\b" << "\\bdatabase\\b"
+//                    << "\\bfile\\b" << "\\bpattern\\b" << "\\bobserver\\b"
+//                    << "\\bconversion\\b" << "\\bparameterset\\b" << "\\bsteps\\b"
+//                    << "\\brepresentation\\b" << "\\bgroup\\b";
+    QStringList keywords;
+    keywords << "layer" << "connection" << "database"
+             << "file" << "pattern" << "observer"
+             << "conversion" << "parameterset" << "steps"
+             << "representation" << "group";
+    keywords.replaceInStrings(QRegExp("(.*)"),"\\b\\1\\b");
 
-    foreach (const QString &pattern, keywordPatterns) {
-        rule.pattern = QRegExp(pattern);
-        rule.format = keywordFormat;
-        highlightingRules.append(rule);
-    }
+    rule.pattern = QRegExp(keywords.join("|"));
+    rule.format = keywordFormat;
+    ruleList.append(rule);
 
-    classFormat.setFontWeight(QFont::Bold);
-    classFormat.setForeground(Qt::darkMagenta);
-    rule.pattern = QRegExp("\\bQ[A-Za-z]+\\b");
-    rule.format = classFormat;
-    highlightingRules.append(rule);
+
+//    foreach (const QString &pattern, keywordPatterns) {
+//        rule.pattern = QRegExp(pattern);
+//        rule.format = keywordFormat;
+//        ruleList.append(rule);
+//    }
+
+
+
+//    classFormat.setFontWeight(QFont::Bold);
+//    classFormat.setForeground(Qt::darkMagenta);
+//    rule.pattern = QRegExp("\\bQ[A-Za-z]+\\b");
+//    rule.format = classFormat;
+//    highlightingRules.append(rule);
 
 
     loadLibraryFormat.setForeground(Qt::blue);
-    rule.pattern = QRegExp(".+(.so)"); // need to escape '.' ??
+    rule.pattern = QRegExp(".+(\\.so)");
     rule.format = loadLibraryFormat;
-    highlightingRules.append(rule);
+    ruleList.append(rule);
 
-    singleLineCommentFormat.setForeground(Qt::red);
-    rule.pattern = QRegExp("#[^(eN)][^\n]*");
-    rule.format = singleLineCommentFormat;
-    highlightingRules.append(rule);
-
-    eN_directiveFormat.setForeground(Qt::green);
-    rule.pattern = QRegExp("#eN[^\n]*");
-    rule.format = eN_directiveFormat;
-    highlightingRules.append(rule);
 
     queryFormat.setFontItalic(true);
-    rule.pattern = QRegExp("^query[^\n]*");
+    rule.pattern = QRegExp("^query[^\\n]*");
     rule.format = queryFormat;
-    highlightingRules.append(rule);
+    ruleList.append(rule);
 
-    multiLineCommentFormat.setForeground(Qt::red);
+//    multiLineCommentFormat.setForeground(Qt::red);
 
     quotationFormat.setForeground(Qt::darkGreen);
     rule.pattern = QRegExp("\".*\"");
     rule.format = quotationFormat;
-    highlightingRules.append(rule);
+    ruleList.append(rule);
 
-    functionFormat.setFontItalic(true);
-    functionFormat.setForeground(Qt::blue);
-    rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
-    rule.format = functionFormat;
-    highlightingRules.append(rule);
+    highlightingRules.append(ruleList);
 
-    commentStartExpression = QRegExp("/\\*");
-    commentEndExpression = QRegExp("\\*/");
+
+    // second level rules
+    ruleList.clear();
+
+    singleLineCommentFormat.setForeground(Qt::red);
+    rule.pattern = QRegExp("^#(?!eN)[^\\n]*");
+    rule.format = singleLineCommentFormat;
+    ruleList.append(rule);
+
+    eN_directiveFormat.setForeground(Qt::green);
+    rule.pattern = QRegExp("#eN[^\\n]*");
+    rule.format = eN_directiveFormat;
+    ruleList.append(rule);
+
+    highlightingRules.append(ruleList);
+
+
+//    functionFormat.setFontItalic(true);
+//    functionFormat.setForeground(Qt::blue);
+//    rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
+//    rule.format = functionFormat;
+//    highlightingRules.append(rule);
+
+//    commentStartExpression = QRegExp("/\\*");
+//    commentEndExpression = QRegExp("\\*/");
 
 
 }
@@ -109,7 +140,8 @@ Highlighter::Highlighter(QTextDocument *parent)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, highlightingRules) {
+    foreach (const QList<HighlightingRule> &rules, highlightingRules) {
+    foreach (const HighlightingRule &rule, rules) {
         QRegExp expression(rule.pattern);
         int index = expression.indexIn(text);
         while (index >= 0) {
@@ -117,25 +149,25 @@ void Highlighter::highlightBlock(const QString &text)
             setFormat(index, length, rule.format);
             index = expression.indexIn(text, index + length);
         }
-    }
-    setCurrentBlockState(0);
+    }}
+//    setCurrentBlockState(0);
 
-    int startIndex = 0;
-    if (previousBlockState() != 1)
-        startIndex = commentStartExpression.indexIn(text);
+//    int startIndex = 0;
+//    if (previousBlockState() != 1)
+//        startIndex = commentStartExpression.indexIn(text);
 
-    while (startIndex >= 0) {
-        int endIndex = commentEndExpression.indexIn(text, startIndex);
-        int commentLength;
-        if (endIndex == -1) {
-            setCurrentBlockState(1);
-            commentLength = text.length() - startIndex;
-        } else {
-            commentLength = endIndex - startIndex
-                            + commentEndExpression.matchedLength();
-        }
-        setFormat(startIndex, commentLength, multiLineCommentFormat);
-        startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
-    }
+//    while (startIndex >= 0) {
+//        int endIndex = commentEndExpression.indexIn(text, startIndex);
+//        int commentLength;
+//        if (endIndex == -1) {
+//            setCurrentBlockState(1);
+//            commentLength = text.length() - startIndex;
+//        } else {
+//            commentLength = endIndex - startIndex
+//                            + commentEndExpression.matchedLength();
+//        }
+//        setFormat(startIndex, commentLength, multiLineCommentFormat);
+//        startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+//    }
 }
 

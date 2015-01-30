@@ -264,22 +264,14 @@ NmConsole::NmConsole(QWidget *parent)
     readSettings();
     setCurrentFile(scriptEdit,"Untitled");
 
-//    lazyNut = new LazyNut(this);
-
     sessionManager = new SessionManager(objCatalogue,objTaxonomyModel,this);
-//    connect(lazyNut,SIGNAL(outputReady(QString)),sessionManager,SLOT(parseLazyNutOutput(QString)));
     connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
     connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
     connect(sessionManager,SIGNAL(endObjHashModified()),designWindow,SLOT(objCatalogueChanged()));
     connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),cmdOutput,SLOT(displayOutput(QString)));
     connect(sessionManager,SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
-//    connect(lazyNut,SIGNAL(outputReady(QString)),
-//            queryProcessor,SLOT(getTree(QString)));
-
-    connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),
-            designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
-    connect(this,SIGNAL(saveLayout()),
-            designWindow,SIGNAL(saveLayout()));
+    connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
+    connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
 
 
     if (lazyNutBat.isEmpty())
@@ -296,20 +288,12 @@ NmConsole::NmConsole(QWidget *parent)
     }
     if (!lazyNutBat.isEmpty())
         sessionManager->startLazyNut(lazyNutBat);
-    //    commandSequencer = new CommandSequencer(lazyNut,this);
-    //    connect(queryProcessor,SIGNAL(resultAvailable(QString)),
-    //            commandSequencer,SLOT(receiveResult(QString)));
         connect(inputCmdLine,SIGNAL(commandReady(QString)),
                 this,SLOT(runCmd(QString)));
-    //    connect(queryProcessor,SIGNAL(commandReady(QString)),
-    //            commandSequencer,SLOT(runCommand(QString)));
-
-
 
     createActions();
     createMenus();
     createToolBars();
-
     showViewMode(Welcome);
 }
 
@@ -518,21 +502,6 @@ void NmConsole::lazyNutNotRunning()
 }
 
 
-//void NmConsole::runLazyNutBat()
-//{
-//    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
-//    lazyNut->start(lazyNutBat);
-//    if (lazyNut->state() == QProcess::NotRunning)
-//    {
-//        QMessageBox::critical(this, "critical",
-//        QString("%1 script not running or not found.\n"
-//                "Please select a valid %1 file from the menu Settings -> Set %1\n"
-//                "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
-//    }
-//}
-
-
-
 void NmConsole::createActions()
 {
     createViewActions();
@@ -589,11 +558,6 @@ void NmConsole::createActions()
     setLazyNutBatAct->setStatusTip(QString(tr("Set %1").arg(lazyNutBasename)));
     connect(setLazyNutBatAct,SIGNAL(triggered()),this, SLOT(setLazyNutBat()));
 
-//    synchModeAct = new QAction("run in synch mode",this);
-//    synchModeAct->setCheckable(true);
-//    synchModeAct->setChecked(false);
-//    connect(synchModeAct,SIGNAL(toggled(bool)),sessionManager,SLOT(setSynchMode(bool)));
-
     stopAct = new QAction("STOP",this);
     connect(stopAct,SIGNAL(triggered()),sessionManager,SLOT(stop()));
     pauseAct = new QAction("PAUSE",this);
@@ -645,8 +609,8 @@ void NmConsole::createToolBars()
 
 
     infoToolBar = new QToolBar(this);
-    infoToolBar->setStyleSheet("QToolButton::menu-indicator {image: url(myindicator.png); } \
-//                subcontrol-position: right center; subcontrol-origin: padding; left: -2px;}"
+    infoToolBar->setStyleSheet("QToolButton::menu-indicator {image: url(myindicator.png); \
+                subcontrol-position: right center; subcontrol-origin: padding; left: -2px;}"
     "QToolButton {font-size: 9pt; color: \"white\"; icon-size: 30px; min-width: 5em; padding: 3px;} "
     "QToolButton:pressed {border: 2px solid #8f8f91; border-radius: 6px; background-color:red;}"
     "QLabel { font-size: 8pt; color: \"white\"; icon-size: 30px; } "
@@ -802,7 +766,10 @@ void NmConsole::showViewMode(int viewModeInt)
     switch (viewModeInt) {
     case Welcome:
         welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
+//        QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
+        webWelcomeScreen->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
         webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
+
         dockWebWelcome->show();
         dockWelcome->show();
         break;
