@@ -95,7 +95,7 @@ void CmdOutput::displayOutput(const QString & output)
 
 
 
-NmConsole::NmConsole(QWidget *parent)
+easyNetMainWindow::easyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowIcon(QIcon(":/images/zebra.png"));
@@ -202,16 +202,6 @@ NmConsole::NmConsole(QWidget *parent)
     addDockWidget(Qt::RightDockWidgetArea, dockCommandLog);
 
 
-//    setCentralWidget(lazyNutConsole);
-// //    nmCmd = new NmCmd(this);
-// //    setCentralWidget(nmCmd);
-//    scriptEditor = new LazyNutScriptEditor(this);
-//    dockEdit = new QDockWidget(tr("my_nm_script"), this);
-//    dockEdit->setAllowedAreas(  Qt::LeftDockWidgetArea |
-//                                Qt::RightDockWidgetArea);
-//    dockEdit->setWidget(scriptEditor);
-//    addDockWidget(Qt::RightDockWidgetArea, dockEdit);
-//    dockEdit->hide();
 
     objTaxonomyModel = new TreeModel(QStringList{"Object taxonomy"},this);
     objTaxonomyModel->appendValue(QString{"object"});
@@ -222,7 +212,6 @@ NmConsole::NmConsole(QWidget *parent)
 
     objCatalogue = new LazyNutObjCatalogue();
 
-    //queryProcessor = new QueryProcessor(objCatalogue,objTaxonomyModel,this);
     objExplorer = new ObjExplorer(objCatalogue,objTaxonomyModel,this);
 
     dockExplorer = new QDockWidget(tr("Object Explorer"), this);
@@ -244,7 +233,6 @@ NmConsole::NmConsole(QWidget *parent)
                                     Qt::RightDockWidgetArea);
     dockDesignWindow->setWidget(designWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
-        //dockDesignWindow->hide();
 
 
     // signals begin/endObjHashModified are defined in SessionManager and ObjExplorer.
@@ -298,7 +286,7 @@ NmConsole::NmConsole(QWidget *parent)
 }
 
 
-void NmConsole::readSettings()
+void easyNetMainWindow::readSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     easyNetHome = settings.value("easyNetHome","").toString();
@@ -310,7 +298,7 @@ void NmConsole::readSettings()
     move(pos);
 }
 
-void NmConsole::writeSettings()
+void easyNetMainWindow::writeSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     settings.setValue("easyNetHome", easyNetHome);
@@ -322,20 +310,15 @@ void NmConsole::writeSettings()
 
 
 
-void NmConsole::closeEvent(QCloseEvent *event)
+void easyNetMainWindow::closeEvent(QCloseEvent *event)
 {
         writeSettings();
-        lazyNut->kill();
-        // wait until the scene has saved its layout
-//        QEventLoop waitUntilLayoutSaved;
-//        connect(designWindow,SIGNAL(layoutSaveAttempted()),
-//                &waitUntilLayoutSaved,SLOT(quit()));
+        sessionManager->killLazyNut();
         emit saveLayout();
-//        waitUntilLayoutSaved.exec();
         event->accept();
 }
 
-void NmConsole::initViewActions()
+void easyNetMainWindow::initViewActions()
 {
     viewActionIcons.insert(Welcome, new QIcon(":/images/zebra_64x64.png"));
     viewActionIcons.insert(Model, new QIcon(":/images/layers-8x.png"));
@@ -365,7 +348,7 @@ void NmConsole::initViewActions()
     viewActionStatusTips.insert(Code, tr("Display code view"));
 }
 
-void NmConsole::createViewActions()
+void easyNetMainWindow::createViewActions()
 {
     initViewActions();
     viewModeSignalMapper = new QSignalMapper(this);
@@ -387,17 +370,17 @@ void NmConsole::createViewActions()
     connect(this,SIGNAL(viewModeClicked(int)),this,SLOT(showViewMode(int)));
 }
 
-void NmConsole::newScriptFile()
+void easyNetMainWindow::newScriptFile()
 {
     newFile(scriptEdit);
 }
 
-void NmConsole::newLogFile()
+void easyNetMainWindow::newLogFile()
 {
     newFile(commandLog);
 }
 
-void NmConsole::newFile(EditWindow* window)
+void easyNetMainWindow::newFile(EditWindow* window)
 {
     if (!(sender()))
             return;
@@ -409,7 +392,7 @@ void NmConsole::newFile(EditWindow* window)
     }
 }
 
-void NmConsole::open()
+void easyNetMainWindow::open()
 {
  //   if (maybeSave()) {
         QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), scriptsDir, tr("Script Files (*.eNs *.eNm)"));
@@ -423,46 +406,24 @@ void NmConsole::open()
  //   }
 }
 
-/*bool NmConsole::save()
-{
-    if (curFile.isEmpty()) {
-        return saveAs();
-    } else {
-        return saveFile(curFile);
-    }
-}
 
-bool NmConsole::saveAs()
-{
-    QFileDialog dialog(this);
-    dialog.setWindowModality(Qt::WindowModal);
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.exec();
-    QStringList files = dialog.selectedFiles();
-
-    if (files.isEmpty())
-        return false;
-
-    return saveFile(files.at(0));
-}*/
-
-void NmConsole::runSelection()
+void easyNetMainWindow::runSelection()
 {
     sessionManager->runSelection(scriptEdit->textEdit->getSelectedText());
 }
 
-void NmConsole::runCmd(QString cmd)
+void easyNetMainWindow::runCmd(QString cmd)
 {
     sessionManager->runSelection(QStringList(cmd));
 }
 
-void NmConsole::runModel()
+void easyNetMainWindow::runModel()
 {
     sessionManager->runModel(scriptEdit->textEdit->getAllText());
     //emit savedLayoutToBeLoaded(curJson);
 }
 
-void NmConsole::echoCommand(const QString &line)
+void easyNetMainWindow::echoCommand(const QString &line)
 {
 //    QString return_line = runCmd(line);
     runCmd(line);
@@ -471,21 +432,21 @@ void NmConsole::echoCommand(const QString &line)
         commandLog->textEdit->insertPlainText(line);
 }
 
-void NmConsole::setEasyNetHome()
+void easyNetMainWindow::setEasyNetHome()
 {
     easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
     lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
     sessionManager->startLazyNut(lazyNutBat);
 }
 
-void NmConsole::setLazyNutBat()
+void easyNetMainWindow::setLazyNutBat()
 {
     lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
                                               easyNetHome,QString("*.%1").arg(lazyNutExt));
     sessionManager->startLazyNut(lazyNutBat);
 }
 
-void NmConsole::showPauseState(bool isPaused)
+void easyNetMainWindow::showPauseState(bool isPaused)
 {
     if (isPaused)
         pauseAct->setIconText("RESUME");
@@ -493,7 +454,7 @@ void NmConsole::showPauseState(bool isPaused)
         pauseAct->setIconText("PAUSE");
 }
 
-void NmConsole::lazyNutNotRunning()
+void easyNetMainWindow::lazyNutNotRunning()
 {
     QMessageBox::critical(this, "critical",
     QString("%1 script not running or not found.\n"
@@ -502,7 +463,7 @@ void NmConsole::lazyNutNotRunning()
 }
 
 
-void NmConsole::createActions()
+void easyNetMainWindow::createActions()
 {
     createViewActions();
 
@@ -525,17 +486,6 @@ void NmConsole::createActions()
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-
-
-    //saveAct = new QAction(tr("&Save"), this);
-    //saveAct->setShortcuts(QKeySequence::Save);
-    //saveAct->setStatusTip(tr("Save the document to disk"));
-    //connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
-
-    //saveAsAct = new QAction(tr("Save &As..."), this);
-    //saveAsAct->setShortcuts(QKeySequence::SaveAs);
-    //saveAsAct->setStatusTip(tr("Save the document under a new name"));
-    //connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
@@ -565,7 +515,7 @@ void NmConsole::createActions()
     connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 }
 
-void NmConsole::createMenus()
+void easyNetMainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     //fileMenu->addAction(newAct);
@@ -587,7 +537,7 @@ void NmConsole::createMenus()
 //    settingsMenu->addAction(synchModeAct);
 }
 
-void NmConsole::createToolBars()
+void easyNetMainWindow::createToolBars()
 {
 
 /*    spacing->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -664,7 +614,7 @@ void NmConsole::createToolBars()
 }
 
 
-void NmConsole::loadFile(const QString &fileName)
+void easyNetMainWindow::loadFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -715,7 +665,7 @@ void NmConsole::loadFile(const QString &fileName)
     return true;
 }*/
 
-void NmConsole::setCurrentFile(EditWindow *window, const QString &fileName)
+void easyNetMainWindow::setCurrentFile(EditWindow *window, const QString &fileName)
 {
     window->setCurrentFile(fileName);
     window->textEdit->document()->setModified(false);
@@ -724,7 +674,7 @@ void NmConsole::setCurrentFile(EditWindow *window, const QString &fileName)
     curJson = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName().append(".json"));
 }
 
-QString NmConsole::strippedName(const QString &fullFileName)
+QString easyNetMainWindow::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 }
@@ -745,7 +695,7 @@ QString NmConsole::strippedName(const QString &fullFileName)
     return true;
 }*/
 
-void NmConsole::hideAllDocks()
+void easyNetMainWindow::hideAllDocks()
 {
 //    dockZeb->hide();
     dockWelcome->hide();
@@ -760,7 +710,7 @@ void NmConsole::hideAllDocks()
 }
 
 
-void NmConsole::showViewMode(int viewModeInt)
+void easyNetMainWindow::showViewMode(int viewModeInt)
 {
     hideAllDocks();
     switch (viewModeInt) {
@@ -800,7 +750,7 @@ void NmConsole::showViewMode(int viewModeInt)
 }
 
 
-void NmConsole::run()
+void easyNetMainWindow::run()
 {
     runModel(); // ultimately this will have different action depending on which mode is active
 

@@ -8,13 +8,13 @@ class QAction;
 class QMenu;
 class QPlainTextEdit;
 class CodeEditor;
-class NmConsole;
+class EasyNetMainWindow;
 QT_END_NAMESPACE
 
 class EditWindow : public QMainWindow
 {
     Q_OBJECT
-    friend class NmConsole;
+    friend class EasyNetMainWindow;
 public:
     EditWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool isReadOnly = false);
     CodeEditor      *textEdit;

@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QFont largerFont("Georgia", 12);
     a.setFont(largerFont);
-    NmConsole w;
+    EasyNetMainWindow w;
     w.showMaximized();
 
     return a.exec();

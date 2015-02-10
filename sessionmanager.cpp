@@ -261,6 +261,11 @@ void SessionManager::dispatchLazyNutOutput(QString lazyNutOutput, JobOrigin jobO
         processLazyNutOutput(lazyNutOutput);
 }
 
+void SessionManager::killLazyNut()
+{
+    lazyNut->kill();
+}
+
 
 
 

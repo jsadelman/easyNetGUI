@@ -158,7 +158,7 @@ public slots:
 
 //};
 
-class NmConsole : public QMainWindow
+class EasyNetMainWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -176,7 +176,7 @@ public:
         Code,
         ViewMode_END
     };
-    NmConsole(QWidget *parent = 0);
+    EasyNetMainWindow(QWidget *parent = 0);
 
 signals:
     void savedLayoutToBeLoaded(QString);
@@ -257,7 +257,7 @@ private:
     CmdOutput       *cmdOutput;
     InputCmdLine    *inputCmdLine;
     //NM              *lazyNut;
-    LazyNut         *lazyNut;
+//    LazyNut         *lazyNut;
     CommandSequencer    *commandSequencer;
     SessionManager      *sessionManager;
     TreeModel       *objTaxonomyModel;

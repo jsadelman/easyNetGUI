@@ -85,6 +85,9 @@ DesignWindow::DesignWindow(QWidget *parent)
     view = new QGraphicsView(scene);
 
     layout->addWidget(view);
+    view->setDragMode(QGraphicsView::RubberBandDrag);
+
+    view->setRubberBandSelectionMode(Qt::ContainsItemShape);
 
     //QWidget *widget = new QWidget;
     //widget->setLayout(layout);
