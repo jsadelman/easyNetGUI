@@ -95,7 +95,7 @@ void CmdOutput::displayOutput(const QString & output)
 
 
 
-easyNetMainWindow::easyNetMainWindow(QWidget *parent)
+EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowIcon(QIcon(":/images/zebra.png"));
@@ -286,7 +286,7 @@ easyNetMainWindow::easyNetMainWindow(QWidget *parent)
 }
 
 
-void easyNetMainWindow::readSettings()
+void EasyNetMainWindow::readSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     easyNetHome = settings.value("easyNetHome","").toString();
@@ -298,7 +298,7 @@ void easyNetMainWindow::readSettings()
     move(pos);
 }
 
-void easyNetMainWindow::writeSettings()
+void EasyNetMainWindow::writeSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     settings.setValue("easyNetHome", easyNetHome);
@@ -310,7 +310,7 @@ void easyNetMainWindow::writeSettings()
 
 
 
-void easyNetMainWindow::closeEvent(QCloseEvent *event)
+void EasyNetMainWindow::closeEvent(QCloseEvent *event)
 {
         writeSettings();
         sessionManager->killLazyNut();
@@ -318,7 +318,7 @@ void easyNetMainWindow::closeEvent(QCloseEvent *event)
         event->accept();
 }
 
-void easyNetMainWindow::initViewActions()
+void EasyNetMainWindow::initViewActions()
 {
     viewActionIcons.insert(Welcome, new QIcon(":/images/zebra_64x64.png"));
     viewActionIcons.insert(Model, new QIcon(":/images/layers-8x.png"));
@@ -348,7 +348,7 @@ void easyNetMainWindow::initViewActions()
     viewActionStatusTips.insert(Code, tr("Display code view"));
 }
 
-void easyNetMainWindow::createViewActions()
+void EasyNetMainWindow::createViewActions()
 {
     initViewActions();
     viewModeSignalMapper = new QSignalMapper(this);
@@ -370,17 +370,17 @@ void easyNetMainWindow::createViewActions()
     connect(this,SIGNAL(viewModeClicked(int)),this,SLOT(showViewMode(int)));
 }
 
-void easyNetMainWindow::newScriptFile()
+void EasyNetMainWindow::newScriptFile()
 {
     newFile(scriptEdit);
 }
 
-void easyNetMainWindow::newLogFile()
+void EasyNetMainWindow::newLogFile()
 {
     newFile(commandLog);
 }
 
-void easyNetMainWindow::newFile(EditWindow* window)
+void EasyNetMainWindow::newFile(EditWindow* window)
 {
     if (!(sender()))
             return;
@@ -392,7 +392,7 @@ void easyNetMainWindow::newFile(EditWindow* window)
     }
 }
 
-void easyNetMainWindow::open()
+void EasyNetMainWindow::open()
 {
  //   if (maybeSave()) {
         QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), scriptsDir, tr("Script Files (*.eNs *.eNm)"));
@@ -407,23 +407,23 @@ void easyNetMainWindow::open()
 }
 
 
-void easyNetMainWindow::runSelection()
+void EasyNetMainWindow::runSelection()
 {
     sessionManager->runSelection(scriptEdit->textEdit->getSelectedText());
 }
 
-void easyNetMainWindow::runCmd(QString cmd)
+void EasyNetMainWindow::runCmd(QString cmd)
 {
     sessionManager->runSelection(QStringList(cmd));
 }
 
-void easyNetMainWindow::runModel()
+void EasyNetMainWindow::runModel()
 {
     sessionManager->runModel(scriptEdit->textEdit->getAllText());
     //emit savedLayoutToBeLoaded(curJson);
 }
 
-void easyNetMainWindow::echoCommand(const QString &line)
+void EasyNetMainWindow::echoCommand(const QString &line)
 {
 //    QString return_line = runCmd(line);
     runCmd(line);
@@ -432,21 +432,21 @@ void easyNetMainWindow::echoCommand(const QString &line)
         commandLog->textEdit->insertPlainText(line);
 }
 
-void easyNetMainWindow::setEasyNetHome()
+void EasyNetMainWindow::setEasyNetHome()
 {
     easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
     lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
     sessionManager->startLazyNut(lazyNutBat);
 }
 
-void easyNetMainWindow::setLazyNutBat()
+void EasyNetMainWindow::setLazyNutBat()
 {
     lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
                                               easyNetHome,QString("*.%1").arg(lazyNutExt));
     sessionManager->startLazyNut(lazyNutBat);
 }
 
-void easyNetMainWindow::showPauseState(bool isPaused)
+void EasyNetMainWindow::showPauseState(bool isPaused)
 {
     if (isPaused)
         pauseAct->setIconText("RESUME");
@@ -454,7 +454,7 @@ void easyNetMainWindow::showPauseState(bool isPaused)
         pauseAct->setIconText("PAUSE");
 }
 
-void easyNetMainWindow::lazyNutNotRunning()
+void EasyNetMainWindow::lazyNutNotRunning()
 {
     QMessageBox::critical(this, "critical",
     QString("%1 script not running or not found.\n"
@@ -463,7 +463,7 @@ void easyNetMainWindow::lazyNutNotRunning()
 }
 
 
-void easyNetMainWindow::createActions()
+void EasyNetMainWindow::createActions()
 {
     createViewActions();
 
@@ -515,7 +515,7 @@ void easyNetMainWindow::createActions()
     connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 }
 
-void easyNetMainWindow::createMenus()
+void EasyNetMainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     //fileMenu->addAction(newAct);
@@ -537,7 +537,7 @@ void easyNetMainWindow::createMenus()
 //    settingsMenu->addAction(synchModeAct);
 }
 
-void easyNetMainWindow::createToolBars()
+void EasyNetMainWindow::createToolBars()
 {
 
 /*    spacing->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -614,7 +614,7 @@ void easyNetMainWindow::createToolBars()
 }
 
 
-void easyNetMainWindow::loadFile(const QString &fileName)
+void EasyNetMainWindow::loadFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -665,7 +665,7 @@ void easyNetMainWindow::loadFile(const QString &fileName)
     return true;
 }*/
 
-void easyNetMainWindow::setCurrentFile(EditWindow *window, const QString &fileName)
+void EasyNetMainWindow::setCurrentFile(EditWindow *window, const QString &fileName)
 {
     window->setCurrentFile(fileName);
     window->textEdit->document()->setModified(false);
@@ -674,7 +674,7 @@ void easyNetMainWindow::setCurrentFile(EditWindow *window, const QString &fileNa
     curJson = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName().append(".json"));
 }
 
-QString easyNetMainWindow::strippedName(const QString &fullFileName)
+QString EasyNetMainWindow::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 }
@@ -695,7 +695,7 @@ QString easyNetMainWindow::strippedName(const QString &fullFileName)
     return true;
 }*/
 
-void easyNetMainWindow::hideAllDocks()
+void EasyNetMainWindow::hideAllDocks()
 {
 //    dockZeb->hide();
     dockWelcome->hide();
@@ -710,7 +710,7 @@ void easyNetMainWindow::hideAllDocks()
 }
 
 
-void easyNetMainWindow::showViewMode(int viewModeInt)
+void EasyNetMainWindow::showViewMode(int viewModeInt)
 {
     hideAllDocks();
     switch (viewModeInt) {
@@ -750,7 +750,7 @@ void easyNetMainWindow::showViewMode(int viewModeInt)
 }
 
 
-void easyNetMainWindow::run()
+void EasyNetMainWindow::run()
 {
     runModel(); // ultimately this will have different action depending on which mode is active
 
