@@ -6,7 +6,7 @@
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
     : lazyNut(lazyNut), emptyLineRex(QRegExp("^[\\s\\t]*$")) ,ready(true),
-      lazyNutBuffer(""), baseOffset(0), QObject(parent)
+      lazyNutBuffer(""), baseOffset(0), jobOrigin(JobOrigin::User), QObject(parent)
 {
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(receiveLazyNutOutput(QString)));
 }

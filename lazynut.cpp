@@ -19,5 +19,8 @@ void LazyNut::sendCommand(QString command)
 void LazyNut::getOutput()
 {
     //qDebug () << "LazyNut::getOutput()";
-    emit outputReady(QString(readAllStandardError()));
+    QByteArray ba = readAllStandardError();
+    QString st = QString(ba);
+    emit outputReady(st);
+//    emit outputReady(QString(readAllStandardError()));
 }

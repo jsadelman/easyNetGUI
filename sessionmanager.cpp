@@ -22,9 +22,13 @@ typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
 
 SessionManager::SessionManager(LazyNutObjCatalogue* objCatalogue, TreeModel* objTaxonomyModel, QObject *parent)
     : objCatalogue(objCatalogue), objTaxonomyModel(objTaxonomyModel), QObject(parent),
-      lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)\\n")
+      lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w{16})\\n")
 {
+    lazyNut = new LazyNut(this);
+
     initParser();
+    startCommandSequencer();
+
 //    context = new QueryContext;
 //    driver = new lazyNutOutputParser::Driver(*context);
 //    lazyNutOutputProcessor = new LazyNutOutputProcessor(objCatalogue,objTaxonomyModel,this);
@@ -59,7 +63,7 @@ void SessionManager::initParser()
 
 void SessionManager::startLazyNut(QString lazyNutBat)
 {
-    lazyNut = new LazyNut(this);
+//    lazyNut = new LazyNut(this);
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
     lazyNut->start(lazyNutBat);
@@ -73,14 +77,15 @@ void SessionManager::startLazyNut(QString lazyNutBat)
 
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {
-    emit userLazyNutOutputReady(lazyNutOutput);
+//    emit userLazyNutOutputReady(lazyNutOutput);
     lazyNutHeaderBuffer.append(lazyNutOutput);
     if (lazyNutHeaderBuffer.contains(OOBrex))
     {
         OOBsecret = OOBrex.cap(1);
+        qDebug() << OOBsecret;
         lazyNutHeaderBuffer.clear();
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
-        startCommandSequencer();
+//        startCommandSequencer();
     }
 }
 
