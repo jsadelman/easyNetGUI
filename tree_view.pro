@@ -64,7 +64,7 @@ bisonheader.CONFIG += target_predeps no_link
 QMAKE_EXTRA_COMPILERS += bisonheader
 
 
-QT      += core gui
+QT      += core gui xml
 QT      += webkit webkitwidgets
 QT      += svg
 

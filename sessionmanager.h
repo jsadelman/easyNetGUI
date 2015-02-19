@@ -4,9 +4,13 @@
 #include <QString>
 #include <QObject>
 #include <QStateMachine>
+#include <QXmlStreamReader>
+
 
 #include "jobqueue.h"
 #include "enumclasses.h"
+
+class QDomDocument;
 
 
 class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
@@ -88,7 +92,8 @@ private slots:
 
     void getOOB(const QString &lazyNutOutput);
     void startCommandSequencer();
-    void processLazyNutOutput(QString lno);
+//    void processLazyNutOutput(QString lno);
+//    void processAnswers(QString answers);
 
     // general macro operations
     void macroStarted();
@@ -103,19 +108,28 @@ private slots:
     void clearRecentlyModified();
     void getDescriptions();
 
-     void dispatchLazyNutOutput(QString lazyNutOutput, JobOrigin jobOrigin);
+//     void dispatchLazyNutOutput(QString lazyNutOutput, JobOrigin jobOrigin);
+
+     void updateRecentlyModified(QStringList _recentlyModified);
+     void upadeDescription(QDomDocument* domDoc);
 
 private:
 
     void initParser();
     void updateObjects();
     bool parseLazyNutOutput();
+    // parseXXX methods will be moved in a separate xml parse class
+//    void parseXmlAnswers();
+//    void parseSubtypes(QString type);
+//    void parseRecentlyModified();
+//    void parseDescription();
 
     QStateMachine *buildMacro();
     MacroQueue *macroQueue;
     CommandSequencer *commandSequencer;
     LazyNut* lazyNut;
     QString lazyNutOutput;
+    QXmlStreamReader xml;
 
     QueryContext* context;
     lazyNutOutputParser::Driver* driver;

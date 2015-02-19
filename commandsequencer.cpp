@@ -2,13 +2,34 @@
 #include "lazynut.h"
 
 #include <QDebug>
+#include <QDomDocument>
 
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
-    : lazyNut(lazyNut), emptyLineRex(QRegExp("^[\\s\\t]*$")) ,ready(true),
-      lazyNutBuffer(""), baseOffset(0), QObject(parent)
+    : lazyNut(lazyNut), ready(true), QObject(parent)
 {
-    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(receiveLazyNutOutput(QString)));
+    initProcessLazyNutOutput();
+    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
+}
+
+
+void CommandSequencer::initProcessLazyNutOutput()
+{
+    jobOrigin = JobOrigin::User;
+    emptyLineRex = QRegExp("^[\\s\\t]*$");
+    errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
+    answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
+    eNelementsTagRex = QRegExp("(</?)eNelements(>)");
+    lazyNutBuffer.clear();
+    answers.clear();
+    baseOffset = 0;
+    xmlCmdTags = QVector<QString>(LazyNutCommandType_MAX + 1);
+    xmlCmdTags[description] = "description";
+    xmlCmdTags[recently_modified] = "recently_modified";
+    xmlCmdTags[subtypes] = "subtypes";
+    // etc..
+    queryTypes << description << recently_modified << subtypes; // etc
+
 }
 
 void CommandSequencer::runCommands(QStringList commands, JobOrigin origin)
@@ -28,7 +49,7 @@ void CommandSequencer::runCommands(QStringList commands, JobOrigin origin)
     if (commandList.size() == 0)
     {
         // likely the user has selected only empty lines (by mistake)
-        emit commandsExecuted("",jobOrigin);
+        emit commandsExecuted();
         return;
     }
     ready = false;
@@ -45,39 +66,115 @@ void CommandSequencer::runCommand(QString command, JobOrigin origin)
     runCommands(QStringList{command}, origin);
 }
 
-void CommandSequencer::receiveLazyNutOutput(const QString &lazyNutOutput)
+void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
 {
     if (jobOrigin == JobOrigin::User)
-        emit userLazyNutOutputReady(lazyNutOutput);
+        emit userLazyNutOutputReady(lazyNutOutput); // display on console
     // else send it to some log file or other location
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
-        return; // maybe error, maybe used for startup header
+        return; // startup header or other spontaneous lazyNut output, or synch error
     QString currentCmd = commandList.first();
+    LazyNutCommandType currentCmdType;
+    if (jobOrigin == JobOrigin::GUI)
+    {
+        if (currentCmd.contains("description"))
+            currentCmdType = description;
+        else if (currentCmd.contains("recently_modified"))
+            currentCmdType = recently_modified;
+        else if (currentCmd.contains("subtypes"))
+            currentCmdType = subtypes;
+        else
+            ;// etc
+    }
+    // if GUI, isolate the (only) ANSWER.
+    // if description, substitute <eNelement> with <description>
+    // if subtypes, substitute <eNelement> with <subtypes type="layer">
+    // extracting "layer" from currentCmd
+    // if get, and only plots can be got (?), strip the first line
+    // NOTE, in case of plot get only one  get command can be sent in a cmd sequence.
+    // Then, collate all answers (many XML from queries, or one SVG, or XML from R)
+    // if query, package all into a <answers> root, or <R> if R.
+    // if currentCmdType == some query type
+    //  emit queryReady(QString answerXML)
+    // else if currentCmdType == R
+    // emit ROutputReady, or dataframeReady(QString dataframeXML)
+    // else if currentCmdType == SVG
+    // emit SVGReady(QString)
+    // Each signal is connected to a dedicated slot in SessionManager, that does the job,
+    // e.g. updates the obj catalogue. Obligatorily after that it must
+    // emit commandsExecuted();
+    // in case of User origin, commandsExecuted() is emitted from here,
+    // and repeated by SessionManager.
+
     QRegExp beginRex(QString("BEGIN: %1\\n").arg(QRegExp::escape(currentCmd)));
     QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(QRegExp::escape(currentCmd)));
-    QRegExp errorRex("ERROR: [^\\n]*(?=\\n)");
     int beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
     int endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
     while (baseOffset <= beginOffset && beginOffset < endOffset)
     {
-        // signal errors
+        // extract ERROR lines
         int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
         QStringList errorList = QStringList();
         while (beginOffset < errorOffset && errorOffset < endOffset)
         {
-            errorList << errorRex.cap();
+            errorList << errorRex.cap(1);
             errorOffset = errorRex.indexIn(lazyNutBuffer,errorOffset+1);
         }
         if (!errorList.isEmpty())
             emit cmdError(currentCmd,errorList);
 
-        // tick current cmd
+        // grab ANSWER (assume there's only one)
+        if (jobOrigin == JobOrigin::GUI)
+        {
+            int answerOffset = answerRex.indexIn(lazyNutBuffer,beginOffset);
+            if (beginOffset < answerOffset && answerOffset < endOffset)
+            {
+                QString answer = answerRex.cap(1);
+                if (queryTypes.contains(currentCmdType))
+                {
+                    QDomDocument *domDoc = new QDomDocument;
+                    domDoc->setContent(answer);
+                    if (currentCmdType == recently_modified)
+                    {
+                        // retreive obj name list and send it to SessionManager
+                        QStringList recentlyModified = domDoc->documentElement().text().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                        delete domDoc;
+                        emit recentlyModifiedReady(recentlyModified);
+                    }
+                    else if (currentCmdType == subtypes)
+                    {
+                        // get the last word in the cmd line, e.g. xml subtypes layer
+                        QString type = currentCmd.simplified().section(QRegExp("\\s+"),-1,-1);
+                        // change <eNelements> into <string label="type" value="layer">
+                        // stub
+                        qDebug() << type << domDoc->toString();
+                        delete domDoc;
+                    }
+                    else if (currentCmdType == description)
+                    {
+                        emit descriptionReady(domDoc);
+                    }
+                    // else if ...
+                }
+                // else if R, else if SVG, process accordingly
+            }
+        }
         commandList.removeFirst();
         if (commandList.isEmpty())
         {
+//            if (jobOrigin == JobOrigin::User)
+                emit commandsExecuted();
+            // else dispatch ANSWERs based on the type of the last cmd
+            // under the assumption that all cmds in a GUI-generated commandList are of the same type
+//            else if (jobOrigin == JobOrigin::GUI && queryTypes.contains(currentCmdType))
+//            {
+//                emit queryAnswersReady(answers);
+//                answers.clear();
+//            }
+//            else if (jobOrigin == JobOrigin::GUI && currentCmdType == svg)
+//                emit svgReady(svg);
             baseOffset = 0;
-            emit commandsExecuted(lazyNutBuffer,jobOrigin);
             lazyNutBuffer.clear();
             ready = true;
             emit isReady(ready);
