@@ -203,16 +203,16 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
 
-    objTaxonomyModel = new TreeModel(QStringList{"Object taxonomy"},this);
-    objTaxonomyModel->appendValue(QString{"object"});
-    // type
-    QModelIndex parentIndex = objTaxonomyModel->index(0,0);
-    foreach (QString type, lazyNutObjTypes)
-        objTaxonomyModel->appendValue(type,parentIndex);
+//    objTaxonomyModel = new TreeModel(QStringList{"Object taxonomy"},this);
+//    objTaxonomyModel->appendValue(QString{"object"});
+//    // type
+//    QModelIndex parentIndex = objTaxonomyModel->index(0,0);
+//    foreach (QString type, lazyNutObjTypes)
+//        objTaxonomyModel->appendValue(type,parentIndex);
 
-    objCatalogue = new LazyNutObjCatalogue();
+    objectCatalogue = new LazyNutObjectCatalogue;
 
-    objExplorer = new ObjExplorer(objCatalogue,objTaxonomyModel,this);
+    objExplorer = new ObjExplorer(objectCatalogue,this);
 
     dockExplorer = new QDockWidget(tr("Object Explorer"), this);
     dockExplorer->setAllowedAreas( Qt::RightDockWidgetArea );
@@ -221,12 +221,11 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
 
-    designWindow = new DesignWindow(this);
-    designWindow->setObjCatalogue(objCatalogue);
-    connect(designWindow,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)),
-            objExplorer,SLOT(setObj(LazyNutObj*,LazyNutObjCatalogue*)));
-    connect(objExplorer,SIGNAL(objSelected(QString)),
-            designWindow,SIGNAL(objSelected(QString)));
+    designWindow = new DesignWindow(objectCatalogue, this);
+    connect(designWindow,SIGNAL(objectSelected(QString)),
+            objExplorer,SLOT(setObjFromObjName(QString)));
+    connect(objExplorer,SIGNAL(objectSelected(QString)),
+            designWindow,SLOT(dispatchObjectSelected(QString)));
 
     dockDesignWindow = new QDockWidget(tr("Design Window"), this);
     dockDesignWindow->setAllowedAreas(  Qt::LeftDockWidgetArea |
@@ -252,9 +251,11 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     readSettings();
     setCurrentFile(scriptEdit,"Untitled");
 
-    sessionManager = new SessionManager(objCatalogue,objTaxonomyModel,this);
-    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
-    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
+    sessionManager = new SessionManager(this);
+    connect(sessionManager,SIGNAL(descriptionReady(QDomDocument*)),
+            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
+//    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
+//    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
     connect(sessionManager,SIGNAL(endObjHashModified()),designWindow,SLOT(objCatalogueChanged()));
     connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),cmdOutput,SLOT(displayOutput(QString)));
     connect(sessionManager,SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));

@@ -81,7 +81,6 @@ SOURCES += driver.cpp nmConsole.cpp \
     querycontext.cpp \
     objexplorer.cpp \
     lazynutobj.cpp \
-    comboboxdelegate.cpp \
     arrow.cpp \
     diagramitem.cpp \
     diagramscene.cpp \
@@ -93,7 +92,9 @@ SOURCES += driver.cpp nmConsole.cpp \
     plotwindow.cpp \
     lazynut.cpp \
     sessionmanager.cpp \
-    commandsequencer.cpp
+    commandsequencer.cpp \
+        domitem.cpp \
+    lazynutobject.cpp
 
 HEADERS  += \
     scanner.h driver.h  FlexLexer.h nmConsole.h \
@@ -101,7 +102,6 @@ HEADERS  += \
     treemodel.h \
     querycontext.h \
     objexplorer.h \
-    comboboxdelegate.h \
     lazynutobj.h \
     arrow.h \
     diagramitem.h \
@@ -116,7 +116,9 @@ HEADERS  += \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
-    enumclasses.h
+    enumclasses.h \
+        domitem.h \
+    lazynutobject.h
   #  y.tab.h  location.hh position.hh stack.hh parserwindow.h tree.h
 
 RESOURCES   =	diagramscene.qrc \

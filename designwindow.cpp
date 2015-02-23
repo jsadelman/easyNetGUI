@@ -49,21 +49,24 @@
 const int InsertTextButton = 10;
 
 //! [0]
-DesignWindow::DesignWindow(QWidget *parent)
- : QWidget(parent)
+DesignWindow::DesignWindow(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent)
+ : objectCatalogue(objectCatalogue), QWidget(parent)
 {
 //    createActions();
 //    createToolBox();
     createMenus();
 
 
-    scene = new DiagramScene(itemMenu, this);
+    scene = new DiagramScene(itemMenu, objectCatalogue,  this);
     scene->setSceneRect(QRectF(0, 0, 1000, 1000));
 
-    connect(scene,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)),
-            this,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)));
-    connect(this,SIGNAL(objSelected(QString)),
-            scene,SLOT(objSelected(QString)));
+//    connect(scene,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)),
+//            this,SIGNAL(showObj(LazyNutObj*,LazyNutObjCatalogue*)));
+
+    connect(this,SIGNAL(objectSelected(QString)),
+            scene,SLOT(setSelected(QString)));
+    connect(scene,SIGNAL(objectSelected(QString)),
+            this,SIGNAL(objectSelected(QString)));
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),
             scene,SLOT(savedLayoutToBeLoaded(QString)));
     connect(this,SIGNAL(saveLayout()),
@@ -99,7 +102,7 @@ DesignWindow::DesignWindow(QWidget *parent)
     //createTestDiagram();
 }
 
-void DesignWindow::setObjCatalogue(LazyNutObjCatalogue *objHash)
+void DesignWindow::setObjCatalogue(LazyNutObjectCatalogue *objHash)
 {
     scene->setObjCatalogue(objHash);
 }
@@ -107,6 +110,14 @@ void DesignWindow::setObjCatalogue(LazyNutObjCatalogue *objHash)
 void DesignWindow::objCatalogueChanged()
 {
     scene->syncToObjCatalogue();
+}
+
+void DesignWindow::dispatchObjectSelected(QString name)
+{
+    if (sender() == scene)
+        emit objectSelected(name); // to objExplorer
+    else
+        scene->setSelected(name);
 }
 //! [0]
 

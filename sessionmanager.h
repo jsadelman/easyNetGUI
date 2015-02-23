@@ -4,7 +4,6 @@
 #include <QString>
 #include <QObject>
 #include <QStateMachine>
-#include <QXmlStreamReader>
 
 
 #include "jobqueue.h"
@@ -25,12 +24,12 @@ public:
 class QueryContext;
 class TreeModel;
 class TreeItem;
-class LazyNutObj;
-typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
+class LazyNutObject;
+typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 class ObjExplorer;
-namespace lazyNutOutputParser {
-    class Driver;
-}
+//namespace lazyNutOutputParser {
+//    class Driver;
+//}
 class DesignWindow;
 class LazyNut;
 class CommandSequencer;
@@ -40,11 +39,10 @@ class SessionManager: public QObject
     Q_OBJECT
 
 public:
-    SessionManager(LazyNutObjCatalogue *objCatalogue, TreeModel *objTaxonomyModel, QObject *parent=0);
+    SessionManager(QObject *parent=0);
     const CommandSequencer * getCommandSequencer() const {return commandSequencer;}
 
-//    void setJobOrigin(JobOrigin origin) {currentJobOrigin = origin;}
-//    JobOrigin getJobOrigin() {return currentJobOrigin;}
+
     void startLazyNut(QString lazyNutBat);
 
 signals:
@@ -53,15 +51,13 @@ signals:
 
     // send output to editor
     void userLazyNutOutputReady(const QString&);
-//    void commandExecuted(QString);
-    // same signal as in CommandSequencer
-    void commandsExecuted();
-    void currentReceivedCount(int);
+
     void isReady(bool);
     void isPaused(bool);
 
     void macroQueueStopped(bool);
 
+    void descriptionReady(QDomDocument*);
 
 
     void beginObjHashModified();
@@ -92,8 +88,6 @@ private slots:
 
     void getOOB(const QString &lazyNutOutput);
     void startCommandSequencer();
-//    void processLazyNutOutput(QString lno);
-//    void processAnswers(QString answers);
 
     // general macro operations
     void macroStarted();
@@ -108,34 +102,26 @@ private slots:
     void clearRecentlyModified();
     void getDescriptions();
 
-//     void dispatchLazyNutOutput(QString lazyNutOutput, JobOrigin jobOrigin);
 
      void updateRecentlyModified(QStringList _recentlyModified);
-     void upadeDescription(QDomDocument* domDoc);
 
 private:
 
     void initParser();
     void updateObjects();
     bool parseLazyNutOutput();
-    // parseXXX methods will be moved in a separate xml parse class
-//    void parseXmlAnswers();
-//    void parseSubtypes(QString type);
-//    void parseRecentlyModified();
-//    void parseDescription();
 
     QStateMachine *buildMacro();
     MacroQueue *macroQueue;
     CommandSequencer *commandSequencer;
     LazyNut* lazyNut;
     QString lazyNutOutput;
-    QXmlStreamReader xml;
 
-    QueryContext* context;
-    lazyNutOutputParser::Driver* driver;
+//    QueryContext* context;
+//    lazyNutOutputParser::Driver* driver;
     QStringList commandList;
     QStringList recentlyModified;
-    LazyNutObjCatalogue *objCatalogue;
+    LazyNutObjectCatalogue *objectCatalogue;
     TreeModel* objTaxonomyModel;
     QString lazyNutHeaderBuffer;
     QRegExp OOBrex;

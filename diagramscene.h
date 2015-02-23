@@ -47,6 +47,8 @@
 
 #include <QGraphicsScene>
 
+
+
 QT_BEGIN_NAMESPACE
 class QGraphicsSceneMouseEvent;
 class QMenu;
@@ -54,9 +56,10 @@ class QPointF;
 class QGraphicsLineItem;
 class QFont;
 class QGraphicsTextItem;
+class QGraphicsItem;
 class QColor;
-class LazyNutObj;
-typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
+class LazyNutObject;
+typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 QT_END_NAMESPACE
 
 //! [0]
@@ -67,8 +70,8 @@ class DiagramScene : public QGraphicsScene
 public:
     enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
-    explicit DiagramScene(QMenu *itemMenu, QObject *parent = 0);
-    void setObjCatalogue(LazyNutObjCatalogue *_objHash);
+    explicit DiagramScene(QMenu *itemMenu, LazyNutObjectCatalogue *objectCatalogue, QObject *parent = 0);
+    void setObjCatalogue(LazyNutObjectCatalogue *_objectCatalogue);
     QFont font() const { return myFont; }
     QColor textColor() const { return myTextColor; }
     QColor itemColor() const { return myItemColor; }
@@ -86,16 +89,17 @@ public slots:
     void setArrowTipType(Arrow::ArrowTipType type);
     void editorLostFocus(DiagramTextItem *item);
     void syncToObjCatalogue();
-    void objSelected(QString name);
+    void setSelected(QString name);
     void savedLayoutToBeLoaded(QString _savedLayout);
     void saveLayout();
 
 
 signals:
-    void itemInserted(DiagramItem *item);
-    void textInserted(QGraphicsTextItem *item);
-    void itemSelected(QGraphicsItem *item);
-    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);
+    void itemInserted(DiagramItem*);
+    void textInserted(QGraphicsTextItem*);
+    void itemSelected(QGraphicsItem*);
+    void objectSelected(QString);
+//    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objectCatalogue);
     void layoutSaveAttempted();
 
 
@@ -106,7 +110,7 @@ protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
 private:
-    LazyNutObjCatalogue *objHash;
+    LazyNutObjectCatalogue *objectCatalogue;
     QHash<QString,QGraphicsItem*> *itemHash;
     bool isItemChange(int type);
 

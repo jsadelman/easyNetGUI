@@ -13,8 +13,13 @@
 #include "treemodel.h"
 
 class LazyNutObj;
-typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
+class LazyNutObject;
+class QDomDocument;
+//typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
+typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
+
 class LazyNutObjModel;
+class LazyNutObjectListModel;
 class LazyNutObjTableModel;
 class LazyNutObjTableProxyModel;
 class QListView;
@@ -31,33 +36,38 @@ class ObjExplorer: public QSplitter //QWidget
     Q_OBJECT
 
 public:
-    ObjExplorer(LazyNutObjCatalogue* objHash, TreeModel* objTaxonomyModel, QWidget *parent = 0);
+    ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent = 0);
 // should be private:
 
-    LazyNutObjCatalogue  *objHash;
 
+    LazyNutObjectCatalogue  *objectCatalogue;
+    LazyNutObject *lazyNutObject;
 
     LazyNutObjModel *lazyNutObjModel;
     TreeModel *objTaxonomyModel;
+    LazyNutObjectListModel *lazyNutObjectListModel;
     LazyNutObjTableModel *lazyNutObjTableModel;
     LazyNutObjTableProxyModel *lazyNutObjTableProxyModel;
 
-    QSplitter *splitter;
+    QListView *lazyNutObjectListView;
 //    QVBoxLayout *layout;
-    QTableView *lazyNutObjTableView;
-    QTableView *lazyNutObjTableProxyView;
-    QTableView *lazyNutObjView;
-    QTreeView *objTaxonomyView;
+//    QTableView *lazyNutObjTableView;
+//    QTableView *lazyNutObjTableProxyView;
+    QTreeView *lazyNutObjectView;
+//    QTreeView *objTaxonomyView;
     //QComboBox *cbox;
-    ComboBoxDelegate *comboBoxDelegate;
+//    ComboBoxDelegate *comboBoxDelegate;
 
 signals:
     void beginObjHashModified();
     void endObjHashModified();
-    void objSelected(QString);
+    void objectSelected(QString);
 
 public slots:
-    void setObj(LazyNutObj* obj, LazyNutObjCatalogue *objHash);
+//    void setObj(LazyNutObj* obj, LazyNutObjCatalogue *objectCatalogue);
+    void setObjFromListIndex(QModelIndex index);
+    void setObjFromObjName(QString name);
+    void updateLazyNutObjCatalogue(QDomDocument *domDoc);
 
 };
 

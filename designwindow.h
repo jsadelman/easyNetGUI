@@ -63,8 +63,8 @@ class QToolButton;
 class QToolBar;
 class QAbstractButton;
 class QGraphicsView;
-class LazyNutObj;
-typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
+class LazyNutObject;
+typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 QT_END_NAMESPACE
 
 //! [0]
@@ -73,20 +73,21 @@ class DesignWindow : public QWidget
     Q_OBJECT
 
 public:
-   DesignWindow(QWidget *parent = 0);
-   void setObjCatalogue(LazyNutObjCatalogue *objHash);
+   DesignWindow(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent = 0);
+   void setObjCatalogue(LazyNutObjectCatalogue *objHash);
 
 public slots:
    void objCatalogueChanged();
 
 signals:
-    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);
-    void objSelected(QString);
+//    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);
+    void objectSelected(QString);
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
     void layoutSaveAttempted();
 
 private slots:
+    void dispatchObjectSelected(QString name);
 //    void backgroundButtonGroupClicked(QAbstractButton *button);
 //    void connectionButtonGroupClicked(int id);
 //    void layerButtonGroupClicked(int id);
@@ -128,6 +129,7 @@ private:
 
     DiagramScene *scene;
     QGraphicsView *view;
+    LazyNutObjectCatalogue *objectCatalogue;
 
 //    QAction *exitAction;
 //    QAction *addAction;

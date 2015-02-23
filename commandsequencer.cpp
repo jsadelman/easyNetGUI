@@ -19,14 +19,13 @@ void CommandSequencer::initProcessLazyNutOutput()
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
-    eNelementsTagRex = QRegExp("(</?)eNelements(>)");
+//    eNelementsTagRex = QRegExp("(</?)eNelements(>)");
     lazyNutBuffer.clear();
-    answers.clear();
     baseOffset = 0;
-    xmlCmdTags = QVector<QString>(LazyNutCommandType_MAX + 1);
-    xmlCmdTags[description] = "description";
-    xmlCmdTags[recently_modified] = "recently_modified";
-    xmlCmdTags[subtypes] = "subtypes";
+//    xmlCmdTags = QVector<QString>(LazyNutCommandTypes_MAX + 1);
+//    xmlCmdTags[description] = "description";
+//    xmlCmdTags[recently_modified] = "recently_modified";
+//    xmlCmdTags[subtypes] = "subtypes";
     // etc..
     queryTypes << description << recently_modified << subtypes; // etc
 
@@ -75,7 +74,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     if (commandList.isEmpty())
         return; // startup header or other spontaneous lazyNut output, or synch error
     QString currentCmd = commandList.first();
-    LazyNutCommandType currentCmdType;
+    LazyNutCommandTypes currentCmdType;
     if (jobOrigin == JobOrigin::GUI)
     {
         if (currentCmd.contains("description"))
@@ -87,25 +86,6 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         else
             ;// etc
     }
-    // if GUI, isolate the (only) ANSWER.
-    // if description, substitute <eNelement> with <description>
-    // if subtypes, substitute <eNelement> with <subtypes type="layer">
-    // extracting "layer" from currentCmd
-    // if get, and only plots can be got (?), strip the first line
-    // NOTE, in case of plot get only one  get command can be sent in a cmd sequence.
-    // Then, collate all answers (many XML from queries, or one SVG, or XML from R)
-    // if query, package all into a <answers> root, or <R> if R.
-    // if currentCmdType == some query type
-    //  emit queryReady(QString answerXML)
-    // else if currentCmdType == R
-    // emit ROutputReady, or dataframeReady(QString dataframeXML)
-    // else if currentCmdType == SVG
-    // emit SVGReady(QString)
-    // Each signal is connected to a dedicated slot in SessionManager, that does the job,
-    // e.g. updates the obj catalogue. Obligatorily after that it must
-    // emit commandsExecuted();
-    // in case of User origin, commandsExecuted() is emitted from here,
-    // and repeated by SessionManager.
 
     QRegExp beginRex(QString("BEGIN: %1\\n").arg(QRegExp::escape(currentCmd)));
     QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(QRegExp::escape(currentCmd)));
@@ -134,10 +114,11 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                 if (queryTypes.contains(currentCmdType))
                 {
                     QDomDocument *domDoc = new QDomDocument;
-                    domDoc->setContent(answer);
+                    domDoc->setContent(answer); // this line replaces an entire Bison!
                     if (currentCmdType == recently_modified)
                     {
                         // retreive obj name list and send it to SessionManager
+                        // to be changed for new XML format
                         QStringList recentlyModified = domDoc->documentElement().text().split(QRegExp("\\s+"), QString::SkipEmptyParts);
                         delete domDoc;
                         emit recentlyModifiedReady(recentlyModified);
@@ -148,7 +129,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                         QString type = currentCmd.simplified().section(QRegExp("\\s+"),-1,-1);
                         // change <eNelements> into <string label="type" value="layer">
                         // stub
-                        qDebug() << type << domDoc->toString();
+                        //qDebug() << type << domDoc->toString();
                         delete domDoc;
                     }
                     else if (currentCmdType == description)
@@ -163,17 +144,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         commandList.removeFirst();
         if (commandList.isEmpty())
         {
-//            if (jobOrigin == JobOrigin::User)
-                emit commandsExecuted();
-            // else dispatch ANSWERs based on the type of the last cmd
-            // under the assumption that all cmds in a GUI-generated commandList are of the same type
-//            else if (jobOrigin == JobOrigin::GUI && queryTypes.contains(currentCmdType))
-//            {
-//                emit queryAnswersReady(answers);
-//                answers.clear();
-//            }
-//            else if (jobOrigin == JobOrigin::GUI && currentCmdType == svg)
-//                emit svgReady(svg);
+            emit commandsExecuted();
             baseOffset = 0;
             lazyNutBuffer.clear();
             ready = true;

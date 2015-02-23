@@ -19,22 +19,20 @@ class CommandSequencer: public QObject
     Q_OBJECT
 
 public:
-    enum LazyNutCommandType
+    enum LazyNutCommandTypes
     {
         description,
         recently_modified,
         subtypes,
-        LazyNutCommandType_MAX = subtypes
+        LazyNutCommandTypes_MAX = subtypes
     };
 
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
 
 
 public slots:
-    void runCommands(QStringList commands,
-                     JobOrigin origin);
-    void runCommand(QString command,
-                    JobOrigin origin);
+    void runCommands(QStringList commands, JobOrigin origin);
+    void runCommand(QString command, JobOrigin origin);
 //    void receiveLazyNutOutput(const QString &lazyNutOutput);
     // status
     bool getStatus();
@@ -63,14 +61,13 @@ private:
     LazyNut* lazyNut;
     QStringList commandList;
     QString lazyNutBuffer;
-    QString answers;
     int baseOffset;
     QRegExp emptyLineRex;
     QRegExp errorRex;
     QRegExp answerRex;
     QVector<QString> xmlCmdTags;
     QRegExp eNelementsTagRex;
-    QSet<LazyNutCommandType> queryTypes;
+    QSet<LazyNutCommandTypes> queryTypes;
 
 };
 
