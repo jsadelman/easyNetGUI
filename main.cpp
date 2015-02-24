@@ -1,4 +1,4 @@
-#include "nmConsole.h"
+#include "easyNetMainWindow.h"
 #include <QApplication>
 #include <QFont>
 

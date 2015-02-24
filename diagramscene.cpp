@@ -40,7 +40,8 @@
 
 #include "diagramscene.h"
 #include "arrow.h"
-#include "lazynutobj.h"
+#include "lazynutobject.h"
+
 
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
@@ -51,8 +52,8 @@
 #include <QDebug>
 
 //! [0]
-DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
-    : QGraphicsScene(parent)
+DiagramScene::DiagramScene(QMenu *itemMenu, LazyNutObjectCatalogue *objectCatalogue, QObject *parent)
+    : objectCatalogue(objectCatalogue), QGraphicsScene(parent)
 {
     myItemMenu = itemMenu;
     myMode = MoveItem;
@@ -69,9 +70,9 @@ DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
     itemHash = new QHash<QString,QGraphicsItem*>;
 }
 
-void DiagramScene::setObjCatalogue(LazyNutObjCatalogue *_objHash)
+void DiagramScene::setObjCatalogue(LazyNutObjectCatalogue *_objectCatalogue)
 {
-    objHash = _objHash;
+    objectCatalogue = _objectCatalogue;
 }
 //! [0]
 
@@ -188,13 +189,13 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
 
 void DiagramScene::syncToObjCatalogue()
 {
-    if (objHash == nullptr)
+    if (objectCatalogue == nullptr)
         return;
     // display new layers, hold new connections in a list
     QStringList newConnections{};
-    foreach(QString name, objHash->keys().toSet() - itemHash->keys().toSet())
+    foreach(QString name, objectCatalogue->keys().toSet() - itemHash->keys().toSet())
     {
-        if (objHash->value(name)->type() == "layer")
+        if (objectCatalogue->value(name)->type() == "layer")
         {
             DiagramItem *item = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
             //item->setLabel(name);
@@ -205,16 +206,19 @@ void DiagramScene::syncToObjCatalogue()
             emit itemInserted(item);
             itemHash->insert(name,item);
         }
-        else if (objHash->value(name)->type() == "connection")
+        else if (objectCatalogue->value(name)->type() == "connection")
             newConnections << name;
     }
     // display new connections
     foreach(QString name, newConnections)
     {
         DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
-                    (itemHash->value(objHash->value(name)->getValue("Source").toString()));
+                    (itemHash->value(objectCatalogue->value(name)->getValue("Source")));
         DiagramItem *endItem   = qgraphicsitem_cast<DiagramItem *>
-                    (itemHash->value(objHash->value(name)->getValue("Target").toString()));
+                    (itemHash->value(objectCatalogue->value(name)->getValue("Target")));
+        // arrows without start and end are not plotted in this version
+        if (!(startItem && endItem))
+            continue;
         Arrow *arrow = new Arrow(startItem, endItem, Arrow::Excitatory);
         arrow->setColor(myLineColor);
         startItem->addArrow(arrow);
@@ -226,7 +230,7 @@ void DiagramScene::syncToObjCatalogue()
     }
     // remove deleted objects
     // (see DesignWindow::deleteItem)
-    foreach (QString name, itemHash->keys().toSet() - objHash->keys().toSet())
+    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
     {
         QGraphicsItem* item = itemHash->value(name);
         if (item->type() == Arrow::Type)
@@ -239,7 +243,7 @@ void DiagramScene::syncToObjCatalogue()
             itemHash->remove(name);
         }
     }
-    foreach (QString name, itemHash->keys().toSet() - objHash->keys().toSet())
+    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
     {
         QGraphicsItem* item = itemHash->value(name);
         if (item->type() == DiagramItem::Type)
@@ -250,20 +254,20 @@ void DiagramScene::syncToObjCatalogue()
             itemHash->remove(name);
         }
     }
-    if (!layoutLoaded)
-    {
-        QFile savedLayoutFile(savedLayout);
-        if (savedLayoutFile.open(QIODevice::ReadOnly))
-        {
-            QByteArray savedLayoutData = savedLayoutFile.readAll();
-            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
-            read(savedLayoutDoc.object());
-        }
-        //layoutLoaded = true;
-    }
+//    if (!layoutLoaded)
+//    {
+//        QFile savedLayoutFile(savedLayout);
+//        if (savedLayoutFile.open(QIODevice::ReadOnly))
+//        {
+//            QByteArray savedLayoutData = savedLayoutFile.readAll();
+//            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
+//            read(savedLayoutDoc.object());
+//        }
+//        //layoutLoaded = true;
+//    }
 }
 
-void DiagramScene::objSelected(QString name)
+void DiagramScene::setSelected(QString name)
 {
     if (itemHash->contains(name))
     {
@@ -271,7 +275,10 @@ void DiagramScene::objSelected(QString name)
         foreach (QGraphicsItem *item, items())
         {
             if (item == itemHash->value(name))
+            {
                 item->setSelected(true);
+                return;
+            }
         }
     }
 }
@@ -396,9 +403,13 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     if (myMode == MoveItem)
     {
-        QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
-        QString name = itemHash->key(item);
-        emit showObj(objHash->value(name),objHash);
+        if (items(mouseEvent->scenePos()).size()> 0)
+        {
+            QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
+            QString name = itemHash->key(item);
+//            if (!name.isEmpty())
+                emit objectSelected(name);
+        }
     }
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
 }

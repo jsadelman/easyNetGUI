@@ -1,17 +1,57 @@
-#ifndef LAZYNUTOBJ_H
-#define LAZYNUTOBJ_H
 
-#include <QPair>
-#include <QString>
-#include <QVariant>
-#include <QAbstractListModel>
-#include <QAbstractTableModel>
+#ifndef DOMMODEL_H
+#define DOMMODEL_H
+
 #include <QAbstractItemModel>
-#include <QSortFilterProxyModel>
-#include <QDebug>
-#include <QHash>
+#include <QDomDocument>
+#include <QModelIndex>
+#include <QVariant>
+
+class DomItem;
+
+// this class is based on the following example:
+// http://doc.qt.digia.com/4.6/itemviews-simpledommodel.html
+
+class LazyNutObject : public QAbstractItemModel
+{
+    Q_OBJECT
+
+public:
+    LazyNutObject(QDomDocument *doc, QObject *parent = 0);
+    ~LazyNutObject();
+
+    QVariant data(const QModelIndex &index, int role) const;
+
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const;
+    QModelIndex index(int row, int column,
+                      const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex parent(const QModelIndex &child) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    inline QString name() {return _name;}
+    inline QString type() {return _type;}
+    inline QString subtype() {return _subtype;}
+    QString getValue(QString label);
 
 
+signals:
+    void objectRequested(QString);
+
+private slots:
+    void getObjFromDescriptionIndex(const QModelIndex &index);
+
+private:
+    void initProperties();
+
+    QDomDocument *domDoc;
+    DomItem *rootItem;
+    QString _name;
+    QString _type;
+    QString _subtype;
+
+};
 
 
 // A centralised LazyNut object catalogue is implemented by a hash where
@@ -22,7 +62,6 @@
 // i.e. whenever an object property value is an other object's name,
 // the corresponding object can be retrievd by using it as key in the hash itself.
 
-class LazyNutObject;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
 
@@ -113,4 +152,7 @@ public slots:
 
 //};
 
-#endif // LAZYNUTOBJ_H
+
+
+
+#endif

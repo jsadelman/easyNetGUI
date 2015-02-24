@@ -19,7 +19,7 @@
      // http://qt-project.org/doc/qt-4.8/itemviews-editabletreemodel.html
 
  public:
-     TreeItem(const QVector<QVariant> &itemData, TreeItem *parentItem = 0);
+     TreeItem(const QVector<QVariant> &itemData = QVector<QVariant>(), TreeItem *parentItem = nullptr);
      ~TreeItem();
 
      void appendChild(TreeItem *child);

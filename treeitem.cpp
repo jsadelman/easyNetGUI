@@ -9,7 +9,7 @@
  #include "treeitem.h"
 
  TreeItem::TreeItem(const QVector<QVariant> &itemData, TreeItem *parentItem):
-     parentItem(parentItem), itemData(itemData)
+     itemData(itemData), parentItem(parentItem)
  {
  }
 

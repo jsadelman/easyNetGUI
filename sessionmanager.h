@@ -5,8 +5,11 @@
 #include <QObject>
 #include <QStateMachine>
 
+
 #include "jobqueue.h"
 #include "enumclasses.h"
+
+class QDomDocument;
 
 
 class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
@@ -21,12 +24,9 @@ public:
 class QueryContext;
 class TreeModel;
 class TreeItem;
-class LazyNutObj;
-typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
+class LazyNutObject;
+typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 class ObjExplorer;
-namespace lazyNutOutputParser {
-    class Driver;
-}
 class DesignWindow;
 class LazyNut;
 class CommandSequencer;
@@ -36,11 +36,10 @@ class SessionManager: public QObject
     Q_OBJECT
 
 public:
-    SessionManager(LazyNutObjCatalogue *objCatalogue, TreeModel *objTaxonomyModel, QObject *parent=0);
+    SessionManager(QObject *parent=0);
     const CommandSequencer * getCommandSequencer() const {return commandSequencer;}
 
-//    void setJobOrigin(JobOrigin origin) {currentJobOrigin = origin;}
-//    JobOrigin getJobOrigin() {return currentJobOrigin;}
+
     void startLazyNut(QString lazyNutBat);
 
 signals:
@@ -49,16 +48,14 @@ signals:
 
     // send output to editor
     void userLazyNutOutputReady(const QString&);
-//    void commandExecuted(QString);
-    // same signal as in CommandSequencer
-    void commandsExecuted();
-    void currentReceivedCount(int);
+
     void isReady(bool);
     void isPaused(bool);
 
     void macroQueueStopped(bool);
 
-
+    void descriptionReady(QDomDocument*);
+    void updateDiagramScene();
 
     void beginObjHashModified();
     void endObjHashModified();
@@ -88,12 +85,10 @@ private slots:
 
     void getOOB(const QString &lazyNutOutput);
     void startCommandSequencer();
-    void processLazyNutOutput(QString lno);
 
     // general macro operations
     void macroStarted();
     void macroEnded();
-
 
 
     // lazyNut operations (entering a Macro state)
@@ -103,7 +98,8 @@ private slots:
     void clearRecentlyModified();
     void getDescriptions();
 
-     void dispatchLazyNutOutput(QString lazyNutOutput, JobOrigin jobOrigin);
+
+     void updateRecentlyModified(QStringList _recentlyModified);
 
 private:
 
@@ -117,11 +113,9 @@ private:
     LazyNut* lazyNut;
     QString lazyNutOutput;
 
-    QueryContext* context;
-    lazyNutOutputParser::Driver* driver;
     QStringList commandList;
     QStringList recentlyModified;
-    LazyNutObjCatalogue *objCatalogue;
+    LazyNutObjectCatalogue *objectCatalogue;
     TreeModel* objTaxonomyModel;
     QString lazyNutHeaderBuffer;
     QRegExp OOBrex;
