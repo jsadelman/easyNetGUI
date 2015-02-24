@@ -13,8 +13,6 @@
 
 
 #include "objexplorer.h"
-#include "lazynutobj.h"
-//#include "comboboxdelegate.h"
 #include "lazynutobject.h"
 
 
@@ -43,8 +41,8 @@ ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *paren
     lazyNutObjectListModel = new LazyNutObjectListModel(objectCatalogue,this);
 
 
-    connect(this,SIGNAL(beginObjHashModified()),lazyNutObjectListModel,SLOT(sendBeginResetModel()));
-    connect(this,SIGNAL(endObjHashModified()),lazyNutObjectListModel,SLOT(sendEndResetModel()));
+//    connect(this,SIGNAL(beginObjHashModified()),lazyNutObjectListModel,SLOT(sendBeginResetModel()));
+//    connect(this,SIGNAL(endObjHashModified()),lazyNutObjectListModel,SLOT(sendEndResetModel()));
 
 
 //    lazyNutObjTableView = new QTableView;

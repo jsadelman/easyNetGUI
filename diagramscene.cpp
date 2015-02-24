@@ -40,7 +40,6 @@
 
 #include "diagramscene.h"
 #include "arrow.h"
-#include "lazynutobj.h"
 #include "lazynutobject.h"
 
 
@@ -404,10 +403,13 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     if (myMode == MoveItem)
     {
-        QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
-        QString name = itemHash->key(item);
-        emit objectSelected(name);
-//        emit showObj(objectCatalogue->value(name),objectCatalogue);
+        if (items(mouseEvent->scenePos()).size()> 0)
+        {
+            QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
+            QString name = itemHash->key(item);
+//            if (!name.isEmpty())
+                emit objectSelected(name);
+        }
     }
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
 }

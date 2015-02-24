@@ -33,14 +33,12 @@ public:
 public slots:
     void runCommands(QStringList commands, JobOrigin origin);
     void runCommand(QString command, JobOrigin origin);
-//    void receiveLazyNutOutput(const QString &lazyNutOutput);
     // status
     bool getStatus();
 
     void processLazyNutOutput(const QString &lazyNutOutput);
 signals:
     // send output to editor
-//    void commandsExecuted(QString,JobOrigin);
     void commandsExecuted();
     void queryAnswersReady(QString);
     void userLazyNutOutputReady(const QString&);

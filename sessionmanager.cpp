@@ -1,11 +1,6 @@
 #include "sessionmanager.h"
 #include "commandsequencer.h"
 #include "jobqueue.h"
-#include "treeitem.h"
-#include "treemodel.h"
-#include "lazynutobj.h"
-#include "querycontext.h"
-#include "driver.h"
 #include "lazynut.h"
 
 
@@ -17,9 +12,6 @@
 #include <QDomDocument>
 
 class MacroQueue;
-//typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
-
-
 
 SessionManager::SessionManager(QObject *parent)
     : QObject(parent),
@@ -28,15 +20,9 @@ SessionManager::SessionManager(QObject *parent)
     lazyNut = new LazyNut(this);
     macroQueue = new MacroQueue;
 
-//    initParser(); // Bison, will be deleted
     startCommandSequencer();
 }
 
-//void SessionManager::initParser()
-//{
-//    context = new QueryContext;
-//    driver = new lazyNutOutputParser::Driver(*context);
-//}
 
 void SessionManager::startLazyNut(QString lazyNutBat)
 {
@@ -69,80 +55,12 @@ void SessionManager::startCommandSequencer()
     commandSequencer = new CommandSequencer(lazyNut, this);
     connect(commandSequencer,SIGNAL(userLazyNutOutputReady(QString)),
             this,SIGNAL(userLazyNutOutputReady(QString)));
-//    connect(commandSequencer,SIGNAL(commandsExecuted()),this,SIGNAL(commandsExecuted()));
     connect(commandSequencer,SIGNAL(recentlyModifiedReady(QStringList)),
             this,SLOT(updateRecentlyModified(QStringList)));
     connect(commandSequencer,SIGNAL(descriptionReady(QDomDocument*)),
             this,SIGNAL(descriptionReady(QDomDocument*)));
 
 }
-
-
-//bool SessionManager::parseLazyNutOutput()
-//{
-//    return driver->parse_string(lazyNutOutput.toStdString(), "lazyNutOutput");
-//}
-
-//void SessionManager::updateObjects()
-//{
-//    bool objHashModified = false;
-//    foreach (TreeItem* queryItem, context->root->children())
-//    {
-//        QString queryType = queryItem->data(0).toString();
-//        if (queryType == "subtypes")
-//        {
-//            QString objectType = queryItem->data(1).toString();
-//            QModelIndex objectIndex = objTaxonomyModel->index(0,0);
-//            int row = 0;
-//            while (objTaxonomyModel->data(objTaxonomyModel->index(row,0,objectIndex),Qt::DisplayRole).toString() != objectType &&
-//                   row < objTaxonomyModel->rowCount(objectIndex))
-//                ++row;
-//            QModelIndex typeIndex = objTaxonomyModel->index(row,0,objectIndex);
-//            if (typeIndex.isValid())
-//            {
-//                foreach (TreeItem* subtypeItem, queryItem->children())
-//                {
-//                    objTaxonomyModel->appendValue(subtypeItem->data(1).toString(),typeIndex);
-//                }
-//            }
-//        }
-//        else if (queryType == "recently_modified")
-//        {
-//            foreach (TreeItem* objectItem, queryItem->children())
-//            {
-//                recentlyModified.append(objectItem->data(1).toString());
-//            }
-//        }
-//        else if (queryType == "description")
-//        {
-//            emit beginObjHashModified();
-//            foreach (TreeItem* objectItem, queryItem->children())
-//            {
-//                QString objectName = objectItem->data(1).toString();
-//                objCatalogue->insert(objectName,new LazyNutObj());
-//                foreach (TreeItem* propertyItem, objectItem->children())
-//                {
-//                    QString propertyKey = propertyItem->data(0).toString();
-//                    QString propertyValue = propertyItem->data(1).toString();
-//                    if (propertyValue.startsWith('[') && propertyValue.endsWith(']'))
-//                        // todo: generate query list
-//                        (*objCatalogue)[objectName]->appendProperty(propertyKey,propertyValue);
-//                    else if (propertyValue.contains(','))
-//                        (*objCatalogue)[objectName]->appendProperty(propertyKey,propertyValue.split(", "));
-//                    else
-//                        (*objCatalogue)[objectName]->appendProperty(propertyKey,propertyValue);
-//                }
-//            }
-//            objHashModified = true;
-//        }
-//    }
-//    if (objHashModified)
-//        emit endObjHashModified();
-//    context->clearQueries();
-//}
-
-
-
 
 
 void SessionManager::updateRecentlyModified(QStringList _recentlyModified)

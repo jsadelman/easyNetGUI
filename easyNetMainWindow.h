@@ -1,54 +1,29 @@
 #ifndef NMCONSOLE_H
 #define NMCONSOLE_H
 
-#include <QDialog>
 #include <QMainWindow>
 #include <QLineEdit>
-#include <QProcess>
-//#include <QDockWidget>
 #include <QPlainTextEdit>
-#include <QRegExp>
-#include <QSplitter>
-#include <QTreeView>
-#include <QHash>
-#include <QPixmap>
-#include <QWebView>
-#include <QLabel>
-#include <QGraphicsSvgItem>
-#include <QtSvg>
 
-
-//#include "driver.h"
-//#include "parsenode.h"
-//#include "querycontext.h"
-//#include "treemodel.h"
-
-
-#include "highlighter.h"
-#include "codeeditor.h"
-#include "editwindow.h"
-#include "plotwindow.h"
-
-
-class QGroupBox;
-class QDockWidget;
 
 QT_BEGIN_NAMESPACE
-class QueryContext;
-class TreeModel;
-class TreeItem;
-//class LazyNutObj;
-//typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
+class QLabel;
+class QWebView;
+class QGroupBox;
+class QDockWidget;
+class QSignalMapper;
+
 class ObjExplorer;
-namespace lazyNutOutputParser {
-    class Driver;
-}
+
 class DesignWindow;
 class LazyNut;
 class CommandSequencer;
 class SessionManager;
 class LazyNutObject;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
+class EditWindow;
+class Highlighter;
+class PlotWindow;
 
 
 QT_END_NAMESPACE
@@ -183,7 +158,7 @@ private:
     CmdOutput       *cmdOutput;
     InputCmdLine    *inputCmdLine;
     SessionManager      *sessionManager;
-    TreeModel       *objTaxonomyModel;
+//    TreeModel       *objTaxonomyModel;
     LazyNutObjectCatalogue *objectCatalogue;
 //    LazyNutObjCatalogue  *objCatalogue;
     ObjExplorer      *objExplorer;

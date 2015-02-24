@@ -13,38 +13,6 @@
 
 
 
-//class LazyNutObj
-//{
-//    // LazyNutObj contains information on one LazyNut object, e.g. a layer.
-//    // It contains the information retrieved by issuing a description query to lazyNut.
-//    // Each object is represented by a list of pairs of property key-value (_properties).
-//    // LazyNut objects have at least three properties: name, type and subtype.
-//    // Further, an arbitrary number of properties is allowed.
-//    // A property value (a QVariant) is usually either a QString or a QStringList,
-//    // the latter case being exposed by rowsWithStringList to be used by views.
-//    // To speed up access, a hash (_keyAt) is used to map property keys to position in the list.
-
-//public:
-//    LazyNutObj() {}
-//    void appendProperty(const QString& key, const QVariant& value);
-//    QVariant getValue(const QString& key);
-//    QVariant getValue(int i);
-//    QString getKey(int i);
-//    QPair<QString, QVariant> getProperty(int i);
-//    int rowCount();
-//    QList<int> rowsWithStringList();
-//    QString& name();
-//    QString& type();
-//    QString& subtype();
-
-//private:
-//    QList<QPair<QString,QVariant> > _properties;
-//    QHash<QString,int> _keyAt;
-//    QString _name;
-//    QString _type;
-//    QString _subtype;
-
-//};
 
 // A centralised LazyNut object catalogue is implemented by a hash where
 // key = object name, value = pointer to object.
@@ -53,61 +21,12 @@
 // This is conceptually a graph. Its implementation is based on the hash itself,
 // i.e. whenever an object property value is an other object's name,
 // the corresponding object can be retrievd by using it as key in the hash itself.
-//typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
 
 class LazyNutObject;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
 
 
-//class LazyNutObjModel : public QAbstractListModel
-// {
-//    // LazyNutObjModel represents a single lazyNut object.
-//    // Its internal representation is a LazyNutObj instance.
-//    // A list is sufficient, since an object is a set of properties,
-//    // each one being a name-value pair.
-//    // Names are set as vertical header, values are the data.
-
-//    // LazyNutObjModel makes use of the central catalogue (_objHash)
-//    // in order to retrieve pointers to objects referred to by a QModelIndex
-//    // belonging either to this class or to the LazyNutObjTableModel class.
-//    // This functionality is necessary to navigate the object explorer GUI.
-//    // When the user clicks on an object name in a view based on this model class,
-//    // the getObjFromDescriptionIndex slot should be called. Two implementations
-//    // are available, one for property values that contain the object name (QString),
-//    // another for property values that contain a list of names (QStringList), where
-//    // an extra position index is required.
-//    // When the user clicks on an object name in a view based on LazyNutObjTableModel,
-//    // the getObjFromCatalogueIndex slot should be called.
-
-//     Q_OBJECT
-
-// public:
-//     LazyNutObjModel(LazyNutObj *obj, LazyNutObjectCatalogue *objHash=nullptr,
-//                     QObject *parent = 0):
-//         QAbstractListModel(parent), _obj(obj), _objHash(objHash) {}
-
-//     int rowCount(const QModelIndex &parent = QModelIndex()) const;
-//     QVariant data(const QModelIndex &index, int role) const;
-//     QVariant headerData(int section, Qt::Orientation orientation,
-//                         int role = Qt::DisplayRole) const;
-
-//     bool isNameInCatalogue(const QString& name);
-
-//public slots:
-
-//    void getObjFromDescriptionIndex(const QModelIndex & index);
-//    void getObjFromDescriptionIndex(const QModelIndex & index, int objIndex);
-//    void getObjFromCatalogueIndex(const QModelIndex & index);
-
-//signals:
-//    void showObj(LazyNutObj * obj, LazyNutObjectCatalogue* objHash);
-
-// private:
-
-//    LazyNutObj *_obj;
-//    LazyNutObjectCatalogue *_objHash;
-// };
 
 //class LazyNutObjTableModel : public QAbstractTableModel
 // {

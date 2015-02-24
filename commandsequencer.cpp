@@ -22,11 +22,6 @@ void CommandSequencer::initProcessLazyNutOutput()
 //    eNelementsTagRex = QRegExp("(</?)eNelements(>)");
     lazyNutBuffer.clear();
     baseOffset = 0;
-//    xmlCmdTags = QVector<QString>(LazyNutCommandTypes_MAX + 1);
-//    xmlCmdTags[description] = "description";
-//    xmlCmdTags[recently_modified] = "recently_modified";
-//    xmlCmdTags[subtypes] = "subtypes";
-    // etc..
     queryTypes << description << recently_modified << subtypes; // etc
 
 }

@@ -12,19 +12,17 @@
 #include <fstream>
 #include <vector>
 
-#include "driver.h"
-//#include "parsenode.h"
-#include "treeitem.h"
-#include "querycontext.h"
-#include "nmConsole.h"
+#include "easyNetMainWindow.h"
 #include "treemodel.h"
-#include "lazynutobj.h"
 #include "objexplorer.h"
 #include "designwindow.h"
 #include "codeeditor.h"
-#include "lazynut.h"
 #include "commandsequencer.h"
 #include "sessionmanager.h"
+#include "highlighter.h"
+#include "codeeditor.h"
+#include "editwindow.h"
+#include "plotwindow.h"
 
 InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
@@ -54,44 +52,6 @@ void CmdOutput::displayOutput(const QString & output)
     insertPlainText (output);
     moveCursor (QTextCursor::End);
 }
-
-
-
-
-//void QueryProcessor::testDesignWindow()
-//{
-//    // this member function should be removed and turned into a unit test.
-
-//    emit beginObjHashModified();
-//    objHash->insert("layerA",new LazyNutObj());
-//    (*objHash)["layerA"]->appendProperty(QString{"name"},QVariant{"layerA"});
-//    (*objHash)["layerA"]->appendProperty("type","layer");
-//    (*objHash)["layerA"]->appendProperty("subtype","iac_layer");
-//    (*objHash)["layerA"]->appendProperty("length", 24);
-//    (*objHash)["layerA"]->appendProperty("incoming connections","connectionBA");
-
-//    objHash->insert("layerB",new LazyNutObj());
-//    (*objHash)["layerB"]->appendProperty("name","layerB");
-//    (*objHash)["layerB"]->appendProperty("type","layer");
-//    (*objHash)["layerB"]->appendProperty("subtype","iac_layer");
-//    (*objHash)["layerB"]->appendProperty("length", 24);
-//    (*objHash)["layerB"]->appendProperty("incoming connections",QStringList{"connectionAB","biasAB"});
-
-//    objHash->insert("connectionAB",new LazyNutObj());
-//    (*objHash)["connectionAB"]->appendProperty("name","connectionAB");
-//    (*objHash)["connectionAB"]->appendProperty("type","connection");
-//    (*objHash)["connectionAB"]->appendProperty("subtype","connection");
-//    (*objHash)["connectionAB"]->appendProperty("length", 24);
-//    (*objHash)["connectionAB"]->appendProperty("Source","layerA");
-//    (*objHash)["connectionAB"]->appendProperty("Target","layerB");
-
-//    emit endObjHashModified();
-
-//    emit beginObjHashModified();
-//    objHash->remove("connectionAB");
-//    emit endObjHashModified();
-
-//}
 
 
 
@@ -222,8 +182,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
     designWindow = new DesignWindow(objectCatalogue, this);
-//    connect(objExplorer,SIGNAL(objCatalogueChanged()),
-//            designWindow,SLOT(objCatalogueChanged()));
     connect(designWindow,SIGNAL(objectSelected(QString)),
             objExplorer,SLOT(setObjFromObjName(QString)));
     connect(objExplorer,SIGNAL(objectSelected(QString)),
@@ -237,18 +195,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
 
 
-    // signals begin/endObjHashModified are defined in SessionManager and ObjExplorer.
-    // When a description query is parsed by the SessionManager, it sends those signals
-    // to the ObjExplorer, which in turn trigger slots sendBegin/EndResetModel in
-    // LazyNutObjTableModel that update its internal representation.
-    // All this signal/slot chain is necessary in order to call
-    // the protected functions QAbstractItemModel::begin/endResetModel.
-    // Those functions need to be called because SessionManager modifies
-    // the LazyNutObjCatalogue object directly, which is the underlying data structure
-    // to LazyNutObjTableModel, i.e. it does not make use of the QAbstractTableModel
-    // API implemented by LazyNutObjTableModel.
-
-
 
 
     readSettings();
@@ -259,9 +205,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
             objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
     connect(sessionManager,SIGNAL(updateDiagramScene()),
             designWindow,SLOT(updateDiagramScene()));
-//    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
-//    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
-    connect(sessionManager,SIGNAL(endObjHashModified()),designWindow,SLOT(objCatalogueChanged()));
     connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),cmdOutput,SLOT(displayOutput(QString)));
     connect(sessionManager,SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));

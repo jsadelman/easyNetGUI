@@ -15,7 +15,6 @@
 class LazyNutObj;
 class LazyNutObject;
 class QDomDocument;
-//typedef QHash<QString,LazyNutObj*> LazyNutObjCatalogue;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
 class LazyNutObjModel;

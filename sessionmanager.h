@@ -27,9 +27,6 @@ class TreeItem;
 class LazyNutObject;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 class ObjExplorer;
-//namespace lazyNutOutputParser {
-//    class Driver;
-//}
 class DesignWindow;
 class LazyNut;
 class CommandSequencer;
@@ -116,8 +113,6 @@ private:
     LazyNut* lazyNut;
     QString lazyNutOutput;
 
-//    QueryContext* context;
-//    lazyNutOutputParser::Driver* driver;
     QStringList commandList;
     QStringList recentlyModified;
     LazyNutObjectCatalogue *objectCatalogue;
