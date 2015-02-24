@@ -18,7 +18,7 @@ void LazyNutObject::initProperties()
     while (!objectNode.isNull())
     {
         QString label = objectNode.toElement().attribute("label");
-        QString value = objectNode.firstChild().nodeValue().simplified();
+        QString value = objectNode.toElement().attribute("value");
         if (label == "this")
             _name = value;
         else if (label == "type")
@@ -47,7 +47,7 @@ QString LazyNutObject::getValue(QString label)
     while (!objectNode.isNull())
     {
         if (objectNode.toElement().attribute("label") == label)
-            return objectNode.firstChild().nodeValue().simplified();
+            return objectNode.toElement().attribute("value");
         objectNode = objectNode.nextSibling();
     }
     return QString();
@@ -79,8 +79,7 @@ QVariant LazyNutObject::data(const QModelIndex &index, int role) const
             return QString("%1:").arg(label);
         }
         case 1:
-            //return element.attribute("value");
-            return item->text();
+            return element.attribute("value");
         default:
             return QVariant();
         }
@@ -159,8 +158,7 @@ QModelIndex LazyNutObject::index(int row, int column, const QModelIndex &parent)
     else
         parentItem = static_cast<DomItem*>(parent.internalPointer());
 
-//    DomItem *childItem = parentItem->child(row);
-    DomItem *childItem = parentItem->nonTextChild(row);
+    DomItem *childItem = parentItem->child(row);
 
     if (childItem)
         return createIndex(row, column, childItem);
@@ -194,8 +192,7 @@ int LazyNutObject::rowCount(const QModelIndex &parent) const
     else
         parentItem = static_cast<DomItem*>(parent.internalPointer());
 
-//    return parentItem->node().childNodes().count();
-    return parentItem->nonTextRowCount();
+    return parentItem->node().childNodes().count();
 }
 
 
@@ -203,5 +200,5 @@ void LazyNutObject::getObjFromDescriptionIndex(const QModelIndex &index)
 {
     DomItem * item = static_cast<DomItem*>(index.internalPointer());
     if (item->node().nodeName() == "object" && index.column() == 1)
-        emit objectRequested(item->text().simplified());
+        emit objectRequested(data(index,Qt::DisplayRole).toString());
 }

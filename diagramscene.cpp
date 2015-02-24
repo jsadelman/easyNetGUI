@@ -217,6 +217,9 @@ void DiagramScene::syncToObjCatalogue()
                     (itemHash->value(objectCatalogue->value(name)->getValue("Source")));
         DiagramItem *endItem   = qgraphicsitem_cast<DiagramItem *>
                     (itemHash->value(objectCatalogue->value(name)->getValue("Target")));
+        // arrows without start and end are not plotted in this version
+        if (!(startItem && endItem))
+            continue;
         Arrow *arrow = new Arrow(startItem, endItem, Arrow::Excitatory);
         arrow->setColor(myLineColor);
         startItem->addArrow(arrow);
@@ -252,17 +255,17 @@ void DiagramScene::syncToObjCatalogue()
             itemHash->remove(name);
         }
     }
-    if (!layoutLoaded)
-    {
-        QFile savedLayoutFile(savedLayout);
-        if (savedLayoutFile.open(QIODevice::ReadOnly))
-        {
-            QByteArray savedLayoutData = savedLayoutFile.readAll();
-            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
-            read(savedLayoutDoc.object());
-        }
-        //layoutLoaded = true;
-    }
+//    if (!layoutLoaded)
+//    {
+//        QFile savedLayoutFile(savedLayout);
+//        if (savedLayoutFile.open(QIODevice::ReadOnly))
+//        {
+//            QByteArray savedLayoutData = savedLayoutFile.readAll();
+//            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
+//            read(savedLayoutDoc.object());
+//        }
+//        //layoutLoaded = true;
+//    }
 }
 
 void DiagramScene::setSelected(QString name)

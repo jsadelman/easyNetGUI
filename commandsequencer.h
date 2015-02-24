@@ -55,6 +55,7 @@ signals:
 private:
 
     void initProcessLazyNutOutput();
+    QStringList extrctRecentlyModifiedList(QDomDocument* domDoc);
 
     JobOrigin jobOrigin;
     bool ready;

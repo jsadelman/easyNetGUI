@@ -152,4 +152,5 @@ void ObjExplorer::updateLazyNutObjCatalogue(QDomDocument *domDoc)
     connect(newObj,SIGNAL(objectRequested(QString)),
             this,SLOT(setObjFromObjName(QString)));
     lazyNutObjectListModel->sendEndResetModel();
+    //emit objCatalogueChanged();
 }

@@ -185,6 +185,8 @@ void SessionManager::runModel(QStringList cmdList)
     connect(getRecentlyModifiedState,SIGNAL(entered()),this,SLOT(getRecentlyModified()));
     QState * getDescriptionsState = new QState(macro);
     connect(getDescriptionsState,SIGNAL(entered()),this,SLOT(getDescriptions()));
+    connect(getDescriptionsState,SIGNAL(exited()),this,SIGNAL(updateDiagramScene()));
+
     QFinalState *finalState = new QFinalState(macro);
     macro->setInitialState(runCommandsState);
 
@@ -209,6 +211,7 @@ void SessionManager::runSelection(QStringList cmdList)
     connect(getRecentlyModifiedState,SIGNAL(entered()),this,SLOT(getRecentlyModified()));
     QState * getDescriptionsState = new QState(macro);
     connect(getDescriptionsState,SIGNAL(entered()),this,SLOT(getDescriptions()));
+    connect(getDescriptionsState,SIGNAL(exited()),this,SIGNAL(updateDiagramScene()));
     QFinalState *finalState = new QFinalState(macro);
     macro->setInitialState(runCommandsState);
 

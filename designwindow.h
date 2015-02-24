@@ -77,7 +77,7 @@ public:
    void setObjCatalogue(LazyNutObjectCatalogue *objHash);
 
 public slots:
-   void objCatalogueChanged();
+   void updateDiagramScene();
 
 signals:
 //    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objHash);

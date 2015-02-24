@@ -31,6 +31,7 @@ void CommandSequencer::initProcessLazyNutOutput()
 
 }
 
+
 void CommandSequencer::runCommands(QStringList commands, JobOrigin origin)
 {
     jobOrigin = origin;
@@ -118,8 +119,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                     if (currentCmdType == recently_modified)
                     {
                         // retreive obj name list and send it to SessionManager
-                        // to be changed for new XML format
-                        QStringList recentlyModified = domDoc->documentElement().text().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                        QStringList recentlyModified = extrctRecentlyModifiedList(domDoc);
                         delete domDoc;
                         emit recentlyModifiedReady(recentlyModified);
                     }
@@ -161,6 +161,19 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     }
 }
 
+
+QStringList CommandSequencer::extrctRecentlyModifiedList(QDomDocument *domDoc)
+{
+    QStringList recentlyModified;
+    QDomNode objectNode = domDoc->firstChild().firstChild();
+    while (!objectNode.isNull())
+    {
+        if (objectNode.nodeName() == "object")
+            recentlyModified.append(objectNode.toElement().attribute("value"));
+        objectNode = objectNode.nextSibling();
+    }
+    return recentlyModified;
+}
 
 bool CommandSequencer::getStatus()
 {

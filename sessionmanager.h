@@ -58,7 +58,7 @@ signals:
     void macroQueueStopped(bool);
 
     void descriptionReady(QDomDocument*);
-
+    void updateDiagramScene();
 
     void beginObjHashModified();
     void endObjHashModified();
@@ -92,7 +92,6 @@ private slots:
     // general macro operations
     void macroStarted();
     void macroEnded();
-
 
 
     // lazyNut operations (entering a Macro state)

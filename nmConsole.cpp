@@ -222,10 +222,13 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
     designWindow = new DesignWindow(objectCatalogue, this);
+//    connect(objExplorer,SIGNAL(objCatalogueChanged()),
+//            designWindow,SLOT(objCatalogueChanged()));
     connect(designWindow,SIGNAL(objectSelected(QString)),
             objExplorer,SLOT(setObjFromObjName(QString)));
     connect(objExplorer,SIGNAL(objectSelected(QString)),
             designWindow,SLOT(dispatchObjectSelected(QString)));
+
 
     dockDesignWindow = new QDockWidget(tr("Design Window"), this);
     dockDesignWindow->setAllowedAreas(  Qt::LeftDockWidgetArea |
@@ -254,6 +257,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     sessionManager = new SessionManager(this);
     connect(sessionManager,SIGNAL(descriptionReady(QDomDocument*)),
             objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
+    connect(sessionManager,SIGNAL(updateDiagramScene()),
+            designWindow,SLOT(updateDiagramScene()));
 //    connect(sessionManager,SIGNAL(beginObjHashModified()),objExplorer,SIGNAL(beginObjHashModified()));
 //    connect(sessionManager,SIGNAL(endObjHashModified()),objExplorer,SIGNAL(endObjHashModified()));
     connect(sessionManager,SIGNAL(endObjHashModified()),designWindow,SLOT(objCatalogueChanged()));

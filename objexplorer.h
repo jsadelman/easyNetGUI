@@ -59,9 +59,10 @@ public:
 //    ComboBoxDelegate *comboBoxDelegate;
 
 signals:
-    void beginObjHashModified();
-    void endObjHashModified();
+//    void beginObjHashModified();
+//    void endObjHashModified();
     void objectSelected(QString);
+    void updateDiagramScene();
 
 public slots:
 //    void setObj(LazyNutObj* obj, LazyNutObjCatalogue *objectCatalogue);

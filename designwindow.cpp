@@ -107,7 +107,7 @@ void DesignWindow::setObjCatalogue(LazyNutObjectCatalogue *objHash)
     scene->setObjCatalogue(objHash);
 }
 
-void DesignWindow::objCatalogueChanged()
+void DesignWindow::updateDiagramScene()
 {
     scene->syncToObjCatalogue();
 }
