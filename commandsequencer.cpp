@@ -79,6 +79,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             currentCmdType = recently_modified;
         else if (currentCmd.contains("subtypes"))
             currentCmdType = subtypes;
+        else if (currentCmd.contains("version"))
+            currentCmdType = version;
         else
             ;// etc
     }
@@ -133,6 +135,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                     }
                     // else if ...
                 }
+                else if (currentCmdType == version)
+                    emit versionReady(answer);
                 // else if R, else if SVG, process accordingly
             }
         }

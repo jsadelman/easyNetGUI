@@ -24,7 +24,8 @@ public:
         description,
         recently_modified,
         subtypes,
-        LazyNutCommandTypes_MAX = subtypes
+        version,
+        LazyNutCommandTypes_MAX = version
     };
 
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
@@ -45,6 +46,7 @@ signals:
 
     void recentlyModifiedReady(QStringList);
     void descriptionReady(QDomDocument*);
+    void versionReady(QString);
     // states
     void isReady(bool);
     // errors

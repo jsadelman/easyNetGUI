@@ -56,6 +56,8 @@ signals:
 
     void descriptionReady(QDomDocument*);
     void updateDiagramScene();
+    void versionReady(QString);
+
 
     void beginObjHashModified();
     void endObjHashModified();
@@ -70,6 +72,7 @@ public slots:
     // macros
     void runModel(QStringList cmdList);
     void runSelection(QStringList cmdList);
+    void version();
 
     // status
     bool getStatus();
@@ -97,6 +100,7 @@ private slots:
     void getRecentlyModified();
     void clearRecentlyModified();
     void getDescriptions();
+    void getVersion();
 
 
      void updateRecentlyModified(QStringList _recentlyModified);

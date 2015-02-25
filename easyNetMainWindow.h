@@ -114,6 +114,7 @@ private slots:
     void showPauseState(bool isPaused);
 
     void lazyNutNotRunning();
+    void displayVersion(QString version);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -194,6 +195,7 @@ private:
     QMenu           *fileMenu;
     QMenu           *runMenu;
     QMenu           *settingsMenu;
+    QMenu           *aboutMenu;
 //    QToolBar        *fileToolBar;
 //    QToolBar        *runToolBar;
 
@@ -215,6 +217,7 @@ private:
     QAction         *pauseAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
+    QAction         *versionAct;
 };
 
 #endif // NMCONSOLE_H

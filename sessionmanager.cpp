@@ -59,6 +59,8 @@ void SessionManager::startCommandSequencer()
             this,SLOT(updateRecentlyModified(QStringList)));
     connect(commandSequencer,SIGNAL(descriptionReady(QDomDocument*)),
             this,SIGNAL(descriptionReady(QDomDocument*)));
+    connect(commandSequencer,SIGNAL(versionReady(QString)),
+            this,SIGNAL(versionReady(QString)));
 
 }
 
@@ -142,6 +144,21 @@ void SessionManager::runSelection(QStringList cmdList)
     macroQueue->tryRun(macro);
 }
 
+void SessionManager::version()
+{
+    QStateMachine * macro = buildMacro();
+    // states
+    QState * getVersionState = new QState(macro);
+    connect(getVersionState,SIGNAL(entered()),this,SLOT(getVersion()));
+    QFinalState *finalState = new QFinalState(macro);
+    macro->setInitialState(getVersionState);
+
+    // transitions
+    getVersionState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),finalState);
+
+    macroQueue->tryRun(macro);
+}
+
 
 
 bool SessionManager::getStatus()
@@ -198,6 +215,11 @@ void SessionManager::getDescriptions()
         commandSequencer->runCommands(commandList, JobOrigin::GUI);
         recentlyModified.clear();
     }
+}
+
+void SessionManager::getVersion()
+{
+    commandSequencer->runCommand("version", JobOrigin::GUI);
 }
 
 void SessionManager::macroStarted()

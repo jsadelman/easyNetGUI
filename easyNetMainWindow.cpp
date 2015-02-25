@@ -232,6 +232,9 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     createMenus();
     createToolBars();
     showViewMode(Welcome);
+
+    connect(sessionManager,SIGNAL(versionReady(QString)),
+            this,SLOT(displayVersion(QString)));
 }
 
 
@@ -411,6 +414,11 @@ void EasyNetMainWindow::lazyNutNotRunning()
             "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
 }
 
+void EasyNetMainWindow::displayVersion(QString version)
+{
+    QMessageBox::about(this, "Version",QString("LazyNut version is:\n%1").arg(version));
+}
+
 
 void EasyNetMainWindow::createActions()
 {
@@ -462,6 +470,10 @@ void EasyNetMainWindow::createActions()
     pauseAct = new QAction("PAUSE",this);
     connect(pauseAct,SIGNAL(triggered()),sessionManager,SLOT(pause()));
     connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
+
+    versionAct = new QAction("Version",this);
+    connect(versionAct,SIGNAL(triggered()),sessionManager,SLOT(version()));
+
 }
 
 void EasyNetMainWindow::createMenus()
@@ -484,6 +496,9 @@ void EasyNetMainWindow::createMenus()
     settingsMenu->addAction(setEasyNetHomeAct);
     settingsMenu->addAction(setLazyNutBatAct);
 //    settingsMenu->addAction(synchModeAct);
+
+    aboutMenu = menuBar()->addMenu(tr("&About"));
+    aboutMenu->addAction(versionAct);
 }
 
 void EasyNetMainWindow::createToolBars()
