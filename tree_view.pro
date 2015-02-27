@@ -70,4 +70,4 @@ DISTFILES += \
     images/test.svg
 
 
-
+CONFIG += c++11

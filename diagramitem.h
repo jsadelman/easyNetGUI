@@ -57,7 +57,7 @@ class QPainter;
 class QStyleOptionGraphicsItem;
 class QWidget;
 class QPolygonF;
-class QPair<QPointF,QPointF>;
+template <> class QPair<QPointF,QPointF>;
 QT_END_NAMESPACE
 
 class Arrow;

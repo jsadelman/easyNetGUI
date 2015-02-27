@@ -144,6 +144,9 @@ private:
 #if defined(__linux__)
     QString         lazyNutExt = "sh";
     QString         binDir = "bin-linux";
+#elif defined(__APPLE__)
+    QString         lazyNutExt = "sh";
+    QString         binDir = "bin-mac";
 #elif defined(_WIN32)
     QString         lazyNutExt = "bat";
     QString         binDir = "bin";
