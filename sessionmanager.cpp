@@ -55,18 +55,12 @@ void SessionManager::startCommandSequencer()
     commandSequencer = new CommandSequencer(lazyNut, this);
     connect(commandSequencer,SIGNAL(userLazyNutOutputReady(QString)),
             this,SIGNAL(userLazyNutOutputReady(QString)));
-    connect(commandSequencer,SIGNAL(recentlyModifiedReady(QStringList)),
-            this,SLOT(updateRecentlyModified(QStringList)));
-    connect(commandSequencer,SIGNAL(descriptionReady(QDomDocument*)),
-            this,SIGNAL(descriptionReady(QDomDocument*)));
-    connect(commandSequencer,SIGNAL(versionReady(QString)),
-            this,SIGNAL(versionReady(QString)));
-
 }
 
 
-void SessionManager::updateRecentlyModified(QStringList _recentlyModified)
+void SessionManager::updateRecentlyModified(QDomDocument*dom)
 {
+    QStringList _recentlyModified=extrctRecentlyModifiedList(dom);
     recentlyModified.append(_recentlyModified);
 }
 
@@ -79,7 +73,7 @@ void SessionManager::killLazyNut()
 
 void SessionManager::runCommands()
 {
-    commandSequencer->runCommands(commandList, JobOrigin::User);
+    commandSequencer->runCommands(commandList, JobOrigin::User,commandSequencer,false,SIGNAL(null()));
 }
 
 QStateMachine *SessionManager::buildMacro()
@@ -144,22 +138,6 @@ void SessionManager::runSelection(QStringList cmdList)
     macroQueue->tryRun(macro);
 }
 
-void SessionManager::version()
-{
-    QStateMachine * macro = buildMacro();
-    // states
-    QState * getVersionState = new QState(macro);
-    connect(getVersionState,SIGNAL(entered()),this,SLOT(getVersion()));
-    QFinalState *finalState = new QFinalState(macro);
-    macro->setInitialState(getVersionState);
-
-    // transitions
-    getVersionState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),finalState);
-
-    macroQueue->tryRun(macro);
-}
-
-
 
 bool SessionManager::getStatus()
 {
@@ -185,22 +163,37 @@ void SessionManager::getSubtypes()
     commandList.clear();
     foreach (QString type, lazyNutObjTypes)
         commandList.append(QString("xml subtypes %1").arg(type));
-    commandSequencer->runCommands(commandList, JobOrigin::GUI);
+    commandSequencer->runCommands(commandList, JobOrigin::GUI,this,false,SLOT(null()));
 }
 
 void SessionManager::getRecentlyModified()
 {
     commandList.clear();
-    commandList << "xml recently_modified"
-                << "clear_recently_modified";
-    commandSequencer->runCommands(commandList, JobOrigin::GUI);
+    commandList << "xml recently_modified";
+    commandSequencer->runCommands(commandList, JobOrigin::GUI,this,true,SLOT(updateRecentlyModified(QDomDocument*)));
+    commandList.clear();
+    commandList << "clear_recently_modified";
+    commandSequencer->runCommands(commandList, JobOrigin::GUI,this,false,SLOT(null()));
+}
+
+QStringList SessionManager::extrctRecentlyModifiedList(QDomDocument *domDoc)
+{
+    QStringList recentlyModified;
+    QDomNode objectNode = domDoc->firstChild().firstChild();
+    while (!objectNode.isNull())
+    {
+        if (objectNode.nodeName() == "object")
+            recentlyModified.append(objectNode.toElement().attribute("value"));
+        objectNode = objectNode.nextSibling();
+    }
+    return recentlyModified;
 }
 
 void SessionManager::clearRecentlyModified()
 {
     commandList.clear();
     commandList << "clear_recently_modified";
-    commandSequencer->runCommands(commandList, JobOrigin::GUI);
+    commandSequencer->runCommands(commandList, JobOrigin::GUI, this, false, SLOT());
 }
 
 void SessionManager::getDescriptions()
@@ -209,17 +202,13 @@ void SessionManager::getDescriptions()
         emit skipDescriptions();
     else
     {
-        commandList.clear();
+        commandList.clear(); // really?
         foreach (QString obj, recentlyModified)
-            commandList.append(QString("xml %1 description").arg(obj));
-        commandSequencer->runCommands(commandList, JobOrigin::GUI);
+        {
+            commandSequencer->runCommand(QString("xml %1 description").arg(obj), JobOrigin::GUI, this, true, SIGNAL(descriptionReady(QDomDocument *)));
+        }
         recentlyModified.clear();
     }
-}
-
-void SessionManager::getVersion()
-{
-    commandSequencer->runCommand("version", JobOrigin::GUI);
 }
 
 void SessionManager::macroStarted()

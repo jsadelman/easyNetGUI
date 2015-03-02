@@ -56,7 +56,6 @@ signals:
 
     void descriptionReady(QDomDocument*);
     void updateDiagramScene();
-    void versionReady(QString);
 
 
     void beginObjHashModified();
@@ -72,7 +71,6 @@ public slots:
     // macros
     void runModel(QStringList cmdList);
     void runSelection(QStringList cmdList);
-    void version();
 
     // status
     bool getStatus();
@@ -100,12 +98,13 @@ private slots:
     void getRecentlyModified();
     void clearRecentlyModified();
     void getDescriptions();
-    void getVersion();
 
 
-     void updateRecentlyModified(QStringList _recentlyModified);
+     void updateRecentlyModified(QDomDocument*dom);
 
 private:
+
+    QStringList extrctRecentlyModifiedList(QDomDocument* domDoc);
 
     void initParser();
     void updateObjects();
@@ -113,7 +112,9 @@ private:
 
     QStateMachine *buildMacro();
     MacroQueue *macroQueue;
+public:
     CommandSequencer *commandSequencer;
+private:
     LazyNut* lazyNut;
     QString lazyNutOutput;
 

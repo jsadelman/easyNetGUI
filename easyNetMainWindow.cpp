@@ -232,9 +232,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     createMenus();
     createToolBars();
     showViewMode(Welcome);
-
-    connect(sessionManager,SIGNAL(versionReady(QString)),
-            this,SLOT(displayVersion(QString)));
 }
 
 
@@ -472,8 +469,12 @@ void EasyNetMainWindow::createActions()
     connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 
     versionAct = new QAction("Version",this);
-    connect(versionAct,SIGNAL(triggered()),sessionManager,SLOT(version()));
+    connect(versionAct,SIGNAL(triggered()),this,SLOT(requestVersion()));
+}
 
+void EasyNetMainWindow::requestVersion()
+{
+    sessionManager->commandSequencer->runCommand("version", JobOrigin::GUI, this, false, SLOT(displayVersion(QString)));
 }
 
 void EasyNetMainWindow::createMenus()

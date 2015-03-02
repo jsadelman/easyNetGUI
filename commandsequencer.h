@@ -7,34 +7,77 @@
 #include <QQueue>
 #include <QSet>
 #include <QVector>
+#include <QDomDocument>
+#include <QDebug>
 
 #include "enumclasses.h"
 
 class LazyNut;
 class QDomDocument;
 
+class LazyNutCommand: public QObject
+{
+    Q_OBJECT
+
+public:
+    operator QString()const
+    {
+        return cmdText;
+    }
+
+    LazyNutCommand(QString x):cmdText(x),object(0),xmlAfter(false){}
+
+    LazyNutCommand(QString x,QObject*obj,char const* sl,bool xml):
+        cmdText(x),object(obj),xmlAfter(xml)
+    {
+        if(xml)
+        {
+            connect(this,SIGNAL(answer(QDomDocument*)),obj,sl);
+        }
+        else
+        {
+            connect(this,SIGNAL(answer(QString)),obj,sl);
+        }
+    }
+private:
+    QString cmdText;
+    QObject* object;
+    bool xmlAfter;
+
+public:
+    void done(const QString&ans)
+    {
+       if(xmlAfter)
+       {
+           QDomDocument *domDoc = new QDomDocument;
+           domDoc->setContent(ans); // this line replaces an entire Bison!
+           emit answer(domDoc);
+       }
+       else
+       {
+           emit answer(ans);
+       }
+    }
+
+signals:
+    void answer(const QString&ans);
+    void answer(QDomDocument*dom);
+};
 
 class CommandSequencer: public QObject
 {
     Q_OBJECT
 
 public:
-    enum LazyNutCommandTypes
-    {
-        description,
-        recently_modified,
-        subtypes,
-        version,
-        LazyNutCommandTypes_MAX = version
-    };
 
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
 
 
-public slots:
-    void runCommands(QStringList commands, JobOrigin origin);
-    void runCommand(QString command, JobOrigin origin);
+public:
+    void runCommands(QStringList commands, JobOrigin origin, QObject* obj, bool xml, char const* slot);
+    void runCommand(QString command, JobOrigin origin, QObject*, bool xml, char const* slot);
     // status
+public slots:
     bool getStatus();
 
     void processLazyNutOutput(const QString &lazyNutOutput);
@@ -46,7 +89,6 @@ signals:
 
     void recentlyModifiedReady(QStringList);
     void descriptionReady(QDomDocument*);
-    void versionReady(QString);
     // states
     void isReady(bool);
     // errors
@@ -55,12 +97,11 @@ signals:
 private:
 
     void initProcessLazyNutOutput();
-    QStringList extrctRecentlyModifiedList(QDomDocument* domDoc);
 
     JobOrigin jobOrigin;
     bool ready;
     LazyNut* lazyNut;
-    QStringList commandList;
+    QList<LazyNutCommand*> commandList;
     QString lazyNutBuffer;
     int baseOffset;
     QRegExp emptyLineRex;
@@ -68,7 +109,7 @@ private:
     QRegExp answerRex;
     QVector<QString> xmlCmdTags;
     QRegExp eNelementsTagRex;
-    QSet<LazyNutCommandTypes> queryTypes;
+//    QSet<LazyNutCommandTypes> queryTypes;
 
 };
 

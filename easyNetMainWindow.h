@@ -114,6 +114,7 @@ private slots:
     void showPauseState(bool isPaused);
 
     void lazyNutNotRunning();
+    void requestVersion();
     void displayVersion(QString version);
 
 protected:
