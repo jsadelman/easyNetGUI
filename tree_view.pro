@@ -35,7 +35,13 @@ SOURCES +=  \
     commandsequencer.cpp \
         domitem.cpp \
     lazynutobject.cpp \
-    easyNetMainWindow.cpp
+    easyNetMainWindow.cpp \
+    macrostate.cpp \
+    lazynutjob.cpp \
+    lazynutmacro.cpp \
+    answerformatterfactory.cpp \
+    answerformatter.cpp \
+    lazynutjobparam.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -58,7 +64,14 @@ HEADERS  += \
     enumclasses.h \
         domitem.h \
     lazynutobject.h \
-    easyNetMainWindow.h
+    easyNetMainWindow.h \
+    macrostate.h \
+    lazynutjob.h\
+    lazynutmacro.h \
+    answerformatterfactory.h \
+    answerformatter.h \
+    lazynutjobparam.h
+
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

@@ -2,6 +2,11 @@
 #include "commandsequencer.h"
 #include "jobqueue.h"
 #include "lazynut.h"
+#include "lazynutmacro.h"
+#include "lazynutjob.h"
+#include "lazynutjobparam.h"
+#include "answerformatter.h"
+#include "answerformatterfactory.h"
 
 
 #include <QtGlobal>
@@ -10,6 +15,7 @@
 #include <QBuffer>
 #include <QDebug>
 #include <QDomDocument>
+#include <QAbstractTransition>
 
 class MacroQueue;
 
@@ -38,6 +44,74 @@ void SessionManager::startLazyNut(QString lazyNutBat)
     }
 }
 
+void SessionManager::setupJob(QObject *sender, LazyNutJobParam *param)
+{
+    LazyNutJob* job = qobject_cast<LazyNutJob*>(sender);
+    bool start;
+    if ((start = !job))
+    {
+        LazyNutMacro* macro = new LazyNutMacro(this);
+        job = new LazyNutJob(macro); // job --> endOfMacro
+        macro->setInitialState(job);
+        connect(commandSequencer,SIGNAL(commandsExecuted()),macro,SIGNAL(next()));
+        connect(job,SIGNAL(entered()),job,SLOT(runCommands()));
+    }
+    job->jobOrigin = param->jobOrigin;
+    if (job->cmdList.isEmpty())
+        job->setCmdList(param->cmdList);
+    job->setCmdFormatter(param->cmdFormatter);
+    AnswerFormatterFactory* factory = AnswerFormatterFactory::instance();
+    AnswerFormatter *af = factory->newAnswerFormatter(param->answerFormatterType,
+                                                      param->answerReceiver,
+                                                      param->answerSlot);
+    if (af)
+    {
+        connect(commandSequencer,SIGNAL(answerReady(QString)),
+                af,SLOT(formatAnswer(QString)));
+        job->setAnswerFormatter(af);
+    }
+
+    connect(job,SIGNAL(runCommands(QStringList,JobOrigin)),
+            commandSequencer,SLOT(runCommands(QStringList,JobOrigin)));
+    if (param->finalReceiver && param->finalSlot)
+        connect(job,SIGNAL(exited()),param->finalReceiver,param->finalSlot);
+    if (param->nextJobReceiver && param->nextJobSlot)
+    {
+        LazyNutJob* nextJob = new LazyNutJob(job->macro); // nextJob --> endOfMacro
+        job->removeTransition(job->transitions().at(0));
+        job->addTransition(job->macro,SIGNAL(next()),nextJob); // job --> nextJob --> endOfMacro
+        connect(nextJob,SIGNAL(entered()),param->nextJobReceiver,param->nextJobSlot);
+    }
+
+    if (start)
+        macroQueue->tryRun(job->macro);
+    else
+        job->runCommands();
+}
+
+
+LazyNutJob *SessionManager::currentJob(QObject *sender)
+{
+    LazyNutJob* job = qobject_cast<LazyNutJob*> (sender);
+    if (job)
+        return job;
+    AnswerFormatter *af = qobject_cast<AnswerFormatter*> (sender);
+    if (af)
+    {
+        LazyNutJob* job = qobject_cast<LazyNutJob*> (af->parent());
+        return job;
+    }
+    return nullptr;
+}
+
+LazyNutJob *SessionManager::nextJob(QObject *sender)
+{
+    LazyNutJob* job = currentJob(sender);
+    LazyNutJob* nextJob = qobject_cast<LazyNutJob*>(job->transitions().at(0)->targetState());
+    return nextJob;
+}
+
+
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {
     lazyNutHeaderBuffer.append(lazyNutOutput);
@@ -55,19 +129,6 @@ void SessionManager::startCommandSequencer()
     commandSequencer = new CommandSequencer(lazyNut, this);
     connect(commandSequencer,SIGNAL(userLazyNutOutputReady(QString)),
             this,SIGNAL(userLazyNutOutputReady(QString)));
-    connect(commandSequencer,SIGNAL(recentlyModifiedReady(QStringList)),
-            this,SLOT(updateRecentlyModified(QStringList)));
-    connect(commandSequencer,SIGNAL(descriptionReady(QDomDocument*)),
-            this,SIGNAL(descriptionReady(QDomDocument*)));
-    connect(commandSequencer,SIGNAL(versionReady(QString)),
-            this,SIGNAL(versionReady(QString)));
-
-}
-
-
-void SessionManager::updateRecentlyModified(QStringList _recentlyModified)
-{
-    recentlyModified.append(_recentlyModified);
 }
 
 
@@ -75,90 +136,6 @@ void SessionManager::killLazyNut()
 {
     lazyNut->kill();
 }
-
-
-void SessionManager::runCommands()
-{
-    commandSequencer->runCommands(commandList, JobOrigin::User);
-}
-
-QStateMachine *SessionManager::buildMacro()
-{
-    QStateMachine * macro = new QStateMachine(this);
-    connect(macro,SIGNAL(started()),this,SLOT(macroStarted()));
-    connect(macro,SIGNAL(finished()),this,SLOT(macroEnded()));
-    connect(macro,SIGNAL(finished()),macro,SLOT(deleteLater()));
-    return macro;
-}
-
-
-void SessionManager::runModel(QStringList cmdList)
-{
-    commandList = cmdList;
-    QStateMachine * macro = buildMacro();
-    // states
-    QState * runCommandsState = new QState(macro);
-    connect(runCommandsState,SIGNAL(entered()),this,SLOT(runCommands()));
-    QState * getSubtypesState = new QState(macro);
-    connect(getSubtypesState,SIGNAL(entered()),this,SLOT(getSubtypes()));
-    QState * getRecentlyModifiedState = new QState(macro);
-    connect(getRecentlyModifiedState,SIGNAL(entered()),this,SLOT(getRecentlyModified()));
-    QState * getDescriptionsState = new QState(macro);
-    connect(getDescriptionsState,SIGNAL(entered()),this,SLOT(getDescriptions()));
-    connect(getDescriptionsState,SIGNAL(exited()),this,SIGNAL(updateDiagramScene()));
-
-    QFinalState *finalState = new QFinalState(macro);
-    macro->setInitialState(runCommandsState);
-
-    // transitions
-    runCommandsState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),getSubtypesState);
-    getSubtypesState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),getRecentlyModifiedState);
-    getRecentlyModifiedState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),getDescriptionsState);
-    getDescriptionsState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),finalState);
-    getDescriptionsState->addTransition(this,SIGNAL(skipDescriptions()),finalState);
-
-    macroQueue->tryRun(macro);
-}
-
-void SessionManager::runSelection(QStringList cmdList)
-{
-    commandList = cmdList;
-    QStateMachine * macro = buildMacro();
-    // states
-    QState * runCommandsState = new QState(macro);
-    connect(runCommandsState,SIGNAL(entered()),this,SLOT(runCommands()));
-    QState * getRecentlyModifiedState = new QState(macro);
-    connect(getRecentlyModifiedState,SIGNAL(entered()),this,SLOT(getRecentlyModified()));
-    QState * getDescriptionsState = new QState(macro);
-    connect(getDescriptionsState,SIGNAL(entered()),this,SLOT(getDescriptions()));
-    connect(getDescriptionsState,SIGNAL(exited()),this,SIGNAL(updateDiagramScene()));
-    QFinalState *finalState = new QFinalState(macro);
-    macro->setInitialState(runCommandsState);
-
-    // transitions
-    runCommandsState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),getRecentlyModifiedState);
-    getRecentlyModifiedState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),getDescriptionsState);
-    getDescriptionsState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),finalState);
-    getDescriptionsState->addTransition(this,SIGNAL(skipDescriptions()),finalState);
-
-    macroQueue->tryRun(macro);
-}
-
-void SessionManager::version()
-{
-    QStateMachine * macro = buildMacro();
-    // states
-    QState * getVersionState = new QState(macro);
-    connect(getVersionState,SIGNAL(entered()),this,SLOT(getVersion()));
-    QFinalState *finalState = new QFinalState(macro);
-    macro->setInitialState(getVersionState);
-
-    // transitions
-    getVersionState->addTransition(commandSequencer,SIGNAL(commandsExecuted()),finalState);
-
-    macroQueue->tryRun(macro);
-}
-
 
 
 bool SessionManager::getStatus()
@@ -180,47 +157,6 @@ void SessionManager::stop()
 }
 
 
-void SessionManager::getSubtypes()
-{
-    commandList.clear();
-    foreach (QString type, lazyNutObjTypes)
-        commandList.append(QString("xml subtypes %1").arg(type));
-    commandSequencer->runCommands(commandList, JobOrigin::GUI);
-}
-
-void SessionManager::getRecentlyModified()
-{
-    commandList.clear();
-    commandList << "xml recently_modified"
-                << "clear_recently_modified";
-    commandSequencer->runCommands(commandList, JobOrigin::GUI);
-}
-
-void SessionManager::clearRecentlyModified()
-{
-    commandList.clear();
-    commandList << "clear_recently_modified";
-    commandSequencer->runCommands(commandList, JobOrigin::GUI);
-}
-
-void SessionManager::getDescriptions()
-{
-    if (recentlyModified.isEmpty())
-        emit skipDescriptions();
-    else
-    {
-        commandList.clear();
-        foreach (QString obj, recentlyModified)
-            commandList.append(QString("xml %1 description").arg(obj));
-        commandSequencer->runCommands(commandList, JobOrigin::GUI);
-        recentlyModified.clear();
-    }
-}
-
-void SessionManager::getVersion()
-{
-    commandSequencer->runCommand("version", JobOrigin::GUI);
-}
 
 void SessionManager::macroStarted()
 {

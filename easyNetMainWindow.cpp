@@ -17,12 +17,13 @@
 #include "objexplorer.h"
 #include "designwindow.h"
 #include "codeeditor.h"
-#include "commandsequencer.h"
 #include "sessionmanager.h"
 #include "highlighter.h"
 #include "codeeditor.h"
 #include "editwindow.h"
 #include "plotwindow.h"
+#include "lazynutjobparam.h"
+#include "lazynutjob.h"
 
 InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
@@ -201,10 +202,10 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     setCurrentFile(scriptEdit,"Untitled");
 
     sessionManager = new SessionManager(this);
-    connect(sessionManager,SIGNAL(descriptionReady(QDomDocument*)),
-            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
-    connect(sessionManager,SIGNAL(updateDiagramScene()),
-            designWindow,SLOT(updateDiagramScene()));
+//    connect(sessionManager,SIGNAL(descriptionReady(QDomDocument*)),
+//            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
+//    connect(sessionManager,SIGNAL(updateDiagramScene()),
+//            designWindow,SLOT(updateDiagramScene()));
     connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),cmdOutput,SLOT(displayOutput(QString)));
     connect(sessionManager,SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
@@ -233,8 +234,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     createToolBars();
     showViewMode(Welcome);
 
-    connect(sessionManager,SIGNAL(versionReady(QString)),
-            this,SLOT(displayVersion(QString)));
+//    connect(sessionManager,SIGNAL(versionReady(QString)),
+//            this,SLOT(displayVersion(QString)));
 }
 
 
@@ -359,21 +360,81 @@ void EasyNetMainWindow::open()
 }
 
 
-void EasyNetMainWindow::runSelection()
-{
-    sessionManager->runSelection(scriptEdit->textEdit->getSelectedText());
-}
-
 void EasyNetMainWindow::runCmd(QString cmd)
 {
-    sessionManager->runSelection(QStringList(cmd));
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->jobOrigin = JobOrigin::User;
+    param->cmdList = {cmd};
+    sessionManager->setupJob(sender(),param);
 }
+
 
 void EasyNetMainWindow::runModel()
 {
-    sessionManager->runModel(scriptEdit->textEdit->getAllText());
-    //emit savedLayoutToBeLoaded(curJson);
+    runCmdAndUpdate(scriptEdit->textEdit->getAllText());
 }
+
+void EasyNetMainWindow::runSelection()
+{
+    runCmdAndUpdate(scriptEdit->textEdit->getSelectedText());
+}
+
+
+void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->jobOrigin = JobOrigin::User;
+    param->cmdList = cmdList;
+    param->nextJobReceiver = this;
+    param->nextJobSlot = SLOT(getRecentlyModified());
+    sessionManager->setupJob(sender(),param);
+}
+
+void EasyNetMainWindow::getRecentlyModified()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->jobOrigin = JobOrigin::GUI;
+    param->cmdList = {"xml recently_modified"};
+    param->answerFormatterType = "ListOfValues";
+    param->answerReceiver = this;
+    param->answerSlot = SLOT(setCmdListOnNextJob(QStringList));
+    param->nextJobReceiver = this;
+    param->nextJobSlot = SLOT(getDescriptions());
+    sessionManager->setupJob(sender(),param);
+}
+
+// this should be a service offered by sessionManager
+void EasyNetMainWindow::setCmdListOnNextJob(QStringList answer)
+{
+    sessionManager->nextJob(sender())->setCmdList(answer);
+}
+
+void EasyNetMainWindow::getDescriptions()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->jobOrigin = JobOrigin::GUI;
+    // no cmdList, since it is set by setRecentlyModifiedList
+    param->cmdFormatter = [] (QString cmd) { return cmd.prepend("xml ");};
+    param->answerFormatterType = "XML";
+    param->answerReceiver = objExplorer;
+    param->answerSlot = SLOT(updateLazyNutObjCatalogue(QDomDocument*));
+    param->finalReceiver = designWindow;
+    param->finalSlot = SLOT(updateDiagramScene());
+    sessionManager->setupJob(sender(),param);
+}
+
+void EasyNetMainWindow::getVersion()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->jobOrigin = JobOrigin::GUI;
+    param->cmdList = {"version"};
+    param->answerFormatterType = "Identity";
+    param->answerReceiver = this;
+    param->answerSlot = SLOT(displayVersion(QString)) ;
+    sessionManager->setupJob(sender(),param);
+}
+
+
 
 void EasyNetMainWindow::echoCommand(const QString &line)
 {
@@ -405,6 +466,7 @@ void EasyNetMainWindow::showPauseState(bool isPaused)
     else
         pauseAct->setIconText("PAUSE");
 }
+
 
 void EasyNetMainWindow::lazyNutNotRunning()
 {
@@ -472,7 +534,7 @@ void EasyNetMainWindow::createActions()
     connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 
     versionAct = new QAction("Version",this);
-    connect(versionAct,SIGNAL(triggered()),sessionManager,SLOT(version()));
+    connect(versionAct,SIGNAL(triggered()),sessionManager,SLOT(getVersion()));
 
 }
 

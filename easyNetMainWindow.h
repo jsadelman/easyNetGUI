@@ -17,7 +17,6 @@ class ObjExplorer;
 
 class DesignWindow;
 class LazyNut;
-class CommandSequencer;
 class SessionManager;
 class LazyNutObject;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
@@ -109,9 +108,14 @@ private slots:
     void runModel();
     void runSelection();
     void runCmd(QString cmd);
+    void runCmdAndUpdate(QStringList cmdList);
     void setEasyNetHome();
     void setLazyNutBat();
     void showPauseState(bool isPaused);
+    void getRecentlyModified();
+    void setCmdListOnNextJob(QStringList);
+    void getDescriptions();
+    void getVersion();
 
     void lazyNutNotRunning();
     void displayVersion(QString version);

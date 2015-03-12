@@ -19,14 +19,7 @@ class CommandSequencer: public QObject
     Q_OBJECT
 
 public:
-    enum LazyNutCommandTypes
-    {
-        description,
-        recently_modified,
-        subtypes,
-        version,
-        LazyNutCommandTypes_MAX = version
-    };
+
 
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
 
@@ -41,12 +34,8 @@ public slots:
 signals:
     // send output to editor
     void commandsExecuted();
-    void queryAnswersReady(QString);
+    void answerReady(QString);
     void userLazyNutOutputReady(const QString&);
-
-    void recentlyModifiedReady(QStringList);
-    void descriptionReady(QDomDocument*);
-    void versionReady(QString);
     // states
     void isReady(bool);
     // errors
@@ -55,7 +44,6 @@ signals:
 private:
 
     void initProcessLazyNutOutput();
-    QStringList extrctRecentlyModifiedList(QDomDocument* domDoc);
 
     JobOrigin jobOrigin;
     bool ready;
@@ -66,9 +54,6 @@ private:
     QRegExp emptyLineRex;
     QRegExp errorRex;
     QRegExp answerRex;
-    QVector<QString> xmlCmdTags;
-    QRegExp eNelementsTagRex;
-    QSet<LazyNutCommandTypes> queryTypes;
 
 };
 

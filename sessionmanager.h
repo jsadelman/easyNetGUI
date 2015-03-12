@@ -10,6 +10,8 @@
 #include "enumclasses.h"
 
 class QDomDocument;
+class LazyNutJob;
+class LazyNutJobParam;
 
 
 class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
@@ -38,13 +40,12 @@ class SessionManager: public QObject
 public:
     SessionManager(QObject *parent=0);
     const CommandSequencer * getCommandSequencer() const {return commandSequencer;}
-
-
     void startLazyNut(QString lazyNutBat);
+    void setupJob (QObject* sender, LazyNutJobParam* param);
+    LazyNutJob *currentJob(QObject* sender);
+    LazyNutJob* nextJob(QObject* sender);
 
 signals:
-    // decision signals
-    void skipDescriptions();
 
     // send output to editor
     void userLazyNutOutputReady(const QString&);
@@ -54,25 +55,10 @@ signals:
 
     void macroQueueStopped(bool);
 
-    void descriptionReady(QDomDocument*);
-    void updateDiagramScene();
-    void versionReady(QString);
-
-
-    void beginObjHashModified();
-    void endObjHashModified();
-
     void lazyNutNotRunning();
-    void lazyNutOutputParsed(bool);
-    void lazyNutOutputProcessed();
 
 
 public slots:
-
-    // macros
-    void runModel(QStringList cmdList);
-    void runSelection(QStringList cmdList);
-    void version();
 
     // status
     bool getStatus();
@@ -89,42 +75,21 @@ private slots:
     void getOOB(const QString &lazyNutOutput);
     void startCommandSequencer();
 
-    // general macro operations
     void macroStarted();
     void macroEnded();
 
 
-    // lazyNut operations (entering a Macro state)
-    void runCommands();
-    void getSubtypes();
-    void getRecentlyModified();
-    void clearRecentlyModified();
-    void getDescriptions();
-    void getVersion();
-
-
-     void updateRecentlyModified(QStringList _recentlyModified);
 
 private:
 
-    void initParser();
-    void updateObjects();
-    bool parseLazyNutOutput();
-
-    QStateMachine *buildMacro();
     MacroQueue *macroQueue;
     CommandSequencer *commandSequencer;
     LazyNut* lazyNut;
     QString lazyNutOutput;
-
     QStringList commandList;
-    QStringList recentlyModified;
-    LazyNutObjectCatalogue *objectCatalogue;
-    TreeModel* objTaxonomyModel;
     QString lazyNutHeaderBuffer;
     QRegExp OOBrex;
     QString OOBsecret;
-    QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};
 
 };
 

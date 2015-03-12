@@ -2,7 +2,6 @@
 #include "lazynut.h"
 
 #include <QDebug>
-#include <QDomDocument>
 
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
@@ -19,11 +18,8 @@ void CommandSequencer::initProcessLazyNutOutput()
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
-//    eNelementsTagRex = QRegExp("(</?)eNelements(>)");
     lazyNutBuffer.clear();
     baseOffset = 0;
-    queryTypes << description << recently_modified << subtypes; // etc
-
 }
 
 
@@ -70,20 +66,6 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     if (commandList.isEmpty())
         return; // startup header or other spontaneous lazyNut output, or synch error
     QString currentCmd = commandList.first();
-    LazyNutCommandTypes currentCmdType;
-    if (jobOrigin == JobOrigin::GUI)
-    {
-        if (currentCmd.contains("description"))
-            currentCmdType = description;
-        else if (currentCmd.contains("recently_modified"))
-            currentCmdType = recently_modified;
-        else if (currentCmd.contains("subtypes"))
-            currentCmdType = subtypes;
-        else if (currentCmd.contains("version"))
-            currentCmdType = version;
-        else
-            ;// etc
-    }
 
     QRegExp beginRex(QString("BEGIN: %1\\n").arg(QRegExp::escape(currentCmd)));
     QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(QRegExp::escape(currentCmd)));
@@ -109,35 +91,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             if (beginOffset < answerOffset && answerOffset < endOffset)
             {
                 QString answer = answerRex.cap(1);
-                if (queryTypes.contains(currentCmdType))
-                {
-                    QDomDocument *domDoc = new QDomDocument;
-                    domDoc->setContent(answer); // this line replaces an entire Bison!
-                    if (currentCmdType == recently_modified)
-                    {
-                        // retreive obj name list and send it to SessionManager
-                        QStringList recentlyModified = extrctRecentlyModifiedList(domDoc);
-                        delete domDoc;
-                        emit recentlyModifiedReady(recentlyModified);
-                    }
-                    else if (currentCmdType == subtypes)
-                    {
-                        // get the last word in the cmd line, e.g. xml subtypes layer
-                        QString type = currentCmd.simplified().section(QRegExp("\\s+"),-1,-1);
-                        // change <eNelements> into <string label="type" value="layer">
-                        // stub
-                        //qDebug() << type << domDoc->toString();
-                        delete domDoc;
-                    }
-                    else if (currentCmdType == description)
-                    {
-                        emit descriptionReady(domDoc);
-                    }
-                    // else if ...
-                }
-                else if (currentCmdType == version)
-                    emit versionReady(answer);
-                // else if R, else if SVG, process accordingly
+                emit answerReady(answer);
             }
         }
         commandList.removeFirst();
@@ -161,18 +115,6 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
 }
 
 
-QStringList CommandSequencer::extrctRecentlyModifiedList(QDomDocument *domDoc)
-{
-    QStringList recentlyModified;
-    QDomNode objectNode = domDoc->firstChild().firstChild();
-    while (!objectNode.isNull())
-    {
-        if (objectNode.nodeName() == "object")
-            recentlyModified.append(objectNode.toElement().attribute("value"));
-        objectNode = objectNode.nextSibling();
-    }
-    return recentlyModified;
-}
 
 bool CommandSequencer::getStatus()
 {
