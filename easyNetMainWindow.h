@@ -113,7 +113,7 @@ private slots:
     void setLazyNutBat();
     void showPauseState(bool isPaused);
     void getRecentlyModified();
-    void setCmdListOnNextJob(QStringList);
+//    void setCmdListOnNextJob(QStringList);
     void getDescriptions();
     void getVersion();
 

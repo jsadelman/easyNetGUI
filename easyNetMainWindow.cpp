@@ -394,16 +394,12 @@ void EasyNetMainWindow::getRecentlyModified()
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = {"xml recently_modified"};
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SLOT(setCmdListOnNextJob(QStringList)));
+    param->setAnswerReceiver(sessionManager, SLOT(appendCmdListOnNextJob(QStringList)));
     param->setNextJobReceiver(this, SLOT(getDescriptions()));
     sessionManager->setupJob(sender(),param);
 }
 
-// this should be a service offered by sessionManager
-void EasyNetMainWindow::setCmdListOnNextJob(QStringList answer)
-{
-    sessionManager->nextJob(sender())->setCmdList(answer);
-}
+
 
 void EasyNetMainWindow::getDescriptions()
 {

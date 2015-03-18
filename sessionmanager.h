@@ -79,6 +79,8 @@ private slots:
     void macroStarted();
     void macroEnded();
 
+    void appendCmdListOnNextJob(QStringList cmdList);
+
 
 
 private:

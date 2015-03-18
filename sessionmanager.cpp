@@ -114,6 +114,13 @@ LazyNutJob *SessionManager::nextJob(QObject *sender)
 }
 
 
+void SessionManager::appendCmdListOnNextJob(QStringList cmdList)
+{
+    nextJob(sender())->cmdList.append(cmdList);
+}
+
+
+
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {
     lazyNutHeaderBuffer.append(lazyNutOutput);
