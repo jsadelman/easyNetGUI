@@ -25,8 +25,8 @@ public:
 
 
 public slots:
-    void runCommands(QStringList commands, JobOrigin origin);
-    void runCommand(QString command, JobOrigin origin);
+    void runCommands(QStringList commands, bool _getAnswer, unsigned int mode);
+    void runCommand(QString command, bool _getAnswer, unsigned int mode);
     // status
     bool getStatus();
 
@@ -45,7 +45,8 @@ private:
 
     void initProcessLazyNutOutput();
 
-    JobOrigin jobOrigin;
+    bool getAnswer;
+    unsigned int logMode;
     bool ready;
     LazyNut* lazyNut;
     QStringList commandList;

@@ -5,7 +5,7 @@
 
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
-    : lazyNut(lazyNut), ready(true), QObject(parent)
+    : lazyNut(lazyNut), ready(true), logMode(ECHO_INTERPRETER), QObject(parent)
 {
     initProcessLazyNutOutput();
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
@@ -14,7 +14,6 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
 
 void CommandSequencer::initProcessLazyNutOutput()
 {
-    jobOrigin = JobOrigin::User;
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
@@ -23,20 +22,18 @@ void CommandSequencer::initProcessLazyNutOutput()
 }
 
 
-void CommandSequencer::runCommands(QStringList commands, JobOrigin origin)
+void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsigned int mode)
 {
-    jobOrigin = origin;
-    if (jobOrigin == JobOrigin::User)
+    getAnswer = _getAnswer;
+    logMode = mode;
+
+    foreach (QString cmd, commands)
     {
-        foreach (QString cmd, commands)
-        {
-            // skip empty lines, which do not trigger any response from lazyNut
-            if (!emptyLineRex.exactMatch(cmd))
-                commandList.append(cmd);
-        }
+        // skip empty lines, which do not trigger any response from lazyNut
+        if (!emptyLineRex.exactMatch(cmd))
+            commandList.append(cmd);
     }
-    else
-        commandList = commands;
+
     if (commandList.size() == 0)
     {
         // likely the user has selected only empty lines (by mistake)
@@ -52,15 +49,15 @@ void CommandSequencer::runCommands(QStringList commands, JobOrigin origin)
         lazyNut->sendCommand(cmd);
 }
 
-void CommandSequencer::runCommand(QString command, JobOrigin origin)
+void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int mode)
 {
-    runCommands(QStringList{command}, origin);
+    runCommands(QStringList{command}, _getAnswer, mode);
 }
 
 void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
 {
-    if (jobOrigin == JobOrigin::User)
-        emit userLazyNutOutputReady(lazyNutOutput); // display on console
+    if (logMode &= ECHO_INTERPRETER)
+        emit userLazyNutOutputReady(lazyNutOutput);
     // else send it to some log file or other location
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
@@ -85,7 +82,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             emit cmdError(currentCmd,errorList);
 
         // grab ANSWER (assume there's only one)
-        if (jobOrigin == JobOrigin::GUI)
+        if (getAnswer)
         {
             int answerOffset = answerRex.indexIn(lazyNutBuffer,beginOffset);
             if (beginOffset < answerOffset && answerOffset < endOffset)

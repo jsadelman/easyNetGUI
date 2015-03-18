@@ -21,16 +21,17 @@ public:
     void setCmdFormatter(std::function<QString (const QString& s)> cf) {cmdFormatter = cf;}
     void setCmdList(QStringList list) {cmdList = list;}
     void setCmdList(QString cmd) {cmdList = {cmd};}
-    void setJobOrigin(JobOrigin origin) {jobOrigin = origin;}
+//    void setJobOrigin(JobOrigin origin) {jobOrigin = origin;}
 
     LazyNutMacro *macro;
     QStringList cmdList;
     AnswerFormatter *answerFormatter;
     std::function<QString (const QString& s)> cmdFormatter;
-    JobOrigin jobOrigin;
+    bool echoOnInterpreter;
+    unsigned int logMode;
 
 signals:
-    void runCommands(QStringList, JobOrigin);
+    void runCommands(QStringList, bool, unsigned int);
 
 public slots:
     void runCommands();

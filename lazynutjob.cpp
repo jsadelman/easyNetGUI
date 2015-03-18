@@ -4,7 +4,7 @@
 #include <functional>
 
 LazyNutJob::LazyNutJob(LazyNutMacro *macro) :
-    jobOrigin(JobOrigin::User), QState(macro), macro(macro)
+    QState(macro), macro(macro), answerFormatter(nullptr)
 {
     addTransition(macro,SIGNAL(next()),macro->endOfMacro); // this --> endOfMacro
 }
@@ -25,7 +25,7 @@ void LazyNutJob::runCommands()
 {
     for (int i = 0; i < cmdList.size(); ++i)
         cmdList[i] = cmdFormatter(cmdList[i]);
-    emit runCommands(cmdList, jobOrigin);
+    emit runCommands(cmdList, answerFormatter, logMode);
 }
 
 

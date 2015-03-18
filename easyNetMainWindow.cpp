@@ -363,8 +363,8 @@ void EasyNetMainWindow::open()
 void EasyNetMainWindow::runCmd(QString cmd)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->jobOrigin = JobOrigin::User;
     param->cmdList = {cmd};
+    param->logMode = ECHO_INTERPRETER;
     sessionManager->setupJob(sender(),param);
 }
 
@@ -383,24 +383,19 @@ void EasyNetMainWindow::runSelection()
 void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->jobOrigin = JobOrigin::User;
+    param->logMode |= ECHO_INTERPRETER;
     param->cmdList = cmdList;
-//    param->setNextJobReceiver(this, SLOT(getRecentlyModified()));
-    param->nextJobReceiver = this;
-    param->nextJobSlot = SLOT(getRecentlyModified());
+    param->setNextJobReceiver(this, SLOT(getRecentlyModified()));
     sessionManager->setupJob(sender(),param);
 }
 
 void EasyNetMainWindow::getRecentlyModified()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->jobOrigin = JobOrigin::GUI;
     param->cmdList = {"xml recently_modified"};
     param->answerFormatterType = "ListOfValues";
-    param->answerReceiver = this;
-    param->answerSlot = SLOT(setCmdListOnNextJob(QStringList));
-    param->nextJobReceiver = this;
-    param->nextJobSlot = SLOT(getDescriptions());
+    param->setAnswerReceiver(this, SLOT(setCmdListOnNextJob(QStringList)));
+    param->setNextJobReceiver(this, SLOT(getDescriptions()));
     sessionManager->setupJob(sender(),param);
 }
 
@@ -413,25 +408,20 @@ void EasyNetMainWindow::setCmdListOnNextJob(QStringList answer)
 void EasyNetMainWindow::getDescriptions()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->jobOrigin = JobOrigin::GUI;
-    // no cmdList, since it is set by setRecentlyModifiedList
+    // no cmdList, since it is set by setCmdListOnNextJob
     param->cmdFormatter = [] (QString cmd) { return cmd.prepend("xml ");};
     param->answerFormatterType = "XML";
-    param->answerReceiver = objExplorer;
-    param->answerSlot = SLOT(updateLazyNutObjCatalogue(QDomDocument*));
-    param->endOfJobReceiver = designWindow;
-    param->endOfJobSlot = SLOT(updateDiagramScene());
+    param->setAnswerReceiver(objExplorer, SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
+    param->setEndOfJobReceiver(designWindow, SLOT(updateDiagramScene()));
     sessionManager->setupJob(sender(),param);
 }
 
 void EasyNetMainWindow::getVersion()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->jobOrigin = JobOrigin::GUI;
     param->cmdList = {"version"};
     param->answerFormatterType = "Identity";
-    param->answerReceiver = this;
-    param->answerSlot = SLOT(displayVersion(QString)) ;
+    param->setAnswerReceiver(this, SLOT(displayVersion(QString)));
     sessionManager->setupJob(sender(),param);
 }
 

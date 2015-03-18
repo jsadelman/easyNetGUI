@@ -56,7 +56,7 @@ void SessionManager::setupJob(QObject *sender, LazyNutJobParam *param)
         connect(commandSequencer,SIGNAL(commandsExecuted()),macro,SIGNAL(next()));
         connect(job,SIGNAL(entered()),job,SLOT(runCommands()));
     }
-    job->jobOrigin = param->jobOrigin;
+
     if (job->cmdList.isEmpty())
         job->setCmdList(param->cmdList);
     job->setCmdFormatter(param->cmdFormatter);
@@ -71,8 +71,10 @@ void SessionManager::setupJob(QObject *sender, LazyNutJobParam *param)
         job->setAnswerFormatter(af);
     }
 
-    connect(job,SIGNAL(runCommands(QStringList,JobOrigin)),
-            commandSequencer,SLOT(runCommands(QStringList,JobOrigin)));
+    job->logMode = param->logMode;
+
+    connect(job,SIGNAL(runCommands(QStringList,bool,unsigned int)),
+            commandSequencer,SLOT(runCommands(QStringList,bool,unsigned int)));
     if (param->endOfJobReceiver && param->endOfJobSlot)
         connect(job,SIGNAL(exited()),param->endOfJobReceiver,param->endOfJobSlot);
     if (param->nextJobReceiver && param->nextJobSlot)
@@ -82,7 +84,7 @@ void SessionManager::setupJob(QObject *sender, LazyNutJobParam *param)
         job->addTransition(job->macro,SIGNAL(next()),nextJob); // job --> nextJob --> endOfMacro
         connect(nextJob,SIGNAL(entered()),param->nextJobReceiver,param->nextJobSlot);
     }
-
+    delete param;
     if (start)
         macroQueue->tryRun(job->macro);
     else

@@ -12,7 +12,8 @@ class QObject;
 struct LazyNutJobParam
 {
     LazyNutJobParam();
-    JobOrigin jobOrigin;
+    unsigned int logMode;
+//    JobOrigin jobOrigin;
     QStringList cmdList;
     std::function<QString (const QString &)> cmdFormatter;
     QString answerFormatterType;
@@ -31,6 +32,7 @@ struct LazyNutJobParam
     char const *endOfJobSlot;
     QObject *nextJobReceiver;
     char const *nextJobSlot;
+
 };
 
 #endif // LAZYNUTJOBPARAM_H
