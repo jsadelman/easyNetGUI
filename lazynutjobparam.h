@@ -16,7 +16,7 @@ struct LazyNutJobParam
 //    JobOrigin jobOrigin;
     QStringList cmdList;
     std::function<QString (const QString &)> cmdFormatter;
-    QString answerFormatterType;
+    AnswerFormatterType answerFormatterType;
     void setAnswerReceiver(QObject *receiver, char const *slot)
         {answerReceiver = receiver; answerSlot = slot;}
 

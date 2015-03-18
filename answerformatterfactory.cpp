@@ -15,20 +15,17 @@ AnswerFormatterFactory *AnswerFormatterFactory::instance()
     return singleton;
 }
 
-AnswerFormatter *AnswerFormatterFactory::newAnswerFormatter(QString formatterName, QObject *answerRecipient, char const *answerProcessor)
+AnswerFormatter *AnswerFormatterFactory::newAnswerFormatter(AnswerFormatterType formatterName, QObject *answerRecipient, char const *answerProcessor)
 {
     AnswerFormatter *af;
-    if (formatterName == "Identity")
-        af = new IdentityFormatter(answerRecipient, answerProcessor);
-    else if (formatterName == "XML")
-        af = new XMLFormatter(answerRecipient, answerProcessor);
-    else if (formatterName == "ListOfValues")
-        af = new ListOfValuesFormatter(answerRecipient, answerProcessor);
-    else
-    {
-        qDebug() << "Unknown AnswerFormatter class provided. Returing a null pointer.";
+    if (formatterName == AnswerFormatterType::NotInitialised)
         af = nullptr;
-    }
+    else if (formatterName == AnswerFormatterType::Identity)
+        af = new IdentityFormatter(answerRecipient, answerProcessor);
+    else if (formatterName == AnswerFormatterType::XML)
+        af = new XMLFormatter(answerRecipient, answerProcessor);
+    else if (formatterName == AnswerFormatterType::ListOfValues)
+        af = new ListOfValuesFormatter(answerRecipient, answerProcessor);
     return af;
 }
 
