@@ -41,7 +41,8 @@ SOURCES +=  \
     lazynutmacro.cpp \
     answerformatterfactory.cpp \
     answerformatter.cpp \
-    lazynutjobparam.cpp
+    lazynutjobparam.cpp \
+    macroqueue.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -70,8 +71,8 @@ HEADERS  += \
     lazynutmacro.h \
     answerformatterfactory.h \
     answerformatter.h \
-    lazynutjobparam.h
-
+    lazynutjobparam.h \
+    macroqueue.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

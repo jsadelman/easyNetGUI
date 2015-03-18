@@ -4,6 +4,7 @@
 #include <QStateMachine>
 #include <QFinalState>
 
+class MacroQueue;
 
 class LazyNutJob;
 
@@ -11,7 +12,7 @@ class LazyNutMacro : public QStateMachine
 {
     Q_OBJECT
 public:
-    explicit LazyNutMacro(QObject *parent = 0);
+    explicit LazyNutMacro(MacroQueue* queue, QObject *parent = 0);
     QFinalState *endOfMacro;
 
 signals:
@@ -24,6 +25,8 @@ private slots:
     void macroStarted();
     void macroEnded();
 
+private:
+    MacroQueue* macroQueue;
 
 };
 

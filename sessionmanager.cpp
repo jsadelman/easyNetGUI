@@ -7,6 +7,7 @@
 #include "lazynutjobparam.h"
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
+#include "macroqueue.h"
 
 
 #include <QtGlobal>
@@ -17,7 +18,6 @@
 #include <QDomDocument>
 #include <QAbstractTransition>
 
-class MacroQueue;
 
 
 SessionManager::SessionManager(QObject *parent)
@@ -50,7 +50,7 @@ void SessionManager::setupJob(QObject *sender, LazyNutJobParam *param)
     bool start;
     if ((start = !job))
     {
-        LazyNutMacro* macro = new LazyNutMacro(this);
+        LazyNutMacro* macro = new LazyNutMacro(macroQueue, this);
         job = new LazyNutJob(macro); // job --> endOfMacro
         macro->setInitialState(job);
         connect(commandSequencer,SIGNAL(commandsExecuted()),macro,SIGNAL(next()));
@@ -73,8 +73,8 @@ void SessionManager::setupJob(QObject *sender, LazyNutJobParam *param)
 
     connect(job,SIGNAL(runCommands(QStringList,JobOrigin)),
             commandSequencer,SLOT(runCommands(QStringList,JobOrigin)));
-    if (param->finalReceiver && param->finalSlot)
-        connect(job,SIGNAL(exited()),param->finalReceiver,param->finalSlot);
+    if (param->endOfJobReceiver && param->endOfJobSlot)
+        connect(job,SIGNAL(exited()),param->endOfJobReceiver,param->endOfJobSlot);
     if (param->nextJobReceiver && param->nextJobSlot)
     {
         LazyNutJob* nextJob = new LazyNutJob(job->macro); // nextJob --> endOfMacro
@@ -171,25 +171,25 @@ void SessionManager::macroEnded()
 
 
 
-void MacroQueue::run(QStateMachine *macro)
-{
-    qDebug() << "Jobs in MacroQueue:" << queue.size();
-    macro->start();
-}
+//void MacroQueue::run(QStateMachine *macro)
+//{
+//    qDebug() << "Jobs in MacroQueue:" << queue.size();
+//    macro->start();
+//}
 
-void MacroQueue::reset()
-{
-    qDebug() << "RESET CALLED, Jobs in MacroQueue:" << queue.size();
-    while (!queue.isEmpty())
-    {
-        delete queue.dequeue();
-    }
-    if (currentJob)
-        currentJob->stop();
-    //delete currentJob;
-}
+//void MacroQueue::reset()
+//{
+//    qDebug() << "RESET CALLED, Jobs in MacroQueue:" << queue.size();
+//    while (!queue.isEmpty())
+//    {
+//        delete queue.dequeue();
+//    }
+//    if (currentJob)
+//        currentJob->stop();
+//    //delete currentJob;
+//}
 
-QString MacroQueue::name()
-{
-    return "MacroQueue";
-}
+//QString MacroQueue::name()
+//{
+//    return "MacroQueue";
+//}

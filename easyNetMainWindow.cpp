@@ -385,6 +385,7 @@ void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->jobOrigin = JobOrigin::User;
     param->cmdList = cmdList;
+//    param->setNextJobReceiver(this, SLOT(getRecentlyModified()));
     param->nextJobReceiver = this;
     param->nextJobSlot = SLOT(getRecentlyModified());
     sessionManager->setupJob(sender(),param);
@@ -418,8 +419,8 @@ void EasyNetMainWindow::getDescriptions()
     param->answerFormatterType = "XML";
     param->answerReceiver = objExplorer;
     param->answerSlot = SLOT(updateLazyNutObjCatalogue(QDomDocument*));
-    param->finalReceiver = designWindow;
-    param->finalSlot = SLOT(updateDiagramScene());
+    param->endOfJobReceiver = designWindow;
+    param->endOfJobSlot = SLOT(updateDiagramScene());
     sessionManager->setupJob(sender(),param);
 }
 
@@ -534,7 +535,7 @@ void EasyNetMainWindow::createActions()
     connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 
     versionAct = new QAction("Version",this);
-    connect(versionAct,SIGNAL(triggered()),sessionManager,SLOT(getVersion()));
+    connect(versionAct,SIGNAL(triggered()),this,SLOT(getVersion()));
 
 }
 

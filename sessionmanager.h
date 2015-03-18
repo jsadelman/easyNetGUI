@@ -6,22 +6,23 @@
 #include <QStateMachine>
 
 
-#include "jobqueue.h"
+//#include "jobqueue.h"
 #include "enumclasses.h"
 
 class QDomDocument;
 class LazyNutJob;
 class LazyNutJobParam;
+class MacroQueue;
 
 
-class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
-{
-public:
-    MacroQueue(){}
-    void run(QStateMachine *macro);
-    void reset();
-    QString name();
-};
+//class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
+//{
+//public:
+//    MacroQueue(){}
+//    void run(QStateMachine *macro);
+//    void reset();
+//    QString name();
+//};
 
 class QueryContext;
 class TreeModel;

@@ -1,10 +1,11 @@
 #include "lazynutmacro.h"
 #include "lazynutjob.h"
+#include "macroqueue.h"
 #include <QDebug>
 
 
-LazyNutMacro::LazyNutMacro(QObject *parent) :
-    QStateMachine(parent)
+LazyNutMacro::LazyNutMacro(MacroQueue *queue, QObject *parent) :
+    macroQueue(queue), QStateMachine(parent)
 {
     endOfMacro = new QFinalState(this);
     connect(this,SIGNAL(started()),this,SLOT(macroStarted()));
@@ -21,5 +22,6 @@ void LazyNutMacro::macroStarted()
 
 void LazyNutMacro::macroEnded()
 {
+    macroQueue->freeToRun();
     qDebug() << "macroEnded";
 }
