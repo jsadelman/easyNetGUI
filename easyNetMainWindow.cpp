@@ -206,7 +206,12 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
 //    connect(sessionManager,SIGNAL(updateDiagramScene()),
 //            designWindow,SLOT(updateDiagramScene()));
-    connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),cmdOutput,SLOT(displayOutput(QString)));
+    connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),
+            cmdOutput,SLOT(displayOutput(QString)));
+    connect(sessionManager,SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)),
+            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
+    connect(sessionManager,SIGNAL(updateDiagramScene()),
+            designWindow,SLOT(updateDiagramScene()));
     connect(sessionManager,SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
     connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
@@ -364,7 +369,7 @@ void EasyNetMainWindow::runCmd(QString cmd)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = {cmd};
-    param->logMode = ECHO_INTERPRETER;
+    param->logMode |= ECHO_INTERPRETER;
     sessionManager->setupJob(sender(),param);
 }
 
@@ -385,7 +390,9 @@ void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER;
     param->cmdList = cmdList;
-    param->setNextJobReceiver(this, SLOT(getRecentlyModified()));
+    //param->setNextJobReceiver(this, SLOT(getRecentlyModified()));
+    param->setNextJobReceiver(sessionManager, SLOT(updateRecentlyModified()));
+
     sessionManager->setupJob(sender(),param);
 }
 

@@ -57,6 +57,9 @@ signals:
     void macroQueueStopped(bool);
 
     void lazyNutNotRunning();
+    // convenient signals for the implementation of updateRecentlyModified()
+    void updateLazyNutObjCatalogue(QDomDocument*);
+    void updateDiagramScene();
 
 
 public slots:
@@ -69,6 +72,8 @@ public slots:
     void stop();
     void killLazyNut();
 
+    void updateRecentlyModified();
+    void getDescriptions();
 
 
 private slots:

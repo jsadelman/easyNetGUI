@@ -120,6 +120,28 @@ void SessionManager::appendCmdListOnNextJob(QStringList cmdList)
 }
 
 
+void SessionManager::updateRecentlyModified()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = {"xml recently_modified"};
+    param->answerFormatterType = AnswerFormatterType::ListOfValues;
+    param->setAnswerReceiver(this, SLOT(appendCmdListOnNextJob(QStringList)));
+    param->setNextJobReceiver(this, SLOT(getDescriptions()));
+    setupJob(sender(),param);
+}
+
+void SessionManager::getDescriptions()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    // no cmdList, since it is set by setCmdListOnNextJob
+    param->cmdFormatter = [] (QString cmd) { return cmd.prepend("xml ");};
+    param->answerFormatterType = AnswerFormatterType::XML;
+    param->setAnswerReceiver(this, SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)));
+    param->setEndOfJobReceiver(this, SIGNAL(updateDiagramScene()));
+    setupJob(sender(),param);
+}
+
+
 
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {
@@ -145,6 +167,7 @@ void SessionManager::killLazyNut()
 {
     lazyNut->kill();
 }
+
 
 
 bool SessionManager::getStatus()
