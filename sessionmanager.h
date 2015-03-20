@@ -42,7 +42,7 @@ public:
     SessionManager(QObject *parent=0);
     const CommandSequencer * getCommandSequencer() const {return commandSequencer;}
     void startLazyNut(QString lazyNutBat);
-    void setupJob (QObject* sender, LazyNutJobParam* param);
+    void setupJob (LazyNutJobParam* param, QObject* sender = nullptr);
     LazyNutJob *currentJob(QObject* sender);
     LazyNutJob* nextJob(QObject* sender);
 

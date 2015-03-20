@@ -364,15 +364,15 @@ void EasyNetMainWindow::open()
  //   }
 }
 
-
+//! [runCmd]
 void EasyNetMainWindow::runCmd(QString cmd)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = {cmd};
     param->logMode |= ECHO_INTERPRETER;
-    sessionManager->setupJob(sender(),param);
+    sessionManager->setupJob(param);
 }
-
+//! [runCmd]
 
 void EasyNetMainWindow::runModel()
 {
@@ -384,49 +384,27 @@ void EasyNetMainWindow::runSelection()
     runCmdAndUpdate(scriptEdit->textEdit->getSelectedText());
 }
 
-
+//! [runCmdAndUpdate]
 void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER;
     param->cmdList = cmdList;
-    //param->setNextJobReceiver(this, SLOT(getRecentlyModified()));
     param->setNextJobReceiver(sessionManager, SLOT(updateRecentlyModified()));
-
-    sessionManager->setupJob(sender(),param);
+    sessionManager->setupJob(param);
 }
+//! [runCmdAndUpdate]
 
-void EasyNetMainWindow::getRecentlyModified()
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = {"xml recently_modified"};
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(sessionManager, SLOT(appendCmdListOnNextJob(QStringList)));
-    param->setNextJobReceiver(this, SLOT(getDescriptions()));
-    sessionManager->setupJob(sender(),param);
-}
-
-
-
-void EasyNetMainWindow::getDescriptions()
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    // no cmdList, since it is set by setCmdListOnNextJob
-    param->cmdFormatter = [] (QString cmd) { return cmd.prepend("xml ");};
-    param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(objExplorer, SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
-    param->setEndOfJobReceiver(designWindow, SLOT(updateDiagramScene()));
-    sessionManager->setupJob(sender(),param);
-}
-
+//! [getVersion]
 void EasyNetMainWindow::getVersion()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = {"version"};
     param->answerFormatterType = AnswerFormatterType::Identity;
     param->setAnswerReceiver(this, SLOT(displayVersion(QString)));
-    sessionManager->setupJob(sender(),param);
+    sessionManager->setupJob(param);
 }
+//! [getVersion]
 
 
 

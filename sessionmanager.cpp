@@ -44,7 +44,7 @@ void SessionManager::startLazyNut(QString lazyNutBat)
     }
 }
 
-void SessionManager::setupJob(QObject *sender, LazyNutJobParam *param)
+void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
 {
     LazyNutJob* job = qobject_cast<LazyNutJob*>(sender);
     bool start;
@@ -105,21 +105,23 @@ LazyNutJob *SessionManager::currentJob(QObject *sender)
     }
     return nullptr;
 }
-
+//! [nextJob]
 LazyNutJob *SessionManager::nextJob(QObject *sender)
 {
     LazyNutJob* job = currentJob(sender);
     LazyNutJob* nextJob = qobject_cast<LazyNutJob*>(job->transitions().at(0)->targetState());
     return nextJob;
 }
+//! [nextJob]
 
-
+//! [appendCmdListOnNextJob]
 void SessionManager::appendCmdListOnNextJob(QStringList cmdList)
 {
     nextJob(sender())->cmdList.append(cmdList);
 }
+//! [appendCmdListOnNextJob]
 
-
+//! [updateRecentlyModified]
 void SessionManager::updateRecentlyModified()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
@@ -127,9 +129,11 @@ void SessionManager::updateRecentlyModified()
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SLOT(appendCmdListOnNextJob(QStringList)));
     param->setNextJobReceiver(this, SLOT(getDescriptions()));
-    setupJob(sender(),param);
+    setupJob(param, sender());
 }
+//! [updateRecentlyModified]
 
+//! [getDescriptions]
 void SessionManager::getDescriptions()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
@@ -138,9 +142,9 @@ void SessionManager::getDescriptions()
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)));
     param->setEndOfJobReceiver(this, SIGNAL(updateDiagramScene()));
-    setupJob(sender(),param);
+    setupJob(param, sender());
 }
-
+//! [getDescriptions]
 
 
 void SessionManager::getOOB(const QString &lazyNutOutput)

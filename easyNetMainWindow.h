@@ -112,9 +112,6 @@ private slots:
     void setEasyNetHome();
     void setLazyNutBat();
     void showPauseState(bool isPaused);
-    void getRecentlyModified();
-//    void setCmdListOnNextJob(QStringList);
-    void getDescriptions();
     void getVersion();
 
     void lazyNutNotRunning();
