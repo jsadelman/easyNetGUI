@@ -26,6 +26,8 @@ AnswerFormatter *AnswerFormatterFactory::newAnswerFormatter(AnswerFormatterType 
         af = new XMLFormatter(answerRecipient, answerProcessor);
     else if (formatterName == AnswerFormatterType::ListOfValues)
         af = new ListOfValuesFormatter(answerRecipient, answerProcessor);
+    else if (formatterName == AnswerFormatterType::SVG)
+        af = new SVGFormatter(answerRecipient, answerProcessor);
     return af;
 }
 

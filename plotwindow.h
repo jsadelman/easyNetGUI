@@ -26,6 +26,8 @@ signals:
 
 private slots:
     void refreshSvg();
+    void displaySVG(int sizeArray, QByteArray plotByteArray);
+
 /*    void newFile();
     void open();
     bool save();

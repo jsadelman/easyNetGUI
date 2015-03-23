@@ -13,7 +13,8 @@ enum class AnswerFormatterType
     NotInitialised,
     Identity,
     XML,
-    ListOfValues
+    ListOfValues,
+    SVG
 };
 
 

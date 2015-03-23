@@ -87,6 +87,7 @@ public:
         ViewMode_END
     };
     EasyNetMainWindow(QWidget *parent = 0);
+    SessionManager *sessionManager;
 
 signals:
     void savedLayoutToBeLoaded(QString);
@@ -162,7 +163,6 @@ private:
     QGroupBox       *lazyNutInterpreter;
     CmdOutput       *cmdOutput;
     InputCmdLine    *inputCmdLine;
-    SessionManager      *sessionManager;
 //    TreeModel       *objTaxonomyModel;
     LazyNutObjectCatalogue *objectCatalogue;
 //    LazyNutObjCatalogue  *objCatalogue;

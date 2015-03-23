@@ -9,7 +9,10 @@
 
 #include "plotwindow.h"
 #include "codeeditor.h"
+#include "lazynutjobparam.h"
 
+#include "easyNetMainWindow.h"
+#include "sessionmanager.h"
 
 PlotWindow::PlotWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -178,13 +181,20 @@ void PlotWindow::refreshSvg()
 // reads the output into a byteArray, does some processing on it
 // then loads it into the svgWidget
 
-//     nm->sendCommand("plo get\n"); // nm should be an NM* (pointing to lazyNut)
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = {"plo get"};
+    param->answerFormatterType = AnswerFormatterType::SVG;
+    param->setAnswerReceiver(this, SLOT(displaySVG(int, QByteArray)));
+    qDebug() << "Address of object is " << parent();
+//    qDebug() << "Name of object is " << (qobject_cast<EasyNetMainWindow *> (this->parent()))->objectName();
+//    (qobject_cast<EasyNetMainWindow *> (parent()))->sessionManager->setupJob(param);
+}
 
-    int numBytes=48346; // this number won't be here -- just happens to be what I get for current test.svg
+void PlotWindow::displaySVG(int sizeArray, QByteArray plotByteArray)
+{
+
 //    read number bytes from interpreter into numBytes, then resize array accordingly
-    plotByteArray.resize(numBytes);
-
-// read bytes into plotByteArray (presumably this will involve the parser)
+//    plotByteArray.resize(sizeArray);
 
 //    replace tags that QSvgWidget doesn't like
     plotByteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
