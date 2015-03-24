@@ -39,8 +39,7 @@ class SessionManager: public QObject
     Q_OBJECT
 
 public:
-    SessionManager(QObject *parent=0);
-    const CommandSequencer * getCommandSequencer() const {return commandSequencer;}
+    static SessionManager* instance(); // singleton
     void startLazyNut(QString lazyNutBat);
     void setupJob (LazyNutJobParam* param, QObject* sender = nullptr);
     LazyNutJob *currentJob(QObject* sender);
@@ -89,6 +88,11 @@ private slots:
 
 
 private:
+
+    SessionManager();
+    SessionManager(SessionManager const&){}
+    SessionManager& operator=(SessionManager const&){}
+    static SessionManager* sessionManager;
 
     MacroQueue *macroQueue;
     CommandSequencer *commandSequencer;

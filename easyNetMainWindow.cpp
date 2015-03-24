@@ -201,18 +201,18 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     readSettings();
     setCurrentFile(scriptEdit,"Untitled");
 
-    sessionManager = new SessionManager(this);
+//    sessionManager = new SessionManager(this);
 //    connect(sessionManager,SIGNAL(descriptionReady(QDomDocument*)),
 //            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
 //    connect(sessionManager,SIGNAL(updateDiagramScene()),
 //            designWindow,SLOT(updateDiagramScene()));
-    connect(sessionManager,SIGNAL(userLazyNutOutputReady(QString)),
+    connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             cmdOutput,SLOT(displayOutput(QString)));
-    connect(sessionManager,SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)),
+    connect(SessionManager::instance(),SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)),
             objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
-    connect(sessionManager,SIGNAL(updateDiagramScene()),
+    connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
             designWindow,SLOT(updateDiagramScene()));
-    connect(sessionManager,SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
+    connect(SessionManager::instance(),SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
     connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
 
@@ -230,7 +230,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
         }
     }
     if (!lazyNutBat.isEmpty())
-        sessionManager->startLazyNut(lazyNutBat);
+        SessionManager::instance()->startLazyNut(lazyNutBat);
         connect(inputCmdLine,SIGNAL(commandReady(QString)),
                 this,SLOT(runCmd(QString)));
 
@@ -271,7 +271,7 @@ void EasyNetMainWindow::writeSettings()
 void EasyNetMainWindow::closeEvent(QCloseEvent *event)
 {
         writeSettings();
-        sessionManager->killLazyNut();
+        SessionManager::instance()->killLazyNut();
         emit saveLayout();
         event->accept();
 }
@@ -370,7 +370,7 @@ void EasyNetMainWindow::runCmd(QString cmd)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = {cmd};
     param->logMode |= ECHO_INTERPRETER;
-    sessionManager->setupJob(param);
+    SessionManager::instance()->setupJob(param);
 }
 //! [runCmd]
 
@@ -390,8 +390,8 @@ void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER;
     param->cmdList = cmdList;
-    param->setNextJobReceiver(sessionManager, SLOT(updateRecentlyModified()));
-    sessionManager->setupJob(param);
+    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateRecentlyModified()));
+    SessionManager::instance()->setupJob(param);
 }
 //! [runCmdAndUpdate]
 
@@ -402,7 +402,7 @@ void EasyNetMainWindow::getVersion()
     param->cmdList = {"version"};
     param->answerFormatterType = AnswerFormatterType::Identity;
     param->setAnswerReceiver(this, SLOT(displayVersion(QString)));
-    sessionManager->setupJob(param);
+    SessionManager::instance()->setupJob(param);
 }
 //! [getVersion]
 
@@ -421,14 +421,14 @@ void EasyNetMainWindow::setEasyNetHome()
 {
     easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
     lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
-    sessionManager->startLazyNut(lazyNutBat);
+    SessionManager::instance()->startLazyNut(lazyNutBat);
 }
 
 void EasyNetMainWindow::setLazyNutBat()
 {
     lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
                                               easyNetHome,QString("*.%1").arg(lazyNutExt));
-    sessionManager->startLazyNut(lazyNutBat);
+    SessionManager::instance()->startLazyNut(lazyNutBat);
 }
 
 void EasyNetMainWindow::showPauseState(bool isPaused)
@@ -500,10 +500,10 @@ void EasyNetMainWindow::createActions()
     connect(setLazyNutBatAct,SIGNAL(triggered()),this, SLOT(setLazyNutBat()));
 
     stopAct = new QAction("STOP",this);
-    connect(stopAct,SIGNAL(triggered()),sessionManager,SLOT(stop()));
+    connect(stopAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(stop()));
     pauseAct = new QAction("PAUSE",this);
-    connect(pauseAct,SIGNAL(triggered()),sessionManager,SLOT(pause()));
-    connect(sessionManager,SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
+    connect(pauseAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(pause()));
+    connect(SessionManager::instance(),SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 
     versionAct = new QAction("Version",this);
     connect(versionAct,SIGNAL(triggered()),this,SLOT(getVersion()));

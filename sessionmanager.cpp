@@ -18,15 +18,18 @@
 #include <QDomDocument>
 #include <QAbstractTransition>
 
+SessionManager* SessionManager::sessionManager = nullptr;
 
+SessionManager *SessionManager::instance()
+{
+    return sessionManager ? sessionManager : (sessionManager = new SessionManager);
+}
 
-SessionManager::SessionManager(QObject *parent)
-    : QObject(parent),
-      lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)\\n")
+SessionManager::SessionManager()
+    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)\\n")
 {
     lazyNut = new LazyNut(this);
     macroQueue = new MacroQueue;
-
     startCommandSequencer();
 }
 

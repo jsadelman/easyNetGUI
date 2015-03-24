@@ -87,7 +87,7 @@ public:
         ViewMode_END
     };
     EasyNetMainWindow(QWidget *parent = 0);
-    SessionManager *sessionManager;
+//    SessionManager *sessionManager;
 
 signals:
     void savedLayoutToBeLoaded(QString);

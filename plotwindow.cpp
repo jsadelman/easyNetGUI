@@ -10,8 +10,6 @@
 #include "plotwindow.h"
 #include "codeeditor.h"
 #include "lazynutjobparam.h"
-
-#include "easyNetMainWindow.h"
 #include "sessionmanager.h"
 
 PlotWindow::PlotWindow(QWidget *parent)
@@ -185,9 +183,7 @@ void PlotWindow::refreshSvg()
     param->cmdList = {"plo get"};
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(int, QByteArray)));
-    qDebug() << "Address of object is " << parent();
-//    qDebug() << "Name of object is " << (qobject_cast<EasyNetMainWindow *> (this->parent()))->objectName();
-//    (qobject_cast<EasyNetMainWindow *> (parent()))->sessionManager->setupJob(param);
+    SessionManager::instance()->setupJob(param);
 }
 
 void PlotWindow::displaySVG(int sizeArray, QByteArray plotByteArray)
