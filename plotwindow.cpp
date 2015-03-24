@@ -26,31 +26,10 @@ PlotWindow::PlotWindow(QWidget *parent)
 //    QFile file("C:/Users/mm14722/Dropbox/scambio_temp/work/Qt/parser/tree_view/tree_view/images/test.svg");
     QFile file(":/images/test.svg");
 
-    int width, height;
-
-    // If the selected file is valid, continue with the upload
+     // If the selected file is valid, continue with the upload
 //    if (!file.fileName().isEmpty)
     if (file.open(QIODevice::ReadOnly))
-    {
-        // Read the file and transform the output to a QByteArray
-        plotByteArray = file.readAll();
-        plotByteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
-        plotByteArray.replace (QByteArray("</symbol"),QByteArray("</g     "));
-        width = getValueFromByteArray(plotByteArray, "width");
-        height = getValueFromByteArray(plotByteArray, "height");
-        if (width<1)
-            width = 500;
-        if (height<1)
-            height = 500;
-        QSize size(width,height); // plot_svg->sizeHint();
-//        size.scale(1200, 400); // , Qt::KeepAspectRatio);
-        plot_svg->setMaximumSize(size);
-        plot_svg->setMinimumSize(size);
-//        plot_svg->setWi
-
-        // Send the QByteArray
-        plot_svg->load(plotByteArray);
-    }
+        displaySVG(file.readAll());
 
     textEdit = new CodeEditor(this);
     setCentralWidget(plot_svg);
@@ -182,15 +161,12 @@ void PlotWindow::refreshSvg()
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = {"plo get"};
     param->answerFormatterType = AnswerFormatterType::SVG;
-    param->setAnswerReceiver(this, SLOT(displaySVG(int, QByteArray)));
+    param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
     SessionManager::instance()->setupJob(param);
 }
 
-void PlotWindow::displaySVG(int sizeArray, QByteArray plotByteArray)
+void PlotWindow::displaySVG(QByteArray plotByteArray)
 {
-
-//    read number bytes from interpreter into numBytes, then resize array accordingly
-//    plotByteArray.resize(sizeArray);
 
 //    replace tags that QSvgWidget doesn't like
     plotByteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
@@ -210,4 +186,9 @@ void PlotWindow::displaySVG(int sizeArray, QByteArray plotByteArray)
 //    load the byte array into the plot
     plot_svg->load(plotByteArray);
 
+}
+
+void PlotWindow::dumpSVG(QString svg)
+{
+    qDebug() << svg;
 }

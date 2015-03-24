@@ -26,7 +26,8 @@ signals:
 
 private slots:
     void refreshSvg();
-    void displaySVG(int sizeArray, QByteArray plotByteArray);
+    void displaySVG(QByteArray plotByteArray);
+    void dumpSVG(QString svg);
 
 /*    void newFile();
     void open();
@@ -47,7 +48,7 @@ private:
     QString strippedName(const QString &fullFileName);
 */
     QString curFile;
-    QByteArray plotByteArray;
+//    QByteArray plotByteArray;
 
     QMenu *fileMenu;
     QMenu *editMenu;

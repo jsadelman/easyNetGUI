@@ -19,7 +19,7 @@ signals:
     void formattedAnswer(QString);
     void formattedAnswer(QDomDocument*);
     void formattedAnswer(QStringList);
-    void formattedAnswer(int, QByteArray);
+    void formattedAnswer(QByteArray);
 
 protected:
     AnswerFormatter(){}
@@ -87,7 +87,7 @@ class SVGFormatter: public AnswerFormatter
             SVGFormatter(QObject *answerRecipient, char const *answerProcessor)
                 : AnswerFormatter()
             {
-                connect(this,SIGNAL(formattedAnswer(int, QByteArray)),answerRecipient,answerProcessor);
+                connect(this,SIGNAL(formattedAnswer(QByteArray)),answerRecipient,answerProcessor);
             }
         };
 
