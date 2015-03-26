@@ -5,6 +5,7 @@
 
 #include <QtWidgets>
 #include <QSvgWidget>
+#include <QDomDocument>
 
 
 #include "plotwindow.h"
@@ -12,28 +13,67 @@
 #include "lazynutjobparam.h"
 #include "sessionmanager.h"
 
+
+NumericSettingsForPlotWidget::NumericSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent)
+    : name(name), value(value), comment(comment), defaultValue(defaultValue), QGroupBox(parent)
+{
+     QHBoxLayout *layout = new QHBoxLayout;
+     nameLabel = new QLabel(name, this);
+     commentButton = new QPushButton("?", this);
+     connect(commentButton, SIGNAL(clicked()), this, SLOT(displayComment()));
+     // need to take care of int or real, using QDoubleSpinBox  for the latter
+     // this is a bad implementation
+     if (defaultValue.contains("."))
+     {
+         doubleSpinBox = new QDoubleSpinBox(this);
+         if (value.isEmpty())
+             doubleSpinBox->setValue(defaultValue.toDouble());
+         else
+             doubleSpinBox->setValue(value.toDouble());
+         connect(doubleSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(setValue(QString)));
+     }
+     else
+     {
+         intSpinBox = new QSpinBox(this);
+         if (value.isEmpty())
+             intSpinBox->setValue(defaultValue.toInt());
+         else
+             intSpinBox->setValue(value.toInt());
+         connect(intSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(setValue(QString)));
+     }
+
+     layout->addWidget(nameLabel);
+     layout->addWidget(commentButton);
+     layout->addStretch();
+     if (defaultValue.contains("."))
+        layout->addWidget(doubleSpinBox);
+     else
+         layout->addWidget(intSpinBox);
+     setLayout(layout);
+
+}
+
+void NumericSettingsForPlotWidget::displayComment()
+{
+    QMessageBox::information(this, "Setting description", comment);
+}
+
+
+
+
+
 PlotWindow::PlotWindow(QWidget *parent)
     : QMainWindow(parent)
 
 {
-//    textEdit = new QPlainTextEdit;
     plot_svg = new QSvgWidget(this);
-//    plot_svg->load(QString(":/images/test.svg"));
-//    plot_svg->load(QString("C:/Users/colind/Documents/Top/easyNET_GUI/lazyNutGUI/images/test.svg"));
-
-    // Get the file name using a QFileDialog
-//    QFile file(QFileDialog::getOpenFileName(NULL, tr("Upload a file")));
-//    QFile file("C:/Users/mm14722/Dropbox/scambio_temp/work/Qt/parser/tree_view/tree_view/images/test.svg");
-    QFile file(":/images/test.svg");
-
-     // If the selected file is valid, continue with the upload
-//    if (!file.fileName().isEmpty)
-    if (file.open(QIODevice::ReadOnly))
-        displaySVG(file.readAll());
-
-    textEdit = new CodeEditor(this);
     setCentralWidget(plot_svg);
 
+    QFile file(":/images/test.svg");
+     if (file.open(QIODevice::ReadOnly))
+        displaySVG(file.readAll());
+
+    createPlotControlPanel();
     createActions();
 //    createMenus();
     createToolBars();
@@ -79,6 +119,48 @@ int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
 }
 
 
+void PlotWindow::createPlotControlPanel()
+{
+
+    // actions and menus
+    selectRScriptAct = new QAction(tr("&Select R script"), this);
+    selectRScriptAct->setStatusTip(tr("Select an existing R script"));
+    connect(selectRScriptAct, SIGNAL(triggered()), this, SLOT(selectRScript()));
+
+    for (int i = 0; i < MaxRecentRScripts; ++i)
+    {
+        recentRScriptsActs[i] = new QAction(this);
+        recentRScriptsActs[i]->setVisible(false);
+        connect(recentRScriptsActs[i], SIGNAL(triggered()),
+                this, SLOT(selectRecentRScript()));
+    }
+
+    selectOutputAct = new QAction(tr("&Select output"), this);
+    selectOutputAct->setStatusTip(tr("Select a model output to plot"));
+    connect(selectOutputAct, SIGNAL(triggered()), this, SLOT(selectOutput()));
+
+    typeMenu = menuBar()->addMenu(tr("Plot &type"));
+    typeMenu->addAction(selectRScriptAct);
+    separatorAct = typeMenu->addSeparator();
+    for (int i = 0; i < MaxRecentRScripts; ++i)
+        typeMenu->addAction(recentRScriptsActs[i]);
+    updateRecentRScriptsActs();
+
+
+    plotControlPanel = new QDialog(this);
+
+    // dock plotControlPanel to the left of plot_svg
+    QDockWidget *dockPlotControlPanel = new QDockWidget("Plot Control Panel", this);
+    dockPlotControlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    dockPlotControlPanel->setWidget(plotControlPanel);
+    addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
+    dockPlotControlPanel->setMinimumWidth(400);
+
+
+
+
+}
+
 void PlotWindow::createActions()
 {
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
@@ -113,6 +195,25 @@ void PlotWindow::createActions()
             copyAct, SLOT(setEnabled(bool)));
 
 */
+}
+
+void PlotWindow::updateRecentRScriptsActs()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QStringList rScripts = settings.value("recentRScripts","").toStringList();
+    int numRecentRScripts = qMin(rScripts.size(), (int)MaxRecentRScripts);
+    for (int i = 0; i < numRecentRScripts; ++i)
+    {
+        QString fileName = QFileInfo(rScripts[i]).fileName();
+        QString text = tr("&%1 %2").arg(i + 1).arg(fileName);
+        recentRScriptsActs[i]->setText(text);
+        recentRScriptsActs[i]->setData(fileName);
+        recentRScriptsActs[i]->setVisible(true);
+    }
+    for (int i = numRecentRScripts; i < MaxRecentRScripts; ++i)
+        recentRScriptsActs[i]->setVisible(false);
+
+        separatorAct->setVisible(numRecentRScripts > 0);
 }
 
 /*
@@ -162,7 +263,7 @@ void PlotWindow::refreshSvg()
     param->cmdList = {"plo get"};
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
-    SessionManager::instance()->setupJob(param);
+    SessionManager::instance()->setupJob(param, sender());
 }
 
 void PlotWindow::displaySVG(QByteArray plotByteArray)
@@ -192,3 +293,131 @@ void PlotWindow::dumpSVG(QString svg)
 {
     qDebug() << svg;
 }
+
+void PlotWindow::setType(QString rScript)
+{
+    // disable all that is not activity.R
+    if (!rScript.endsWith("activity.R"))
+        return;
+    setCurrentPlotType(rScript);
+//    currentPlotType = rScript;
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = {QString("plo set_type %1").arg(rScript)};
+    param->setNextJobReceiver(this,SLOT(listSettings()));
+    SessionManager::instance()->setupJob(param);
+    // probably it's possible to condense the two jobs into one
+    // since set_type gives no answer.
+}
+
+void PlotWindow::listSettings()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = {"xml plo list_settings"};
+    param->answerFormatterType = AnswerFormatterType::XML;
+    param->setAnswerReceiver(this, SLOT(buildPlotControlPanel(QDomDocument*)));
+    SessionManager::instance()->setupJob(param, sender());
+}
+
+void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
+{
+    numericSettingsWidgets.clear();
+    plotControlPanelLayout = new QVBoxLayout;
+    QString name, type, value, comment, defaultValue, label;
+
+    QDomNode settingNode = settingsList->firstChild().firstChild();
+    while (!settingNode.isNull())
+    {
+        if (settingNode.isElement())
+            name = settingNode.toElement().attribute("label");
+            QDomNode labelValueNode = settingNode.firstChild();
+            while (!labelValueNode.isNull())
+            {
+                label = labelValueNode.toElement().attribute("label");
+                if (label == "value")
+                    value = labelValueNode.toElement().attribute("value");
+                else if (label == "type")
+                    type = labelValueNode.toElement().attribute("value");
+                else if (label == "comment")
+                    comment = labelValueNode.toElement().attribute("value");
+                else if (label == "default")
+                    defaultValue = labelValueNode.toElement().attribute("value");
+                labelValueNode = labelValueNode.nextSibling();
+            }
+        if (type == "numeric")
+        {
+            NumericSettingsForPlotWidget *settingsWidget = new NumericSettingsForPlotWidget(name, value, comment, defaultValue, this);
+            plotControlPanelLayout->addWidget(settingsWidget);
+            numericSettingsWidgets.append(settingsWidget);
+        }
+        else if (type == "free")
+        {
+            // build appropriate XXXSettingsForPlotWidget
+        }
+        settingNode = settingNode.nextSibling();
+    }
+    QPushButton *redrawButton = new QPushButton("Redraw", this);
+    redrawButton->setMinimumSize(100,50);
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(redrawButton);
+    QGroupBox *buttonBox = new QGroupBox(this);
+    buttonBox->setLayout(buttonLayout);
+    connect(redrawButton,SIGNAL(clicked()), this, SLOT(redraw()));
+    plotControlPanelLayout->addWidget(buttonBox);
+    plotControlPanelLayout->addStretch();
+    plotControlPanel->setLayout(plotControlPanelLayout);
+}
+
+
+void PlotWindow::redraw()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    foreach (NumericSettingsForPlotWidget *settingsWidget, numericSettingsWidgets)
+    {
+        param->cmdList.append(QString("plo setting %1 %2").arg(settingsWidget->getName()).arg(settingsWidget->getValue()));
+    }
+    param->cmdList.append("plo draw output");
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->setNextJobReceiver(this,SLOT(refreshSvg()));
+    SessionManager::instance()->setupJob(param,sender());
+}
+
+
+
+void PlotWindow::selectRScript()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
+    QString rScript = QFileDialog::getOpenFileName(this,tr("Please select an R script"),
+                                                   rScriptsHome,"*.R");
+    setType(QFileInfo(rScript).fileName());
+}
+
+void PlotWindow::selectRecentRScript()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action)
+        setType(action->data().toString());
+}
+
+void PlotWindow::setCurrentPlotType(QString rScript)
+{
+    currentPlotType = rScript;
+    QSettings settings("QtEasyNet", "nmConsole");
+    QStringList rScripts = settings.value("recentRScripts","").toStringList();
+//    rScripts.clear(); // remove this
+    rScripts.removeAll(rScript);
+    rScripts.prepend(rScript);
+    while (rScripts.size() > MaxRecentRScripts)
+        rScripts.removeLast();
+
+    settings.setValue("recentRScripts", rScripts);
+    updateRecentRScriptsActs();
+
+}
+
+void PlotWindow::selectOutput()
+{
+
+}
+
