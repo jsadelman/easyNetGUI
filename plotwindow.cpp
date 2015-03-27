@@ -6,7 +6,8 @@
 #include <QtWidgets>
 #include <QSvgWidget>
 #include <QDomDocument>
-
+#include <QListView>
+#include <QScrollArea>
 
 #include "plotwindow.h"
 #include "codeeditor.h"
@@ -58,6 +59,47 @@ void NumericSettingsForPlotWidget::displayComment()
     QMessageBox::information(this, "Setting description", comment);
 }
 
+// loads of code duplication here
+FactorSettingsForPlotWidget::FactorSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent)
+    : name(name), value(value), comment(comment), defaultValue(defaultValue), QGroupBox(parent)
+{
+    QVBoxLayout *layout = new QVBoxLayout;
+    // header
+    QWidget *headerBox = new QWidget(this);
+    QHBoxLayout *headerBoxLayout = new QHBoxLayout;
+    QLabel *nameLabel = new QLabel(name, this);
+    QPushButton *commentButton = new QPushButton("?", this);
+    connect(commentButton, SIGNAL(clicked()), this, SLOT(displayComment()));
+    headerBoxLayout->addWidget(nameLabel);
+    headerBoxLayout->addWidget(commentButton);
+    headerBoxLayout->addStretch();
+    headerBox->setLayout(headerBoxLayout);
+    // main box
+    QWidget *mainBox = new QWidget(this);
+    QGridLayout *mainBoxLayout = new QGridLayout;
+    sourceListView = new QListView(this);
+    destinationListView = new QListView(this);
+    QPushButton *addButton = new QPushButton("==>", this);
+    QPushButton *subtractButton = new QPushButton("<==", this);
+    mainBoxLayout->addWidget(sourceListView, 0,0,4,1);
+    mainBoxLayout->addWidget(destinationListView, 0,2,4,1);
+    mainBoxLayout->addWidget(addButton,1,1);
+    mainBoxLayout->addWidget(subtractButton,2,1);
+    mainBoxLayout->setColumnStretch(0,10);
+    mainBoxLayout->setColumnStretch(2,10);
+    mainBox->setLayout(mainBoxLayout);
+
+    layout->addWidget(headerBox);
+    layout->addWidget(mainBox);
+    setLayout(layout);
+}
+
+void FactorSettingsForPlotWidget::displayComment()
+{
+    QMessageBox::information(this, "Setting description", comment);
+}
+
+
 
 
 
@@ -74,9 +116,9 @@ PlotWindow::PlotWindow(QWidget *parent)
         displaySVG(file.readAll());
 
     createPlotControlPanel();
-    createActions();
+//    createActions();
 //    createMenus();
-    createToolBars();
+//    createToolBars();
 //    createStatusBar();
 
 //    readSettings();
@@ -147,12 +189,19 @@ void PlotWindow::createPlotControlPanel()
     updateRecentRScriptsActs();
 
 
-    plotControlPanel = new QDialog(this);
+    plotControlPanelWindow = new QMainWindow(this);
+    redrawAct = new QAction(tr("&Redraw"), this);
+    connect(redrawAct, SIGNAL(triggered()), this, SLOT(redraw()));
+    QToolBar *plotToolbar = plotControlPanelWindow->addToolBar("");
+    plotToolbar->addAction(redrawAct);
+    plotControlPanelScrollArea = new QScrollArea;
+    plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    plotControlPanelWindow->setCentralWidget(plotControlPanelScrollArea);
 
     // dock plotControlPanel to the left of plot_svg
     QDockWidget *dockPlotControlPanel = new QDockWidget("Plot Control Panel", this);
     dockPlotControlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    dockPlotControlPanel->setWidget(plotControlPanel);
+    dockPlotControlPanel->setWidget(plotControlPanelWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
     dockPlotControlPanel->setMinimumWidth(400);
 
@@ -321,6 +370,7 @@ void PlotWindow::listSettings()
 void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
 {
     numericSettingsWidgets.clear();
+    QWidget *plotControlPanel = new QWidget(this);
     plotControlPanelLayout = new QVBoxLayout;
     QString name, type, value, comment, defaultValue, label;
 
@@ -351,21 +401,24 @@ void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
         }
         else if (type == "free")
         {
-            // build appropriate XXXSettingsForPlotWidget
+            FactorSettingsForPlotWidget *settingsWidget = new FactorSettingsForPlotWidget(name, value, comment, defaultValue, this);
+            plotControlPanelLayout->addWidget(settingsWidget);
+            //numericSettingsWidgets.append(settingsWidget); // just settingsWidgets should be fine
         }
         settingNode = settingNode.nextSibling();
     }
-    QPushButton *redrawButton = new QPushButton("Redraw", this);
-    redrawButton->setMinimumSize(100,50);
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(redrawButton);
-    QGroupBox *buttonBox = new QGroupBox(this);
-    buttonBox->setLayout(buttonLayout);
-    connect(redrawButton,SIGNAL(clicked()), this, SLOT(redraw()));
-    plotControlPanelLayout->addWidget(buttonBox);
-    plotControlPanelLayout->addStretch();
+//    QPushButton *redrawButton = new QPushButton("Redraw", this);
+//    redrawButton->setMinimumSize(100,50);
+//    QHBoxLayout *buttonLayout = new QHBoxLayout;
+//    buttonLayout->addStretch();
+//    buttonLayout->addWidget(redrawButton);
+//    QGroupBox *buttonBox = new QGroupBox(this);
+//    buttonBox->setLayout(buttonLayout);
+//    connect(redrawButton,SIGNAL(clicked()), this, SLOT(redraw()));
+//    plotControlPanelLayout->addWidget(buttonBox);
+//    plotControlPanelLayout->addStretch();
     plotControlPanel->setLayout(plotControlPanelLayout);
+    plotControlPanelScrollArea->setWidget(plotControlPanel);
 }
 
 

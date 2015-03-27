@@ -12,6 +12,8 @@ class QPushButton;
 class QDoubleSpinBox;
 class QSpinBox;
 class QVBoxLayout;
+class QListView;
+class QScrollArea;
 
 class NumericSettingsForPlotWidget: public QGroupBox
 {
@@ -38,7 +40,32 @@ private:
 
 };
 
+class FactorSettingsForPlotWidget: public QGroupBox
+{
+    Q_OBJECT
 
+public:
+    FactorSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent = 0);
+    QString getValue() {return value;}
+    QString getName() {return name;}
+
+private slots:
+    void displayComment();
+//    void setValue(QString val) {value = val;}
+
+private:
+    QString name;
+    QString value;
+    QString comment;
+    QString defaultValue;
+
+    QListView *sourceListView;
+    QListView *destinationListView;
+
+//    QLabel *nameLabel;
+//    QPushButton *commentButton;
+
+};
 
 class PlotWindow : public QMainWindow
 {
@@ -91,7 +118,8 @@ private:
     bool saveFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
 */
-    QDialog *plotControlPanel;
+    QMainWindow *plotControlPanelWindow;
+    QScrollArea *plotControlPanelScrollArea;
     QVBoxLayout *plotControlPanelLayout;
     QSvgWidget *plot_svg;
 
@@ -99,6 +127,7 @@ private:
     QMenu *typeMenu;
     QMenu *recentRScriptsMenu;
     QMenu *contentMenu;
+    QAction *redrawAct;
     QAction *separatorAct;
     enum { MaxRecentRScripts = 5 };
     QAction *recentRScriptsActs[MaxRecentRScripts];
