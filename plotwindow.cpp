@@ -13,6 +13,9 @@
 #include "codeeditor.h"
 #include "lazynutjobparam.h"
 #include "sessionmanager.h"
+#include "plotsettingsbaseeditor.h"
+#include "plotsettingsdelegate.h"
+#include "plotsettingsmodel.h"
 
 
 NumericSettingsForPlotWidget::NumericSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent)
@@ -205,9 +208,6 @@ void PlotWindow::createPlotControlPanel()
     addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
     dockPlotControlPanel->setMinimumWidth(400);
 
-
-
-
 }
 
 void PlotWindow::createActions()
@@ -309,6 +309,7 @@ void PlotWindow::refreshSvg()
 // then loads it into the svgWidget
 
     LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = {"plo get"};
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
@@ -351,6 +352,7 @@ void PlotWindow::setType(QString rScript)
     setCurrentPlotType(rScript);
 //    currentPlotType = rScript;
     LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = {QString("plo set_type %1").arg(rScript)};
     param->setNextJobReceiver(this,SLOT(listSettings()));
     SessionManager::instance()->setupJob(param);
@@ -361,66 +363,66 @@ void PlotWindow::setType(QString rScript)
 void PlotWindow::listSettings()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = {"xml plo list_settings"};
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SLOT(buildPlotControlPanel(QDomDocument*)));
     SessionManager::instance()->setupJob(param, sender());
 }
 
+//void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
+//{
+//    numericSettingsWidgets.clear();
+//    QWidget *plotControlPanel = new QWidget(this);
+//    plotControlPanelLayout = new QVBoxLayout;
+//    QString name, type, value, comment, defaultValue, label;
+
+//    QDomNode settingNode = settingsList->firstChild().firstChild();
+//    while (!settingNode.isNull())
+//    {
+//        if (settingNode.isElement())
+//            name = settingNode.toElement().attribute("label");
+//            QDomNode labelValueNode = settingNode.firstChild();
+//            while (!labelValueNode.isNull())
+//            {
+//                label = labelValueNode.toElement().attribute("label");
+//                if (label == "value")
+//                    value = labelValueNode.toElement().attribute("value");
+//                else if (label == "type")
+//                    type = labelValueNode.toElement().attribute("value");
+//                else if (label == "comment")
+//                    comment = labelValueNode.toElement().attribute("value");
+//                else if (label == "default")
+//                    defaultValue = labelValueNode.toElement().attribute("value");
+//                labelValueNode = labelValueNode.nextSibling();
+//            }
+//        if (type == "numeric")
+//        {
+//            NumericSettingsForPlotWidget *settingsWidget = new NumericSettingsForPlotWidget(name, value, comment, defaultValue, this);
+//            plotControlPanelLayout->addWidget(settingsWidget);
+//            numericSettingsWidgets.append(settingsWidget);
+//        }
+//        else if (type == "free")
+//        {
+//            FactorSettingsForPlotWidget *settingsWidget = new FactorSettingsForPlotWidget(name, value, comment, defaultValue, this);
+//            plotControlPanelLayout->addWidget(settingsWidget);
+//            //numericSettingsWidgets.append(settingsWidget); // just settingsWidgets should be fine
+//        }
+//        settingNode = settingNode.nextSibling();
+//    }
+//    plotControlPanel->setLayout(plotControlPanelLayout);
+//    plotControlPanelScrollArea->setWidget(plotControlPanel);
+//}
+
 void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
 {
-    numericSettingsWidgets.clear();
-    QWidget *plotControlPanel = new QWidget(this);
-    plotControlPanelLayout = new QVBoxLayout;
-    QString name, type, value, comment, defaultValue, label;
-
-    QDomNode settingNode = settingsList->firstChild().firstChild();
-    while (!settingNode.isNull())
-    {
-        if (settingNode.isElement())
-            name = settingNode.toElement().attribute("label");
-            QDomNode labelValueNode = settingNode.firstChild();
-            while (!labelValueNode.isNull())
-            {
-                label = labelValueNode.toElement().attribute("label");
-                if (label == "value")
-                    value = labelValueNode.toElement().attribute("value");
-                else if (label == "type")
-                    type = labelValueNode.toElement().attribute("value");
-                else if (label == "comment")
-                    comment = labelValueNode.toElement().attribute("value");
-                else if (label == "default")
-                    defaultValue = labelValueNode.toElement().attribute("value");
-                labelValueNode = labelValueNode.nextSibling();
-            }
-        if (type == "numeric")
-        {
-            NumericSettingsForPlotWidget *settingsWidget = new NumericSettingsForPlotWidget(name, value, comment, defaultValue, this);
-            plotControlPanelLayout->addWidget(settingsWidget);
-            numericSettingsWidgets.append(settingsWidget);
-        }
-        else if (type == "free")
-        {
-            FactorSettingsForPlotWidget *settingsWidget = new FactorSettingsForPlotWidget(name, value, comment, defaultValue, this);
-            plotControlPanelLayout->addWidget(settingsWidget);
-            //numericSettingsWidgets.append(settingsWidget); // just settingsWidgets should be fine
-        }
-        settingNode = settingNode.nextSibling();
-    }
-//    QPushButton *redrawButton = new QPushButton("Redraw", this);
-//    redrawButton->setMinimumSize(100,50);
-//    QHBoxLayout *buttonLayout = new QHBoxLayout;
-//    buttonLayout->addStretch();
-//    buttonLayout->addWidget(redrawButton);
-//    QGroupBox *buttonBox = new QGroupBox(this);
-//    buttonBox->setLayout(buttonLayout);
-//    connect(redrawButton,SIGNAL(clicked()), this, SLOT(redraw()));
-//    plotControlPanelLayout->addWidget(buttonBox);
-//    plotControlPanelLayout->addStretch();
-    plotControlPanel->setLayout(plotControlPanelLayout);
-    plotControlPanelScrollArea->setWidget(plotControlPanel);
+    plotSettingsModel = new PlotSettingsModel(settingsList, this);
+    plotSettingsView = new QListView(this);
+    plotSettingsDelegate = new PlotSettingsDelegate(this);
+    plotSettingsView->setModel(plotSettingsModel);
+    plotSettingsView->setItemDelegate(plotSettingsDelegate);
+    plotControlPanelScrollArea->setWidget(plotSettingsView);
 }
-
 
 void PlotWindow::redraw()
 {

@@ -62,8 +62,7 @@
       return rootItem;
   }
 
- QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
-                                int role) const
+ QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int role) const
  {
      if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
          return rootItem->data(section);

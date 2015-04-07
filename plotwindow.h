@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGroupBox>
 
+
 class QSvgWidget;
 class CodeEditor;
 class QDomDocument;
@@ -14,6 +15,8 @@ class QSpinBox;
 class QVBoxLayout;
 class QListView;
 class QScrollArea;
+class PlotSettingsModel;
+class PlotSettingsDelegate;
 
 class NumericSettingsForPlotWidget: public QGroupBox
 {
@@ -122,6 +125,10 @@ private:
     QScrollArea *plotControlPanelScrollArea;
     QVBoxLayout *plotControlPanelLayout;
     QSvgWidget *plot_svg;
+
+    QListView *plotSettingsView;
+    PlotSettingsModel *plotSettingsModel;
+    PlotSettingsDelegate *plotSettingsDelegate;
 
     QList<NumericSettingsForPlotWidget*> numericSettingsWidgets;
     QMenu *typeMenu;

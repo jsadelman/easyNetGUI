@@ -42,7 +42,13 @@ SOURCES +=  \
     answerformatterfactory.cpp \
     answerformatter.cpp \
     lazynutjobparam.cpp \
-    macroqueue.cpp
+    macroqueue.cpp \
+    plotsettingsmodel.cpp \
+    plotsettingsdelegate.cpp \
+    plotsettingsbaseeditor.cpp \
+    plotsettingsbasewidget.cpp \
+    plotsettingsform.cpp \
+    dataframemodel.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -72,7 +78,13 @@ HEADERS  += \
     answerformatterfactory.h \
     answerformatter.h \
     lazynutjobparam.h \
-    macroqueue.h
+    macroqueue.h \
+    plotsettingsmodel.h \
+    plotsettingsdelegate.h \
+    plotsettingsbaseeditor.h \
+    plotsettingsbasewidget.h \
+    plotsettingsform.h \
+    dataframemodel.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
