@@ -35,13 +35,13 @@ QMap<QString, QString> PlotSettingsForm::getSettings()
     return settingsMap;
 }
 
-void PlotSettingsForm::setFactorList()
+void PlotSettingsForm::setFactorList(QStringList list)
 {
-    QStringList factorList{"word", "make", "move"};
+//    QStringList factorList{"word", "make", "move"};
     foreach(PlotSettingsBaseWidget *widget, widgetList)
     {
         if (QString(widget->metaObject()->className()) == "PlotSettingsFactorWidget")
-            qobject_cast<PlotSettingsFactorWidget*>(widget)->createlistEdit(factorList);
+            qobject_cast<PlotSettingsFactorWidget*>(widget)->createlistEdit(list);
     }
 }
 
@@ -64,7 +64,7 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(QDomElement settingsEleme
         return new PlotSettingsNumericWidget(tagsMap["name"], tagsMap["value"],
                 tagsMap["comment"], tagsMap["default"]);
 
-    else if (tagsMap["type"] == "free") // will be "factor"
+    else if (tagsMap["type"] == "factor")
     {
         PlotSettingsFactorWidget *widget = new PlotSettingsFactorWidget(tagsMap["name"], tagsMap["value"],
                 tagsMap["comment"], tagsMap["default"]);

@@ -8,6 +8,7 @@
 #include <QDomDocument>
 #include <QListView>
 #include <QScrollArea>
+#include <QMapIterator>
 
 #include "plotwindow.h"
 #include "codeeditor.h"
@@ -16,6 +17,8 @@
 #include "plotsettingsbaseeditor.h"
 #include "plotsettingsdelegate.h"
 #include "plotsettingsmodel.h"
+#include "lazynutlistmenu.h"
+#include "plotsettingsform.h"
 
 
 NumericSettingsForPlotWidget::NumericSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent)
@@ -180,9 +183,9 @@ void PlotWindow::createPlotControlPanel()
                 this, SLOT(selectRecentRScript()));
     }
 
-    selectOutputAct = new QAction(tr("&Select output"), this);
-    selectOutputAct->setStatusTip(tr("Select a model output to plot"));
-    connect(selectOutputAct, SIGNAL(triggered()), this, SLOT(selectOutput()));
+//    selectDataAct = new QAction(tr("&Select data"), this);
+//    selectDataAct->setStatusTip(tr("Select a dataframe to connect to the R script"));
+//    connect(selectDataAct, SIGNAL(triggered()), this, SLOT(selectOutput()));
 
     typeMenu = menuBar()->addMenu(tr("Plot &type"));
     typeMenu->addAction(selectRScriptAct);
@@ -190,6 +193,12 @@ void PlotWindow::createPlotControlPanel()
     for (int i = 0; i < MaxRecentRScripts; ++i)
         typeMenu->addAction(recentRScriptsActs[i]);
     updateRecentRScriptsActs();
+
+    dataMenu = new LazyNutListMenu;
+    menuBar()->addMenu(dataMenu);
+    dataMenu->setTitle("Data");
+    dataMenu->setGetListCmd("xml list dataframe");
+    connect(dataMenu, SIGNAL(selected(QString)), this, SLOT(setDataframe(QString)));
 
 
     plotControlPanelWindow = new QMainWindow(this);
@@ -199,6 +208,7 @@ void PlotWindow::createPlotControlPanel()
     plotToolbar->addAction(redrawAct);
     plotControlPanelScrollArea = new QScrollArea;
     plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    plotControlPanelScrollArea->setWidgetResizable(true);
     plotControlPanelWindow->setCentralWidget(plotControlPanelScrollArea);
 
     // dock plotControlPanel to the left of plot_svg
@@ -253,8 +263,8 @@ void PlotWindow::updateRecentRScriptsActs()
     int numRecentRScripts = qMin(rScripts.size(), (int)MaxRecentRScripts);
     for (int i = 0; i < numRecentRScripts; ++i)
     {
-        QString fileName = QFileInfo(rScripts[i]).fileName();
-        QString text = tr("&%1 %2").arg(i + 1).arg(fileName);
+        QString fileName = QFileInfo(rScripts.at(i)).fileName();
+        QString text = fileName; //tr("&%1 %2").arg(i + 1).arg(fileName);
         recentRScriptsActs[i]->setText(text);
         recentRScriptsActs[i]->setData(fileName);
         recentRScriptsActs[i]->setVisible(true);
@@ -318,7 +328,6 @@ void PlotWindow::refreshSvg()
 
 void PlotWindow::displaySVG(QByteArray plotByteArray)
 {
-
 //    replace tags that QSvgWidget doesn't like
     plotByteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
     plotByteArray.replace (QByteArray("</symbol"),QByteArray("</g     "));
@@ -358,6 +367,19 @@ void PlotWindow::setType(QString rScript)
     SessionManager::instance()->setupJob(param);
     // probably it's possible to condense the two jobs into one
     // since set_type gives no answer.
+}
+
+void PlotWindow::setDataframe(QString dataframe)
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->cmdList =  {
+        QString("xml %1 get_colname_dimensions").arg(dataframe),
+        QString("plo set_data %1").arg(dataframe)
+    };
+    param->answerFormatterType = AnswerFormatterType::ListOfValues;
+    param->setAnswerReceiver(plotSettingsForm, SLOT(setFactorList(QStringList)));
+    SessionManager::instance()->setupJob(param);
 }
 
 void PlotWindow::listSettings()
@@ -416,22 +438,19 @@ void PlotWindow::listSettings()
 
 void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
 {
-    plotSettingsModel = new PlotSettingsModel(settingsList, this);
-    plotSettingsView = new QListView(this);
-    plotSettingsDelegate = new PlotSettingsDelegate(this);
-    plotSettingsView->setModel(plotSettingsModel);
-    plotSettingsView->setItemDelegate(plotSettingsDelegate);
-    plotControlPanelScrollArea->setWidget(plotSettingsView);
+    plotSettingsForm = new PlotSettingsForm(settingsList, this);
+    plotControlPanelScrollArea->setWidget(plotSettingsForm);
 }
 
 void PlotWindow::redraw()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    foreach (NumericSettingsForPlotWidget *settingsWidget, numericSettingsWidgets)
+    QMapIterator<QString,QString> settingsIter(plotSettingsForm->getSettings());
+    while (settingsIter.hasNext())
     {
-        param->cmdList.append(QString("plo setting %1 %2").arg(settingsWidget->getName()).arg(settingsWidget->getValue()));
+        settingsIter.next();
+        param->cmdList.append(QString("plo setting %1 %2").arg(settingsIter.key()).arg(settingsIter.value()));
     }
-    param->cmdList.append("plo draw output");
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->setNextJobReceiver(this,SLOT(refreshSvg()));
     SessionManager::instance()->setupJob(param,sender());

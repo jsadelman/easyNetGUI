@@ -92,9 +92,10 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                 QString answer = answerRex.cap(1);
                 if (svgRex.exactMatch(answer))
                 {
-                    int nbytes = svgRex.cap(1).toInt();
+//                    int nbytes = svgRex.cap(1).toInt();
                     int svgStart = answerOffset + answerRex.matchedLength() +1;
-                    answer = lazyNutBuffer.mid(svgStart, nbytes);
+                    int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + 6;
+                    answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
                 }
                 emit answerReady(answer);
             }

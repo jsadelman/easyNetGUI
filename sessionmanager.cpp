@@ -49,6 +49,8 @@ void SessionManager::startLazyNut(QString lazyNutBat)
 
 void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
 {
+    if (lazyNut->state() != QProcess::Running)
+        return;
     LazyNutJob* job = qobject_cast<LazyNutJob*>(sender);
     bool start;
     if ((start = !job))

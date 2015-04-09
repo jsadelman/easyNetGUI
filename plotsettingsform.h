@@ -19,7 +19,7 @@ public:
 signals:
 
 public slots:
-    void setFactorList(); // will be setFactorList(QStringList)
+    void setFactorList(QStringList list);
 
 private slots:
     void addWidget(QWidget *widget);

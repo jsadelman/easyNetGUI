@@ -15,8 +15,8 @@ class QSpinBox;
 class QVBoxLayout;
 class QListView;
 class QScrollArea;
-class PlotSettingsModel;
-class PlotSettingsDelegate;
+class PlotSettingsForm;
+class LazyNutListMenu;
 
 class NumericSettingsForPlotWidget: public QGroupBox
 {
@@ -91,6 +91,7 @@ private slots:
     void displaySVG(QByteArray plotByteArray);
     void dumpSVG(QString svg);
     void setType(QString rScript);
+    void setDataframe(QString dataframe);
     void listSettings();
     void buildPlotControlPanel(QDomDocument* settingsList);
     void selectRScript();
@@ -126,20 +127,18 @@ private:
     QVBoxLayout *plotControlPanelLayout;
     QSvgWidget *plot_svg;
 
-    QListView *plotSettingsView;
-    PlotSettingsModel *plotSettingsModel;
-    PlotSettingsDelegate *plotSettingsDelegate;
+    PlotSettingsForm *plotSettingsForm;
 
     QList<NumericSettingsForPlotWidget*> numericSettingsWidgets;
     QMenu *typeMenu;
     QMenu *recentRScriptsMenu;
-    QMenu *contentMenu;
+    LazyNutListMenu *dataMenu;
     QAction *redrawAct;
     QAction *separatorAct;
     enum { MaxRecentRScripts = 5 };
     QAction *recentRScriptsActs[MaxRecentRScripts];
     QAction *selectRScriptAct;
-    QAction *selectOutputAct;
+    QAction *selectDataAct;
 
     QString currentPlotType;
     QString currentOutput;
