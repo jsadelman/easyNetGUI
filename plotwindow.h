@@ -18,57 +18,7 @@ class QScrollArea;
 class PlotSettingsForm;
 class LazyNutListMenu;
 
-class NumericSettingsForPlotWidget: public QGroupBox
-{
-    Q_OBJECT
 
-public:
-    NumericSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent = 0);
-    QString getValue() {return value;}
-    QString getName() {return name;}
-
-private slots:
-    void displayComment();
-    void setValue(QString val) {value = val;}
-
-private:
-    QString name;
-    QString value;
-    QString comment;
-    QString defaultValue;
-    QLabel *nameLabel;
-    QPushButton *commentButton;
-    QDoubleSpinBox *doubleSpinBox;
-    QSpinBox *intSpinBox;
-
-};
-
-class FactorSettingsForPlotWidget: public QGroupBox
-{
-    Q_OBJECT
-
-public:
-    FactorSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent = 0);
-    QString getValue() {return value;}
-    QString getName() {return name;}
-
-private slots:
-    void displayComment();
-//    void setValue(QString val) {value = val;}
-
-private:
-    QString name;
-    QString value;
-    QString comment;
-    QString defaultValue;
-
-    QListView *sourceListView;
-    QListView *destinationListView;
-
-//    QLabel *nameLabel;
-//    QPushButton *commentButton;
-
-};
 
 class PlotWindow : public QMainWindow
 {
@@ -76,15 +26,10 @@ class PlotWindow : public QMainWindow
 
 public:
     PlotWindow(QWidget *parent = 0);
-//    bool maybeSave();
-//    void setCurrentFile(const QString &fileName);
     int getValueFromByteArray(QByteArray ba, QString key);
 
 signals:
     void sendPloGet();
-
-//protected:
-//    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void refreshSvg();
@@ -97,15 +42,8 @@ private slots:
     void selectRScript();
     void selectRecentRScript();
     void setCurrentPlotType(QString rScript);
-    void selectOutput();
     void redraw();
 
-/*    void newFile();
-    void open();
-    bool save();
-    bool saveAs();
-    void documentWasModified();
-*/
 
 private:
 
@@ -113,15 +51,8 @@ private:
     void createPlotControlPanel();
     void createActions();
     void updateRecentRScriptsActs();
-//    void createMenus();
     void createToolBars();
-/*    void createStatusBar();
-    void readSettings();
-    void writeSettings();
-    void loadFile(const QString &fileName);
-    bool saveFile(const QString &fileName);
-    QString strippedName(const QString &fullFileName);
-*/
+
     QMainWindow *plotControlPanelWindow;
     QScrollArea *plotControlPanelScrollArea;
     QVBoxLayout *plotControlPanelLayout;
@@ -129,7 +60,6 @@ private:
 
     PlotSettingsForm *plotSettingsForm;
 
-    QList<NumericSettingsForPlotWidget*> numericSettingsWidgets;
     QMenu *typeMenu;
     QMenu *recentRScriptsMenu;
     LazyNutListMenu *dataMenu;

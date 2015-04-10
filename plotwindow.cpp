@@ -1,7 +1,3 @@
-/****************************************************************************
-**
-**
-****************************************************************************/
 
 #include <QtWidgets>
 #include <QSvgWidget>
@@ -14,99 +10,8 @@
 #include "codeeditor.h"
 #include "lazynutjobparam.h"
 #include "sessionmanager.h"
-#include "plotsettingsbaseeditor.h"
-#include "plotsettingsdelegate.h"
-#include "plotsettingsmodel.h"
 #include "lazynutlistmenu.h"
 #include "plotsettingsform.h"
-
-
-NumericSettingsForPlotWidget::NumericSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent)
-    : name(name), value(value), comment(comment), defaultValue(defaultValue), QGroupBox(parent)
-{
-     QHBoxLayout *layout = new QHBoxLayout;
-     nameLabel = new QLabel(name, this);
-     commentButton = new QPushButton("?", this);
-     connect(commentButton, SIGNAL(clicked()), this, SLOT(displayComment()));
-     // need to take care of int or real, using QDoubleSpinBox  for the latter
-     // this is a bad implementation
-     if (defaultValue.contains("."))
-     {
-         doubleSpinBox = new QDoubleSpinBox(this);
-         if (value.isEmpty())
-             doubleSpinBox->setValue(defaultValue.toDouble());
-         else
-             doubleSpinBox->setValue(value.toDouble());
-         connect(doubleSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(setValue(QString)));
-     }
-     else
-     {
-         intSpinBox = new QSpinBox(this);
-         if (value.isEmpty())
-             intSpinBox->setValue(defaultValue.toInt());
-         else
-             intSpinBox->setValue(value.toInt());
-         connect(intSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(setValue(QString)));
-     }
-
-     layout->addWidget(nameLabel);
-     layout->addWidget(commentButton);
-     layout->addStretch();
-     if (defaultValue.contains("."))
-        layout->addWidget(doubleSpinBox);
-     else
-         layout->addWidget(intSpinBox);
-     setLayout(layout);
-
-}
-
-void NumericSettingsForPlotWidget::displayComment()
-{
-    QMessageBox::information(this, "Setting description", comment);
-}
-
-// loads of code duplication here
-FactorSettingsForPlotWidget::FactorSettingsForPlotWidget(QString name, QString value, QString comment, QString defaultValue, QWidget *parent)
-    : name(name), value(value), comment(comment), defaultValue(defaultValue), QGroupBox(parent)
-{
-    QVBoxLayout *layout = new QVBoxLayout;
-    // header
-    QWidget *headerBox = new QWidget(this);
-    QHBoxLayout *headerBoxLayout = new QHBoxLayout;
-    QLabel *nameLabel = new QLabel(name, this);
-    QPushButton *commentButton = new QPushButton("?", this);
-    connect(commentButton, SIGNAL(clicked()), this, SLOT(displayComment()));
-    headerBoxLayout->addWidget(nameLabel);
-    headerBoxLayout->addWidget(commentButton);
-    headerBoxLayout->addStretch();
-    headerBox->setLayout(headerBoxLayout);
-    // main box
-    QWidget *mainBox = new QWidget(this);
-    QGridLayout *mainBoxLayout = new QGridLayout;
-    sourceListView = new QListView(this);
-    destinationListView = new QListView(this);
-    QPushButton *addButton = new QPushButton("==>", this);
-    QPushButton *subtractButton = new QPushButton("<==", this);
-    mainBoxLayout->addWidget(sourceListView, 0,0,4,1);
-    mainBoxLayout->addWidget(destinationListView, 0,2,4,1);
-    mainBoxLayout->addWidget(addButton,1,1);
-    mainBoxLayout->addWidget(subtractButton,2,1);
-    mainBoxLayout->setColumnStretch(0,10);
-    mainBoxLayout->setColumnStretch(2,10);
-    mainBox->setLayout(mainBoxLayout);
-
-    layout->addWidget(headerBox);
-    layout->addWidget(mainBox);
-    setLayout(layout);
-}
-
-void FactorSettingsForPlotWidget::displayComment()
-{
-    QMessageBox::information(this, "Setting description", comment);
-}
-
-
-
 
 
 
@@ -117,23 +22,7 @@ PlotWindow::PlotWindow(QWidget *parent)
     plot_svg = new QSvgWidget(this);
     setCentralWidget(plot_svg);
 
-    QFile file(":/images/test.svg");
-     if (file.open(QIODevice::ReadOnly))
-        displaySVG(file.readAll());
-
     createPlotControlPanel();
-//    createActions();
-//    createMenus();
-//    createToolBars();
-//    createStatusBar();
-
-//    readSettings();
-
-/*
- *     connect(textEdit->document(), SIGNAL(contentsChanged()),
-            this, SLOT(documentWasModified()));
-*/
-//    setCurrentFile("");
     setUnifiedTitleAndToolBarOnMac(true);
 }
 
@@ -183,10 +72,6 @@ void PlotWindow::createPlotControlPanel()
                 this, SLOT(selectRecentRScript()));
     }
 
-//    selectDataAct = new QAction(tr("&Select data"), this);
-//    selectDataAct->setStatusTip(tr("Select a dataframe to connect to the R script"));
-//    connect(selectDataAct, SIGNAL(triggered()), this, SLOT(selectOutput()));
-
     typeMenu = menuBar()->addMenu(tr("Plot &type"));
     typeMenu->addAction(selectRScriptAct);
     separatorAct = typeMenu->addSeparator();
@@ -226,34 +111,6 @@ void PlotWindow::createActions()
     refreshAct->setShortcuts(QKeySequence::Refresh);
 //    refreshAct->setStatusTip(tr("Refresh plot"));
     connect(refreshAct, SIGNAL(triggered()), this, SLOT(refreshSvg()));
-
-/*
-      openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
-    openAct->setShortcuts(QKeySequence::Open);
-//    openAct->setStatusTip(tr("Open an existing file"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
-
-
-    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
-    saveAct->setShortcuts(QKeySequence::Save);
-//    saveAct->setStatusTip(tr("Save the document to disk"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
-
-    saveAsAct = new QAction(tr("Save &As..."), this);
-    saveAsAct->setShortcuts(QKeySequence::SaveAs);
-//    saveAsAct->setStatusTip(tr("Save the document under a new name"));
-    connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
-
-    copyAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy"), this);
-    copyAct->setShortcuts(QKeySequence::Copy);
-//    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
-//                             "clipboard"));
-    connect(copyAct, SIGNAL(triggered()), textEdit, SLOT(copy()));
-    copyAct->setEnabled(false);
-    connect(textEdit, SIGNAL(copyAvailable(bool)),
-            copyAct, SLOT(setEnabled(bool)));
-
-*/
 }
 
 void PlotWindow::updateRecentRScriptsActs()
@@ -275,41 +132,11 @@ void PlotWindow::updateRecentRScriptsActs()
         separatorAct->setVisible(numRecentRScripts > 0);
 }
 
-/*
-void plotWindow::createMenus()
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(newAct);
-    fileMenu->addAction(openAct);
-    fileMenu->addAction(saveAct);
-    fileMenu->addAction(saveAsAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
-
-    editMenu = menuBar()->addMenu(tr("&Edit"));
-    if (cutAllowed)
-        editMenu->addAction(cutAct);
-    editMenu->addAction(copyAct);
-    if (pasteAllowed)
-        editMenu->addAction(pasteAct);
-
-    menuBar()->addSeparator();
-
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
-}
-*/
 
 void PlotWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(refreshAct);
-//        fileToolBar->addAction(openAct);
-//    fileToolBar->addAction(saveAct);
-
-//    editToolBar = addToolBar(tr("Edit"));
-//    editToolBar->addAction(copyAct);
 }
 
 void PlotWindow::refreshSvg()
@@ -392,49 +219,6 @@ void PlotWindow::listSettings()
     SessionManager::instance()->setupJob(param, sender());
 }
 
-//void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
-//{
-//    numericSettingsWidgets.clear();
-//    QWidget *plotControlPanel = new QWidget(this);
-//    plotControlPanelLayout = new QVBoxLayout;
-//    QString name, type, value, comment, defaultValue, label;
-
-//    QDomNode settingNode = settingsList->firstChild().firstChild();
-//    while (!settingNode.isNull())
-//    {
-//        if (settingNode.isElement())
-//            name = settingNode.toElement().attribute("label");
-//            QDomNode labelValueNode = settingNode.firstChild();
-//            while (!labelValueNode.isNull())
-//            {
-//                label = labelValueNode.toElement().attribute("label");
-//                if (label == "value")
-//                    value = labelValueNode.toElement().attribute("value");
-//                else if (label == "type")
-//                    type = labelValueNode.toElement().attribute("value");
-//                else if (label == "comment")
-//                    comment = labelValueNode.toElement().attribute("value");
-//                else if (label == "default")
-//                    defaultValue = labelValueNode.toElement().attribute("value");
-//                labelValueNode = labelValueNode.nextSibling();
-//            }
-//        if (type == "numeric")
-//        {
-//            NumericSettingsForPlotWidget *settingsWidget = new NumericSettingsForPlotWidget(name, value, comment, defaultValue, this);
-//            plotControlPanelLayout->addWidget(settingsWidget);
-//            numericSettingsWidgets.append(settingsWidget);
-//        }
-//        else if (type == "free")
-//        {
-//            FactorSettingsForPlotWidget *settingsWidget = new FactorSettingsForPlotWidget(name, value, comment, defaultValue, this);
-//            plotControlPanelLayout->addWidget(settingsWidget);
-//            //numericSettingsWidgets.append(settingsWidget); // just settingsWidgets should be fine
-//        }
-//        settingNode = settingNode.nextSibling();
-//    }
-//    plotControlPanel->setLayout(plotControlPanelLayout);
-//    plotControlPanelScrollArea->setWidget(plotControlPanel);
-//}
 
 void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
 {
@@ -479,7 +263,6 @@ void PlotWindow::setCurrentPlotType(QString rScript)
     currentPlotType = rScript;
     QSettings settings("QtEasyNet", "nmConsole");
     QStringList rScripts = settings.value("recentRScripts","").toStringList();
-//    rScripts.clear(); // remove this
     rScripts.removeAll(rScript);
     rScripts.prepend(rScript);
     while (rScripts.size() > MaxRecentRScripts)
@@ -490,8 +273,4 @@ void PlotWindow::setCurrentPlotType(QString rScript)
 
 }
 
-void PlotWindow::selectOutput()
-{
-
-}
 

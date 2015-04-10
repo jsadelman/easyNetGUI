@@ -43,9 +43,6 @@ SOURCES +=  \
     answerformatter.cpp \
     lazynutjobparam.cpp \
     macroqueue.cpp \
-    plotsettingsmodel.cpp \
-    plotsettingsdelegate.cpp \
-    plotsettingsbaseeditor.cpp \
     plotsettingsbasewidget.cpp \
     plotsettingsform.cpp \
     dataframemodel.cpp \
@@ -80,9 +77,6 @@ HEADERS  += \
     answerformatter.h \
     lazynutjobparam.h \
     macroqueue.h \
-    plotsettingsmodel.h \
-    plotsettingsdelegate.h \
-    plotsettingsbaseeditor.h \
     plotsettingsbasewidget.h \
     plotsettingsform.h \
     dataframemodel.h \
