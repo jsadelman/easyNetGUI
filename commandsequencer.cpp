@@ -17,6 +17,7 @@ void CommandSequencer::initProcessLazyNutOutput()
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
+    eNelementsRex = QRegExp("<eNelements>");
     svgRex = QRegExp("SVG file of (\\d+) bytes:");
     answerDoneRex = QRegExp("ANSWER: Done\\.(?=\\n)");
     lazyNutBuffer.clear();
@@ -90,11 +91,17 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             if (beginOffset < answerOffset && answerOffset < endOffset)
             {
                 QString answer = answerRex.cap(1);
-                if (svgRex.exactMatch(answer))
+                if (eNelementsRex.indexIn(answer) > -1)
+                {
+                    int eNelementEnd = lazyNutBuffer.indexOf("</eNelements>", answerOffset) +
+                            QString("</eNelements>").length();
+                    answer = lazyNutBuffer.mid(answerOffset, eNelementEnd - answerOffset).remove("ANSWER:");
+                }
+                else if (svgRex.exactMatch(answer))
                 {
 //                    int nbytes = svgRex.cap(1).toInt();
                     int svgStart = answerOffset + answerRex.matchedLength() +1;
-                    int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + 6;
+                    int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + QString("</svg>").length();
                     answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
                 }
                 emit answerReady(answer);
