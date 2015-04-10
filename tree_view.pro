@@ -46,7 +46,8 @@ SOURCES +=  \
     plotsettingsbasewidget.cpp \
     plotsettingsform.cpp \
     dataframemodel.cpp \
-    lazynutlistmenu.cpp
+    lazynutlistmenu.cpp \
+    xmlelement.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -80,7 +81,8 @@ HEADERS  += \
     plotsettingsbasewidget.h \
     plotsettingsform.h \
     dataframemodel.h \
-    lazynutlistmenu.h
+    lazynutlistmenu.h \
+    xmlelement.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
