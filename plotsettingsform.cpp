@@ -1,5 +1,6 @@
 #include "plotsettingsform.h"
 #include "plotsettingsbasewidget.h"
+#include "xmlelement.h"
 
 #include <QDomDocument>
 #include <QVBoxLayout>
@@ -9,13 +10,13 @@
 #include <QVBoxLayout>
 
 
-PlotSettingsForm::PlotSettingsForm(QDomDocument *plotSettingsXML, QWidget *parent) :
-    QWidget(parent)
+PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QWidget *parent) :
+    domDoc(domDoc), QWidget(parent)
 {
     widgetList.clear();
     mainLayout = new QVBoxLayout;
     mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
-    QDomElement settingsElement = plotSettingsXML->firstChildElement().firstChildElement();
+    QDomElement settingsElement = domDoc->firstChildElement().firstChildElement();
     while (!settingsElement.isNull())
     {
         PlotSettingsBaseWidget *widget = createWidget(settingsElement);
@@ -24,6 +25,11 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *plotSettingsXML, QWidget *paren
         settingsElement = settingsElement.nextSiblingElement();
     }
     setLayout(mainLayout);
+}
+
+PlotSettingsForm::~PlotSettingsForm()
+{
+    delete domDoc;
 }
 
 QMap<QString, QString> PlotSettingsForm::getSettings()

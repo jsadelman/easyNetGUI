@@ -3,8 +3,17 @@
 #include "xmlelement.h"
 
 
-XMLelement::XMLelement(QDomElement domElement)
-    : domElement(domElement), type(domElement.tagName())
+XMLelement::XMLelement(QDomDocument domDoc)
+{
+    domElement = domDoc.documentElement();
+    type = domElement.tagName();
+    if (!isENelements())
+        qDebug() << "error: root xml tag is not <eNelement>";
+
+}
+
+XMLelement::XMLelement(QDomElement domElem)
+    : domElement(domElem), type(domElem.tagName())
 {
 }
 
@@ -16,6 +25,16 @@ XMLelement XMLelement::firstChild(QString childType)
 XMLelement XMLelement::nextSibling(QString siblingType)
 {
     return XMLelement(domElement.nextSiblingElement(siblingType));
+}
+
+QString XMLelement::attribute(QString attr)
+{
+    return domElement.attribute(attr);
+}
+
+bool XMLelement::hasAttribute(QString attr)
+{
+    return domElement.hasAttribute(attr);
 }
 
 bool XMLelement::isNull()
@@ -33,7 +52,7 @@ QString XMLelement::value()
     return domElement.attribute("value");
 }
 
-QStringList XMLelement::list()
+QStringList XMLelement::listValues()
 {
     // if isList()
     QStringList values;
@@ -48,27 +67,27 @@ QStringList XMLelement::list()
 
 QString XMLelement::operator ()()
 {
-    if (isString() || isInteger() || isObject())
+    if (isString() || isInteger() || isReal() || isObject())
         return value();
 
     else if (isCommand())
-         return list().join(" ");
+         return listValues().join(" ");
 
     else
         return QString();
 }
 
 
-QString XMLelement::operator [](QString label)
+XMLelement XMLelement::operator [](QString label)
 {
     // if isMap()
     QDomElement element = domElement.firstChildElement();
     while (!element.isNull())
     {
         if (element.attribute("label") == label)
-            return element.attribute("value");
+            return XMLelement(element);
         element = element.nextSiblingElement();
     }
-    return QString();
+    return XMLelement(QDomElement());
 }
 

@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QDomDocument>
+#include <QDomElement>
 #include <QRegExp>
 
 void XMLFormatter::formatAnswer(QString answer)
@@ -18,12 +19,14 @@ void ListOfValuesFormatter::formatAnswer(QString answer)
     QStringList list;
     QDomDocument *domDoc = new QDomDocument;
     domDoc->setContent(answer);
-    QDomNode objectNode = domDoc->firstChild().firstChild();
-    while (!objectNode.isNull())
+    if (!domDoc->isNull())
     {
-        if (objectNode.isElement())
-            list.append(objectNode.toElement().attribute("value"));
-        objectNode = objectNode.nextSibling();
+        QDomElement objectElem = domDoc->documentElement().firstChildElement();
+        while (!objectElem.isNull())
+        {
+            list.append(objectElem.attribute("value"));
+            objectElem = objectElem.nextSiblingElement();
+        }
     }
     delete domDoc;
     emit formattedAnswer(list);

@@ -13,7 +13,8 @@ class PlotSettingsForm : public QWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsForm(QDomDocument *plotSettingsXML, QWidget *parent = 0);
+    explicit PlotSettingsForm(QDomDocument *domDoc, QWidget *parent = 0);
+    ~PlotSettingsForm();
     QMap<QString,QString> getSettings();
 
 signals:
@@ -29,6 +30,7 @@ private:
 
     QList<PlotSettingsBaseWidget*> widgetList;
     QVBoxLayout *mainLayout;
+    QDomDocument *domDoc;
 
 
 };
