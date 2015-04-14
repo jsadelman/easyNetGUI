@@ -45,7 +45,8 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
     }
     ready = false;
     emit isReady(ready);
-    qDebug() << "BUSY";
+    qDebug() << "BUSY" << "first cmd: " << commandList.first();
+
     // send cmds to lazyNut without removing them from commandList
     // they will be removed when their resp. lazyNut output is received
     foreach (QString cmd, commandList)

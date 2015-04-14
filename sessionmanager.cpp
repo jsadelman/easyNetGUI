@@ -129,6 +129,7 @@ void SessionManager::appendCmdListOnNextJob(QStringList cmdList)
 //! [updateRecentlyModified]
 void SessionManager::updateRecentlyModified()
 {
+    qDebug() << "updateRecentlyModified()";
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = {"xml recently_modified"};
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
@@ -141,6 +142,7 @@ void SessionManager::updateRecentlyModified()
 //! [getDescriptions]
 void SessionManager::getDescriptions()
 {
+    qDebug() << "getDescriptions()";
     LazyNutJobParam *param = new LazyNutJobParam;
     // no cmdList, since it is set by setCmdListOnNextJob
     param->cmdFormatter = [] (QString cmd) { return cmd.prepend("xml ");};
