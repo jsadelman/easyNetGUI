@@ -9,6 +9,11 @@ LazyNutListMenu::LazyNutListMenu(QWidget *parent) :
     connect(this, SIGNAL(triggered(QAction*)), this, SLOT(textFromAction(QAction*)));
 }
 
+void LazyNutListMenu::prePopulate(QString text)
+{
+    preItems.append(text);
+}
+
 void LazyNutListMenu::setGetListCmd(QString cmd)
 {
     getListCmd = cmd;
@@ -27,6 +32,13 @@ void LazyNutListMenu::getList()
 void LazyNutListMenu::buildMenu(QStringList list)
 {
     clear();
+    if (!preItems.empty())
+    {
+        foreach(QString text, preItems)
+            addAction(text);
+
+        addSeparator();
+    }
     foreach(QString text, list)
         addAction(text);
 }

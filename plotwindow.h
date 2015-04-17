@@ -32,17 +32,21 @@ signals:
     void sendPloGet();
 
 private slots:
-    void refreshSvg();
+    void sendDrawCmd();
     void displaySVG(QByteArray plotByteArray);
     void dumpSVG(QString svg);
+    void setPlot(QString name);
+    void newPlot();
+    void createNewPlot(QString name);
     void setType(QString rScript);
-    void setDataframe(QString dataframe);
-    void listSettings();
-    void buildPlotControlPanel(QDomDocument* settingsList);
+    void getSettingsXML();
+    void buildSettingsForm(QDomDocument* settingsList);
+    void sendSettings(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+    void updateSettingsForm();
     void selectRScript();
     void selectRecentRScript();
     void setCurrentPlotType(QString rScript);
-    void redraw();
+    void draw();
 
 
 private:
@@ -63,7 +67,8 @@ private:
     QMenu *typeMenu;
     QMenu *recentRScriptsMenu;
     LazyNutListMenu *dataMenu;
-    QAction *redrawAct;
+    LazyNutListMenu *plotsMenu;
+    QAction *drawAct;
     QAction *separatorAct;
     enum { MaxRecentRScripts = 5 };
     QAction *recentRScriptsActs[MaxRecentRScripts];
@@ -72,6 +77,8 @@ private:
 
     QString currentPlotType;
     QString currentOutput;
+    QString currentPlot;
+    QString createNewPlotText;
 
     QString curFile;
     QMenu *fileMenu;

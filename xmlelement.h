@@ -30,6 +30,7 @@ public:
     QString label();
     QString value();
     QStringList listValues();
+    QStringList listLabels();
 
     QString operator ()();
 

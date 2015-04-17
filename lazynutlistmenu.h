@@ -8,6 +8,7 @@ class LazyNutListMenu : public QMenu
     Q_OBJECT
 public:
     explicit LazyNutListMenu(QWidget *parent = 0);
+    void prePopulate(QString text);
 
 signals:
     void selected(QString);
@@ -22,6 +23,7 @@ private slots:
 
 private:
     QString getListCmd;
+    QStringList preItems;
 
 };
 

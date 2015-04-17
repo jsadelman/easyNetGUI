@@ -65,6 +65,18 @@ QStringList XMLelement::listValues()
     return values;
 }
 
+QStringList XMLelement::listLabels()
+{
+    QStringList labels;
+    QDomElement element = domElement.firstChildElement();
+    while (!element.isNull())
+    {
+        labels.append(XMLelement(element).label());
+        element = element.nextSiblingElement();
+    }
+    return labels;
+}
+
 QString XMLelement::operator ()()
 {
     if (isString() || isInteger() || isReal() || isObject())

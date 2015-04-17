@@ -239,8 +239,10 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     createToolBars();
     showViewMode(Welcome);
 
-//    connect(sessionManager,SIGNAL(versionReady(QString)),
-//            this,SLOT(displayVersion(QString)));
+    // debug: load and run qtest at startup
+//    loadFile(QString("%1/qtest").arg(scriptsDir));
+//    run();
+
 }
 
 

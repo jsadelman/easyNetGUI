@@ -5,6 +5,7 @@
 #include <QListView>
 #include <QScrollArea>
 #include <QMapIterator>
+#include <QInputDialog>
 
 #include "plotwindow.h"
 #include "codeeditor.h"
@@ -16,14 +17,14 @@
 
 
 PlotWindow::PlotWindow(QWidget *parent)
-    : QMainWindow(parent)
-
+    : createNewPlotText("Create new plot"), QMainWindow(parent)
 {
     plot_svg = new QSvgWidget(this);
     setCentralWidget(plot_svg);
 
     createPlotControlPanel();
     setUnifiedTitleAndToolBarOnMac(true);
+
 }
 
 int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
@@ -60,6 +61,17 @@ void PlotWindow::createPlotControlPanel()
 {
 
     // actions and menus
+
+
+
+    plotsMenu = new LazyNutListMenu;
+    menuBar()->addMenu(plotsMenu);
+    plotsMenu->setTitle("Plots");
+    plotsMenu->setGetListCmd("xml list rplot");
+    connect(plotsMenu, SIGNAL(selected(QString)), this, SLOT(setPlot(QString)));
+    plotsMenu->prePopulate(createNewPlotText);
+
+
     selectRScriptAct = new QAction(tr("&Select R script"), this);
     selectRScriptAct->setStatusTip(tr("Select an existing R script"));
     connect(selectRScriptAct, SIGNAL(triggered()), this, SLOT(selectRScript()));
@@ -79,18 +91,12 @@ void PlotWindow::createPlotControlPanel()
         typeMenu->addAction(recentRScriptsActs[i]);
     updateRecentRScriptsActs();
 
-    dataMenu = new LazyNutListMenu;
-    menuBar()->addMenu(dataMenu);
-    dataMenu->setTitle("Data");
-    dataMenu->setGetListCmd("xml list dataframe");
-    connect(dataMenu, SIGNAL(selected(QString)), this, SLOT(setDataframe(QString)));
-
 
     plotControlPanelWindow = new QMainWindow(this);
-    redrawAct = new QAction(tr("&Redraw"), this);
-    connect(redrawAct, SIGNAL(triggered()), this, SLOT(redraw()));
+    drawAct = new QAction(tr("&Draw"), this);
+    connect(drawAct, SIGNAL(triggered()), this, SLOT(draw()));
     QToolBar *plotToolbar = plotControlPanelWindow->addToolBar("");
-    plotToolbar->addAction(redrawAct);
+    plotToolbar->addAction(drawAct);
     plotControlPanelScrollArea = new QScrollArea;
     plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     plotControlPanelScrollArea->setWidgetResizable(true);
@@ -110,7 +116,7 @@ void PlotWindow::createActions()
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
 //    refreshAct->setStatusTip(tr("Refresh plot"));
-    connect(refreshAct, SIGNAL(triggered()), this, SLOT(refreshSvg()));
+    connect(refreshAct, SIGNAL(triggered()), this, SLOT(sendDrawCmd()));
 }
 
 void PlotWindow::updateRecentRScriptsActs()
@@ -139,15 +145,11 @@ void PlotWindow::createToolBars()
     fileToolBar->addAction(refreshAct);
 }
 
-void PlotWindow::refreshSvg()
+void PlotWindow::sendDrawCmd()
 {
-// This function sends a "plo get" command to the inpterpreter,
-// reads the output into a byteArray, does some processing on it
-// then loads it into the svgWidget
-
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = {"plo get"};
+    param->cmdList = {QString("%1 get").arg(currentPlot)};
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
     SessionManager::instance()->setupJob(param, sender());
@@ -180,64 +182,83 @@ void PlotWindow::dumpSVG(QString svg)
     qDebug() << svg;
 }
 
+void PlotWindow::setPlot(QString name)
+{
+    if (name == createNewPlotText)
+        newPlot();
+
+    else
+    {
+        currentPlot = name;
+        getSettingsXML();
+    }
+}
+
+void PlotWindow::newPlot()
+{
+    bool ok;
+    QString name = QInputDialog::getText(this, tr("New plot"), tr("Plot name:"), QLineEdit::Normal,
+                                         QString(), &ok);
+    if (ok && !name.isEmpty())
+    {
+        createNewPlot(name);
+        currentPlot = name;
+    }
+}
+
+void PlotWindow::createNewPlot(QString name)
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->cmdList = {QString("create rplot %1").arg(name)};
+    SessionManager::instance()->setupJob(param, sender());
+}
+
 void PlotWindow::setType(QString rScript)
 {
-    // disable all that is not activity.R
-    if (!rScript.endsWith("activity.R"))
-        return;
     setCurrentPlotType(rScript);
-//    currentPlotType = rScript;
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = {QString("plo set_type %1").arg(rScript)};
-    param->setNextJobReceiver(this,SLOT(listSettings()));
-    SessionManager::instance()->setupJob(param);
-    // probably it's possible to condense the two jobs into one
-    // since set_type gives no answer.
+    param->cmdList = {QString("%1 set_type %2").arg(currentPlot).arg(rScript)};
+    param->setNextJobReceiver(this,SLOT(getSettingsXML()));
+    SessionManager::instance()->setupJob(param, sender());
 }
 
-void PlotWindow::setDataframe(QString dataframe)
+void PlotWindow::getSettingsXML()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList =  {
-        QString("xml %1 get_colname_dimensions").arg(dataframe),
-        QString("plo set_data %1").arg(dataframe)
-    };
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(plotSettingsForm, SLOT(setFactorList(QStringList)));
-    SessionManager::instance()->setupJob(param);
-}
-
-void PlotWindow::listSettings()
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = {"xml plo list_settings"};
+    param->cmdList = {QString("xml %1 list_settings").arg(currentPlot)};
     param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(this, SLOT(buildPlotControlPanel(QDomDocument*)));
+    param->setAnswerReceiver(this, SLOT(buildSettingsForm(QDomDocument*)));
     SessionManager::instance()->setupJob(param, sender());
 }
 
 
-void PlotWindow::buildPlotControlPanel(QDomDocument *settingsList)
+void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
 {
-    plotSettingsForm = new PlotSettingsForm(settingsList, this);
+    plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, this);
+    connect(plotSettingsForm, SIGNAL(updateRequest()), this, SLOT(updateSettingsForm()));
     plotControlPanelScrollArea->setWidget(plotSettingsForm);
 }
 
-void PlotWindow::redraw()
+void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    QMapIterator<QString,QString> settingsIter(plotSettingsForm->getSettings());
-    while (settingsIter.hasNext())
-    {
-        settingsIter.next();
-        param->cmdList.append(QString("plo setting %1 %2").arg(settingsIter.key()).arg(settingsIter.value()));
-    }
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->setNextJobReceiver(this,SLOT(refreshSvg()));
-    SessionManager::instance()->setupJob(param,sender());
+    param->cmdList = plotSettingsForm->getSettingsCmdList();
+    param->setNextJobReceiver(nextJobReceiver, nextJobSlot);
+    SessionManager::instance()->setupJob(param, sender());
+}
+
+void PlotWindow::updateSettingsForm()
+{
+    sendSettings(this, SLOT(getSettingsXML()));
+}
+
+void PlotWindow::draw()
+{
+    sendSettings(this, SLOT(sendDrawCmd()));
 }
 
 
@@ -248,7 +269,8 @@ void PlotWindow::selectRScript()
     QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
     QString rScript = QFileDialog::getOpenFileName(this,tr("Please select an R script"),
                                                    rScriptsHome,"*.R");
-    setType(QFileInfo(rScript).fileName());
+    if (!rScript.isEmpty())
+        setType(QFileInfo(rScript).fileName());
 }
 
 void PlotWindow::selectRecentRScript()
