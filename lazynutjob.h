@@ -20,7 +20,7 @@ public:
     void setAnswerFormatter(AnswerFormatter* af);
     void setCmdFormatter(std::function<QString (const QString& s)> cf) {cmdFormatter = cf;}
     void setCmdList(QStringList list) {cmdList = list;}
-    void setCmdList(QString cmd) {cmdList = {cmd};}
+    void setCmdList(QString cmd) {cmdList = QStringList({cmd});}
 //    void setJobOrigin(JobOrigin origin) {jobOrigin = origin;}
 
     LazyNutMacro *macro;
@@ -33,8 +33,13 @@ public:
 signals:
     void runCommands(QStringList, bool, unsigned int);
 
+
 public slots:
     void runCommands();
+
+
+private slots:
+    void formatAnswer(QString answer);
 
 };
 

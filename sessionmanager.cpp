@@ -72,8 +72,9 @@ void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
     if (af)
     {
         connect(commandSequencer,SIGNAL(answerReady(QString)),
-                af,SLOT(formatAnswer(QString)));
+                job,SLOT(formatAnswer(QString)));
         job->setAnswerFormatter(af);
+
     }
 
     job->logMode = param->logMode;
@@ -122,6 +123,7 @@ LazyNutJob *SessionManager::nextJob(QObject *sender)
 //! [appendCmdListOnNextJob]
 void SessionManager::appendCmdListOnNextJob(QStringList cmdList)
 {
+    qDebug() << "appendCmdListOnNextJob() list size: " << cmdList.size();
     nextJob(sender())->cmdList.append(cmdList);
 }
 //! [appendCmdListOnNextJob]
@@ -131,7 +133,7 @@ void SessionManager::updateRecentlyModified()
 {
     qDebug() << "updateRecentlyModified()";
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = {"xml recently_modified"};
+    param->cmdList = QStringList({"xml recently_modified"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SLOT(appendCmdListOnNextJob(QStringList)));
     param->setNextJobReceiver(this, SLOT(getDescriptions()));

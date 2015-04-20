@@ -28,4 +28,10 @@ void LazyNutJob::runCommands()
     emit runCommands(cmdList, answerFormatter, logMode);
 }
 
+void LazyNutJob::formatAnswer(QString answer)
+{
+    if (active() && answerFormatter)
+        answerFormatter->formatAnswer(answer);
+
+}
 

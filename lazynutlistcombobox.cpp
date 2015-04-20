@@ -22,7 +22,7 @@ void LazyNutListComboBox::getList(QString cmd)
     {
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose
-        param->cmdList = {QString("xml %1").arg(getListCmd)};
+        param->cmdList = QStringList({QString("xml %1").arg(getListCmd)});
         param->answerFormatterType = AnswerFormatterType::ListOfValues;
         param->setAnswerReceiver(this, SLOT(buildList(QStringList)));
         SessionManager::instance()->setupJob(param, sender());

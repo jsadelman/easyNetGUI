@@ -149,7 +149,7 @@ void PlotWindow::sendDrawCmd()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = {QString("%1 get").arg(currentPlot)};
+    param->cmdList = QStringList({QString("%1 get").arg(currentPlot)});
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
     SessionManager::instance()->setupJob(param, sender());
@@ -210,7 +210,7 @@ void PlotWindow::createNewPlot(QString name)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = {QString("create rplot %1").arg(name)};
+    param->cmdList = QStringList({QString("create rplot %1").arg(name)});
     SessionManager::instance()->setupJob(param, sender());
 }
 
@@ -219,7 +219,7 @@ void PlotWindow::setType(QString rScript)
     setCurrentPlotType(rScript);
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = {QString("%1 set_type %2").arg(currentPlot).arg(rScript)};
+    param->cmdList = QStringList({QString("%1 set_type %2").arg(currentPlot).arg(rScript)});
     param->setNextJobReceiver(this,SLOT(getSettingsXML()));
     SessionManager::instance()->setupJob(param, sender());
 }
@@ -228,7 +228,7 @@ void PlotWindow::getSettingsXML()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = {QString("xml %1 list_settings").arg(currentPlot)};
+    param->cmdList = QStringList({QString("xml %1 list_settings").arg(currentPlot)});
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SLOT(buildSettingsForm(QDomDocument*)));
     SessionManager::instance()->setupJob(param, sender());

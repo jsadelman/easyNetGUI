@@ -240,8 +240,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     showViewMode(Welcome);
 
     // debug: load and run qtest at startup
-//    loadFile(QString("%1/qtest").arg(scriptsDir));
-//    run();
+    loadFile(QString("%1/qtest").arg(scriptsDir));
+    run();
 
 }
 
@@ -370,7 +370,7 @@ void EasyNetMainWindow::open()
 void EasyNetMainWindow::runCmd(QString cmd)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = {cmd};
+    param->cmdList = QStringList({cmd});
     param->logMode |= ECHO_INTERPRETER;
     SessionManager::instance()->setupJob(param);
 }
@@ -401,7 +401,7 @@ void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
 void EasyNetMainWindow::getVersion()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = {"version"};
+    param->cmdList = QStringList({"version"});
     param->answerFormatterType = AnswerFormatterType::Identity;
     param->setAnswerReceiver(this, SLOT(displayVersion(QString)));
     SessionManager::instance()->setupJob(param);

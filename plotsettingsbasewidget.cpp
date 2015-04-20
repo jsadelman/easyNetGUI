@@ -310,7 +310,7 @@ void PlotSettingsFactorWidget::getLevels()
     {
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose
-        param->cmdList = {QString("xml %1").arg(cmd)};
+        param->cmdList = QStringList({QString("xml %1").arg(cmd)});
         param->answerFormatterType = AnswerFormatterType::ListOfValues;
         param->setAnswerReceiver(this, SLOT(setFactorList(QStringList)));
         SessionManager::instance()->setupJob(param, sender());
