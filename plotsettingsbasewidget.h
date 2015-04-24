@@ -10,63 +10,84 @@
 class QDomDocument;
 class QHBoxLayout;
 class QVBoxLayout;
+class QGridLayout;
+class QStackedLayout;
 class QLabel;
+class QGroupBox;
 class QPushButton;
+class QRadioButton;
 class QListWidget;
 class QListWidgetItem;
 class LazyNutListWidget;
+class LazyNutPairedListWidget;
 
-class ValueEdit: public QLineEdit
+class PlotSettingsAbstractBaseWidget
 {
-    Q_OBJECT
 public:
-    explicit ValueEdit(QWidget *parent = 0);
+    virtual ~PlotSettingsAbstractBaseWidget() {}
+    virtual QString name() = 0;
+    virtual QString value() = 0;
+    virtual QList<QWidget*> extraWidgets() = 0;
 
-signals:
-    void doubleClicked();
-
-
-
-protected:
-    virtual void mouseDoubleClickEvent(QMouseEvent * mouseEvent) Q_DECL_OVERRIDE;
 };
 
-class PlotSettingsBaseWidget : public QWidget
+
+
+class PlotSettingsBaseWidget : public QWidget//, PlotSettingsAbstractBaseWidget
 {
     Q_OBJECT
 public:
-//    explicit PlotSettingsBaseWidget(QString name, QString value, QString comment,
-//                                    QString defaultValue, QWidget *parent = 0);
     explicit PlotSettingsBaseWidget(XMLelement settingsElement, QWidget *parent = 0);
     virtual ~PlotSettingsBaseWidget() {}
-    QString getName() {return settingsElement.label();}   // {return name;}
-    virtual QString getValue();
+    QString name() {return settingsElement.label();}
+    virtual QString value();
     QList<QWidget*> extraWidgets() {return extraWidgetsList;}
 
 signals:
     void valueChanged();
-    void addWidget(QWidget*);
-
-public slots:
+    void resetRequest();
 
 protected slots:
-    void displayComment();
+    virtual void resetDefault();
+    virtual void setRawMode(bool on);
+    virtual void setWidgetMode(bool on);
+    void emitValueChanged();
+    void setValueSetTrue() {valueSet = true;}
 
 protected:
+
     virtual void createDisplay();
-    virtual void createValueEdit();
+    virtual void createEditWidget(){}
+    virtual QString getWidgetValue() {return QString();}
+    virtual QString getValue();
+    virtual void setValue(QString val);
+    virtual void setWidgetValue(QString val){}
+    bool isValueSet();
+    bool hasDefault();
+    virtual QString raw2widgetValue(QString val){}
+    virtual QString widget2rawValue(QString val){}
+
+
+    enum {RawEditMode, WidgetEditMode};
+    int editMode;
 
     XMLelement settingsElement;
+    bool valueSet;
+    QString currentValue;
 
-    QString name;
-    QString value;
-    QString comment;
-    QString defaultValue;
-    QPushButton *nameButton;
-    QHBoxLayout *displayLayout;
-    QVBoxLayout *mainLayout;
-//    QPushButton *commentButton;
-    QWidget *valueEdit;
+    QGridLayout *mainLayout;
+    QLabel *nameLabel;
+    QLineEdit *rawEdit;
+    QStackedLayout *editStackedLayout;
+    QWidget *editWidget;
+    QLabel *commentLabel;
+    QGroupBox *editModeButtonBox;
+    QVBoxLayout *editModeButtonBoxLayout;
+    QPushButton *debugButton;
+    QRadioButton *rawEditButton;
+    QRadioButton *widgetEditButton;
+    QPushButton *defaultButton;
+
     QList<QWidget*> extraWidgetsList;
 
 };
@@ -75,37 +96,80 @@ class PlotSettingsNumericWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-//    explicit PlotSettingsNumericWidget(QString name, QString value, QString comment,
-//                                    QString defaultValue, QWidget *parent = 0);
     explicit PlotSettingsNumericWidget(XMLelement settingsElement, QWidget *parent = 0);
-
-    virtual QString getValue();
+    virtual ~PlotSettingsNumericWidget() {}
 
 protected:
-    virtual void createValueEdit();
+    void createEditWidget();
+    virtual QString getWidgetValue();
+    virtual void setWidgetValue(QString val);
+    virtual QString raw2widgetValue(QString val);
+    virtual QString widget2rawValue(QString val);
+
+
+
 };
 
-class PlotSettingsDataframeWidget : public PlotSettingsBaseWidget
+
+class PlotSettingsSingleChoiceWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsDataframeWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsSingleChoiceWidget(XMLelement settingsElement, QWidget *parent = 0);
+    virtual ~PlotSettingsSingleChoiceWidget() {}
 
-    virtual QString getValue();
 
 protected slots:
     void currentTextChangedFilter(QString value);
-
+    void setupEditWidget();
 
 protected:
-    virtual void createValueEdit();
+    void createEditWidget();
+    virtual QString getWidgetValue();
+    virtual void setWidgetValue(QString val);
+    virtual QString raw2widgetValue(QString val);
+    virtual QString widget2rawValue(QString val);
+
     void createListEdit();
     void updateValueFromEdit();
 
     LazyNutListWidget *factorList;
-    QPushButton *editButton;
 };
 
+class PlotSettingsMultipleChoiceWidget : public PlotSettingsBaseWidget
+{
+    Q_OBJECT
+public:
+    explicit PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, QWidget *parent = 0);
+    virtual ~PlotSettingsMultipleChoiceWidget() {}
+    virtual QString value();
+
+
+protected slots:
+    void setupEditWidget();
+    virtual void setRawMode(bool on);
+    virtual void setWidgetMode(bool on);
+    void updateEditWidget();
+    virtual void resetDefault();
+
+
+protected:
+    void createEditWidget();
+    virtual QString getWidgetValue();
+    virtual void setWidgetValue(QString val);
+    virtual QString raw2widgetValue(QString val);
+    virtual QString widget2rawValue(QString val);
+
+    void createListEdit();
+    void updateValueFromEdit();
+
+    LazyNutListWidget *factorList;
+    LazyNutPairedListWidget *editExtraWidget;
+};
+
+
+
+/*
 
 class PlotSettingsFactorWidget : public PlotSettingsBaseWidget
 {
@@ -115,7 +179,7 @@ public:
 //                                    QString defaultValue, QWidget *parent = 0);
     explicit PlotSettingsFactorWidget(XMLelement settingsElement, QWidget *parent = 0);
 
-    virtual QString getValue();
+    virtual QString value();
 
 
 
@@ -130,7 +194,7 @@ private slots:
     void updateListEdit();
     void debugValueChanged()
     {
-        qDebug () << "valueChanged() emitted by " << getName();
+        qDebug () << "valueChanged() emitted by " << name();
     }
 
 private:
@@ -146,6 +210,6 @@ private:
     QListWidget *selectedList;
     QPushButton *editButton;
 };
-
+*/
 
 #endif // PLOTSETTINGSBASEWIDGET_H

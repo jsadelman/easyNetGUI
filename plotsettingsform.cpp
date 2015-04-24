@@ -14,16 +14,15 @@
 PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent)
     : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QWidget(parent)
 {
-    widgetList.clear();
     mainLayout = new QVBoxLayout;
     mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
     XMLelement settingsElement = rootElement.firstChild();
     while (!settingsElement.isNull())
     {
         PlotSettingsBaseWidget *widget = createWidget(settingsElement);
-        widgetMap[widget->getName()] = widget;
+        widgetMap[widget->name()] = widget;
         mainLayout->addWidget(widget);
-        foreach (QWidget* extraWidget, static_cast<PlotSettingsBaseWidget*>(widget)->extraWidgets())
+        foreach (QWidget* extraWidget, widget->extraWidgets())
             mainLayout->addWidget(extraWidget);
         settingsElement = settingsElement.nextSibling();
     }
@@ -50,14 +49,6 @@ void PlotSettingsForm::initDependersSet()
 }
 
 
-//QMap<QString, QString> PlotSettingsForm::getSettings()
-//{
-//    QMap<QString, QString> settingsMap;
-//    foreach (PlotSettingsBaseWidget *widget, widgetList) {
-//        settingsMap[widget->getName()] = widget->getValue();
-//    }
-//    return settingsMap;
-//}
 
 QStringList PlotSettingsForm::getSettingsCmdList()
 {
@@ -68,62 +59,22 @@ QStringList PlotSettingsForm::getSettingsCmdList()
     return cmdList;
 }
 
-//void PlotSettingsForm::setFactorList(QStringList list)
-//{
-//    foreach(PlotSettingsBaseWidget *widget, widgetList)
-//    {
-//        if (QString(widget->metaObject()->className()) == "PlotSettingsFactorWidget")
-//            qobject_cast<PlotSettingsFactorWidget*>(widget)->createListEdit(list);
-//    }
-//}
-
-//void PlotSettingsForm::addWidget(QWidget *widget)
-//{
-//    qDebug () << "addWidget, called by " << qobject_cast<PlotSettingsBaseWidget*>(sender())->getName();
-//    qDebug () << "addWidget, main layout count: " << mainLayout->count();
-//    mainLayout->insertWidget(mainLayout->indexOf(qobject_cast<QWidget*>(sender()))+1, widget);
-//}
-
-//PlotSettingsBaseWidget *PlotSettingsForm::createWidget(QDomElement settingsElement)
-//{
-//    QMap<QString, QString> tagsMap ;
-//    tagsMap["name"] = settingsElement.attribute("label");
-//    QDomElement attributeElement = settingsElement.firstChildElement();
-//    while (!attributeElement.isNull())
-//    {
-//        tagsMap[attributeElement.attribute("label")] = attributeElement.attribute("value");
-//        attributeElement = attributeElement.nextSiblingElement();
-//    }
-//    if (tagsMap["type"] == "numeric")
-//        return new PlotSettingsNumericWidget(tagsMap["name"], tagsMap["value"],
-//                tagsMap["comment"], tagsMap["default"]);
-
-//    else if (tagsMap["type"] == "factor")
-//    {
-//        PlotSettingsFactorWidget *widget = new PlotSettingsFactorWidget(tagsMap["name"], tagsMap["value"],
-//                tagsMap["comment"], tagsMap["default"]);
-//        connect(widget, SIGNAL(addWidget(QWidget*)), this, SLOT(addWidget(QWidget*)));
-//        return widget;
-//    }
-
-//    else
-//        return new PlotSettingsBaseWidget(tagsMap["name"], tagsMap["value"],
-//                tagsMap["comment"], tagsMap["default"]);
-//}
 
 PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElement)
 {
     // TODO: implement this with a factory
     QString type = settingsElement["type"]();
+    QString choice = settingsElement["choice"]();
+    qDebug() << "createWidget " << type << choice;
     PlotSettingsBaseWidget *widget;
     if (type == "numeric")
         widget = new PlotSettingsNumericWidget(settingsElement);
 
-    else if (type == "dataframe")
-        widget = new PlotSettingsDataframeWidget(settingsElement);
+    else if ((type == "dataframe" || type == "factor") && choice == "single")
+        widget = new PlotSettingsSingleChoiceWidget(settingsElement);
 
-    else if (type == "factor")
-        widget = new PlotSettingsFactorWidget(settingsElement);
+    else if ((type == "dataframe" || type == "factor") && choice == "multiple")
+        widget = new PlotSettingsMultipleChoiceWidget(settingsElement);
 
     else
         widget = new PlotSettingsBaseWidget(settingsElement);
@@ -135,13 +86,63 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
 void PlotSettingsForm::checkDependencies()
 {
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
-    if (widget && dependersSet.contains(widget->getName()))
+    if (widget && dependersSet.contains(widget->name()))
     {
-        qDebug() << "updateRequest()";
         emit updateRequest();
+//        dependerOnUpdate = widget->name();
+//        LazyNutJobParam *param = new LazyNutJobParam;
+//        param->logMode |= ECHO_INTERPRETER; // debug purpose
+//        param->cmdList = QStringList({
+//                                         getSettingCmdLine(dependerOnUpdate),
+//                                         QString("xml %1 list_settings").arg(plotName)
+//                                     });
+//        param->answerFormatterType = AnswerFormatterType::XML;
+//        param->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)));
+//        SessionManager::instance()->setupJob(param, sender());
     }
 
 }
+
+void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
+{
+    delete domDoc;
+    domDoc = newDomDoc;
+    rootElement = XMLelement(*domDoc);
+    if (dependerOnUpdate.isEmpty())
+        return; // just safety
+    XMLelement settingsElement = rootElement.firstChild();
+    while (!settingsElement.isNull())
+    {
+        if (settingsElement["dependencies"].listValues().contains(dependerOnUpdate))
+        {
+            PlotSettingsBaseWidget *newWidget = createWidget(settingsElement);
+            for (int i = 0; i < newWidget->extraWidgets().count(); ++i)
+            {
+                delete widgetMap[settingsElement.label()]->extraWidgets().at(i);
+                widgetMap[settingsElement.label()]->extraWidgets()[i] = newWidget->extraWidgets().at(i);
+            }
+            delete widgetMap[settingsElement.label()];
+            widgetMap[settingsElement.label()] = newWidget;
+
+//            int layoutIndex = mainLayout->indexOf(widgetMap[settingsElement.label()]);
+//            PlotSettingsBaseWidget *oldWidget = mainLayout->takeAt(layoutIndex);
+//            PlotSettingsBaseWidget *widget = createWidget(settingsElement);
+//            mainLayout->insertWidget(layoutIndex, widget);
+//            for(int i = 0; i < oldWidget->extraWidgets().count(); ++i)
+//            {
+//                QWidget* oldExtraWidget = oldWidget->extraWidgets().at(i);
+//                QWidget* extraWidget = widget->extraWidgets().at(i);
+//                mainLayout->takeAt(layoutIndex + i + 1);
+//                mainLayout->insertWidget(layoutIndex + i + 1, extraWidget);
+//                delete oldExtraWidget;
+//            }
+//            delete oldWidget;
+//            widgetMap[widget->name()] = widget;
+        }
+        settingsElement = settingsElement.nextSibling();
+    }
+}
+
 
 QString PlotSettingsForm::getSettingCmdLine(QString setting)
 {
@@ -149,6 +150,6 @@ QString PlotSettingsForm::getSettingCmdLine(QString setting)
             .arg(plotName)
             .arg(rootElement[setting]["type"]() == "dataframe" ? "setting_object" : "setting")
             .arg(setting)
-            .arg(widgetMap[setting]->getValue());
+            .arg(widgetMap[setting]->value());
 }
 

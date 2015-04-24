@@ -6,8 +6,16 @@ LazyNutListComboBox::LazyNutListComboBox(QString getListCmd, QWidget *parent) :
     getListCmd(getListCmd), QComboBox(parent)
 {
     setEditable(false);
-    if (!getListCmd.isEmpty())
-        getList();
+
+}
+
+void LazyNutListComboBox::setEmptyItem(bool present)
+{
+    if (present && !itemText(0).isEmpty())
+        insertItem(0, "");
+
+    else if (!present && itemText(0).isEmpty())
+        removeItem(0);
 }
 
 void LazyNutListComboBox::setGetListCmd(QString cmd)
@@ -17,6 +25,8 @@ void LazyNutListComboBox::setGetListCmd(QString cmd)
 
 void LazyNutListComboBox::getList(QString cmd)
 {
+//    buildList(QStringList({"badger", "mushroom", "snake"}));
+
     getListCmd = cmd.isEmpty() ? getListCmd : cmd;
     if (!getListCmd.isEmpty())
     {
@@ -33,4 +43,5 @@ void LazyNutListComboBox::buildList(QStringList list)
 {
     clear();
     addItems(list);
+    emit listReady();
 }

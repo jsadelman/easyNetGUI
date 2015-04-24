@@ -12,8 +12,11 @@
 class XMLelement
 {
 public:
-    XMLelement(QDomDocument domDoc = QDomDocument());
-    XMLelement(QDomElement domElem = QDomElement());
+    XMLelement(){}
+    XMLelement(QDomDocument domDoc);
+    XMLelement(QDomElement domElem);
+    void setDomElement(QDomDocument domDoc);
+    void setDomElement(QDomElement domElem);
     bool isString() {return type == "string";}
     bool isInteger() {return type == "integer";}
     bool isReal() {return type == "real";}

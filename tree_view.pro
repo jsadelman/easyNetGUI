@@ -49,7 +49,8 @@ SOURCES +=  \
     lazynutlistmenu.cpp \
     xmlelement.cpp \
     lazynutlistcombobox.cpp \
-    lazynutlistwidget.cpp
+    lazynutlistwidget.cpp \
+    lazynutpairedlistwidget.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -86,7 +87,8 @@ HEADERS  += \
     lazynutlistmenu.h \
     xmlelement.h \
     lazynutlistcombobox.h \
-    lazynutlistwidget.h
+    lazynutlistwidget.h \
+    lazynutpairedlistwidget.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

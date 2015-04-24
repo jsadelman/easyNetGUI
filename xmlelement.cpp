@@ -5,16 +5,28 @@
 
 XMLelement::XMLelement(QDomDocument domDoc)
 {
-    domElement = domDoc.documentElement();
-    type = domElement.tagName();
-    if (!isENelements())
-        qDebug() << "error: root xml tag is not <eNelement>";
-
+    setDomElement(domDoc);
 }
 
 XMLelement::XMLelement(QDomElement domElem)
-    : domElement(domElem), type(domElem.tagName())
 {
+    setDomElement(domElem);
+}
+
+void XMLelement::setDomElement(QDomDocument domDoc)
+{
+    domElement = domDoc.documentElement();
+    type = domElement.tagName();
+//    if (!isENelements())
+//        qDebug() << "error: root xml tag is not <eNelement>";
+}
+
+void XMLelement::setDomElement(QDomElement domElem)
+{
+    domElement = domElem;
+    type = domElement.tagName();
+//    if (!(isString() || isInteger() || isReal() || isObject() || isCommand() || isMap() || isList()))
+//        qDebug() << "error: xml tag name not recognised: " << type;
 }
 
 XMLelement XMLelement::firstChild(QString childType)

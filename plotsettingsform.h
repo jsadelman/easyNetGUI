@@ -29,6 +29,7 @@ signals:
 private slots:
 //    void addWidget(QWidget *widget);
     void checkDependencies();
+    void updateDependees(QDomDocument *newDomDoc);
 
 private:
     void initDependersSet();
@@ -36,7 +37,6 @@ private:
     PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
     QString getSettingCmdLine(QString setting);
 
-    QList<PlotSettingsBaseWidget*> widgetList;
     QMap<QString, PlotSettingsBaseWidget*> widgetMap;
     QVBoxLayout *mainLayout;
     QDomDocument *domDoc;
