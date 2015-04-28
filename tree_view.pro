@@ -50,7 +50,8 @@ SOURCES +=  \
     xmlelement.cpp \
     lazynutlistcombobox.cpp \
     lazynutlistwidget.cpp \
-    lazynutpairedlistwidget.cpp
+    lazynutpairedlistwidget.cpp \
+    bracketedparser.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -88,7 +89,8 @@ HEADERS  += \
     xmlelement.h \
     lazynutlistcombobox.h \
     lazynutlistwidget.h \
-    lazynutpairedlistwidget.h
+    lazynutpairedlistwidget.h \
+    bracketedparser.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

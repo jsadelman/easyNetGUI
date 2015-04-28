@@ -64,6 +64,21 @@ QString XMLelement::value()
     return domElement.attribute("value");
 }
 
+void XMLelement::setLabel(QString label)
+{
+    domElement.setAttribute("label", label);
+}
+
+void XMLelement::setValue(QString value)
+{
+    domElement.setAttribute("value", value);
+}
+
+void XMLelement::setAttribute(QString name, QString value)
+{
+    domElement.setAttribute(name, value);
+}
+
 QStringList XMLelement::listValues()
 {
     // if isList()

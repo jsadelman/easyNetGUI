@@ -6,22 +6,27 @@
 //#include "lazynutlistwidget.h"
 #include "lazynutlistcombobox.h"
 #include "lazynutpairedlistwidget.h"
+#include "bracketedparser.h"
 
 
 PlotSettingsBaseWidget::PlotSettingsBaseWidget(XMLelement settingsElement, QWidget *parent)
-    : settingsElement(settingsElement), QWidget(parent)
+    : settingsElement(settingsElement), QFrame(parent)
 {
     createDisplay();
     editMode = RawEditMode;
+
     // debug
-    connect(this, &PlotSettingsBaseWidget::valueChanged, [=](){
-        qDebug() << "valueChanged emitted, value(): " << value();});
+//    connect(this, &PlotSettingsBaseWidget::valueChanged, [=](){
+//        qDebug() << "valueChanged emitted, value(): " << value();});
 }
 
 
 
 void PlotSettingsBaseWidget::createDisplay()
 {
+//    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    setFrameShadow(QFrame::Sunken);
+    setFrameShape(QFrame::Panel);
     mainLayout = new QGridLayout;
     nameLabel = new QLabel;
     QString labelText = settingsElement["pretty name"]().isEmpty() ? name() : settingsElement["pretty name"]();
@@ -90,6 +95,8 @@ void PlotSettingsBaseWidget::createDisplay()
     connect(defaultButton, SIGNAL(clicked()), this, SLOT(resetDefault()));
     connect(defaultButton, SIGNAL(clicked()), this, SLOT(emitValueChanged()));
 
+
+
     mainLayout->addWidget(nameLabel, 0, 0);
     mainLayout->addLayout(editStackedLayout, 0, 1);
     mainLayout->addWidget(defaultButton, 0, 2);
@@ -132,8 +139,16 @@ QString PlotSettingsBaseWidget::getValue()
 
 void PlotSettingsBaseWidget::setValue(QString val)
 {
-    rawEdit->setText(val);
-    setWidgetValue(raw2widgetValue(val));
+    switch(editMode)
+    {
+    case RawEditMode:
+    {
+        rawEdit->setText(val);
+        break;
+    }
+    case WidgetEditMode:
+        setWidgetValue(raw2widgetValue(val));
+    }
 }
 
 bool PlotSettingsBaseWidget::isValueSet()
@@ -153,6 +168,11 @@ QString PlotSettingsBaseWidget::value()
         return getValue();
 
     return QString();
+}
+
+void PlotSettingsBaseWidget::updateWidget(XMLelement xml)
+{
+    settingsElement = xml;
 }
 
 
@@ -177,8 +197,8 @@ void PlotSettingsBaseWidget::setWidgetMode(bool on)
 {
     if (on)
     {
-        setWidgetValue(raw2widgetValue(rawEdit->text()));
-        editStackedLayout->setCurrentIndex(editStackedLayout->indexOf(editWidget));
+//        setWidgetValue(raw2widgetValue(rawEdit->text()));
+        editStackedLayout->setCurrentIndex(editStackedLayout->indexOf(editDisplayWidget));
         editMode = WidgetEditMode;
     }
 }
@@ -204,13 +224,6 @@ void PlotSettingsBaseWidget::emitValueChanged()
         qDebug() << "emitValueChanged: currentValue: " << currentValue << "value(): " << value();
         emit valueChanged();
     }
-
-
-//    if (currentValue != value())
-//    {
-//        currentValue = value();
-//        emit valueChanged();
-//    }
 }
 
 
@@ -224,61 +237,57 @@ PlotSettingsNumericWidget::PlotSettingsNumericWidget(XMLelement settingsElement,
     createEditWidget();
 }
 
-void PlotSettingsNumericWidget::setWidgetValue(QString val)
+void PlotSettingsNumericWidget::setWidgetValue(QVariant val)
 {
     if (settingsElement["value"].isReal())
-        static_cast<QDoubleSpinBox*>(editWidget)->setValue(val.toDouble());
+        static_cast<QDoubleSpinBox*>(editDisplayWidget)->setValue(val.toDouble());
     else
-        static_cast<QSpinBox*>(editWidget)->setValue(val.toInt());
+        static_cast<QSpinBox*>(editDisplayWidget)->setValue(val.toInt());
 }
 
-QString PlotSettingsNumericWidget::raw2widgetValue(QString val)
+
+QVariant PlotSettingsNumericWidget::getWidgetValue()
+{
+    if (settingsElement["value"].isReal())
+        return QString::number(static_cast<QDoubleSpinBox*>(editDisplayWidget)->value());
+    else
+        return QString::number(static_cast<QSpinBox*>(editDisplayWidget)->value());
+}
+
+QVariant PlotSettingsNumericWidget::raw2widgetValue(QString val)
 {
     return val;
 }
 
-QString PlotSettingsNumericWidget::widget2rawValue(QString val)
+QString PlotSettingsNumericWidget::widget2rawValue(QVariant val)
 {
-    return val;
+    return val.toString();
 }
 
 void PlotSettingsNumericWidget::createEditWidget()
 {
     if (settingsElement["value"].isReal())
     {
-        editWidget = new QDoubleSpinBox;
+        editDisplayWidget = new QDoubleSpinBox;
         setWidgetValue(settingsElement["value"]());
-//        connect(static_cast<QDoubleSpinBox*>(editWidget), SIGNAL(valueChanged(const QString&)),
-//                this, SLOT(setValueSetTrue()));
-        connect(static_cast<QDoubleSpinBox*>(editWidget), SIGNAL(editingFinished()),
+        connect(static_cast<QDoubleSpinBox*>(editDisplayWidget), SIGNAL(editingFinished()),
                 this, SLOT(emitValueChanged()));
     }
     else
     {
-        editWidget = new QSpinBox;
+        editDisplayWidget = new QSpinBox;
         setWidgetValue(settingsElement["value"]());
-//        connect(static_cast<QSpinBox*>(editWidget), SIGNAL(valueChanged(const QString&)),
-//                this, SLOT(setValueSetTrue()));
-        connect(static_cast<QSpinBox*>(editWidget), SIGNAL(editingFinished()),
+        connect(static_cast<QSpinBox*>(editDisplayWidget), SIGNAL(editingFinished()),
                 this, SLOT(emitValueChanged()));
     }
     currentValue = settingsElement["value"]();
     valueSet = !settingsElement["value"]().isEmpty();
-    editStackedLayout->addWidget(editWidget);
+    editStackedLayout->addWidget(editDisplayWidget);
     widgetEditButton->setEnabled(true);
     rawEditButton->setEnabled(true);
     widgetEditButton->setChecked(true);
 }
 
-QString PlotSettingsNumericWidget::getWidgetValue()
-{
-    if (settingsElement["value"].isReal())
-        return QString::number(static_cast<QDoubleSpinBox*>(editWidget)->value());
-    else
-        return QString::number(static_cast<QSpinBox*>(editWidget)->value());
-
-
-}
 
 
 //////////// PlotSettingsSingleChoiceWidget
@@ -291,85 +300,61 @@ PlotSettingsSingleChoiceWidget::PlotSettingsSingleChoiceWidget(XMLelement settin
     createEditWidget();
 }
 
-
-//void PlotSettingsDataframeWidget::createListEdit()
-//{
-//    factorList = new LazyNutListWidget(settingsElement["levels"](), this);
-//    factorList->setSelectionMode(QAbstractItemView::SingleSelection);
-//    connect(factorList, SIGNAL(selected(QString)),
-//            static_cast<QLabel*>(valueEdit), SLOT(setText(QString)));
-//    connect(factorList, SIGNAL(selected(QString)),
-//            this, SIGNAL(valueChanged()));
-//    QMainWindow *editWindow = new QMainWindow(this);
-//    editWindow->setAttribute(Qt::WA_AlwaysShowToolTips);
-//    QAction *hideAct = new QAction("Hide",editWindow);
-//    connect(hideAct, SIGNAL(triggered()), editWindow, SLOT(hide()));
-//    QToolBar *hideToolBar = editWindow->addToolBar("");
-//    hideToolBar->addAction(hideAct);
-//    QFrame *editBox = new QFrame(this);
-//    editBox->setFrameShape(QFrame::Panel);
-//    editBox->setFrameShadow(QFrame::Sunken);
-//    QVBoxLayout *editBoxLayout = new QVBoxLayout;
-//    editBoxLayout->addWidget(factorList);
-//    editBox->setLayout(editBoxLayout);
-//    editWindow->setCentralWidget(editBox);
-//    editWindow->hide();
-//    connect(editButton, SIGNAL(clicked()), editWindow, SLOT(show()));
-//    extraWidgetsList.append(editWindow);
-//}
-
-
-
-void PlotSettingsSingleChoiceWidget::currentTextChangedFilter(QString value)
+void PlotSettingsSingleChoiceWidget::updateWidget(XMLelement xml)
 {
-    if (!value.isEmpty() && value != settingsElement["value"]())
-    {
-        emit valueChanged();
-        qDebug() << value << settingsElement["value"]();
-    }
+    PlotSettingsBaseWidget::updateWidget(xml);
+    delete editDisplayWidget;
+    createEditWidget();
 }
+
 
 void PlotSettingsSingleChoiceWidget::createEditWidget()
 {
-    editWidget = new LazyNutListComboBox(settingsElement["levels"](), this);
-    connect(static_cast<LazyNutListComboBox*>(editWidget),SIGNAL(listReady()),
+    editDisplayWidget = new LazyNutListComboBox(settingsElement["levels"](), this);
+    connect(static_cast<LazyNutListComboBox*>(editDisplayWidget),SIGNAL(listReady()),
             this, SLOT(setupEditWidget()));
-    static_cast<LazyNutListComboBox*>(editWidget)->getList();
+    static_cast<LazyNutListComboBox*>(editDisplayWidget)->getList();
 }
 
 void PlotSettingsSingleChoiceWidget::setupEditWidget()
 {
     if (!hasDefault())
-        static_cast<LazyNutListComboBox*>(editWidget)->setEmptyItem(true);
+        static_cast<LazyNutListComboBox*>(editDisplayWidget)->setEmptyItem(true);
 
     setWidgetValue(raw2widgetValue(settingsElement["value"]()));
     currentValue = settingsElement["value"]();
     valueSet = !settingsElement["value"]().isEmpty();
-//    connect(static_cast<LazyNutListComboBox*>(editWidget),SIGNAL(activated(int)),
-//            this, SLOT(setValueSetTrue()));
-    connect(static_cast<LazyNutListComboBox*>(editWidget),SIGNAL(activated(int)),
+    connect(static_cast<LazyNutListComboBox*>(editDisplayWidget),SIGNAL(activated(int)),
             this, SLOT(emitValueChanged()));
-    editStackedLayout->addWidget(editWidget);
-    widgetEditButton->setEnabled(true);
-    rawEditButton->setEnabled(true);
-    widgetEditButton->setChecked(true);
-
+    editStackedLayout->addWidget(editDisplayWidget);
+    if (settingsElement["levels"]().isEmpty())
+    {
+        rawEditButton->setEnabled(false);
+        widgetEditButton->setEnabled(false);
+        rawEditButton->setChecked(true);
+    }
+    else
+    {
+        widgetEditButton->setEnabled(true);
+        rawEditButton->setEnabled(true);
+        widgetEditButton->setChecked(true);
+    }
     valueSet = !settingsElement["value"]().isEmpty();
     currentValue = value();
 }
 
-QString PlotSettingsSingleChoiceWidget::getWidgetValue()
+QVariant PlotSettingsSingleChoiceWidget::getWidgetValue()
 {
-    return static_cast<QComboBox*>(editWidget)->currentText();
+    return static_cast<QComboBox*>(editDisplayWidget)->currentText();
 }
 
-void PlotSettingsSingleChoiceWidget::setWidgetValue(QString val)
+void PlotSettingsSingleChoiceWidget::setWidgetValue(QVariant val)
 {
-    static_cast<QComboBox*>(editWidget)->setCurrentIndex(
-                static_cast<QComboBox*>(editWidget)->findText(val));
+    static_cast<QComboBox*>(editDisplayWidget)->setCurrentIndex(
+                static_cast<QComboBox*>(editDisplayWidget)->findText(val.toString()));
 }
 
-QString PlotSettingsSingleChoiceWidget::raw2widgetValue(QString val)
+QVariant PlotSettingsSingleChoiceWidget::raw2widgetValue(QString val)
 {
     if (settingsElement["type"]() == "factor")
         return val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"|^\\s*NULL\\s*$")).simplified();
@@ -377,179 +362,20 @@ QString PlotSettingsSingleChoiceWidget::raw2widgetValue(QString val)
     return val;
 }
 
-QString PlotSettingsSingleChoiceWidget::widget2rawValue(QString val)
+QString PlotSettingsSingleChoiceWidget::widget2rawValue(QVariant val)
 {
+    QString item = val.toString();
     if (settingsElement["type"]() == "factor")
     {
-        QStringList list = val.split(QRegExp("\\s*,\\s*"), QString::SkipEmptyParts);
-        return  QString("c(%1)").arg(list.replaceInStrings(QRegExp("^|$"),"\"").join(","));
+        if (!item.isEmpty())
+            item = QString("\"%1\"").arg(item);
+
+        return  QString("c(%1)").arg(item);
     }
-    return val;
+    return item;
 }
 
-
-
-//////////// PlotSettingsFactorWidget
-
-/*
-
-PlotSettingsFactorWidget::PlotSettingsFactorWidget(XMLelement settingsElement, QWidget *parent)
-    : PlotSettingsBaseWidget(settingsElement, parent)
-{
-    createValueEdit();
-    createListEdit();
-}
-
-QString PlotSettingsFactorWidget::value()
-{
-    return formatFactorStringForR(static_cast<QLineEdit*>(valueEdit)->text().simplified());
-}
-
-void PlotSettingsFactorWidget::setFactorList(QStringList list)
-{
-    factorList->clear();
-    factorList->addItems(list);
-    updateListEdit();
-}
-
-void PlotSettingsFactorWidget::createValueEdit()
-{
-    delete valueEdit;
-    valueEdit = new QLineEdit;
-    static_cast<QLineEdit*>(valueEdit)->setText(formatFactorStringForDisplay(settingsElement["value"]()));
-    static_cast<QLineEdit*>(valueEdit)->setReadOnly(true);
-    connect(static_cast<QLineEdit*>(valueEdit), SIGNAL(textChanged(const QString&)),
-            this, SIGNAL(valueChanged()));
-
-    editButton = new QPushButton("Edit");
-
-    mainLayout->addWidget(valueEdit);
-    mainLayout->addWidget(editButton);
-
-}
-
-void PlotSettingsFactorWidget::createListEdit()
-{
-    factorList = new QListWidget(this);
-    factorList->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    selectedList = new QListWidget(this);
-    selectedList->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    getLevels();
-
-    QMainWindow *editWindow = new QMainWindow(this);
-    editWindow->setAttribute(Qt::WA_AlwaysShowToolTips);
-    QAction *hideAct = new QAction("Hide",editWindow);
-    connect(hideAct, SIGNAL(triggered()), editWindow, SLOT(hide()));
-    QToolBar *hideToolBar = editWindow->addToolBar("");
-    hideToolBar->addAction(hideAct);
-    QFrame *editBox = new QFrame(this);
-    editBox->setFrameShape(QFrame::Panel);
-    editBox->setFrameShadow(QFrame::Sunken);
-    QGridLayout *editBoxLayout = new QGridLayout;
-    QPushButton *addButton = new QPushButton("==>", this);
-    addButton->setToolTip("Add to selected factors");
-    connect(addButton, SIGNAL(clicked()), this, SLOT(addItems()));
-    QPushButton *removeButton = new QPushButton("<==", this);
-    removeButton->setToolTip("Remove from selected factors");
-    connect(removeButton, SIGNAL(clicked()), this, SLOT(removeItems()));
-    QLabel *availableLabel = new QLabel("Available factors", editWindow);
-    QLabel *selectedLabel = new QLabel("Selected factors", editWindow);
-    editBoxLayout->addWidget(availableLabel, 0,0,Qt::AlignHCenter);
-    editBoxLayout->addWidget(selectedLabel, 0,2,Qt::AlignHCenter);
-    editBoxLayout->addWidget(factorList, 1,0,3,1);
-    editBoxLayout->addWidget(selectedList, 1,2,3,1);
-    editBoxLayout->addWidget(addButton,1,1);
-    editBoxLayout->addWidget(removeButton,2,1);
-    editBox->setLayout(editBoxLayout);
-    editWindow->setCentralWidget(editBox);
-    editWindow->hide();
-    connect(editButton, SIGNAL(clicked()), editWindow, SLOT(show()));
-
-    extraWidgetsList.append(editWindow);
-}
-
-void PlotSettingsFactorWidget::updateListEdit()
-{
-    QList<QListWidgetItem*> selectedItems;
-    foreach(QString factor, factorString2list(settingsElement["value"]()))
-    {
-        if (!factor.isEmpty())
-            selectedItems.append(factorList->findItems(factor, Qt::MatchFixedString|Qt::MatchCaseSensitive));
-    }
-    moveItems(factorList, selectedList, selectedItems);
-}
-
-void PlotSettingsFactorWidget::getLevels()
-{
-    QString cmd = settingsElement["levels"]();
-    if (!cmd.isEmpty())
-    {
-        LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode |= ECHO_INTERPRETER; // debug purpose
-        param->cmdList = QStringList({QString("xml %1").arg(cmd)});
-        param->answerFormatterType = AnswerFormatterType::ListOfValues;
-        param->setAnswerReceiver(this, SLOT(setFactorList(QStringList)));
-        SessionManager::instance()->setupJob(param, sender());
-    }
-}
-
-void PlotSettingsFactorWidget::addItems()
-{
-    moveItems(factorList, selectedList, factorList->selectedItems());
-}
-
-void PlotSettingsFactorWidget::removeItems()
-{
-    moveItems(selectedList, factorList, selectedList->selectedItems());
-}
-
-QString PlotSettingsFactorWidget::formatFactorStringForR(QString factorString)
-{
-    // from: aaa, bbb, ccc
-    // to: c("aaa","bbb","ccc")
-    QStringList selectedList = factorString.split(QRegExp("\\s*,\\s*"), QString::SkipEmptyParts);
-    if (selectedList.size() > 1)
-        return QString("c(%1)").arg(selectedList.replaceInStrings(QRegExp("^|$"),"\"").join(","));
-    else if (selectedList.size() == 1)
-        return QString("\"%1\"").arg(selectedList.at(0));
-    else
-        return "\"\"";
-}
-
-QString PlotSettingsFactorWidget::formatFactorStringForDisplay(QString factorString)
-{
-    // from: c("aaa","bbb","ccc")
-    // to: aaa, bbb, ccc
-    return factorString.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"|^\\s*NULL\\s*$")).simplified();
-}
-
-QStringList PlotSettingsFactorWidget::factorString2list(QString factorString)
-{
-    return formatFactorStringForDisplay(factorString).split(", ");
-}
-
-void PlotSettingsFactorWidget::moveItems(QListWidget *fromList, QListWidget *toList, QList<QListWidgetItem*> items)
-{
-    foreach(QListWidgetItem* item, items)
-        toList->addItem(fromList->takeItem(fromList->row(item)));
-
-    fromList->sortItems();
-    toList->sortItems();
-    updateValueFromEdit();
-}
-
-void PlotSettingsFactorWidget::updateValueFromEdit()
-{
-    QStringList items;
-    for(int row = 0; row < selectedList->count(); ++row)
-        items.append(selectedList->item(row)->text());
-
-    static_cast<QLineEdit*>(valueEdit)->setText(items.join(", "));
-}
-
-
-*/
-
+//////////////////////// PlotSettingsMultipleChoiceWidget
 
 
 PlotSettingsMultipleChoiceWidget::PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, QWidget *parent)
@@ -558,38 +384,38 @@ PlotSettingsMultipleChoiceWidget::PlotSettingsMultipleChoiceWidget(XMLelement se
     createEditWidget();
 }
 
-QString PlotSettingsMultipleChoiceWidget::value()
+void PlotSettingsMultipleChoiceWidget::updateWidget(XMLelement xml)
 {
-    // this is a hack
-    if (isValueSet())
-    {
-        if (settingsElement["type"]() == "dataframe")
-            return getValue().replace(",", " ");
-
-        return getValue();
-    }
-    return QString();
+    PlotSettingsBaseWidget::updateWidget(xml);
+    delete editDisplayWidget;
+    delete editExtraWidget;
+    createEditWidget();
 }
 
 void PlotSettingsMultipleChoiceWidget::setupEditWidget()
 {
     setWidgetValue(raw2widgetValue(settingsElement["value"]()));
-    updateEditWidget();
+    updateEditDisplayWidget();
     currentValue = settingsElement["value"]();
     valueSet = !settingsElement["value"]().isEmpty();
 
-//    connect(static_cast<LazyNutPairedListWidget*>(editExtraWidget),SIGNAL(valueChanged()),
-//            this, SLOT(setValueSetTrue()));
     connect(static_cast<LazyNutPairedListWidget*>(editExtraWidget),SIGNAL(valueChanged()),
             this, SLOT(emitValueChanged()));
     connect(static_cast<LazyNutPairedListWidget*>(editExtraWidget),SIGNAL(valueChanged()),
-            this, SLOT(updateEditWidget()));
-    editStackedLayout->addWidget(editWidget);
-    widgetEditButton->setEnabled(true);
-    rawEditButton->setEnabled(true);
-    widgetEditButton->setChecked(true);
-
-
+            this, SLOT(updateEditDisplayWidget()));
+    editStackedLayout->addWidget(editDisplayWidget);
+    if (settingsElement["levels"]().isEmpty())
+    {
+        rawEditButton->setEnabled(false);
+        widgetEditButton->setEnabled(false);
+        rawEditButton->setChecked(true);
+    }
+    else
+    {
+        widgetEditButton->setEnabled(true);
+        rawEditButton->setEnabled(true);
+        widgetEditButton->setChecked(true);
+    }
 }
 
 void PlotSettingsMultipleChoiceWidget::setRawMode(bool on)
@@ -606,54 +432,56 @@ void PlotSettingsMultipleChoiceWidget::setWidgetMode(bool on)
         editExtraWidget->show();
 }
 
-void PlotSettingsMultipleChoiceWidget::updateEditWidget()
+void PlotSettingsMultipleChoiceWidget::updateEditDisplayWidget()
 {
-    static_cast<QLineEdit*>(editWidget)->setText(getWidgetValue());
+    QString displayValue = settingsElement["type"]() == "factor" ?
+                getWidgetValue().toStringList().replaceInStrings(QRegExp("^|$"),"\"").join(", ") :
+                getWidgetValue().toStringList().join(" ");
+    static_cast<QLineEdit*>(editDisplayWidget)->setText(displayValue);
 }
 
 void PlotSettingsMultipleChoiceWidget::resetDefault()
 {
     PlotSettingsBaseWidget::resetDefault();
-    updateEditWidget();
+    updateEditDisplayWidget();
 }
 
 void PlotSettingsMultipleChoiceWidget::createEditWidget()
 {
-    editWidget = new QLineEdit();
-    static_cast<QLineEdit*>(editWidget)->setReadOnly(true);
+    editDisplayWidget = new QLineEdit();
+    static_cast<QLineEdit*>(editDisplayWidget)->setReadOnly(true);
 
     editExtraWidget = new LazyNutPairedListWidget(settingsElement["levels"]());
     connect(static_cast<LazyNutPairedListWidget*>(editExtraWidget),SIGNAL(listReady()),
             this, SLOT(setupEditWidget()));
     static_cast<LazyNutPairedListWidget*>(editExtraWidget)->getList();
-    extraWidgetsList.append(editExtraWidget);
-    //editExtraWidget->show();
+    mainLayout->addWidget(editExtraWidget, 2, 0, 1, 4);
+
 }
 
-QString PlotSettingsMultipleChoiceWidget::getWidgetValue()
+QVariant PlotSettingsMultipleChoiceWidget::getWidgetValue()
 {
-    return static_cast<LazyNutPairedListWidget*>(editExtraWidget)->getValue().join(", ");
+    return static_cast<LazyNutPairedListWidget*>(editExtraWidget)->getValue();
 }
 
-void PlotSettingsMultipleChoiceWidget::setWidgetValue(QString val)
+void PlotSettingsMultipleChoiceWidget::setWidgetValue(QVariant val)
 {
-    static_cast<LazyNutPairedListWidget*>(editExtraWidget)->setValue(val.simplified().split(QRegExp("\\s*,\\s*")));
+    static_cast<LazyNutPairedListWidget*>(editExtraWidget)->setValue(val.toStringList());
+    updateEditDisplayWidget();
 }
 
-QString PlotSettingsMultipleChoiceWidget::raw2widgetValue(QString val)
-{
-    if (settingsElement["type"]() == "factor")
-        return val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"|^\\s*NULL\\s*$")).simplified();
-
-    return val;
-}
-
-QString PlotSettingsMultipleChoiceWidget::widget2rawValue(QString val)
+QVariant PlotSettingsMultipleChoiceWidget::raw2widgetValue(QString val)
 {
     if (settingsElement["type"]() == "factor")
-    {
-        QStringList list = val.split(QRegExp("\\s*,\\s*"), QString::SkipEmptyParts);
-        return  QString("c(%1)").arg(list.replaceInStrings(QRegExp("^|$"),"\"").join(","));
-    }
-    return val;
+        return val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"|^\\s*NULL\\s*$")).simplified().split(QRegExp("\\s*,\\s*"));
+
+    return BracketedParser::parse(val);
+}
+
+QString PlotSettingsMultipleChoiceWidget::widget2rawValue(QVariant val)
+{
+    if (settingsElement["type"]() == "factor")
+        return QString("c(%1)").arg(val.toStringList().replaceInStrings(QRegExp("^|$"),"\"").join(", "));
+
+    return val.toStringList().join(' ');
 }

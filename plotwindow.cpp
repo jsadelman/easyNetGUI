@@ -13,11 +13,18 @@
 #include "sessionmanager.h"
 #include "lazynutlistmenu.h"
 #include "plotsettingsform.h"
+#include "xmlelement.h"
+
 
 
 
 PlotWindow::PlotWindow(QWidget *parent)
-    : createNewPlotText("Create new plot"), QMainWindow(parent)
+    : createNewPlotText("Create new plot"),
+      openPlotSettingsText("Open plot settings"),
+      savePlotSettingsText("Save plot settings"),
+      savePlotSettingsAsText("Save plot setings as..."),
+      plotSettingsForm(nullptr),
+      QMainWindow(parent)
 {
     plot_svg = new QSvgWidget(this);
     setCentralWidget(plot_svg);
@@ -59,18 +66,14 @@ int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
 
 void PlotWindow::createPlotControlPanel()
 {
-
     // actions and menus
-
-
-
     plotsMenu = new LazyNutListMenu;
     menuBar()->addMenu(plotsMenu);
     plotsMenu->setTitle("Plots");
     plotsMenu->setGetListCmd("xml list rplot");
     connect(plotsMenu, SIGNAL(selected(QString)), this, SLOT(setPlot(QString)));
+//    plotsMenu->prePopulate(QStringList({createNewPlotText, openPlotSettingsText, savePlotSettingsText, savePlotSettingsAsText}));
     plotsMenu->prePopulate(createNewPlotText);
-
 
     selectRScriptAct = new QAction(tr("&Select R script"), this);
     selectRScriptAct->setStatusTip(tr("Select an existing R script"));
@@ -111,6 +114,36 @@ void PlotWindow::createPlotControlPanel()
 
 }
 
+void PlotWindow::openPlotSettings()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Open plot settings file"),
+                                                    settings.value("plotSettingsDir").toString(), tr("Settings Files (*.xml)"));
+    if (!fileName.isEmpty())
+        loadSettings(fileName);
+}
+
+void PlotWindow::loadSettings(QString fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Application"),
+                             tr("Cannot read file %1:\n%2.")
+                             .arg(fileName)
+                             .arg(file.errorString()));
+        return;
+    }
+    QDomDocument *domDoc = new QDomDocument;
+    if (!domDoc->setContent(&file))
+    {
+        file.close();
+        return;
+    }
+    file.close();
+    buildSettingsForm(domDoc);
+    // ...
+}
+
 void PlotWindow::createActions()
 {
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
@@ -145,10 +178,27 @@ void PlotWindow::createToolBars()
     fileToolBar->addAction(refreshAct);
 }
 
+void PlotWindow::importHomonyms(QDomDocument *settingsList)
+{
+    XMLelement xml = XMLelement(*settingsList);
+    foreach (QString label, xml.listLabels())
+    {
+        if (plotSettingsForm->listLabels().contains(label))
+        {
+            QString value = plotSettingsForm->value(label);
+            if (value.isEmpty())
+                xml[label]["value"].setValue(xml[label]["default"]());
+
+            else
+                xml[label]["value"].setValue(value);
+        }
+    }
+}
+
 void PlotWindow::sendDrawCmd()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+//    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({QString("%1 get").arg(currentPlot)});
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
@@ -186,7 +236,12 @@ void PlotWindow::setPlot(QString name)
 {
     if (name == createNewPlotText)
         newPlot();
-
+//    else if (name == openPlotSettingsText)
+//        openPlotSettings();
+//    else if (name == savePlotSettingsText)
+//        savePlotSettings();
+//    else if (name == savePlotSettingsAsText)
+//        savePlotSettingsAs();
     else
     {
         currentPlot = name;
@@ -208,9 +263,11 @@ void PlotWindow::newPlot()
 
 void PlotWindow::createNewPlot(QString name)
 {
+    setCurrentPlotType(QString());
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({QString("create rplot %1").arg(name)});
+    param->setNextJobReceiver(this,SLOT(getSettingsXML()));
     SessionManager::instance()->setupJob(param, sender());
 }
 
@@ -237,8 +294,11 @@ void PlotWindow::getSettingsXML()
 
 void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
 {
+    if (plotSettingsForm)
+        importHomonyms(settingsList);
+
     plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, this);
-    connect(plotSettingsForm, SIGNAL(updateRequest()), this, SLOT(updateSettingsForm()));
+//    connect(plotSettingsForm, SIGNAL(updateRequest()), this, SLOT(updateSettingsForm()));
     plotControlPanelScrollArea->setWidget(plotSettingsForm);
 }
 
@@ -251,10 +311,10 @@ void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
     SessionManager::instance()->setupJob(param, sender());
 }
 
-void PlotWindow::updateSettingsForm()
-{
-    sendSettings(this, SLOT(getSettingsXML()));
-}
+//void PlotWindow::updateSettingsForm()
+//{
+//    sendSettings(this, SLOT(getSettingsXML()));
+//}
 
 void PlotWindow::draw()
 {
@@ -283,16 +343,18 @@ void PlotWindow::selectRecentRScript()
 void PlotWindow::setCurrentPlotType(QString rScript)
 {
     currentPlotType = rScript;
-    QSettings settings("QtEasyNet", "nmConsole");
-    QStringList rScripts = settings.value("recentRScripts","").toStringList();
-    rScripts.removeAll(rScript);
-    rScripts.prepend(rScript);
-    while (rScripts.size() > MaxRecentRScripts)
-        rScripts.removeLast();
+    if (!currentPlotType.isEmpty())
+    {
+        QSettings settings("QtEasyNet", "nmConsole");
+        QStringList rScripts = settings.value("recentRScripts","").toStringList();
+        rScripts.removeAll(rScript);
+        rScripts.prepend(rScript);
+        while (rScripts.size() > MaxRecentRScripts)
+            rScripts.removeLast();
 
-    settings.setValue("recentRScripts", rScripts);
-    updateRecentRScriptsActs();
-
+        settings.setValue("recentRScripts", rScripts);
+        updateRecentRScriptsActs();
+    }
 }
 
 

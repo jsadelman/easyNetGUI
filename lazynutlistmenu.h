@@ -9,6 +9,7 @@ class LazyNutListMenu : public QMenu
 public:
     explicit LazyNutListMenu(QWidget *parent = 0);
     void prePopulate(QString text);
+    void prePopulate(QStringList list);
 
 signals:
     void selected(QString);

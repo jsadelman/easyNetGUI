@@ -16,14 +16,16 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidg
 {
     mainLayout = new QVBoxLayout;
     mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
+//    setTabPosition(QTabWidget::West);
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+
     XMLelement settingsElement = rootElement.firstChild();
     while (!settingsElement.isNull())
     {
         PlotSettingsBaseWidget *widget = createWidget(settingsElement);
         widgetMap[widget->name()] = widget;
         mainLayout->addWidget(widget);
-        foreach (QWidget* extraWidget, widget->extraWidgets())
-            mainLayout->addWidget(extraWidget);
+//        addTab(widget, settingsElement.label());
         settingsElement = settingsElement.nextSibling();
     }
     setLayout(mainLayout);
@@ -59,6 +61,11 @@ QStringList PlotSettingsForm::getSettingsCmdList()
     return cmdList;
 }
 
+QString PlotSettingsForm::value(QString label)
+{
+    return widgetMap[label]->value();
+}
+
 
 PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElement)
 {
@@ -88,17 +95,17 @@ void PlotSettingsForm::checkDependencies()
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
     if (widget && dependersSet.contains(widget->name()))
     {
-        emit updateRequest();
-//        dependerOnUpdate = widget->name();
-//        LazyNutJobParam *param = new LazyNutJobParam;
-//        param->logMode |= ECHO_INTERPRETER; // debug purpose
-//        param->cmdList = QStringList({
-//                                         getSettingCmdLine(dependerOnUpdate),
-//                                         QString("xml %1 list_settings").arg(plotName)
-//                                     });
-//        param->answerFormatterType = AnswerFormatterType::XML;
-//        param->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)));
-//        SessionManager::instance()->setupJob(param, sender());
+//        emit updateRequest();
+        dependerOnUpdate = widget->name();
+        LazyNutJobParam *param = new LazyNutJobParam;
+        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->cmdList = QStringList({
+                                         getSettingCmdLine(dependerOnUpdate),
+                                         QString("xml %1 list_settings").arg(plotName)
+                                     });
+        param->answerFormatterType = AnswerFormatterType::XML;
+        param->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)));
+        SessionManager::instance()->setupJob(param, sender());
     }
 
 }
@@ -115,14 +122,15 @@ void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
     {
         if (settingsElement["dependencies"].listValues().contains(dependerOnUpdate))
         {
-            PlotSettingsBaseWidget *newWidget = createWidget(settingsElement);
-            for (int i = 0; i < newWidget->extraWidgets().count(); ++i)
-            {
-                delete widgetMap[settingsElement.label()]->extraWidgets().at(i);
-                widgetMap[settingsElement.label()]->extraWidgets()[i] = newWidget->extraWidgets().at(i);
-            }
-            delete widgetMap[settingsElement.label()];
-            widgetMap[settingsElement.label()] = newWidget;
+            widgetMap[settingsElement.label()]->updateWidget(settingsElement);
+//            PlotSettingsBaseWidget *newWidget = createWidget(settingsElement);
+//            for (int i = 0; i < newWidget->extraWidgets().count(); ++i)
+//            {
+//                delete widgetMap[settingsElement.label()]->extraWidgets().at(i);
+//                widgetMap[settingsElement.label()]->extraWidgets()[i] = newWidget->extraWidgets().at(i);
+//            }
+//            delete widgetMap[settingsElement.label()];
+//            widgetMap[settingsElement.label()] = newWidget;
 
 //            int layoutIndex = mainLayout->indexOf(widgetMap[settingsElement.label()]);
 //            PlotSettingsBaseWidget *oldWidget = mainLayout->takeAt(layoutIndex);

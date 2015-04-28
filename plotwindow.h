@@ -42,7 +42,7 @@ private slots:
     void getSettingsXML();
     void buildSettingsForm(QDomDocument* settingsList);
     void sendSettings(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
-    void updateSettingsForm();
+//    void updateSettingsForm();
     void selectRScript();
     void selectRecentRScript();
     void setCurrentPlotType(QString rScript);
@@ -53,9 +53,14 @@ private:
 
 
     void createPlotControlPanel();
+    void openPlotSettings();
+    void loadSettings(QString fileName);
+    void savePlotSettings();
+    void savePlotSettingsAs();
     void createActions();
     void updateRecentRScriptsActs();
     void createToolBars();
+    void importHomonyms(QDomDocument *settingsList);
 
     QMainWindow *plotControlPanelWindow;
     QScrollArea *plotControlPanelScrollArea;
@@ -79,6 +84,9 @@ private:
     QString currentOutput;
     QString currentPlot;
     QString createNewPlotText;
+    QString openPlotSettingsText;
+    QString savePlotSettingsText;
+    QString savePlotSettingsAsText;
 
     QString curFile;
     QMenu *fileMenu;

@@ -14,6 +14,11 @@ void LazyNutListMenu::prePopulate(QString text)
     preItems.append(text);
 }
 
+void LazyNutListMenu::prePopulate(QStringList list)
+{
+    preItems.append(list);
+}
+
 void LazyNutListMenu::setGetListCmd(QString cmd)
 {
     getListCmd = cmd;

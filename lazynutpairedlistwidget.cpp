@@ -18,15 +18,15 @@ LazyNutPairedListWidget::LazyNutPairedListWidget(QString getListCmd, QWidget *pa
     editFrame->setFrameShadow(QFrame::Sunken);
     setCentralWidget(editFrame);
 
-//    showHideButton = new QPushButton("Hide");
-    showHideAct = new QAction("Hide", this);
-    connect(showHideAct, SIGNAL(triggered()), this, SLOT(showHide()));
-    QToolBar *showHideToolBar = addToolBar("");
-    showHideToolBar->addAction(showHideAct);
+
+    factorList = new QListWidget(this);
+    factorList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    selectedList = new QListWidget(this);
+    selectedList->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     // debug
-    connect(this, &LazyNutPairedListWidget::valueChanged,
-            [=](){qDebug() << "LazyNutPairedListWidget" <<  getValue();});
+//    connect(this, &LazyNutPairedListWidget::valueChanged,
+//            [=](){qDebug() << "LazyNutPairedListWidget" <<  getValue();});
 }
 
 
@@ -43,12 +43,14 @@ void LazyNutPairedListWidget::getList(QString cmd)
     if (!getListCmd.isEmpty())
     {
         LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode |= ECHO_INTERPRETER; // debug purpose
+//        param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(getListCmd)});
         param->answerFormatterType = AnswerFormatterType::ListOfValues;
         param->setAnswerReceiver(this, SLOT(buildList(QStringList)));
         SessionManager::instance()->setupJob(param, sender());
     }
+    else
+        emit listReady();
 }
 
 void LazyNutPairedListWidget::setValue(QStringList list)
@@ -75,11 +77,12 @@ QStringList LazyNutPairedListWidget::getValue()
 
 void LazyNutPairedListWidget::buildList(QStringList list)
 {
-    factorList = new QListWidget(this);
-    factorList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    showHideAct = new QAction("Hide", this);
+    connect(showHideAct, SIGNAL(triggered()), this, SLOT(showHide()));
+    QToolBar *showHideToolBar = addToolBar("");
+    showHideToolBar->addAction(showHideAct);
+
     factorList->addItems(list);
-    selectedList = new QListWidget(this);
-    selectedList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     QGridLayout *editFrameLayout = new QGridLayout;
     QPushButton *addButton = new QPushButton("==>", this);
     addButton->setToolTip("Add to selected factors");

@@ -6,6 +6,7 @@
 #include <QDomDocument>
 #include <QMap>
 #include <QSet>
+#include <QTabWidget>
 #include "xmlelement.h"
 
 class QVBoxLayout;
@@ -19,6 +20,8 @@ public:
     ~PlotSettingsForm();
 //    QMap<QString,QString> getSettings();
     QStringList getSettingsCmdList();
+    QString value(QString label);
+    QStringList listLabels() {return rootElement.listLabels();}
 
 signals:
     void updateRequest();

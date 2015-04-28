@@ -32,6 +32,9 @@ public:
     bool isNull();
     QString label();
     QString value();
+    void setLabel(QString label);
+    void setValue(QString value);
+    void setAttribute(QString name, QString value);
     QStringList listValues();
     QStringList listLabels();
 
