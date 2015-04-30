@@ -9,14 +9,15 @@
 
 
 LazyNutPairedListWidget::LazyNutPairedListWidget(QString getListCmd, QWidget *parent) :
-    getListCmd(getListCmd), QMainWindow(parent)
+    getListCmd(getListCmd), QFrame(parent)
 {
     setAttribute(Qt::WA_AlwaysShowToolTips);
-
-    editFrame = new QFrame;
-    editFrame->setFrameShape(QFrame::Panel);
-    editFrame->setFrameShadow(QFrame::Sunken);
-    setCentralWidget(editFrame);
+    setFrameShape(QFrame::Panel);
+    setFrameShape(QFrame::Panel);
+//    editFrame = new QFrame;
+//    editFrame->setFrameShape(QFrame::Panel);
+//    editFrame->setFrameShape(QFrame::Panel);
+//    setCentralWidget(editFrame);
 
 
     factorList = new QListWidget(this);
@@ -77,13 +78,13 @@ QStringList LazyNutPairedListWidget::getValue()
 
 void LazyNutPairedListWidget::buildList(QStringList list)
 {
-    showHideAct = new QAction("Hide", this);
-    connect(showHideAct, SIGNAL(triggered()), this, SLOT(showHide()));
-    QToolBar *showHideToolBar = addToolBar("");
-    showHideToolBar->addAction(showHideAct);
+//    showHideAct = new QAction("Hide", this);
+//    connect(showHideAct, SIGNAL(triggered()), this, SLOT(showHide()));
+//    QToolBar *showHideToolBar = addToolBar("");
+//    showHideToolBar->addAction(showHideAct);
 
     factorList->addItems(list);
-    QGridLayout *editFrameLayout = new QGridLayout;
+    QGridLayout *gridLayout = new QGridLayout;
     QPushButton *addButton = new QPushButton("==>", this);
     addButton->setToolTip("Add to selected factors");
     connect(addButton, SIGNAL(clicked()), this, SLOT(addItems()));
@@ -92,35 +93,37 @@ void LazyNutPairedListWidget::buildList(QStringList list)
     connect(removeButton, SIGNAL(clicked()), this, SLOT(removeItems()));
     QLabel *availableLabel = new QLabel("Available factors");
     QLabel *selectedLabel = new QLabel("Selected factors");
-    editFrameLayout->addWidget(availableLabel, 0,0,Qt::AlignHCenter);
-    editFrameLayout->addWidget(selectedLabel, 0,2,Qt::AlignHCenter);
+    gridLayout->addWidget(availableLabel, 0,0,Qt::AlignHCenter);
+    gridLayout->addWidget(selectedLabel, 0,2,Qt::AlignHCenter);
 //    editFrameLayout->setRowStretch(0,1);
-    editFrameLayout->addWidget(factorList, 1,0,3,1);
-    editFrameLayout->addWidget(selectedList, 1,2,3,1);
-    editFrameLayout->addWidget(addButton,1,1);
-    editFrameLayout->addWidget(removeButton,2,1);
-    editFrame->setLayout(editFrameLayout);
+    gridLayout->addWidget(factorList, 1,0,3,1);
+    gridLayout->addWidget(selectedList, 1,2,3,1);
+    gridLayout->addWidget(addButton,1,1);
+    gridLayout->addWidget(removeButton,2,1);
+//    editFrame->setLayout(gridLayout);
+    setLayout(gridLayout);
 
 //    frameHeight = editFrame->height();
 //    editFrame->setMaximumHeight(editFrame->height());
     emit listReady();
 }
 
-void LazyNutPairedListWidget::showHide()
-{
-    if (editFrame->isVisible())
-    {
-        editFrame->hide();
-//        editFrame->resize(editFrame->width(),0);
-        showHideAct->setText("Show");
-    }
-    else
-    {
-        editFrame->show();
-//        editFrame->resize(editFrame->width(),frameHeight);
-        showHideAct->setText("Hide");
-    }
-}
+//void LazyNutPairedListWidget::showHide()
+//{
+//    if (editFrame->isVisible())
+//    {
+//        editFrame->hide();
+////        editFrame->resize(editFrame->width(),0);
+//        showHideAct->setText("Show");
+//    }
+//    else
+//    {
+//        editFrame->show();
+////        editFrame->resize(editFrame->width(),frameHeight);
+//        showHideAct->setText("Hide");
+//    }
+//    emit sizeChanged();
+//}
 
 void LazyNutPairedListWidget::addItems()
 {

@@ -2,16 +2,16 @@
 #define LAZYNUTPAIREDLISTWIDGET_H
 
 #include <QMainWindow>
+#include <QFrame>
 
 class QPushButton;
 class QAction;
 class QToolBar;
-class QFrame;
 class QListWidget;
 class QListWidgetItem;
 
 
-class LazyNutPairedListWidget : public QMainWindow
+class LazyNutPairedListWidget : public QFrame
 {
     Q_OBJECT
 public:
@@ -20,6 +20,7 @@ public:
 signals:
     void listReady();
     void valueChanged();
+//    void sizeChanged();
 
 
 public slots:
@@ -31,7 +32,7 @@ public slots:
 
 private slots:
     void buildList(QStringList list);
-    void showHide();
+//    void showHide();
     void addItems();
     void removeItems();
 

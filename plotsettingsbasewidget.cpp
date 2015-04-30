@@ -25,9 +25,9 @@ PlotSettingsBaseWidget::PlotSettingsBaseWidget(XMLelement settingsElement, QWidg
 void PlotSettingsBaseWidget::createDisplay()
 {
 //    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-    setFrameShadow(QFrame::Sunken);
-    setFrameShape(QFrame::Panel);
-    mainLayout = new QGridLayout;
+//    setFrameShadow(QFrame::Sunken);
+//    setFrameShape(QFrame::Panel);
+    gridLayout = new QGridLayout;
     nameLabel = new QLabel;
     QString labelText = settingsElement["pretty name"]().isEmpty() ? name() : settingsElement["pretty name"]();
     if (!hasDefault())
@@ -37,7 +37,8 @@ void PlotSettingsBaseWidget::createDisplay()
     nameLabel->setStyleSheet("QLabel {"
                              "font-weight: bold;"
                              "}");
-    editStackedLayout = new QStackedLayout;
+//    editStackedLayout = new QStackedLayout;
+//    editStackedWidget = new QStackedWidget;
     rawEdit = new QLineEdit;
     if (!hasDefault())
         rawEdit->setPlaceholderText("*mandatory field*");
@@ -52,8 +53,8 @@ void PlotSettingsBaseWidget::createDisplay()
 
 
     connect(rawEdit, SIGNAL(editingFinished()), this, SLOT(emitValueChanged()));
-    editStackedLayout->addWidget(rawEdit);
-    editStackedLayout->setCurrentIndex(editStackedLayout->indexOf(rawEdit));
+//    editStackedWidget->addWidget(rawEdit);
+//    editStackedWidget->setCurrentIndex(editStackedWidget->indexOf(rawEdit));
     commentLabel = new QLabel;
     commentLabel->setText(settingsElement["comment"]());
     commentLabel->setWordWrap(true);
@@ -61,25 +62,26 @@ void PlotSettingsBaseWidget::createDisplay()
                                 "background-color: lightyellow;"
                                 "border: 1px solid black;"
                                 "padding: 4px;"
-                                "font-family: Arial;"
+//                                "font-family: Arial;"
                                 "font-style: italic;"
                                 "}");
-    editModeButtonBox = new QGroupBox("Edit mode");
-    editModeButtonBoxLayout = new QVBoxLayout;
+//    editModeButtonBox = new QGroupBox("Edit mode");
+//    editModeButtonBoxLayout = new QVBoxLayout;
 //    debugButton = new QPushButton("value()");
 //    connect(debugButton, &QPushButton::clicked, [=](){qDebug() << value();});
 //    debugButton->setToolTip("Open edit window");
 //    debugButton->setEnabled(false);
-    widgetEditButton  = new QRadioButton("Quick input");
-    widgetEditButton->setEnabled(false);
-    connect(widgetEditButton, SIGNAL(toggled(bool)), this, SLOT(setWidgetMode(bool)));
-    rawEditButton = new QRadioButton("Manual input");
-    rawEditButton->setEnabled(false);
-    rawEditButton->setChecked(true);
-    connect(rawEditButton, SIGNAL(toggled(bool)), this, SLOT(setRawMode(bool)));
-    editModeButtonBoxLayout->addWidget(widgetEditButton);
-    editModeButtonBoxLayout->addWidget(rawEditButton);
-    editModeButtonBox->setLayout(editModeButtonBoxLayout);
+//    widgetEditButton  = new QRadioButton("Quick input");
+//    widgetEditButton->setEnabled(false);
+//    connect(widgetEditButton, SIGNAL(toggled(bool)), this, SLOT(setWidgetMode(bool)));
+    rawEditModeButton = new QRadioButton("Manual input");
+    rawEditModeButton->setEnabled(false);
+    rawEditModeButton->setChecked(true);
+    connect(rawEditModeButton, SIGNAL(clicked(bool)), this, SLOT(setRawEditMode(bool)));
+
+//    editModeButtonBoxLayout->addWidget(widgetEditButton);
+//    editModeButtonBoxLayout->addWidget(editModeButton);
+//    editModeButtonBox->setLayout(editModeButtonBoxLayout);
 
 
     if (hasDefault())
@@ -95,16 +97,21 @@ void PlotSettingsBaseWidget::createDisplay()
     connect(defaultButton, SIGNAL(clicked()), this, SLOT(resetDefault()));
     connect(defaultButton, SIGNAL(clicked()), this, SLOT(emitValueChanged()));
 
+    gridLayout->addWidget(nameLabel, 0, 0);
+//    gridLayout->addWidget(editStackedWidget, 0, 1);
 
-
-    mainLayout->addWidget(nameLabel, 0, 0);
-    mainLayout->addLayout(editStackedLayout, 0, 1);
-    mainLayout->addWidget(defaultButton, 0, 2);
-    mainLayout->addWidget(commentLabel, 1, 0, 1, 3);
-    mainLayout->addWidget(editModeButtonBox, 0, 3, 2, 1);
-    mainLayout->setRowStretch(0,1);
-    mainLayout->setRowStretch(1,1);
-    setLayout(mainLayout);
+    gridLayout->addWidget(defaultButton, 0, 2);
+    gridLayout->addWidget(commentLabel, 1, 0, 1, 2);
+    gridLayout->addWidget(rawEditModeButton, 1, 2);
+//    gridLayout->addWidget(editModeButtonBox, 0, 3, 2, 1);
+//    gridLayout->setRowStretch(0,1);
+//    gridLayout->setRowStretch(1,1);
+    vboxLayout = new QVBoxLayout;
+    vboxLayout->addLayout(gridLayout);
+    vboxLayout->addWidget(rawEdit);
+    rawEdit->hide();
+    vboxLayout->addStretch();
+    setLayout(vboxLayout);
 
     valueSet =  hasDefault() ?
                 settingsElement["value"]() != settingsElement["default"]() :
@@ -134,6 +141,8 @@ QString PlotSettingsBaseWidget::getValue()
         return rawEdit->text();
     case WidgetEditMode:
         return widget2rawValue(getWidgetValue());
+    default:
+        return QString();
     }
 }
 
@@ -178,13 +187,13 @@ void PlotSettingsBaseWidget::updateWidget(XMLelement xml)
 
 void PlotSettingsBaseWidget::resetDefault()
 {
-
     QString defaultValue = hasDefault() ? settingsElement["default"]() : QString();
     if (valueSet)
     {
         setValue(defaultValue);
+        qDebug() << " PlotSettingsBaseWidget::resetDefault() setValue. currentValue(), getValue()" << currentValue << getValue() ;
+
         valueSet = false;
-        qDebug() << "resetDefault, value()" << value();
         if (currentValue != getValue())
         {
             currentValue = getValue();
@@ -193,25 +202,52 @@ void PlotSettingsBaseWidget::resetDefault()
     }
 }
 
-void PlotSettingsBaseWidget::setWidgetMode(bool on)
+
+
+void PlotSettingsBaseWidget::setRawEditMode(bool on)
 {
     if (on)
     {
-//        setWidgetValue(raw2widgetValue(rawEdit->text()));
-        editStackedLayout->setCurrentIndex(editStackedLayout->indexOf(editDisplayWidget));
-        editMode = WidgetEditMode;
+        int ret = QMessageBox::warning(this, tr("Leaving quick edit mode.\n"),
+                                    tr("Switching to raw edit mode does preserve the current value for this setting, "
+                                       "but it does not allow to switch back to quick edit mode without a value reset.\n"
+                                       "Do you want to proceed?"), QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok);
+        if (ret == QMessageBox::Ok)
+        {
+            setRawEditModeOn();
+        }
+
+        else
+            rawEditModeButton->setChecked(false);
+    }
+    else
+    {
+        int ret = QMessageBox::warning(this, tr("Leaving Manual edit mode.\n"),
+                  tr("Switching to quick edit mode resets this setting to its default value or unsets it if no default is defined.\n"
+                     "Do you want to proceed?"), QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok);
+        if (ret == QMessageBox::Ok)
+        {
+            setRawEditModeOff();
+            resetDefault();
+        }
+        else
+            rawEditModeButton->setChecked(true);
     }
 }
 
-
-void PlotSettingsBaseWidget::setRawMode(bool on)
+void PlotSettingsBaseWidget::setRawEditModeOn()
 {
-    if (on)
-    {
-        rawEdit->setText(widget2rawValue(getWidgetValue()));
-        editStackedLayout->setCurrentIndex(editStackedLayout->indexOf(rawEdit));
-        editMode = RawEditMode;
-    }
+    rawEdit->setText(widget2rawValue(getWidgetValue()));
+    rawEdit->show();
+    editDisplayWidget->hide();
+    editMode = RawEditMode;
+}
+
+void PlotSettingsBaseWidget::setRawEditModeOff()
+{
+    rawEdit->hide();
+    editDisplayWidget->show();
+    editMode = WidgetEditMode;
 }
 
 
@@ -282,10 +318,12 @@ void PlotSettingsNumericWidget::createEditWidget()
     }
     currentValue = settingsElement["value"]();
     valueSet = !settingsElement["value"]().isEmpty();
-    editStackedLayout->addWidget(editDisplayWidget);
-    widgetEditButton->setEnabled(true);
-    rawEditButton->setEnabled(true);
-    widgetEditButton->setChecked(true);
+//    editStackedWidget->addWidget(editDisplayWidget);
+    gridLayout->addWidget(editDisplayWidget, 0, 1);
+//    widgetEditButton->setEnabled(true);
+    rawEditModeButton->setEnabled(true);
+    rawEditModeButton->setChecked(false);
+    setRawEditModeOff();
 }
 
 
@@ -326,18 +364,22 @@ void PlotSettingsSingleChoiceWidget::setupEditWidget()
     valueSet = !settingsElement["value"]().isEmpty();
     connect(static_cast<LazyNutListComboBox*>(editDisplayWidget),SIGNAL(activated(int)),
             this, SLOT(emitValueChanged()));
-    editStackedLayout->addWidget(editDisplayWidget);
+//    editStackedWidget->addWidget(static_cast<LazyNutListComboBox*>(editDisplayWidget));
+    gridLayout->addWidget(editDisplayWidget, 0, 1);
     if (settingsElement["levels"]().isEmpty())
     {
-        rawEditButton->setEnabled(false);
-        widgetEditButton->setEnabled(false);
-        rawEditButton->setChecked(true);
+        rawEditModeButton->setEnabled(false);
+//        widgetEditButton->setEnabled(false);
+        rawEditModeButton->setChecked(true);
+        setRawEditModeOn();
     }
     else
     {
-        widgetEditButton->setEnabled(true);
-        rawEditButton->setEnabled(true);
-        widgetEditButton->setChecked(true);
+//        widgetEditButton->setEnabled(true);
+        rawEditModeButton->setEnabled(true);
+        rawEditModeButton->setChecked(false);
+        setRawEditModeOff();
+//        widgetEditButton->setChecked(true);
     }
     valueSet = !settingsElement["value"]().isEmpty();
     currentValue = value();
@@ -403,34 +445,39 @@ void PlotSettingsMultipleChoiceWidget::setupEditWidget()
             this, SLOT(emitValueChanged()));
     connect(static_cast<LazyNutPairedListWidget*>(editExtraWidget),SIGNAL(valueChanged()),
             this, SLOT(updateEditDisplayWidget()));
-    editStackedLayout->addWidget(editDisplayWidget);
+//    editStackedWidget->addWidget(editDisplayWidget);
+    gridLayout->addWidget(editDisplayWidget, 0,1);
+
     if (settingsElement["levels"]().isEmpty())
     {
-        rawEditButton->setEnabled(false);
-        widgetEditButton->setEnabled(false);
-        rawEditButton->setChecked(true);
+        rawEditModeButton->setEnabled(false);
+//        widgetEditButton->setEnabled(false);
+        rawEditModeButton->setChecked(true);
+        setRawEditModeOn();
     }
     else
     {
-        widgetEditButton->setEnabled(true);
-        rawEditButton->setEnabled(true);
-        widgetEditButton->setChecked(true);
+//        widgetEditButton->setEnabled(true);
+        rawEditModeButton->setEnabled(true);
+        rawEditModeButton->setChecked(false);
+        setRawEditModeOff();
+//        widgetEditButton->setChecked(true);
     }
 }
 
-void PlotSettingsMultipleChoiceWidget::setRawMode(bool on)
+void PlotSettingsMultipleChoiceWidget::setRawEditModeOn()
 {
-    PlotSettingsBaseWidget::setRawMode(on);
-    if (on)
-        editExtraWidget->hide();
+    PlotSettingsBaseWidget::setRawEditModeOn();
+    editExtraWidget->hide();
 }
 
-void PlotSettingsMultipleChoiceWidget::setWidgetMode(bool on)
+void PlotSettingsMultipleChoiceWidget::setRawEditModeOff()
 {
-    PlotSettingsBaseWidget::setWidgetMode(on);
-    if (on)
-        editExtraWidget->show();
+    PlotSettingsBaseWidget::setRawEditModeOff();
+    editExtraWidget->show();
 }
+
+
 
 void PlotSettingsMultipleChoiceWidget::updateEditDisplayWidget()
 {
@@ -454,9 +501,11 @@ void PlotSettingsMultipleChoiceWidget::createEditWidget()
     editExtraWidget = new LazyNutPairedListWidget(settingsElement["levels"]());
     connect(static_cast<LazyNutPairedListWidget*>(editExtraWidget),SIGNAL(listReady()),
             this, SLOT(setupEditWidget()));
+//    connect(static_cast<LazyNutPairedListWidget*>(editExtraWidget),SIGNAL(sizeChanged()),
+//            this, SIGNAL(sizeChanged()));
     static_cast<LazyNutPairedListWidget*>(editExtraWidget)->getList();
-    mainLayout->addWidget(editExtraWidget, 2, 0, 1, 4);
-
+//    gridLayout->addWidget(editExtraWidget, 2, 0, 1, 3);
+    vboxLayout->addWidget(editExtraWidget);
 }
 
 QVariant PlotSettingsMultipleChoiceWidget::getWidgetValue()

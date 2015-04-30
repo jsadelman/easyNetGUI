@@ -12,7 +12,7 @@
 class QVBoxLayout;
 class PlotSettingsBaseWidget;
 
-class PlotSettingsForm : public QWidget
+class PlotSettingsForm : public QTabWidget //QWidget
 {
     Q_OBJECT
 public:
@@ -33,6 +33,7 @@ private slots:
 //    void addWidget(QWidget *widget);
     void checkDependencies();
     void updateDependees(QDomDocument *newDomDoc);
+    void updateSize();
 
 private:
     void initDependersSet();

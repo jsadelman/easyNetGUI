@@ -245,20 +245,25 @@ void PlotWindow::setPlot(QString name)
     else
     {
         currentPlot = name;
-        getSettingsXML();
+        getPlotType(this, SLOT(getSettingsXML()));
+//        getSettingsXML();
     }
 }
 
 void PlotWindow::newPlot()
 {
-    bool ok;
-    QString name = QInputDialog::getText(this, tr("New plot"), tr("Plot name:"), QLineEdit::Normal,
-                                         QString(), &ok);
-    if (ok && !name.isEmpty())
-    {
-        createNewPlot(name);
-        currentPlot = name;
-    }
+//    bool ok;
+//    QString name = QInputDialog::getText(this, tr("New plot"), tr("Plot name:"), QLineEdit::Normal,
+//                                         QString(), &ok);
+//    if (ok && !name.isEmpty())
+//    {
+//        createNewPlot(name);
+//        currentPlot = name;
+//    }
+    NewPlotWizard *plotWizard = new NewPlotWizard(this);
+    connect(plotWizard, SIGNAL(createNewPlotOfType(QString,QString)),
+            this, SLOT(createNewPlotOfType(QString,QString)));
+    plotWizard->show();
 }
 
 void PlotWindow::createNewPlot(QString name)
@@ -271,6 +276,20 @@ void PlotWindow::createNewPlot(QString name)
     SessionManager::instance()->setupJob(param, sender());
 }
 
+void PlotWindow::createNewPlotOfType(QString name, QString rScript)
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->cmdList = QStringList({
+                                     QString("create rplot %1").arg(name),
+                                     QString("%1 set_type %2").arg(name).arg(rScript)
+                                 });
+    param->setNextJobReceiver(this,SLOT(getSettingsXML()));
+    SessionManager::instance()->setupJob(param, sender());
+    currentPlot = name;
+    currentPlotType = rScript;
+}
+
 void PlotWindow::setType(QString rScript)
 {
     setCurrentPlotType(rScript);
@@ -279,6 +298,7 @@ void PlotWindow::setType(QString rScript)
     param->cmdList = QStringList({QString("%1 set_type %2").arg(currentPlot).arg(rScript)});
     param->setNextJobReceiver(this,SLOT(getSettingsXML()));
     SessionManager::instance()->setupJob(param, sender());
+    currentPlotType = rScript;
 }
 
 void PlotWindow::getSettingsXML()
@@ -298,8 +318,23 @@ void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
         importHomonyms(settingsList);
 
     plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, this);
-//    connect(plotSettingsForm, SIGNAL(updateRequest()), this, SLOT(updateSettingsForm()));
-    plotControlPanelScrollArea->setWidget(plotSettingsForm);
+    plotTitleLabel = new QLabel(QString("%1 (%2)").arg(currentPlot).arg(currentPlotType));
+    plotTitleLabel->setStyleSheet("QLabel {"
+                             "background-color: white;"
+                             "border: 1px solid black;"
+                             "padding: 4px;"
+                             "font: bold 12pt;"
+                             "}");
+
+    QVBoxLayout *vboxLayout = new QVBoxLayout;
+    vboxLayout->addWidget(plotTitleLabel);
+    vboxLayout->addWidget(plotSettingsForm);
+    vboxLayout->addStretch();
+    plotSettingsWidget = new QWidget;
+    plotSettingsWidget->setLayout(vboxLayout);
+    plotSettingsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+    plotControlPanelScrollArea->setWidget(plotSettingsWidget);
+
 }
 
 void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
@@ -309,6 +344,23 @@ void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
     param->cmdList = plotSettingsForm->getSettingsCmdList();
     param->setNextJobReceiver(nextJobReceiver, nextJobSlot);
     SessionManager::instance()->setupJob(param, sender());
+}
+
+void PlotWindow::getPlotType(QObject *nextJobReceiver, const char *nextJobSlot)
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->cmdList = QStringList({QString("xml %1 description").arg(currentPlot)});
+    param->answerFormatterType = AnswerFormatterType::XML;
+    param->setAnswerReceiver(this, SLOT(extractPlotType(QDomDocument*)));
+    param->setNextJobReceiver(nextJobReceiver, nextJobSlot);
+    SessionManager::instance()->setupJob(param, sender());
+}
+
+void PlotWindow::extractPlotType(QDomDocument *description)
+{
+    currentPlotType = QFileInfo(XMLelement(*description)["Type"]()).fileName();
+    qDebug() << "currentPlotType" << currentPlotType;
 }
 
 //void PlotWindow::updateSettingsForm()
@@ -358,3 +410,52 @@ void PlotWindow::setCurrentPlotType(QString rScript)
 }
 
 
+
+
+NewPlotWizard::NewPlotWizard(QWidget *parent)
+    : QWizard(parent)
+{
+    addPage(new NewPlotPage);
+    setWindowTitle(tr("New Plot"));
+    setAttribute(Qt::WA_DeleteOnClose, true);
+}
+
+void NewPlotWizard::accept()
+{
+    emit createNewPlotOfType(field("name").toString(), field("type").toString());
+    QDialog::accept();
+}
+
+
+NewPlotPage::NewPlotPage(QWidget *parent)
+    : QWizardPage(parent)
+{
+    setWindowTitle(tr("New Plot"));
+    nameLabel = new QLabel("Plot name (no file extension):");
+    nameEdit = new QLineEdit;
+    typeLabel = new QLabel("Plot type (R script):");
+    typeEdit = new QLineEdit;
+    typeEdit->setReadOnly(true);
+    browseButton = new QPushButton("Browse");
+    connect(browseButton, SIGNAL(clicked()), this, SLOT(selectRScript()));
+    QGridLayout *gridLayout = new QGridLayout;
+    gridLayout->addWidget(nameLabel, 0, 0);
+    gridLayout->addWidget(nameEdit, 0, 1);
+    gridLayout->addWidget(typeLabel, 1, 0);
+    gridLayout->addWidget(typeEdit, 1, 1);
+    gridLayout->addWidget(browseButton, 1, 2);
+    setLayout(gridLayout);
+
+    registerField("name*", nameEdit);
+    registerField("type*", typeEdit);
+}
+
+void NewPlotPage::selectRScript()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
+    QString rScript = QFileDialog::getOpenFileName(this,tr("Please select an R script"),
+                                                   rScriptsHome,"*.R");
+    if (!rScript.isEmpty())
+        typeEdit->setText(QFileInfo(rScript).fileName());
+}

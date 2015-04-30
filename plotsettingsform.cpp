@@ -12,24 +12,25 @@
 
 
 PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent)
-    : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QWidget(parent)
+    : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QTabWidget(parent)
 {
-    mainLayout = new QVBoxLayout;
-    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
+//    mainLayout = new QVBoxLayout;
+//    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 //    setTabPosition(QTabWidget::West);
-    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
 
     XMLelement settingsElement = rootElement.firstChild();
     while (!settingsElement.isNull())
     {
         PlotSettingsBaseWidget *widget = createWidget(settingsElement);
         widgetMap[widget->name()] = widget;
-        mainLayout->addWidget(widget);
-//        addTab(widget, settingsElement.label());
+//        mainLayout->addWidget(widget);
+        addTab(widget, settingsElement.label());
         settingsElement = settingsElement.nextSibling();
     }
-    setLayout(mainLayout);
+//    setLayout(mainLayout);
     initDependersSet();
+//    updateSize();
 }
 
 PlotSettingsForm::~PlotSettingsForm()
@@ -87,12 +88,15 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
         widget = new PlotSettingsBaseWidget(settingsElement);
 
     connect(widget, SIGNAL(valueChanged()), this, SLOT(checkDependencies()));
+//    connect(widget, SIGNAL(sizeChanged()), this, SLOT(updateSize()));
     return widget;
 }
 
 void PlotSettingsForm::checkDependencies()
 {
+    qDebug() << "valueChanged() emitted";
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
+    qDebug() << "current value:" << widget->name() << widget->value();
     if (widget && dependersSet.contains(widget->name()))
     {
 //        emit updateRequest();
@@ -150,6 +154,21 @@ void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
         settingsElement = settingsElement.nextSibling();
     }
 }
+
+void PlotSettingsForm::updateSize()
+{
+    // http://doc.qt.digia.com/qq/qq06-qwidgetstack.html
+    for (int i = 0; i < count(); ++i)
+    {
+        if (i == currentIndex())
+            widget(i)->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        else
+            widget(i)->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+    }
+//    layout()->activate();
+    setFixedHeight(currentWidget()->minimumSizeHint().height());
+}
+
 
 
 QString PlotSettingsForm::getSettingCmdLine(QString setting)

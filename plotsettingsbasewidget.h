@@ -13,6 +13,7 @@ class QHBoxLayout;
 class QVBoxLayout;
 class QGridLayout;
 class QStackedLayout;
+class QStackedWidget;
 class QLabel;
 class QGroupBox;
 class QPushButton;
@@ -48,11 +49,14 @@ public:
 signals:
     void valueChanged();
     void resetRequest();
+    void sizeChanged();
+
 
 protected slots:
     virtual void resetDefault();
-    virtual void setRawMode(bool on);
-    virtual void setWidgetMode(bool on);
+    virtual void setRawEditMode(bool on);
+    virtual void setRawEditModeOn();
+    virtual void setRawEditModeOff();
     void emitValueChanged();
     void setValueSetTrue() {valueSet = true;}
 
@@ -77,16 +81,18 @@ protected:
     bool valueSet;
     QString currentValue;
 
-    QGridLayout *mainLayout;
+    QVBoxLayout *vboxLayout;
+    QGridLayout *gridLayout;
     QLabel *nameLabel;
     QLineEdit *rawEdit;
     QStackedLayout *editStackedLayout;
+    QStackedWidget *editStackedWidget;
     QWidget *editDisplayWidget;
     QLabel *commentLabel;
     QGroupBox *editModeButtonBox;
     QVBoxLayout *editModeButtonBoxLayout;
     QPushButton *debugButton;
-    QRadioButton *rawEditButton;
+    QRadioButton *rawEditModeButton;
     QRadioButton *widgetEditButton;
     QPushButton *defaultButton;
 
@@ -148,8 +154,8 @@ public:
 
 protected slots:
     void setupEditWidget();
-    virtual void setRawMode(bool on);
-    virtual void setWidgetMode(bool on);
+    virtual void setRawEditModeOn() Q_DECL_OVERRIDE;
+    virtual void setRawEditModeOff() Q_DECL_OVERRIDE;
     void updateEditDisplayWidget();
     virtual void resetDefault();
 

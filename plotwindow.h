@@ -2,13 +2,14 @@
 #define PLOTWINDOW
 
 #include <QMainWindow>
-#include <QGroupBox>
+#include <QWizard>
 
 
 class QSvgWidget;
 class CodeEditor;
 class QDomDocument;
 class QLabel;
+class QLineEdit;
 class QPushButton;
 class QDoubleSpinBox;
 class QSpinBox;
@@ -18,6 +19,36 @@ class QScrollArea;
 class PlotSettingsForm;
 class LazyNutListMenu;
 
+class NewPlotWizard: public QWizard
+{
+    Q_OBJECT
+
+public:
+    NewPlotWizard(QWidget *parent = 0);
+    void accept() Q_DECL_OVERRIDE;
+
+signals:
+    createNewPlotOfType(QString, QString);
+
+};
+
+class NewPlotPage: public QWizardPage
+{
+    Q_OBJECT
+
+public:
+    NewPlotPage(QWidget *parent = 0);
+
+private slots:
+    void selectRScript();
+
+private:
+    QLabel *nameLabel;
+    QLineEdit *nameEdit;
+    QLabel *typeLabel;
+    QLineEdit *typeEdit;
+    QPushButton *browseButton;
+};
 
 
 class PlotWindow : public QMainWindow
@@ -28,8 +59,6 @@ public:
     PlotWindow(QWidget *parent = 0);
     int getValueFromByteArray(QByteArray ba, QString key);
 
-signals:
-    void sendPloGet();
 
 private slots:
     void sendDrawCmd();
@@ -38,10 +67,13 @@ private slots:
     void setPlot(QString name);
     void newPlot();
     void createNewPlot(QString name);
+    void createNewPlotOfType(QString name, QString type);
     void setType(QString rScript);
     void getSettingsXML();
     void buildSettingsForm(QDomDocument* settingsList);
     void sendSettings(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+    void getPlotType(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+    void extractPlotType(QDomDocument* description);
 //    void updateSettingsForm();
     void selectRScript();
     void selectRecentRScript();
@@ -50,6 +82,7 @@ private slots:
 
 
 private:
+
 
 
     void createPlotControlPanel();
@@ -68,6 +101,8 @@ private:
     QSvgWidget *plot_svg;
 
     PlotSettingsForm *plotSettingsForm;
+    QLabel *plotTitleLabel;
+    QWidget *plotSettingsWidget;
 
     QMenu *typeMenu;
     QMenu *recentRScriptsMenu;
