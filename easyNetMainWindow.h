@@ -12,6 +12,8 @@ class QWebView;
 class QGroupBox;
 class QDockWidget;
 class QSignalMapper;
+class QStackedWidget;
+class QProgressBar;
 
 class ObjExplorer;
 
@@ -100,9 +102,15 @@ private slots:
     void newLogFile();
     void open();
     void run();
+    void setLazyNutIsReady(bool isReady);
     //bool save();
     //bool saveAs();
     //void documentWasModified();
+
+    void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
+    void clearErrorOnStatusBar();
+    void showCmdOnStatusBar(QString cmd);
+    void addOneToLazyNutProgressBar();
 
     void echoCommand(const QString &line);
 //    void runScript();
@@ -127,6 +135,7 @@ private:
     void createActions();
     void createMenus();
     void createToolBars();
+    void createStatusBar();
 //    bool maybeSave();
     void newFile(EditWindow*);
     void loadFile(const QString &fileName);
@@ -200,6 +209,17 @@ private:
     QMenu           *runMenu;
     QMenu           *settingsMenu;
     QMenu           *aboutMenu;
+
+    // status bar widgets
+    QLabel          *readyLabel;
+    QLabel          *busyLabel;
+    QLabel          *offLabel;
+    QStackedWidget  *lazyNutStatusWidget;
+    QProgressBar    *lazyNutProgressBar;
+    QLabel          *lazyNutCmdLabel;
+    QLabel          *lazyNutErrorLabel;
+
+
 //    QToolBar        *fileToolBar;
 //    QToolBar        *runToolBar;
 

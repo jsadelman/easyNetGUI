@@ -52,6 +52,11 @@ signals:
 
     void isReady(bool);
     void isPaused(bool);
+    void cmdError(QString,QStringList);
+    void commandExecuted(QString);
+    void commandsInJob(int);
+    void lazyNutMacroStarted();
+    void lazyNutMacroFinished();
 
     void macroQueueStopped(bool);
 
@@ -64,7 +69,7 @@ signals:
 public slots:
 
     // status
-    bool getStatus();
+    bool isReady();
 
     // controls
     void pause();

@@ -44,7 +44,9 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         return;
     }
     ready = false;
+    emit commandsInJob(commandList.size());
     emit isReady(ready);
+
     qDebug() << "BUSY" << "first cmd: " << commandList.first();
 
     // send cmds to lazyNut without removing them from commandList
@@ -108,15 +110,16 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                 emit answerReady(answer);
             }
         }
+        emit commandExecuted(commandList.first());
         commandList.removeFirst();
         if (commandList.isEmpty())
         {
-            emit commandsExecuted();
             baseOffset = 0;
             lazyNutBuffer.clear();
             ready = true;
             emit isReady(ready);
             qDebug() << "READY";
+            emit commandsExecuted();
             return;
         }
         currentCmd = commandList.first();

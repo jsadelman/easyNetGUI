@@ -217,6 +217,12 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
 
 
+    createActions();
+    createMenus();
+    createToolBars();
+    createStatusBar();
+    showViewMode(Welcome);
+
     if (lazyNutBat.isEmpty())
     {
         if (easyNetHome.isEmpty())
@@ -234,10 +240,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
         connect(inputCmdLine,SIGNAL(commandReady(QString)),
                 this,SLOT(runCmd(QString)));
 
-    createActions();
-    createMenus();
-    createToolBars();
-    showViewMode(Welcome);
+
 
     // debug: load and run qtest at startup
     loadFile(QString("%1/qtest").arg(scriptsDir));
@@ -612,6 +615,102 @@ void EasyNetMainWindow::createToolBars()
     infoToolBar->addWidget(viewModeButtonsWidget);
     addToolBar(Qt::LeftToolBarArea, infoToolBar);
 }
+
+void EasyNetMainWindow::createStatusBar()
+{
+    lazyNutProgressBar = new QProgressBar;
+    lazyNutProgressBar->setTextVisible(false);
+    lazyNutProgressBar->setMinimum(0);
+    statusBar()->addPermanentWidget(lazyNutProgressBar, 1);
+    connect(SessionManager::instance(), SIGNAL(commandsInJob(int)),
+            lazyNutProgressBar, SLOT(setMaximum(int)));
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString)),
+            this, SLOT(addOneToLazyNutProgressBar()));
+
+
+    readyLabel = new QLabel("READY");
+    readyLabel->setStyleSheet("QLabel {"
+                              "font-weight: bold;"
+                              "color: green"
+                              "}");
+    busyLabel = new QLabel("BUSY");
+    busyLabel->setStyleSheet("QLabel {"
+                              "font-weight: bold;"
+                              "color: red"
+                              "}");
+    offLabel = new QLabel("OFF");
+    offLabel->setStyleSheet("QLabel {"
+                              "font-weight: bold;"
+                              "color: black"
+                              "}");
+    lazyNutStatusWidget = new QStackedWidget;
+    lazyNutStatusWidget->addWidget(readyLabel);
+    lazyNutStatusWidget->addWidget(busyLabel);
+    lazyNutStatusWidget->addWidget(offLabel);
+    lazyNutStatusWidget->setCurrentWidget(offLabel);
+    lazyNutStatusWidget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+    lazyNutStatusWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    statusBar()->addPermanentWidget(lazyNutStatusWidget, 1);
+    connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));
+
+
+
+
+
+    lazyNutCmdLabel = new QLabel;
+    lazyNutCmdLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    statusBar()->addWidget(lazyNutCmdLabel, 1);
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString)),
+            this, SLOT(showCmdOnStatusBar(QString)));
+
+    lazyNutErrorLabel = new QLabel;
+    lazyNutErrorLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    lazyNutErrorLabel->setStyleSheet("QLabel {"
+                                 "font-weight: bold;"
+                                 "color: red"
+                                 "}");
+    statusBar()->addWidget(lazyNutErrorLabel, 1);
+    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
+            this, SLOT(showErrorOnStatusBar(QString,QStringList)));
+    connect(SessionManager::instance(), SIGNAL(lazyNutMacroStarted()),
+            this, SLOT(clearErrorOnStatusBar()));
+}
+
+
+void EasyNetMainWindow::setLazyNutIsReady(bool isReady)
+{
+    if (isReady)
+    {
+        lazyNutStatusWidget->setCurrentWidget(readyLabel);
+        lazyNutProgressBar->reset();
+    }
+    else
+    {
+        lazyNutStatusWidget->setCurrentWidget(busyLabel);
+        lazyNutProgressBar->setValue(0);
+    }
+}
+
+void EasyNetMainWindow::showErrorOnStatusBar(QString /*cmd*/, QStringList errorList)
+{
+    lazyNutErrorLabel->setText(QString("LAST ERROR: %1").arg(errorList.last()));
+}
+
+void EasyNetMainWindow::clearErrorOnStatusBar()
+{
+    lazyNutErrorLabel->clear();
+}
+
+void EasyNetMainWindow::showCmdOnStatusBar(QString cmd)
+{
+    lazyNutCmdLabel->setText(QString("LAST EXEC COMMAND: %1").arg(cmd));
+}
+
+void EasyNetMainWindow::addOneToLazyNutProgressBar()
+{
+    lazyNutProgressBar->setValue(lazyNutProgressBar->value()+1);
+}
+
 
 
 void EasyNetMainWindow::loadFile(const QString &fileName)
