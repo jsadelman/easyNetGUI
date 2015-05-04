@@ -630,25 +630,36 @@ void EasyNetMainWindow::createStatusBar()
 
     readyLabel = new QLabel("READY");
     readyLabel->setStyleSheet("QLabel {"
+                              "qproperty-alignment: AlignCenter;"
+                              "padding-right: 3px;"
+                              "padding-left: 3px;"
                               "font-weight: bold;"
-                              "color: green"
+                              "color: green;"
                               "}");
     busyLabel = new QLabel("BUSY");
     busyLabel->setStyleSheet("QLabel {"
-                              "font-weight: bold;"
-                              "color: red"
-                              "}");
+                             "qproperty-alignment: AlignCenter;"
+                             "padding-right: 3px;"
+                             "padding-left: 3px;"
+                             "font-weight: bold;"
+                             "background-color : red;"
+                             "color: white;"
+                             "}");
     offLabel = new QLabel("OFF");
     offLabel->setStyleSheet("QLabel {"
-                              "font-weight: bold;"
-                              "color: black"
-                              "}");
+                            "qproperty-alignment: AlignCenter;"
+                            "padding-right: 3px;"
+                            "padding-left: 3px;"
+                            "font-weight: bold;"
+                            "background-color: black;"
+                            "color: yellow;"
+                            "}");
     lazyNutStatusWidget = new QStackedWidget;
     lazyNutStatusWidget->addWidget(readyLabel);
     lazyNutStatusWidget->addWidget(busyLabel);
     lazyNutStatusWidget->addWidget(offLabel);
     lazyNutStatusWidget->setCurrentWidget(offLabel);
-    lazyNutStatusWidget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+    lazyNutStatusWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     lazyNutStatusWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusBar()->addPermanentWidget(lazyNutStatusWidget, 1);
     connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));

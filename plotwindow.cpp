@@ -370,7 +370,8 @@ void PlotWindow::extractPlotType(QDomDocument *description)
 
 void PlotWindow::draw()
 {
-    sendSettings(this, SLOT(sendDrawCmd()));
+    if (plotSettingsForm)
+        sendSettings(this, SLOT(sendDrawCmd()));
 }
 
 
