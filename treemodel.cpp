@@ -18,8 +18,7 @@
          rootData << QVariant(header);
 
      rootItem = new TreeItem(rootData);
-     _genealogy = new QList<QVariant>();
-   // connect(this,SIGNAL(recursiveGetGenealogy(QModelIndex)),this,SLOT(getGenealogy(QModelIndex)));
+     genealogy.clear();
  }
 
  TreeModel::~TreeModel()
@@ -212,48 +211,23 @@
       return true;
   }
 
-//  void TreeModel::getGenealogy(const QModelIndex &index) const
-//  {
-//      // This recursive function computes the genealogy at any point in the tree.
-//      // To understand whether this call is the one that contains the requested
-//      // genealogy the sender is checked.
-//      // Recursive calls are made via the signal recursiveGetGenealogy,
-//      // which is connected to this slot, in order to determine the sender.
-//      if (!index.isValid())
-//      {
-//          _genealogy->clear();
-//          if (sender() != this)
-//          {
-//              // this is for safety, but it should not be the case that
-//              // an external sender asks for a genealogy with an invalid index
-//              emit sendGenealogy(*_genealogy);
-//          }
-//          return;
-//      }
-//      recursiveGetGenealogy(index.parent());
-//      (*_genealogy) << data(index,Qt::DisplayRole);
-//      if (sender() != this)
-//      {
-//          emit sendGenealogy(*_genealogy);
-//      }
-//      return;
-//  }
 
-  void TreeModel::getGenealogy(const QModelIndex &index) const
+  QList<QVariant> TreeModel::getGenealogy(const QModelIndex &index)
   {
       recursiveGetGenealogy(index);
-      emit sendGenealogy(*_genealogy);
+      emit sendGenealogy(genealogy);
+      return genealogy;
   }
 
-  void TreeModel::recursiveGetGenealogy(const QModelIndex &index) const
+  void TreeModel::recursiveGetGenealogy(const QModelIndex &index)
   {
       if (!index.isValid())
       {
-          _genealogy->clear();
+          genealogy.clear();
           return;
       }
       recursiveGetGenealogy(index.parent());
-      (*_genealogy) << data(index,Qt::DisplayRole);
+      genealogy << data(index,Qt::DisplayRole);
       return;
   }
 

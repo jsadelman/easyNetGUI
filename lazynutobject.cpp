@@ -427,13 +427,11 @@ QVariant LazyNutObjectListModel::headerData(int section, Qt::Orientation orienta
 
 void LazyNutObjectListModel::sendBeginResetModel()
 {
-    // this signal is protected
     beginResetModel();
 }
 
 void LazyNutObjectListModel::sendEndResetModel()
 {
-    // this signal is protected
     endResetModel();
 }
 

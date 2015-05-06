@@ -29,8 +29,10 @@ SessionManager::SessionManager()
     : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)\\n")
 {
     lazyNut = new LazyNut(this);
+    connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
+    connect(lazyNut, SIGNAL(error(QProcess::ProcessError)),
+            this, SLOT(lazyNutProcessError(QProcess::ProcessError)));
     macroQueue = new MacroQueue;
-    startCommandSequencer();
 }
 
 
@@ -73,8 +75,8 @@ void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
                                                       param->answerSlot);
     if (af)
     {
-        connect(commandSequencer,SIGNAL(answerReady(QString)),
-                job,SLOT(formatAnswer(QString)));
+        connect(commandSequencer,SIGNAL(answerReady(QString, QString)),
+                job,SLOT(formatAnswer(QString, QString)));
         job->setAnswerFormatter(af);
 
     }
@@ -173,6 +175,7 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
 void SessionManager::startCommandSequencer()
 {
     commandSequencer = new CommandSequencer(lazyNut, this);
+    emit isReady(commandSequencer->getStatus());
     connect(commandSequencer,SIGNAL(userLazyNutOutputReady(QString)),
             this,SIGNAL(userLazyNutOutputReady(QString)));
     connect(commandSequencer, SIGNAL(isReady(bool)),
@@ -185,6 +188,11 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(commandsInJob(int)));
 
 
+}
+
+void SessionManager::lazyNutProcessError(int error)
+{
+    qDebug() << "lazyNut process cannot start. QProcess::ProcessError" << error;
 }
 
 

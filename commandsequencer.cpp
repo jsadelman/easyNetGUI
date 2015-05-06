@@ -14,6 +14,7 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
 
 void CommandSequencer::initProcessLazyNutOutput()
 {
+    beginRex = QRegExp("BEGIN: (\\d+)");
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
@@ -68,14 +69,27 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
         return; // startup header or other spontaneous lazyNut output, or synch error
-    QString currentCmd = commandList.first();
-
-    QRegExp beginRex(QString("BEGIN: %1\\n").arg(QRegExp::escape(currentCmd)));
-    QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(QRegExp::escape(currentCmd)));
-    int beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
-    int endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
-    while (baseOffset <= beginOffset && beginOffset < endOffset)
+    QString currentCmd, lineNumber;
+    int beginOffset, endOffset;
+    while (true)
     {
+        currentCmd = commandList.first();
+        beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
+        lineNumber = beginRex.cap(1);
+        QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(lineNumber));
+        endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
+        if (!(baseOffset <= beginOffset && beginOffset < endOffset))
+            return;
+
+        // a hack for skipping lazyNut header, which currently contains BEGIN 0
+        if (lineNumber == "0")
+        {
+            baseOffset = endOffset + endRex.matchedLength();
+            continue;
+        }
+        qDebug() << "lineNumber" << lineNumber;
+
+
         // extract ERROR lines
         int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
         QStringList errorList = QStringList();
@@ -102,16 +116,17 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                 }
                 else if (svgRex.exactMatch(answer))
                 {
-//                    int nbytes = svgRex.cap(1).toInt();
+                    //                    int nbytes = svgRex.cap(1).toInt();
                     int svgStart = answerOffset + answerRex.matchedLength() +1;
                     int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + QString("</svg>").length();
                     answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
                 }
-                emit answerReady(answer);
+                emit answerReady(answer, currentCmd);
             }
         }
         emit commandExecuted(commandList.first());
         commandList.removeFirst();
+        baseOffset = endOffset + endRex.matchedLength();
         if (commandList.isEmpty())
         {
             baseOffset = 0;
@@ -122,12 +137,6 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             emit commandsExecuted();
             return;
         }
-        currentCmd = commandList.first();
-        baseOffset = endOffset + endRex.matchedLength();
-        beginRex = QRegExp(QString("BEGIN: %1\\n").arg(QRegExp::escape(currentCmd)));
-        endRex = QRegExp(QString("END: %1[^\\n]*\\n").arg(QRegExp::escape(currentCmd)));
-        beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
-        endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
     }
 }
 
