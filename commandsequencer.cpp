@@ -81,8 +81,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
             return;
 
-        // a hack for skipping lazyNut header, which currently contains BEGIN 0
-        if (lineNumber == "0")
+        // a hack for skipping lazyNut header, which currently contains BEGIN 1
+        if (lineNumber == "1")
         {
             baseOffset = endOffset + endRex.matchedLength();
             continue;
