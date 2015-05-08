@@ -165,7 +165,7 @@ void ObjExplorer::updateLazyNutObjCatalogue(QDomDocument *domDoc)
 
 void ObjExplorer::createTaxonomy()
 {
-    objTaxonomyModel = new TreeModel(QStringList({"type", "subtype"}));
+    objTaxonomyModel = new TreeModel(QStringList({"type"}));
 
     taxListView = new QListView;
     taxColumnView = new QColumnView;
@@ -273,4 +273,5 @@ void ObjExplorer::connectTaxonomyModel()
                 lazyNutObjTableProxyModel,SLOT(setFilterFromGenealogy(QList<QVariant>)));
 
     }
+    taxTreeView->expandAll();
 }

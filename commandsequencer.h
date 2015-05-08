@@ -19,8 +19,6 @@ class CommandSequencer: public QObject
     Q_OBJECT
 
 public:
-
-
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
 
 
@@ -37,7 +35,7 @@ signals:
     void commandsInJob(int);
     void commandsExecuted();
     void commandExecuted(QString);
-    void answerReady(QString);
+    void answerReady(QString, QString);
     void userLazyNutOutputReady(const QString&);
     // states
     void isReady(bool);
@@ -56,6 +54,7 @@ private:
     QStringList commandList;
     QString lazyNutBuffer;
     int baseOffset;
+    QRegExp beginRex;
     QRegExp emptyLineRex;
     QRegExp errorRex;
     QRegExp answerRex;

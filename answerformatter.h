@@ -13,13 +13,13 @@ class AnswerFormatter: public QObject
 {
     Q_OBJECT
 public slots:
-    virtual void formatAnswer(QString answer) = 0;
+    virtual void formatAnswer(QString answer, QString cmd) = 0;
 
 signals:
-    void formattedAnswer(QString);
-    void formattedAnswer(QDomDocument*);
-    void formattedAnswer(QStringList);
-    void formattedAnswer(QByteArray);
+    void formattedAnswer(QString, QString);
+    void formattedAnswer(QDomDocument*, QString);
+    void formattedAnswer(QStringList, QString);
+    void formattedAnswer(QByteArray, QString);
 
 protected:
     AnswerFormatter(){}
@@ -30,7 +30,7 @@ class IdentityFormatter: public AnswerFormatter
     Q_OBJECT
 public:
 //    void formatAnswer(QString answer) {emit formattedAnswer(QString("identity %1").arg(answer));} // test
-    void formatAnswer(QString answer) {emit formattedAnswer(answer);}
+    void formatAnswer(QString answer, QString cmd) Q_DECL_OVERRIDE {emit formattedAnswer(answer, cmd);}
 
     friend class AnswerFormatterFactory;
 
@@ -38,7 +38,7 @@ protected:
     IdentityFormatter(QObject *answerRecipient, char const *answerProcessor)
         : AnswerFormatter()
     {
-        connect(this,SIGNAL(formattedAnswer(QString)),answerRecipient,answerProcessor);
+        connect(this,SIGNAL(formattedAnswer(QString, QString)),answerRecipient,answerProcessor);
     }
 
 };
@@ -47,7 +47,7 @@ class XMLFormatter: public AnswerFormatter
 {
     Q_OBJECT
 public:
-    void formatAnswer(QString answer);
+    void formatAnswer(QString answer, QString cmd);
 
     friend class AnswerFormatterFactory;
 
@@ -55,7 +55,7 @@ protected:
     XMLFormatter(QObject *answerRecipient, char const *answerProcessor)
         : AnswerFormatter()
     {
-        connect(this,SIGNAL(formattedAnswer(QDomDocument*)),answerRecipient,answerProcessor);
+        connect(this,SIGNAL(formattedAnswer(QDomDocument*, QString)),answerRecipient,answerProcessor);
     }
 };
 
@@ -63,7 +63,7 @@ class ListOfValuesFormatter: public AnswerFormatter
 {
     Q_OBJECT
 public:
-    void formatAnswer(QString answer);
+    void formatAnswer(QString answer, QString cmd);
 
     friend class AnswerFormatterFactory;
 
@@ -71,7 +71,7 @@ protected:
     ListOfValuesFormatter(QObject *answerRecipient, char const *answerProcessor)
         : AnswerFormatter()
     {
-        connect(this,SIGNAL(formattedAnswer(QStringList)),answerRecipient,answerProcessor);
+        connect(this,SIGNAL(formattedAnswer(QStringList, QString)),answerRecipient,answerProcessor);
     }
 };
 
@@ -79,7 +79,7 @@ class SVGFormatter: public AnswerFormatter
         {
             Q_OBJECT
         public:
-            void formatAnswer(QString answer);
+            void formatAnswer(QString answer, QString cmd);
 
             friend class AnswerFormatterFactory;
 
@@ -87,7 +87,7 @@ class SVGFormatter: public AnswerFormatter
             SVGFormatter(QObject *answerRecipient, char const *answerProcessor)
                 : AnswerFormatter()
             {
-                connect(this,SIGNAL(formattedAnswer(QByteArray)),answerRecipient,answerProcessor);
+                connect(this,SIGNAL(formattedAnswer(QByteArray, QString)),answerRecipient,answerProcessor);
             }
         };
 

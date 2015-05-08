@@ -39,7 +39,7 @@ public slots:
 
 
 private slots:
-    void formatAnswer(QString answer);
+    void formatAnswer(QString answer, QString cmd);
 
 };
 

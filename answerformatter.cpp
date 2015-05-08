@@ -5,15 +5,15 @@
 #include <QDomElement>
 #include <QRegExp>
 
-void XMLFormatter::formatAnswer(QString answer)
+void XMLFormatter::formatAnswer(QString answer, QString cmd)
 {
     QDomDocument *domDoc = new QDomDocument;
     domDoc->setContent(answer); // R.I.P. Bison
-    emit formattedAnswer(domDoc);
+    emit formattedAnswer(domDoc, cmd);
 }
 
 
-void ListOfValuesFormatter::formatAnswer(QString answer)
+void ListOfValuesFormatter::formatAnswer(QString answer, QString cmd)
 {
     // extracts value attributes from the first level of an XML answer
     QStringList list;
@@ -29,11 +29,11 @@ void ListOfValuesFormatter::formatAnswer(QString answer)
         }
     }
     delete domDoc;
-    emit formattedAnswer(list);
+    emit formattedAnswer(list, cmd);
 }
 
 
-void SVGFormatter::formatAnswer(QString answer)
+void SVGFormatter::formatAnswer(QString answer, QString cmd)
 {
-    emit formattedAnswer(answer.toUtf8());
+    emit formattedAnswer(answer.toUtf8(), cmd);
 }

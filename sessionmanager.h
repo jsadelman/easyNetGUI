@@ -14,7 +14,6 @@ class LazyNutJob;
 class LazyNutJobParam;
 class MacroQueue;
 
-
 //class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
 //{
 //public:
@@ -85,6 +84,7 @@ private slots:
 
     void getOOB(const QString &lazyNutOutput);
     void startCommandSequencer();
+    void lazyNutProcessError(int error);
 
     void macroStarted();
     void macroEnded();

@@ -55,7 +55,7 @@ public:
     TreeItem* getRootItem();
 
 public slots:
-    void getGenealogy(const QModelIndex &index) const;
+    QList<QVariant> getGenealogy(const QModelIndex &index);
 
 signals:
     //void recursiveGetGenealogy(const QModelIndex &index) const;
@@ -63,12 +63,12 @@ signals:
 
 
 private:
-    void recursiveGetGenealogy(const QModelIndex &index) const;
+    void recursiveGetGenealogy(const QModelIndex &index);
 
     //void setupModelData(const QStringList &lines, TreeItem *parent);
     TreeItem *getItem(const QModelIndex &index) const;
     TreeItem *rootItem;
-    QList<QVariant> *_genealogy;
+    QList<QVariant> genealogy;
 };
 
  #endif
