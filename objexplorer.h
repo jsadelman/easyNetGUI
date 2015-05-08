@@ -8,7 +8,6 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QStyledItemDelegate>
-#include <QSplitter>
 
 #include "treemodel.h"
 
@@ -24,13 +23,15 @@ class LazyNutObjTableProxyModel;
 class QListView;
 class QTableView;
 class QTreeView;
+class QColumnView;
 //class QSplitter;
 class QGroupBox;
 class QVBoxLayout;
 class ComboBoxDelegate;
+class QStackedWidget;
 
 
-class ObjExplorer: public QSplitter //QWidget
+class ObjExplorer: public QMainWindow //QSplitter //QWidget
 {
     Q_OBJECT
 
@@ -50,8 +51,8 @@ public:
 
     QListView *lazyNutObjectListView;
 //    QVBoxLayout *layout;
-//    QTableView *lazyNutObjTableView;
-//    QTableView *lazyNutObjTableProxyView;
+    QTableView *lazyNutObjTableView;
+    QTableView *lazyNutObjTableProxyView;
     QTreeView *lazyNutObjectView;
 //    QTreeView *objTaxonomyView;
     //QComboBox *cbox;
@@ -68,6 +69,30 @@ public slots:
     void setObjFromListIndex(QModelIndex index);
     void setObjFromObjName(QString name);
     void updateLazyNutObjCatalogue(QDomDocument *domDoc);
+    void setTaxonomyView();
+    void reloadTaxonomy();
+    void resetLazyNutObjTableModel();
+
+private slots:
+    void getTaxonomyTypes();
+    void setTaxonomyTypes(QStringList types);
+    void getTaxonomySubtypes();
+    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
+    void connectTaxonomyModel();
+
+
+
+private:
+    void createTaxonomy();
+    void createTaxonomyMenu();
+
+     QListView *taxListView;
+     QColumnView *taxColumnView;
+     QTreeView *taxTreeView;
+     QStackedWidget *taxWidget;
+
+    QMap<QString, QWidget*> taxViewMap;
+    QMenu *taxonomyMenu;
 
 };
 

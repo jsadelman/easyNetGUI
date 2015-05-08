@@ -211,6 +211,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     connect(SessionManager::instance(),SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)),
             objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
     connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
+            objExplorer,SLOT(resetLazyNutObjTableModel()));
+    connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
             designWindow,SLOT(updateDiagramScene()));
     connect(SessionManager::instance(),SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
     connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
@@ -244,7 +246,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
     // debug: load and run qtest at startup
     loadFile(QString("%1/qtest").arg(scriptsDir));
-    run();
+//    run();
 
 }
 
@@ -404,6 +406,7 @@ void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
 void EasyNetMainWindow::getVersion()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER;
     param->cmdList = QStringList({"version"});
     param->answerFormatterType = AnswerFormatterType::Identity;
     param->setAnswerReceiver(this, SLOT(displayVersion(QString)));

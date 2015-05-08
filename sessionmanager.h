@@ -70,6 +70,7 @@ public slots:
 
     // status
     bool isReady();
+    bool isOn();
 
     // controls
     void pause();

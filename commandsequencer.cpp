@@ -138,3 +138,8 @@ bool CommandSequencer::getStatus()
     return ready;
 }
 
+bool CommandSequencer::isOn()
+{
+    return lazyNut->state() == QProcess::Running;
+}
+

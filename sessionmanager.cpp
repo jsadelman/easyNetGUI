@@ -173,6 +173,7 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
 void SessionManager::startCommandSequencer()
 {
     commandSequencer = new CommandSequencer(lazyNut, this);
+
     connect(commandSequencer,SIGNAL(userLazyNutOutputReady(QString)),
             this,SIGNAL(userLazyNutOutputReady(QString)));
     connect(commandSequencer, SIGNAL(isReady(bool)),
@@ -184,7 +185,7 @@ void SessionManager::startCommandSequencer()
     connect(commandSequencer, SIGNAL(commandsInJob(int)),
             this, SIGNAL(commandsInJob(int)));
 
-
+    emit isReady(commandSequencer->getStatus());
 }
 
 
@@ -198,6 +199,11 @@ void SessionManager::killLazyNut()
 bool SessionManager::isReady()
 {
     return commandSequencer->getStatus();
+}
+
+bool SessionManager::isOn()
+{
+    return commandSequencer->isOn();
 }
 
 void SessionManager::pause()

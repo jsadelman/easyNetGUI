@@ -29,6 +29,7 @@ public slots:
     void runCommand(QString command, bool _getAnswer, unsigned int mode);
     // status
     bool getStatus();
+    bool isOn();
 
     void processLazyNutOutput(const QString &lazyNutOutput);
 signals:
@@ -50,6 +51,7 @@ private:
     bool getAnswer;
     unsigned int logMode;
     bool ready;
+    bool on;
     LazyNut* lazyNut;
     QStringList commandList;
     QString lazyNutBuffer;
