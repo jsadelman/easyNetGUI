@@ -56,14 +56,19 @@ void CmdOutput::displayOutput(const QString & output)
 
 
 
+
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    initialiseLists();
+    initialiseToolBar();
+
     setWindowIcon(QIcon(":/images/zebra.png"));
     QTextEdit* dummyEdit = new QTextEdit(this);
     dummyEdit->hide();
     setCentralWidget(dummyEdit);
 //    createActions();
+
 
 /*    welcomeScreen = new QTextEdit(this);
     QFile myfile(":/images/Welcome.html");
@@ -90,6 +95,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     dockZeb->resize(200,200);
     addDockWidget(Qt::RightDockWidgetArea, dockZeb);
 */
+
+
     dockWelcome = new QDockWidget(tr("Welcome"), this);
     dockWelcome->setAllowedAreas(  Qt::TopDockWidgetArea );
     dockWelcome->setWidget(welcomeScreen);
@@ -240,11 +247,125 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     showViewMode(Welcome);
 
     // debug: load and run qtest at startup
-    loadFile(QString("%1/qtest").arg(scriptsDir));
-    run();
+//    loadFile(QString("%1/qtest").arg(scriptsDir));
+//    run();
 
 }
 
+void EasyNetMainWindow::initialiseLists()
+{
+    modelList = QStringList() << "IA" << "SCM" << "I've just hacked this list";
+    trialList = QStringList() << "ldt" << "brief_masked" << "I've just hacked this list";
+}
+
+void EasyNetMainWindow::initialiseToolBar()
+{
+//    QIcon *newpix = new QIcon(":/images/zebra_64x64.png");
+//    QAction *newa = new QAction(newpix, "&New", this);
+    toolbar = addToolBar("main toolbar");
+    QLabel* modelBoxLabel = new QLabel("Model: ");
+    QLabel* trialBoxLabel = new QLabel("Trial: ");
+    QLabel* setBoxLabel = new QLabel("Set: ");
+    QLabel* inputBoxLabel = new QLabel("Input: ");
+
+    modelBox = new QComboBox;
+    trialComboBox = new QComboBox;
+    setComboBox = new QComboBox;
+    inputComboBox = new QComboBox;
+
+
+    spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    toolbar->addWidget(modelBoxLabel);
+    // Add values in the combo box
+    toolbar->addWidget(modelBox);
+    modelBox->insertItem(0, "Untitled");
+//    toolbar->addAction(openAct);
+//    toolbar->addAction(QIcon(openpix), "Open File");
+    toolbar->addSeparator();
+
+
+    toolbar->addWidget(trialBoxLabel);
+    // Add values in the combo box
+    toolbar->addWidget(trialComboBox);
+    toolbar->addSeparator();
+
+    toolbar->addWidget(setBoxLabel);
+    // Add values in the combo box
+    toolbar->addWidget(setComboBox);
+    setComboBox->insertItem(0, "Untitled");
+    toolbar->addSeparator();
+
+    toolbar->addWidget(inputBoxLabel);
+    // Add values in the combo box
+    toolbar->addWidget(inputComboBox);
+    inputComboBox->insertItem(0, "");
+    toolbar->addSeparator();
+
+    // toolBar is a pointer to an existing toolbar
+    toolbar->addWidget(spacer);
+    toolbar->addAction("Run");
+    toolbar->addSeparator();
+    toolbar->addAction("Run all");
+
+    updateToolBar();
+
+}
+
+void EasyNetMainWindow::updateToolBar()
+{
+    disconnect(modelBox, SIGNAL(currentIndexChanged(QString)), 0, 0);
+
+    modelBox->clear();
+    trialComboBox->clear();
+
+
+    QStringList modelBoxList = modelList;
+    modelBoxList << "Browse ...";
+    modelBox->insertItems(0,modelBoxList);
+
+    QStringList trialBoxList = trialList;
+    trialBoxList << "Browse ...";
+    trialComboBox->insertItems(0,trialBoxList);
+
+    connect(modelBox, SIGNAL(currentIndexChanged(QString)),
+            this, SLOT(on_ComboBoxClicked(QString)));
+
+}
+
+
+void EasyNetMainWindow::on_ComboBoxClicked(QString txt)
+{
+    if (txt == "Browse ...")
+        loadModel();
+    else
+        QMessageBox::information(this, "Item Selection",
+                             txt);
+}
+
+void EasyNetMainWindow::loadModel()
+{
+    // bring up file dialog
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
+                                                    scriptsDir,
+                                                    tr("Script Files (*.eNs *.eNm)"));
+    if (!fileName.isEmpty())
+    {
+        // load and run script
+        loadFile(fileName);
+        showViewMode(Model);
+        run();
+
+    }
+
+    // change combobox text
+    updateToolBar();
+
+
+
+
+}
 
 void EasyNetMainWindow::readSettings()
 {
@@ -257,6 +378,7 @@ void EasyNetMainWindow::readSettings()
     resize(size);
     move(pos);
 }
+
 
 void EasyNetMainWindow::writeSettings()
 {
@@ -713,6 +835,7 @@ void EasyNetMainWindow::hideAllDocks()
 void EasyNetMainWindow::showViewMode(int viewModeInt)
 {
     hideAllDocks();
+
     switch (viewModeInt) {
     case Welcome:
         welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
@@ -747,6 +870,8 @@ void EasyNetMainWindow::showViewMode(int viewModeInt)
     default:
         break;
     }
+
+
 }
 
 

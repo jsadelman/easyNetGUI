@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QPlainTextEdit>
-
+#include <QtWidgets>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -23,6 +23,7 @@ typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 class EditWindow;
 class Highlighter;
 class PlotWindow;
+
 
 
 QT_END_NAMESPACE
@@ -103,6 +104,7 @@ private slots:
     //bool save();
     //bool saveAs();
     //void documentWasModified();
+    void loadModel();
 
     void echoCommand(const QString &line);
 //    void runScript();
@@ -117,11 +119,16 @@ private slots:
 
     void lazyNutNotRunning();
     void displayVersion(QString version);
+    void on_ComboBoxClicked(QString txt);
 
 protected:
     void closeEvent(QCloseEvent *event);
 
 private:
+    void initialiseToolBar();
+    void initialiseLists();
+
+    void updateToolBar();
     void initViewActions();
     void createViewActions();
     void createActions();
@@ -159,6 +166,8 @@ private:
     QString         scriptsDir;
     QString         easyNetHome = "";
 
+    QStringList     modelList;
+    QStringList     trialList;
 
     QGroupBox       *lazyNutInterpreter;
     CmdOutput       *cmdOutput;
@@ -193,6 +202,14 @@ private:
     PlotWindow      *plotForm;
     QToolBar        *infoToolBar;
 //    QVBoxLayout     *vLayout;
+    QToolBar        *toolbar;
+    QComboBox       *modelBox;
+    QComboBox       *trialComboBox;
+    QComboBox       *setComboBox;
+    QComboBox       *inputComboBox;
+    QWidget         *spacer;
+
+
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
