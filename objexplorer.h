@@ -10,13 +10,14 @@
 #include <QStyledItemDelegate>
 
 #include "treemodel.h"
+#include "enumclasses.h"
 
-class LazyNutObj;
+//class LazyNutObj;
 class LazyNutObject;
 class QDomDocument;
-typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
+//typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
-class LazyNutObjModel;
+class LazyNutObjectModel;
 class LazyNutObjectListModel;
 class LazyNutObjTableModel;
 class LazyNutObjTableProxyModel;
@@ -41,9 +42,9 @@ public:
 
 
     LazyNutObjectCatalogue  *objectCatalogue;
-    LazyNutObject *lazyNutObject;
+    LazyNutObjectModel *lazyNutObjectModel;
 
-    LazyNutObjModel *lazyNutObjModel;
+//    LazyNutObjModel *lazyNutObjModel;
     TreeModel *objTaxonomyModel;
     LazyNutObjectListModel *lazyNutObjectListModel;
     LazyNutObjTableModel *lazyNutObjTableModel;

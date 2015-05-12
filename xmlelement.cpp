@@ -104,13 +104,22 @@ QStringList XMLelement::listLabels()
     return labels;
 }
 
+QString XMLelement::command()
+{
+    if (isCommand())
+        return listValues().join(' ');
+
+    else
+        return QString();
+}
+
 QString XMLelement::operator ()()
 {
     if (isString() || isInteger() || isReal() || isObject())
         return value();
 
     else if (isCommand())
-         return listValues().join(" ");
+         return command();
 
     else
         return QString();

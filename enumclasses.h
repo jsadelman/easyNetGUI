@@ -2,6 +2,10 @@
 #define ENUMCLASSES_H
 
 
+class LazyNutObject;
+typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
+
+
 // flags for logMode to be set up in LazyNutJobParam
 enum : unsigned int
 {

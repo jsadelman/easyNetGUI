@@ -30,8 +30,8 @@ SessionManager::SessionManager()
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
-    connect(lazyNut, SIGNAL(error(QProcess::ProcessError)),
-            this, SLOT(lazyNutProcessError(QProcess::ProcessError)));
+    connect(lazyNut, SIGNAL(error(int)),
+            this, SLOT(lazyNutProcessError(int)));
     macroQueue = new MacroQueue;
 }
 

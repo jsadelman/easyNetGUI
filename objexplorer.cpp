@@ -14,13 +14,15 @@
 
 #include "objexplorer.h"
 #include "lazynutobject.h"
+#include "lazynutobjectmodel.h"
+#include "lazynutobjtablemodel.h"
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
 #include "xmlelement.h"
 
 
 ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent)
-    : objectCatalogue(objectCatalogue), QMainWindow(parent)
+    : objectCatalogue(objectCatalogue), lazyNutObjectModel(nullptr), QMainWindow(parent)
 {
     createTaxonomy();
     QSplitter *splitter = new QSplitter;
@@ -140,25 +142,37 @@ void ObjExplorer::setObjFromListIndex(QModelIndex index)
 
 void ObjExplorer::setObjFromObjName(QString name)
 {
-    lazyNutObject = objectCatalogue->value(name);
-    lazyNutObjectView->setModel(lazyNutObject);
+    LazyNutObject *lno = objectCatalogue->value(name);
+    if (!lno)
+        return;
+//    if (lazyNutObjectModel)
+//        delete lazyNutObjectModel;
+
+    lazyNutObjectModel = new LazyNutObjectModel(lno);
+    QItemSelectionModel *oldModel = lazyNutObjectView->selectionModel();
+    lazyNutObjectView->setModel(lazyNutObjectModel);
+    delete oldModel;
     lazyNutObjectView->expandAll();
     lazyNutObjectView->resizeColumnToContents(0);
     lazyNutObjectView->resizeColumnToContents(1);
+    connect(lazyNutObjectView,SIGNAL(clicked(QModelIndex)),
+            lazyNutObjectModel,SLOT(getObjFromDescriptionIndex(QModelIndex)));
+    connect(lazyNutObjectModel,SIGNAL(objectRequested(QString)),
+            this,SLOT(setObjFromObjName(QString)));
     emit objectSelected(name);
 }
 
 void ObjExplorer::updateLazyNutObjCatalogue(QDomDocument *domDoc)
 {
-    LazyNutObject *newObj = new LazyNutObject(domDoc, this);
-    QString name = newObj->name();
+    LazyNutObject *newObj = new LazyNutObject(domDoc);
+//    QString name = newObj->name();
 //    lazyNutObjTableModel->sendBeginResetModel();
-    delete objectCatalogue->value(name);
-    objectCatalogue->insert(name,newObj);
-    connect(lazyNutObjectView,SIGNAL(clicked(QModelIndex)),
-            newObj,SLOT(getObjFromDescriptionIndex(QModelIndex)));
-    connect(newObj,SIGNAL(objectRequested(QString)),
-            this,SLOT(setObjFromObjName(QString)));
+    delete objectCatalogue->value(newObj->name);
+    objectCatalogue->insert(newObj->name,newObj);
+//    connect(lazyNutObjectView,SIGNAL(clicked(QModelIndex)),
+//            newObj,SLOT(getObjFromDescriptionIndex(QModelIndex)));
+//    connect(newObj,SIGNAL(objectRequested(QString)),
+//            this,SLOT(setObjFromObjName(QString)));
 //    lazyNutObjTableModel->sendEndResetModel();
     //emit objCatalogueChanged();
 }
@@ -170,16 +184,19 @@ void ObjExplorer::createTaxonomy()
     taxListView = new QListView;
     taxColumnView = new QColumnView;
     taxTreeView = new QTreeView;
+    taxTreeView->setHeaderHidden(true);
 
     taxViewMap["list"] = taxListView;
     taxViewMap["column"] = taxColumnView;
     taxViewMap["tree"] = taxTreeView;
+
 
     taxWidget = new QStackedWidget;
     foreach(QString view, taxViewMap.keys())
     {
         taxWidget->addWidget(taxViewMap[view]);
         qobject_cast<QAbstractItemView*>(taxViewMap[view])->setSelectionMode(QAbstractItemView::SingleSelection);
+        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setEditTriggers(QAbstractItemView::NoEditTriggers);
     }
 
     createTaxonomyMenu();
@@ -274,4 +291,5 @@ void ObjExplorer::connectTaxonomyModel()
 
     }
     taxTreeView->expandAll();
+    taxTreeView->resizeColumnToContents(0);
 }

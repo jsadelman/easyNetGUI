@@ -37,6 +37,7 @@ public:
     void setAttribute(QString name, QString value);
     QStringList listValues();
     QStringList listLabels();
+    QString command();
 
     QString operator ()();
 

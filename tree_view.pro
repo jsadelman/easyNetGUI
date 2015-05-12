@@ -34,7 +34,6 @@ SOURCES +=  \
     sessionmanager.cpp \
     commandsequencer.cpp \
         domitem.cpp \
-    lazynutobject.cpp \
     easyNetMainWindow.cpp \
     macrostate.cpp \
     lazynutjob.cpp \
@@ -51,7 +50,10 @@ SOURCES +=  \
     lazynutlistcombobox.cpp \
     lazynutlistwidget.cpp \
     lazynutpairedlistwidget.cpp \
-    bracketedparser.cpp
+    bracketedparser.cpp \
+    lazynutobjtablemodel.cpp \
+    lazynutobjectmodel.cpp \
+    lazynutobject.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -73,7 +75,6 @@ HEADERS  += \
     commandsequencer.h \
     enumclasses.h \
         domitem.h \
-    lazynutobject.h \
     easyNetMainWindow.h \
     macrostate.h \
     lazynutjob.h\
@@ -90,7 +91,10 @@ HEADERS  += \
     lazynutlistcombobox.h \
     lazynutlistwidget.h \
     lazynutpairedlistwidget.h \
-    bracketedparser.h
+    bracketedparser.h \
+    lazynutobjtablemodel.h \
+    lazynutobjectmodel.h \
+    lazynutobject.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

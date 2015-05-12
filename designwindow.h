@@ -43,6 +43,7 @@
 
 #include "diagramitem.h"
 #include "arrow.h"
+#include "enumclasses.h"
 
 //#include <QMainWindow>
 #include <QWidget>
@@ -64,7 +65,7 @@ class QToolBar;
 class QAbstractButton;
 class QGraphicsView;
 class LazyNutObject;
-typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
+//typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 QT_END_NAMESPACE
 
 //! [0]
