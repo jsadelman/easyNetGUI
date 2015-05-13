@@ -4,6 +4,7 @@
 #include "lazynutobjectmodel.h"
 #include "xmlelement.h"
 #include "domitem.h"
+#include "enumclasses.h"
 
 LazyNutObjectModel::LazyNutObjectModel(QDomDocument *domDoc, QObject *parent)
     : LazyNutObject(domDoc), QAbstractItemModel(parent)
@@ -88,7 +89,7 @@ QVariant LazyNutObjectModel::data(const QModelIndex &index, int role) const
         }
         return font;
     }
-    case Qt::UserRole: // ExpandToFillRole
+    case ExpandToFillRole:
         switch (index.column())
         {
         case 0:

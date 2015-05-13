@@ -53,7 +53,8 @@ SOURCES +=  \
     bracketedparser.cpp \
     lazynutobjtablemodel.cpp \
     lazynutobjectmodel.cpp \
-    lazynutobject.cpp
+    lazynutobject.cpp \
+    expandtofillbutton.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -94,7 +95,8 @@ HEADERS  += \
     bracketedparser.h \
     lazynutobjtablemodel.h \
     lazynutobjectmodel.h \
-    lazynutobject.h
+    lazynutobject.h \
+    expandtofillbutton.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

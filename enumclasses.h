@@ -1,10 +1,14 @@
 #ifndef ENUMCLASSES_H
 #define ENUMCLASSES_H
 
+#include <Qt>
+#include <QHash>
 
 class LazyNutObject;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
+// model/view data roles
+enum : unsigned int {ExpandToFillRole = Qt::UserRole};
 
 // flags for logMode to be set up in LazyNutJobParam
 enum : unsigned int

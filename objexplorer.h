@@ -15,6 +15,7 @@
 //class LazyNutObj;
 class LazyNutObject;
 class QDomDocument;
+class ExpandToFillButton;
 //typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
 class LazyNutObjectModel;
@@ -53,6 +54,7 @@ public:
     QListView *lazyNutObjectListView;
 //    QVBoxLayout *layout;
     QTableView *lazyNutObjTableView;
+    ExpandToFillButton *expandToFillButton;
     QTableView *lazyNutObjTableProxyView;
     QTreeView *lazyNutObjectView;
 //    QTreeView *objTaxonomyView;
@@ -80,6 +82,7 @@ private slots:
     void getTaxonomySubtypes();
     void setTaxonomySubtypes(QStringList subtypes, QString cmd);
     void connectTaxonomyModel();
+    void showList(QString cmd);
 
 
 

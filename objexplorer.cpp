@@ -19,6 +19,8 @@
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
 #include "xmlelement.h"
+#include "expandtofillbutton.h"
+#include "lazynutlistwidget.h"
 
 
 ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent)
@@ -34,6 +36,12 @@ ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *paren
     lazyNutObjectView->expandAll();
     lazyNutObjectView->header()->setStretchLastSection(true);
     lazyNutObjectView->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    expandToFillButton = new ExpandToFillButton(lazyNutObjTableView);
+    lazyNutObjectView->setItemDelegateForColumn(1, expandToFillButton);
+    connect(expandToFillButton, SIGNAL(expandToFill(QString)),
+            this, SLOT(showList(QString)));
+
 
 //    objTaxonomyView = new QTreeView;
 //    objTaxonomyView->setModel(objTaxonomyModel);
@@ -53,6 +61,7 @@ ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *paren
 
     lazyNutObjTableView = new QTableView;
     lazyNutObjTableView->setModel(lazyNutObjTableModel);
+
 
 //    lazyNutObjectListView = new QListView;
 //    lazyNutObjectListView->setModel(lazyNutObjectListModel);
@@ -292,4 +301,11 @@ void ObjExplorer::connectTaxonomyModel()
     }
     taxTreeView->expandAll();
     taxTreeView->resizeColumnToContents(0);
+}
+
+void ObjExplorer::showList(QString cmd)
+{
+    LazyNutListWidget *listWidget = new LazyNutListWidget(cmd);
+    listWidget->setAttribute(Qt::WA_DeleteOnClose, true);
+    listWidget->show();
 }
