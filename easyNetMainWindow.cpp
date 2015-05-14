@@ -25,6 +25,8 @@
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 
+#include "lazynutlistcombobox.h"
+
 InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
 {
@@ -248,6 +250,34 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     loadFile(QString("%1/qtest").arg(scriptsDir));
 //    run();
 
+}
+
+bool EasyNetMainWindow ::eventFilter(QObject *target, QEvent *event)
+{
+    if (target == trialCombo)
+        switch(event->type())
+        {
+//        case QEvent::Show:
+        case QEvent::MouseButtonPress:
+//        case QEvent::MouseButtonDblClick:
+        {
+            qDebug () << "trialComboEventSwitch" << trialComboEventSwitch;
+            trialComboEventSwitch = ! trialComboEventSwitch;
+//            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+//            qDebug() << mouseEvent->globalPos() << mouseEvent->pos()
+//                     << mouseEvent->button() << mouseEvent->buttons();
+            if (trialComboEventSwitch)
+            {
+
+            trialCombo->savePos(static_cast<QMouseEvent *>(event)->pos());
+            trialCombo->getList();
+            }
+            return trialComboEventSwitch;
+        }
+        default:
+            break;
+        }
+    return QMainWindow::eventFilter(target, event);
 }
 
 
@@ -541,6 +571,9 @@ void EasyNetMainWindow::createMenus()
 
     aboutMenu = menuBar()->addMenu(tr("&About"));
     aboutMenu->addAction(versionAct);
+
+    trialCombo = new LazyNutListComboBox("",this);
+    trialCombo->installEventFilter(this);
 }
 
 void EasyNetMainWindow::createToolBars()

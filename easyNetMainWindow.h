@@ -26,6 +26,7 @@ class EditWindow;
 class Highlighter;
 class PlotWindow;
 
+class LazyNutListComboBox;
 
 QT_END_NAMESPACE
 
@@ -90,6 +91,7 @@ public:
     };
     EasyNetMainWindow(QWidget *parent = 0);
 //    SessionManager *sessionManager;
+    bool eventFilter(QObject * target, QEvent * event) Q_DECL_OVERRIDE;
 
 signals:
     void savedLayoutToBeLoaded(QString);
@@ -242,6 +244,9 @@ private:
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
     QAction         *versionAct;
+
+    LazyNutListComboBox  *trialCombo;
+    bool                trialComboEventSwitch = false;
 };
 
 #endif // NMCONSOLE_H

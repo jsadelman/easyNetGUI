@@ -16,12 +16,15 @@ signals:
 public slots:
     void setGetListCmd(QString cmd);
     void getList(QString cmd = QString());
+    void savePos(const QPoint& pos);
 
 private slots:
     void buildList(QStringList list);
 
 private:
     QString getListCmd;
+    int counter;
+    QPoint mousePos;
 
 };
 
