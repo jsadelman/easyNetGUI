@@ -33,7 +33,9 @@ public slots:
     void processLazyNutOutput(const QString &lazyNutOutput);
 signals:
     // send output to editor
+    void commandsInJob(int);
     void commandsExecuted();
+    void commandExecuted(QString);
     void answerReady(QString);
     void userLazyNutOutputReady(const QString&);
     // states

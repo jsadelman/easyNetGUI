@@ -12,6 +12,8 @@ class QWebView;
 class QGroupBox;
 class QDockWidget;
 class QSignalMapper;
+class QStackedWidget;
+class QProgressBar;
 
 class ObjExplorer;
 
@@ -23,7 +25,7 @@ typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 class EditWindow;
 class Highlighter;
 class PlotWindow;
-
+class LazyNutListComboBox;
 
 
 QT_END_NAMESPACE
@@ -101,10 +103,18 @@ private slots:
     void newLogFile();
     void open();
     void run();
+    void setLazyNutIsReady(bool isReady);
     //bool save();
     //bool saveAs();
     //void documentWasModified();
     void loadModel();
+    void fillComboBox();
+    void msgBox(QString msg);
+
+    void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
+    void clearErrorOnStatusBar();
+    void showCmdOnStatusBar(QString cmd);
+    void addOneToLazyNutProgressBar();
 
     void echoCommand(const QString &line);
 //    void runScript();
@@ -127,13 +137,14 @@ protected:
 private:
     void initialiseToolBar();
     void initialiseLists();
-
     void updateToolBar();
+
     void initViewActions();
     void createViewActions();
     void createActions();
     void createMenus();
     void createToolBars();
+    void createStatusBar();
 //    bool maybeSave();
     void newFile(EditWindow*);
     void loadFile(const QString &fileName);
@@ -201,15 +212,13 @@ private:
     DesignWindow    *designWindow;
     PlotWindow      *plotForm;
     QToolBar        *infoToolBar;
-//    QVBoxLayout     *vLayout;
     QToolBar        *toolbar;
     QComboBox       *modelBox;
-    QComboBox       *trialComboBox;
+//    QComboBox       *trialComboBox;
+    LazyNutListComboBox *trialComboBox;
     QComboBox       *setComboBox;
     QComboBox       *inputComboBox;
     QWidget         *spacer;
-
-
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
@@ -217,6 +226,17 @@ private:
     QMenu           *runMenu;
     QMenu           *settingsMenu;
     QMenu           *aboutMenu;
+
+    // status bar widgets
+    QLabel          *readyLabel;
+    QLabel          *busyLabel;
+    QLabel          *offLabel;
+    QStackedWidget  *lazyNutStatusWidget;
+    QProgressBar    *lazyNutProgressBar;
+    QLabel          *lazyNutCmdLabel;
+    QLabel          *lazyNutErrorLabel;
+
+
 //    QToolBar        *fileToolBar;
 //    QToolBar        *runToolBar;
 

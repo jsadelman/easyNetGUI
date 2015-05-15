@@ -6,7 +6,8 @@ LazyNutListComboBox::LazyNutListComboBox(QString getListCmd, QWidget *parent) :
     getListCmd(getListCmd), QComboBox(parent)
 {
     setEditable(false);
-
+    addItem("-empty-");
+    setSizeAdjustPolicy(QComboBox::AdjustToContents);
 }
 
 void LazyNutListComboBox::setEmptyItem(bool present)
@@ -27,11 +28,12 @@ void LazyNutListComboBox::getList(QString cmd)
 {
 //    buildList(QStringList({"badger", "mushroom", "snake"}));
 
+    qDebug() << cmd;
     getListCmd = cmd.isEmpty() ? getListCmd : cmd;
     if (!getListCmd.isEmpty())
     {
         LazyNutJobParam *param = new LazyNutJobParam;
-//        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(getListCmd)});
         param->answerFormatterType = AnswerFormatterType::ListOfValues;
         param->setAnswerReceiver(this, SLOT(buildList(QStringList)));
@@ -50,3 +52,4 @@ void LazyNutListComboBox::buildList(QStringList list)
     addItems(list);
     emit listReady();
 }
+

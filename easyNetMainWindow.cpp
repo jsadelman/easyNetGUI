@@ -24,6 +24,7 @@
 #include "plotwindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
+#include "lazynutlistcombobox.h"
 
 InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
@@ -56,7 +57,6 @@ void CmdOutput::displayOutput(const QString & output)
 
 
 
-
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -68,7 +68,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     dummyEdit->hide();
     setCentralWidget(dummyEdit);
 //    createActions();
-
 
 /*    welcomeScreen = new QTextEdit(this);
     QFile myfile(":/images/Welcome.html");
@@ -95,8 +94,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     dockZeb->resize(200,200);
     addDockWidget(Qt::RightDockWidgetArea, dockZeb);
 */
-
-
     dockWelcome = new QDockWidget(tr("Welcome"), this);
     dockWelcome->setAllowedAreas(  Qt::TopDockWidgetArea );
     dockWelcome->setWidget(welcomeScreen);
@@ -224,6 +221,12 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
 
 
+    createActions();
+    createMenus();
+    createToolBars();
+    createStatusBar();
+    showViewMode(Welcome);
+
     if (lazyNutBat.isEmpty())
     {
         if (easyNetHome.isEmpty())
@@ -241,14 +244,11 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
         connect(inputCmdLine,SIGNAL(commandReady(QString)),
                 this,SLOT(runCmd(QString)));
 
-    createActions();
-    createMenus();
-    createToolBars();
-    showViewMode(Welcome);
+
 
     // debug: load and run qtest at startup
-//    loadFile(QString("%1/qtest").arg(scriptsDir));
-//    run();
+    loadFile(QString("%1/qtest").arg(scriptsDir));
+    run();
 
 }
 
@@ -269,10 +269,15 @@ void EasyNetMainWindow::initialiseToolBar()
     QLabel* inputBoxLabel = new QLabel("Input: ");
 
     modelBox = new QComboBox;
-    trialComboBox = new QComboBox;
+//    trialComboBox = new QComboBox;
     setComboBox = new QComboBox;
     inputComboBox = new QComboBox;
 
+    QStringList s = {"hello"};
+    trialComboBox = new LazyNutListComboBox("list trial", this);
+//    trialComboBox->addItems(s);
+    connect(trialComboBox, SIGNAL(highlighted(int)), trialComboBox, SLOT(getList()));
+//    connect(trialComboBox, SIGNAL(highlighted(QString)), this, SLOT(msgBox(QString)));
 
     spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -313,21 +318,35 @@ void EasyNetMainWindow::initialiseToolBar()
 
 }
 
+void EasyNetMainWindow::msgBox(QString msg)
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Debug", msg,
+                                  QMessageBox::Yes|QMessageBox::No);
+
+}
+
+void EasyNetMainWindow::fillComboBox()
+{
+//    trialComboBox->insertItems(0,"test");
+
+}
+
 void EasyNetMainWindow::updateToolBar()
 {
     disconnect(modelBox, SIGNAL(currentIndexChanged(QString)), 0, 0);
 
     modelBox->clear();
-    trialComboBox->clear();
+//    trialComboBox->clear();
 
 
     QStringList modelBoxList = modelList;
     modelBoxList << "Browse ...";
     modelBox->insertItems(0,modelBoxList);
 
-    QStringList trialBoxList = trialList;
-    trialBoxList << "Browse ...";
-    trialComboBox->insertItems(0,trialBoxList);
+//    QStringList trialBoxList = trialList;
+//    trialBoxList << "Browse ...";
+//    trialComboBox->insertItems(0,trialBoxList);
 
     connect(modelBox, SIGNAL(currentIndexChanged(QString)),
             this, SLOT(on_ComboBoxClicked(QString)));
@@ -367,6 +386,8 @@ void EasyNetMainWindow::loadModel()
 
 }
 
+
+
 void EasyNetMainWindow::readSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
@@ -378,7 +399,6 @@ void EasyNetMainWindow::readSettings()
     resize(size);
     move(pos);
 }
-
 
 void EasyNetMainWindow::writeSettings()
 {
@@ -735,6 +755,113 @@ void EasyNetMainWindow::createToolBars()
     addToolBar(Qt::LeftToolBarArea, infoToolBar);
 }
 
+void EasyNetMainWindow::createStatusBar()
+{
+    lazyNutProgressBar = new QProgressBar;
+    lazyNutProgressBar->setTextVisible(false);
+    lazyNutProgressBar->setMinimum(0);
+    statusBar()->addPermanentWidget(lazyNutProgressBar, 1);
+    connect(SessionManager::instance(), SIGNAL(commandsInJob(int)),
+            lazyNutProgressBar, SLOT(setMaximum(int)));
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString)),
+            this, SLOT(addOneToLazyNutProgressBar()));
+
+
+    readyLabel = new QLabel("READY");
+    readyLabel->setStyleSheet("QLabel {"
+                              "qproperty-alignment: AlignCenter;"
+                              "padding-right: 3px;"
+                              "padding-left: 3px;"
+                              "font-weight: bold;"
+                              "color: green;"
+                              "}");
+    busyLabel = new QLabel("BUSY");
+    busyLabel->setStyleSheet("QLabel {"
+                             "qproperty-alignment: AlignCenter;"
+                             "padding-right: 3px;"
+                             "padding-left: 3px;"
+                             "font-weight: bold;"
+                             "background-color : red;"
+                             "color: white;"
+                             "}");
+    offLabel = new QLabel("OFF");
+    offLabel->setStyleSheet("QLabel {"
+                            "qproperty-alignment: AlignCenter;"
+                            "padding-right: 3px;"
+                            "padding-left: 3px;"
+                            "font-weight: bold;"
+                            "background-color: black;"
+                            "color: yellow;"
+                            "}");
+    lazyNutStatusWidget = new QStackedWidget;
+    lazyNutStatusWidget->addWidget(readyLabel);
+    lazyNutStatusWidget->addWidget(busyLabel);
+    lazyNutStatusWidget->addWidget(offLabel);
+    lazyNutStatusWidget->setCurrentWidget(offLabel);
+    lazyNutStatusWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    lazyNutStatusWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    statusBar()->addPermanentWidget(lazyNutStatusWidget, 1);
+    connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));
+
+
+
+
+
+    lazyNutCmdLabel = new QLabel;
+    lazyNutCmdLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    statusBar()->addWidget(lazyNutCmdLabel, 1);
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString)),
+            this, SLOT(showCmdOnStatusBar(QString)));
+
+    lazyNutErrorLabel = new QLabel;
+    lazyNutErrorLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    lazyNutErrorLabel->setStyleSheet("QLabel {"
+                                 "font-weight: bold;"
+                                 "color: red"
+                                 "}");
+    statusBar()->addWidget(lazyNutErrorLabel, 1);
+    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
+            this, SLOT(showErrorOnStatusBar(QString,QStringList)));
+    connect(SessionManager::instance(), SIGNAL(lazyNutMacroStarted()),
+            this, SLOT(clearErrorOnStatusBar()));
+}
+
+
+void EasyNetMainWindow::setLazyNutIsReady(bool isReady)
+{
+    if (isReady)
+    {
+        lazyNutStatusWidget->setCurrentWidget(readyLabel);
+        lazyNutProgressBar->reset();
+    }
+    else
+    {
+        lazyNutStatusWidget->setCurrentWidget(busyLabel);
+        lazyNutProgressBar->setValue(0);
+    }
+}
+
+void EasyNetMainWindow::showErrorOnStatusBar(QString /*cmd*/, QStringList errorList)
+{
+    lazyNutErrorLabel->setText(QString("LAST ERROR: %1").arg(errorList.last()));
+}
+
+void EasyNetMainWindow::clearErrorOnStatusBar()
+{
+    lazyNutErrorLabel->clear();
+}
+
+void EasyNetMainWindow::showCmdOnStatusBar(QString cmd)
+{
+    lazyNutCmdLabel->setText(QString("LAST EXEC COMMAND: %1").arg(cmd));
+}
+
+void EasyNetMainWindow::addOneToLazyNutProgressBar()
+{
+    lazyNutProgressBar->setValue(lazyNutProgressBar->value()+1);
+}
+
+
 
 void EasyNetMainWindow::loadFile(const QString &fileName)
 {
@@ -835,7 +962,6 @@ void EasyNetMainWindow::hideAllDocks()
 void EasyNetMainWindow::showViewMode(int viewModeInt)
 {
     hideAllDocks();
-
     switch (viewModeInt) {
     case Welcome:
         welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
@@ -870,8 +996,6 @@ void EasyNetMainWindow::showViewMode(int viewModeInt)
     default:
         break;
     }
-
-
 }
 
 

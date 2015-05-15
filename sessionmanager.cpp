@@ -56,6 +56,8 @@ void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
     if ((start = !job))
     {
         LazyNutMacro* macro = new LazyNutMacro(macroQueue, this);
+        connect(macro, SIGNAL(started()), this, SIGNAL(lazyNutMacroStarted()));
+        connect(macro, SIGNAL(finished()), this, SIGNAL(lazyNutMacroFinished()));
         job = new LazyNutJob(macro); // job --> endOfMacro
         macro->setInitialState(job);
         connect(commandSequencer,SIGNAL(commandsExecuted()),macro,SIGNAL(next()));
@@ -173,6 +175,16 @@ void SessionManager::startCommandSequencer()
     commandSequencer = new CommandSequencer(lazyNut, this);
     connect(commandSequencer,SIGNAL(userLazyNutOutputReady(QString)),
             this,SIGNAL(userLazyNutOutputReady(QString)));
+    connect(commandSequencer, SIGNAL(isReady(bool)),
+            this, SIGNAL(isReady(bool)));
+    connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
+            this, SIGNAL(cmdError(QString,QStringList)));
+    connect(commandSequencer, SIGNAL(commandExecuted(QString)),
+            this, SIGNAL(commandExecuted(QString)));
+    connect(commandSequencer, SIGNAL(commandsInJob(int)),
+            this, SIGNAL(commandsInJob(int)));
+
+
 }
 
 
@@ -183,7 +195,7 @@ void SessionManager::killLazyNut()
 
 
 
-bool SessionManager::getStatus()
+bool SessionManager::isReady()
 {
     return commandSequencer->getStatus();
 }
@@ -213,6 +225,7 @@ void SessionManager::macroEnded()
     qDebug() << "Macro ended.";
     macroQueue->freeToRun();
 }
+
 
 
 

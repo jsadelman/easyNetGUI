@@ -2,6 +2,7 @@
 #define LAZYNUTLISTCOMBOBOX_H
 
 #include <QComboBox>
+#include <QDebug>
 
 class LazyNutListComboBox : public QComboBox
 {
