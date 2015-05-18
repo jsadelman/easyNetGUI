@@ -25,6 +25,8 @@
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 
+#include "lazynutlistcombobox.h"
+
 InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
 {
@@ -541,6 +543,9 @@ void EasyNetMainWindow::createMenus()
 
     aboutMenu = menuBar()->addMenu(tr("&About"));
     aboutMenu->addAction(versionAct);
+
+    trialCombo = new LazyNutListComboBox("",this);
+//    trialCombo->installEventFilter(this);
 }
 
 void EasyNetMainWindow::createToolBars()

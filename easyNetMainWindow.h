@@ -26,6 +26,7 @@ class EditWindow;
 class Highlighter;
 class PlotWindow;
 
+class LazyNutListComboBox;
 
 QT_END_NAMESPACE
 
@@ -242,6 +243,9 @@ private:
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
     QAction         *versionAct;
+
+    LazyNutListComboBox  *trialCombo;
+    bool                trialComboEventSwitch = false;
 };
 
 #endif // NMCONSOLE_H
