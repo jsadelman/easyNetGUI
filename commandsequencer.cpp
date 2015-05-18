@@ -2,11 +2,10 @@
 #include "lazynut.h"
 
 #include <QDebug>
-#include <QDomDocument>
 
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
-    : lazyNut(lazyNut), ready(true), QObject(parent)
+    : lazyNut(lazyNut), ready(true), logMode(ECHO_INTERPRETER), QObject(parent)
 {
     initProcessLazyNutOutput();
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
@@ -15,33 +14,30 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
 
 void CommandSequencer::initProcessLazyNutOutput()
 {
-    jobOrigin = JobOrigin::User;
+    beginRex = QRegExp("BEGIN: (\\d+)");
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
-//    eNelementsTagRex = QRegExp("(</?)eNelements(>)");
+    eNelementsRex = QRegExp("<eNelements>");
+    svgRex = QRegExp("SVG file of (\\d+) bytes:");
+    answerDoneRex = QRegExp("ANSWER: Done\\.(?=\\n)");
     lazyNutBuffer.clear();
     baseOffset = 0;
-
 }
 
-void CommandSequencer::runCommands(QStringList commands, JobOrigin origin, QObject *obj, bool xml,char const* slot)
+
+void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsigned int mode)
 {
-    jobOrigin = origin;
-    QStringList clean_commands;
-    for (int i=0; i<commands.size(); ++i)
-        if (!emptyLineRex.exactMatch(commands[i])) clean_commands.append(commands[i]);
-    for (int i=0; i<clean_commands.size(); ++i)
+    getAnswer = _getAnswer;
+    logMode = mode;
+
+    foreach (QString cmd, commands)
     {
-            if(i!=clean_commands.size()-1)
-            {
-                commandList.append(new LazyNutCommand(clean_commands[i]));
-            }
-            else
-            {
-                commandList.append(new LazyNutCommand(clean_commands[i],obj,slot,xml));
-            }
+        // skip empty lines, which do not trigger any response from lazyNut
+        if (!emptyLineRex.exactMatch(cmd))
+            commandList.append(cmd);
     }
+
     if (commandList.size() == 0)
     {
         // likely the user has selected only empty lines (by mistake)
@@ -49,35 +45,51 @@ void CommandSequencer::runCommands(QStringList commands, JobOrigin origin, QObje
         return;
     }
     ready = false;
+    emit commandsInJob(commandList.size());
     emit isReady(ready);
-    qDebug() << "BUSY";
+
+    qDebug() << "BUSY" << "first cmd: " << commandList.first();
+
     // send cmds to lazyNut without removing them from commandList
     // they will be removed when their resp. lazyNut output is received
-    foreach (LazyNutCommand* cmd, commandList)
-        lazyNut->sendCommand(*cmd);
+    foreach (QString cmd, commandList)
+        lazyNut->sendCommand(cmd);
 }
 
-void CommandSequencer::runCommand(QString command, JobOrigin origin, QObject*obj, bool xml, char const* slot)
+void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int mode)
 {
-    runCommands(QStringList{command}, origin, obj, xml, slot);
+    runCommands(QStringList{command}, _getAnswer, mode);
 }
 
 void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
 {
-    if (jobOrigin == JobOrigin::User)
-        emit userLazyNutOutputReady(lazyNutOutput); // display on console
+    if (logMode &= ECHO_INTERPRETER)
+        emit userLazyNutOutputReady(lazyNutOutput);
     // else send it to some log file or other location
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
         return; // startup header or other spontaneous lazyNut output, or synch error
-    QString currentCmd = *commandList.first();
-
-    QRegExp beginRex(QString("BEGIN: %1\\n").arg(QRegExp::escape(currentCmd)));
-    QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(QRegExp::escape(currentCmd)));
-    int beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
-    int endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
-    while (baseOffset <= beginOffset && beginOffset < endOffset)
+    QString currentCmd, lineNumber;
+    int beginOffset, endOffset;
+    while (true)
     {
+        currentCmd = commandList.first();
+        beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
+        lineNumber = beginRex.cap(1);
+        QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(lineNumber));
+        endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
+        if (!(baseOffset <= beginOffset && beginOffset < endOffset))
+            return;
+
+        // a hack for skipping lazyNut header, which currently contains BEGIN 1
+        if (lineNumber == "1")
+        {
+            baseOffset = endOffset + endRex.matchedLength();
+            continue;
+        }
+//        qDebug() << "lineNumber" << lineNumber;
+
+
         // extract ERROR lines
         int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
         QStringList errorList = QStringList();
@@ -88,40 +100,55 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         }
         if (!errorList.isEmpty())
             emit cmdError(currentCmd,errorList);
-        QString answer;
+
         // grab ANSWER (assume there's only one)
-        if (jobOrigin == JobOrigin::GUI)
+        if (getAnswer)
         {
             int answerOffset = answerRex.indexIn(lazyNutBuffer,beginOffset);
             if (beginOffset < answerOffset && answerOffset < endOffset)
             {
-                answer = answerRex.cap(1);
+                QString answer = answerRex.cap(1);
+                if (eNelementsRex.indexIn(answer) > -1)
+                {
+                    int eNelementEnd = lazyNutBuffer.indexOf("</eNelements>", answerOffset) +
+                            QString("</eNelements>").length();
+                    answer = lazyNutBuffer.mid(answerOffset, eNelementEnd - answerOffset).remove("ANSWER:");
+                }
+                else if (svgRex.exactMatch(answer))
+                {
+                    //                    int nbytes = svgRex.cap(1).toInt();
+                    int svgStart = answerOffset + answerRex.matchedLength() +1;
+                    int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + QString("</svg>").length();
+                    answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
+                }
+                emit answerReady(answer, currentCmd);
             }
         }
-        commandList.first()->done(answer);
-        delete commandList.first();
+        emit commandExecuted(commandList.first());
         commandList.removeFirst();
+        baseOffset = endOffset + endRex.matchedLength();
         if (commandList.isEmpty())
         {
-            emit commandsExecuted();
             baseOffset = 0;
             lazyNutBuffer.clear();
             ready = true;
             emit isReady(ready);
             qDebug() << "READY";
+            emit commandsExecuted();
             return;
         }
-        currentCmd = *commandList.first();
-        baseOffset = endOffset + endRex.matchedLength();
-        beginRex = QRegExp(QString("BEGIN: %1\\n").arg(QRegExp::escape(currentCmd)));
-        endRex = QRegExp(QString("END: %1[^\\n]*\\n").arg(QRegExp::escape(currentCmd)));
-        beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
-        endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
     }
 }
+
+
 
 bool CommandSequencer::getStatus()
 {
     return ready;
+}
+
+bool CommandSequencer::isOn()
+{
+    return lazyNut->state() == QProcess::Running;
 }
 

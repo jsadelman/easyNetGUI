@@ -6,20 +6,22 @@
 #include <QStateMachine>
 
 
-#include "jobqueue.h"
+//#include "jobqueue.h"
 #include "enumclasses.h"
 
 class QDomDocument;
+class LazyNutJob;
+class LazyNutJobParam;
+class MacroQueue;
 
-
-class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
-{
-public:
-    MacroQueue(){}
-    void run(QStateMachine *macro);
-    void reset();
-    QString name();
-};
+//class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
+//{
+//public:
+//    MacroQueue(){}
+//    void run(QStateMachine *macro);
+//    void reset();
+//    QString name();
+//};
 
 class QueryContext;
 class TreeModel;
@@ -36,96 +38,76 @@ class SessionManager: public QObject
     Q_OBJECT
 
 public:
-    SessionManager(QObject *parent=0);
-    const CommandSequencer * getCommandSequencer() const {return commandSequencer;}
-
-
+    static SessionManager* instance(); // singleton
     void startLazyNut(QString lazyNutBat);
+    void setupJob (LazyNutJobParam* param, QObject* sender = nullptr);
+    LazyNutJob *currentJob(QObject* sender);
+    LazyNutJob* nextJob(QObject* sender);
 
 signals:
-    // decision signals
-    void skipDescriptions();
 
     // send output to editor
     void userLazyNutOutputReady(const QString&);
 
     void isReady(bool);
     void isPaused(bool);
+    void cmdError(QString,QStringList);
+    void commandExecuted(QString);
+    void commandsInJob(int);
+    void lazyNutMacroStarted();
+    void lazyNutMacroFinished();
 
     void macroQueueStopped(bool);
 
-    void descriptionReady(QDomDocument*);
-    void updateDiagramScene();
-
-
-    void beginObjHashModified();
-    void endObjHashModified();
-
     void lazyNutNotRunning();
-    void lazyNutOutputParsed(bool);
-    void lazyNutOutputProcessed();
+    // convenient signals for the implementation of updateRecentlyModified()
+    void updateLazyNutObjCatalogue(QDomDocument*);
+    void updateDiagramScene();
 
 
 public slots:
 
-    // macros
-    void runModel(QStringList cmdList);
-    void runSelection(QStringList cmdList);
-
     // status
-    bool getStatus();
+    bool isReady();
+    bool isOn();
 
     // controls
     void pause();
     void stop();
     void killLazyNut();
 
+    void updateRecentlyModified();
+    void getDescriptions();
 
 
 private slots:
 
     void getOOB(const QString &lazyNutOutput);
     void startCommandSequencer();
+    void lazyNutProcessError(int error);
 
-    // general macro operations
     void macroStarted();
     void macroEnded();
 
-
-    // lazyNut operations (entering a Macro state)
-    void runCommands();
-    void getSubtypes();
-    void getRecentlyModified();
-    void clearRecentlyModified();
-    void getDescriptions();
+    void appendCmdListOnNextJob(QStringList cmdList);
 
 
-     void updateRecentlyModified(QDomDocument*dom);
 
 private:
 
-    QStringList extrctRecentlyModifiedList(QDomDocument* domDoc);
+    SessionManager();
+    SessionManager(SessionManager const&){}
+    SessionManager& operator=(SessionManager const&){}
+    static SessionManager* sessionManager;
 
-    void initParser();
-    void updateObjects();
-    bool parseLazyNutOutput();
-
-    QStateMachine *buildMacro();
     MacroQueue *macroQueue;
-public:
     CommandSequencer *commandSequencer;
-private:
     LazyNut* lazyNut;
     QString lazyNutOutput;
-
     QStringList commandList;
-    QStringList recentlyModified;
-    LazyNutObjectCatalogue *objectCatalogue;
-    TreeModel* objTaxonomyModel;
     QString lazyNutHeaderBuffer;
     QRegExp OOBrex;
     QString OOBsecret;
-    QStringList lazyNutObjTypes{"layer","connection","conversion","representation","pattern","steps","database","file","observer"};
 
 };
 

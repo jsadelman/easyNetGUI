@@ -34,8 +34,27 @@ SOURCES +=  \
     sessionmanager.cpp \
     commandsequencer.cpp \
         domitem.cpp \
+    easyNetMainWindow.cpp \
+    macrostate.cpp \
+    lazynutjob.cpp \
+    lazynutmacro.cpp \
+    answerformatterfactory.cpp \
+    answerformatter.cpp \
+    lazynutjobparam.cpp \
+    macroqueue.cpp \
+    plotsettingsbasewidget.cpp \
+    plotsettingsform.cpp \
+    dataframemodel.cpp \
+    lazynutlistmenu.cpp \
+    xmlelement.cpp \
+    lazynutlistcombobox.cpp \
+    lazynutlistwidget.cpp \
+    lazynutpairedlistwidget.cpp \
+    bracketedparser.cpp \
+    lazynutobjtablemodel.cpp \
+    lazynutobjectmodel.cpp \
     lazynutobject.cpp \
-    easyNetMainWindow.cpp
+    expandtofillbutton.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -57,8 +76,27 @@ HEADERS  += \
     commandsequencer.h \
     enumclasses.h \
         domitem.h \
+    easyNetMainWindow.h \
+    macrostate.h \
+    lazynutjob.h\
+    lazynutmacro.h \
+    answerformatterfactory.h \
+    answerformatter.h \
+    lazynutjobparam.h \
+    macroqueue.h \
+    plotsettingsbasewidget.h \
+    plotsettingsform.h \
+    dataframemodel.h \
+    lazynutlistmenu.h \
+    xmlelement.h \
+    lazynutlistcombobox.h \
+    lazynutlistwidget.h \
+    lazynutpairedlistwidget.h \
+    bracketedparser.h \
+    lazynutobjtablemodel.h \
+    lazynutobjectmodel.h \
     lazynutobject.h \
-    easyNetMainWindow.h
+    expandtofillbutton.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

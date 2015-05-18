@@ -12,19 +12,19 @@ class QWebView;
 class QGroupBox;
 class QDockWidget;
 class QSignalMapper;
+class QStackedWidget;
+class QProgressBar;
 
 class ObjExplorer;
 
 class DesignWindow;
 class LazyNut;
-class CommandSequencer;
 class SessionManager;
 class LazyNutObject;
 typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 class EditWindow;
 class Highlighter;
 class PlotWindow;
-
 
 QT_END_NAMESPACE
 
@@ -88,6 +88,7 @@ public:
         ViewMode_END
     };
     EasyNetMainWindow(QWidget *parent = 0);
+//    SessionManager *sessionManager;
 
 signals:
     void savedLayoutToBeLoaded(QString);
@@ -100,21 +101,29 @@ private slots:
     void newLogFile();
     void open();
     void run();
+    void setLazyNutIsReady(bool isReady);
     //bool save();
     //bool saveAs();
     //void documentWasModified();
+
+    void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
+    void clearErrorOnStatusBar();
+    void showCmdOnStatusBar(QString cmd);
+    void addOneToLazyNutProgressBar();
 
     void echoCommand(const QString &line);
 //    void runScript();
     void runModel();
     void runSelection();
     void runCmd(QString cmd);
+    void runCmdAndUpdate(QStringList cmdList);
     void setEasyNetHome();
     void setLazyNutBat();
     void showPauseState(bool isPaused);
+    void getVersion();
 
     void lazyNutNotRunning();
-    void requestVersion();
+//    void requestVersion();
     void displayVersion(QString version);
 
 protected:
@@ -126,6 +135,7 @@ private:
     void createActions();
     void createMenus();
     void createToolBars();
+    void createStatusBar();
 //    bool maybeSave();
     void newFile(EditWindow*);
     void loadFile(const QString &fileName);
@@ -162,7 +172,6 @@ private:
     QGroupBox       *lazyNutInterpreter;
     CmdOutput       *cmdOutput;
     InputCmdLine    *inputCmdLine;
-    SessionManager      *sessionManager;
 //    TreeModel       *objTaxonomyModel;
     LazyNutObjectCatalogue *objectCatalogue;
 //    LazyNutObjCatalogue  *objCatalogue;
@@ -200,6 +209,17 @@ private:
     QMenu           *runMenu;
     QMenu           *settingsMenu;
     QMenu           *aboutMenu;
+
+    // status bar widgets
+    QLabel          *readyLabel;
+    QLabel          *busyLabel;
+    QLabel          *offLabel;
+    QStackedWidget  *lazyNutStatusWidget;
+    QProgressBar    *lazyNutProgressBar;
+    QLabel          *lazyNutCmdLabel;
+    QLabel          *lazyNutErrorLabel;
+
+
 //    QToolBar        *fileToolBar;
 //    QToolBar        *runToolBar;
 

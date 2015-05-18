@@ -7,88 +7,36 @@
 #include <QQueue>
 #include <QSet>
 #include <QVector>
-#include <QDomDocument>
-#include <QDebug>
 
 #include "enumclasses.h"
 
 class LazyNut;
 class QDomDocument;
 
-class LazyNutCommand: public QObject
-{
-    Q_OBJECT
-
-public:
-    operator QString()const
-    {
-        return cmdText;
-    }
-
-    LazyNutCommand(QString x):cmdText(x),object(0),xmlAfter(false){}
-
-    LazyNutCommand(QString x,QObject*obj,char const* sl,bool xml):
-        cmdText(x),object(obj),xmlAfter(xml)
-    {
-        if(xml)
-        {
-            connect(this,SIGNAL(answer(QDomDocument*)),obj,sl);
-        }
-        else
-        {
-            connect(this,SIGNAL(answer(QString)),obj,sl);
-        }
-    }
-private:
-    QString cmdText;
-    QObject* object;
-    bool xmlAfter;
-
-public:
-    void done(const QString&ans)
-    {
-       if(xmlAfter)
-       {
-           QDomDocument *domDoc = new QDomDocument;
-           domDoc->setContent(ans); // this line replaces an entire Bison!
-           emit answer(domDoc);
-       }
-       else
-       {
-           emit answer(ans);
-       }
-    }
-
-signals:
-    void answer(const QString&ans);
-    void answer(QDomDocument*dom);
-};
 
 class CommandSequencer: public QObject
 {
     Q_OBJECT
 
 public:
-
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
 
 
-public:
-    void runCommands(QStringList commands, JobOrigin origin, QObject* obj, bool xml, char const* slot);
-    void runCommand(QString command, JobOrigin origin, QObject*, bool xml, char const* slot);
-    // status
 public slots:
+    void runCommands(QStringList commands, bool _getAnswer, unsigned int mode);
+    void runCommand(QString command, bool _getAnswer, unsigned int mode);
+    // status
     bool getStatus();
+    bool isOn();
 
     void processLazyNutOutput(const QString &lazyNutOutput);
 signals:
     // send output to editor
+    void commandsInJob(int);
     void commandsExecuted();
-    void queryAnswersReady(QString);
+    void commandExecuted(QString);
+    void answerReady(QString, QString);
     void userLazyNutOutputReady(const QString&);
-
-    void recentlyModifiedReady(QStringList);
-    void descriptionReady(QDomDocument*);
     // states
     void isReady(bool);
     // errors
@@ -98,18 +46,21 @@ private:
 
     void initProcessLazyNutOutput();
 
-    JobOrigin jobOrigin;
+    bool getAnswer;
+    unsigned int logMode;
     bool ready;
+    bool on;
     LazyNut* lazyNut;
-    QList<LazyNutCommand*> commandList;
+    QStringList commandList;
     QString lazyNutBuffer;
     int baseOffset;
+    QRegExp beginRex;
     QRegExp emptyLineRex;
     QRegExp errorRex;
     QRegExp answerRex;
-    QVector<QString> xmlCmdTags;
-    QRegExp eNelementsTagRex;
-//    QSet<LazyNutCommandTypes> queryTypes;
+    QRegExp eNelementsRex;
+    QRegExp svgRex;
+    QRegExp answerDoneRex;
 
 };
 

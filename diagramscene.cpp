@@ -65,7 +65,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, LazyNutObjectCatalogue *objectCatalo
     myLineColor = Qt::black;
     defaultPosition = QPointF(300,300);
     currentPosition = defaultPosition;
-    itemOffset = QPointF(30,30);
+    itemOffset = QPointF(0,150);
 
     itemHash = new QHash<QString,QGraphicsItem*>;
 }
@@ -195,7 +195,7 @@ void DiagramScene::syncToObjCatalogue()
     QStringList newConnections{};
     foreach(QString name, objectCatalogue->keys().toSet() - itemHash->keys().toSet())
     {
-        if (objectCatalogue->value(name)->type() == "layer")
+        if (objectCatalogue->value(name)->type == "layer")
         {
             DiagramItem *item = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
             //item->setLabel(name);
@@ -206,7 +206,7 @@ void DiagramScene::syncToObjCatalogue()
             emit itemInserted(item);
             itemHash->insert(name,item);
         }
-        else if (objectCatalogue->value(name)->type() == "connection")
+        else if (objectCatalogue->value(name)->type == "connection")
             newConnections << name;
     }
     // display new connections

@@ -2,9 +2,54 @@
 #define PLOTWINDOW
 
 #include <QMainWindow>
+#include <QWizard>
+
 
 class QSvgWidget;
 class CodeEditor;
+class QDomDocument;
+class QLabel;
+class QLineEdit;
+class QPushButton;
+class QDoubleSpinBox;
+class QSpinBox;
+class QVBoxLayout;
+class QListView;
+class QScrollArea;
+class PlotSettingsForm;
+class LazyNutListMenu;
+
+class NewPlotWizard: public QWizard
+{
+    Q_OBJECT
+
+public:
+    NewPlotWizard(QWidget *parent = 0);
+    void accept() Q_DECL_OVERRIDE;
+
+signals:
+    void createNewPlotOfType(QString, QString);
+
+};
+
+class NewPlotPage: public QWizardPage
+{
+    Q_OBJECT
+
+public:
+    NewPlotPage(QWidget *parent = 0);
+
+private slots:
+    void selectRScript();
+
+private:
+    QLabel *nameLabel;
+    QLineEdit *nameEdit;
+    QLabel *typeLabel;
+    QLineEdit *typeEdit;
+    QPushButton *browseButton;
+};
+
 
 class PlotWindow : public QMainWindow
 {
@@ -12,41 +57,73 @@ class PlotWindow : public QMainWindow
 
 public:
     PlotWindow(QWidget *parent = 0);
-    QSvgWidget *plot_svg;
-    CodeEditor      *textEdit;
-//    bool maybeSave();
-//    void setCurrentFile(const QString &fileName);
     int getValueFromByteArray(QByteArray ba, QString key);
 
-signals:
-    void sendPloGet();
-
-//protected:
-//    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
-    void refreshSvg();
-/*    void newFile();
-    void open();
-    bool save();
-    bool saveAs();
-    void documentWasModified();
-*/
+    void sendDrawCmd();
+    void displaySVG(QByteArray plotByteArray);
+    void dumpSVG(QString svg);
+    void setPlot(QString name);
+    void newPlot();
+    void createNewPlot(QString name);
+    void createNewPlotOfType(QString name, QString type);
+    void setType(QString rScript);
+    void getSettingsXML();
+    void buildSettingsForm(QDomDocument* settingsList);
+    void sendSettings(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+    void getPlotType(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+    void extractPlotType(QDomDocument* description);
+//    void updateSettingsForm();
+    void selectRScript();
+    void selectRecentRScript();
+    void setCurrentPlotType(QString rScript);
+    void draw();
+
 
 private:
-    void createActions();
-//    void createMenus();
-    void createToolBars();
-/*    void createStatusBar();
-    void readSettings();
-    void writeSettings();
-    void loadFile(const QString &fileName);
-    bool saveFile(const QString &fileName);
-    QString strippedName(const QString &fullFileName);
-*/
-    QString curFile;
-    QByteArray plotByteArray;
 
+
+
+    void createPlotControlPanel();
+    void openPlotSettings();
+    void loadSettings(QString fileName);
+    void savePlotSettings();
+    void savePlotSettingsAs();
+    void createActions();
+    void updateRecentRScriptsActs();
+    void createToolBars();
+    void importHomonyms(QDomDocument *settingsList);
+
+    QMainWindow *plotControlPanelWindow;
+    QScrollArea *plotControlPanelScrollArea;
+    QVBoxLayout *plotControlPanelLayout;
+    QSvgWidget *plot_svg;
+
+    PlotSettingsForm *plotSettingsForm;
+    QLabel *plotTitleLabel;
+    QWidget *plotSettingsWidget;
+
+    QMenu *typeMenu;
+    QMenu *recentRScriptsMenu;
+    LazyNutListMenu *dataMenu;
+    LazyNutListMenu *plotsMenu;
+    QAction *drawAct;
+    QAction *separatorAct;
+    enum { MaxRecentRScripts = 5 };
+    QAction *recentRScriptsActs[MaxRecentRScripts];
+    QAction *selectRScriptAct;
+    QAction *selectDataAct;
+
+    QString currentPlotType;
+    QString currentOutput;
+    QString currentPlot;
+    QString createNewPlotText;
+    QString openPlotSettingsText;
+    QString savePlotSettingsText;
+    QString savePlotSettingsAsText;
+
+    QString curFile;
     QMenu *fileMenu;
     QMenu *editMenu;
     QToolBar *fileToolBar;
