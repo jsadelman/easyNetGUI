@@ -37,6 +37,11 @@ ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *paren
     lazyNutObjectView->header()->setStretchLastSection(true);
     lazyNutObjectView->setSelectionMode(QAbstractItemView::SingleSelection);
 
+
+    lazyNutObjTableModel = new LazyNutObjTableModel(objectCatalogue,this);
+    lazyNutObjTableView = new QTableView;
+    lazyNutObjTableView->setModel(lazyNutObjTableModel);
+
     expandToFillButton = new ExpandToFillButton(lazyNutObjTableView);
     lazyNutObjectView->setItemDelegateForColumn(1, expandToFillButton);
     connect(expandToFillButton, SIGNAL(expandToFill(QString)),
@@ -51,7 +56,6 @@ ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *paren
 //    connect(objTaxonomyView,SIGNAL(clicked(QModelIndex)),
 //            objTaxonomyModel,SLOT(getGenealogy(QModelIndex)));
 
-    lazyNutObjTableModel = new LazyNutObjTableModel(objectCatalogue,this);
 //    lazyNutObjectListModel = new LazyNutObjectListModel(objectCatalogue,this);
 
 
@@ -59,8 +63,6 @@ ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *paren
 //    connect(this,SIGNAL(endObjHashModified()),lazyNutObjTableModel,SLOT(sendEndResetModel()));
 
 
-    lazyNutObjTableView = new QTableView;
-    lazyNutObjTableView->setModel(lazyNutObjTableModel);
 
 
 //    lazyNutObjectListView = new QListView;
