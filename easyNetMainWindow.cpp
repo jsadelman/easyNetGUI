@@ -543,9 +543,6 @@ void EasyNetMainWindow::createMenus()
 
     aboutMenu = menuBar()->addMenu(tr("&About"));
     aboutMenu->addAction(versionAct);
-
-    trialCombo = new LazyNutListComboBox("",this);
-//    trialCombo->installEventFilter(this);
 }
 
 void EasyNetMainWindow::createToolBars()
