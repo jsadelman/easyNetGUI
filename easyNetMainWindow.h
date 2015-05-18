@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QPlainTextEdit>
-
+#include <QtWidgets>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -25,6 +25,7 @@ typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 class EditWindow;
 class Highlighter;
 class PlotWindow;
+class LazyNutListComboBox;
 
 class LazyNutListComboBox;
 
@@ -107,6 +108,14 @@ private slots:
     //bool save();
     //bool saveAs();
     //void documentWasModified();
+    void loadModel();
+    void fillComboBox();
+    void msgBox(QString msg);
+
+    void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
+    void clearErrorOnStatusBar();
+    void showCmdOnStatusBar(QString cmd);
+    void addOneToLazyNutProgressBar();
 
     void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
     void clearErrorOnStatusBar();
@@ -127,11 +136,16 @@ private slots:
     void lazyNutNotRunning();
 //    void requestVersion();
     void displayVersion(QString version);
+    void on_ComboBoxClicked(QString txt);
 
 protected:
     void closeEvent(QCloseEvent *event);
 
 private:
+    void initialiseToolBar();
+    void initialiseLists();
+    void updateToolBar();
+
     void initViewActions();
     void createViewActions();
     void createActions();
@@ -170,6 +184,8 @@ private:
     QString         scriptsDir;
     QString         easyNetHome = "";
 
+    QStringList     modelList;
+    QStringList     trialList;
 
     QGroupBox       *lazyNutInterpreter;
     CmdOutput       *cmdOutput;
@@ -203,7 +219,13 @@ private:
     DesignWindow    *designWindow;
     PlotWindow      *plotForm;
     QToolBar        *infoToolBar;
-//    QVBoxLayout     *vLayout;
+    QToolBar        *toolbar;
+    QComboBox       *modelBox;
+//    QComboBox       *trialComboBox;
+    LazyNutListComboBox *trialComboBox;
+    QComboBox       *setComboBox;
+    QComboBox       *inputComboBox;
+    QWidget         *spacer;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
