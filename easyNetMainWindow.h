@@ -91,7 +91,6 @@ public:
     };
     EasyNetMainWindow(QWidget *parent = 0);
 //    SessionManager *sessionManager;
-    bool eventFilter(QObject * target, QEvent * event) Q_DECL_OVERRIDE;
 
 signals:
     void savedLayoutToBeLoaded(QString);

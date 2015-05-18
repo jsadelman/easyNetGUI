@@ -252,34 +252,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 }
 
-bool EasyNetMainWindow ::eventFilter(QObject *target, QEvent *event)
-{
-    if (target == trialCombo)
-        switch(event->type())
-        {
-//        case QEvent::Show:
-        case QEvent::MouseButtonPress:
-//        case QEvent::MouseButtonDblClick:
-        {
-            qDebug () << "trialComboEventSwitch" << trialComboEventSwitch;
-            trialComboEventSwitch = ! trialComboEventSwitch;
-//            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-//            qDebug() << mouseEvent->globalPos() << mouseEvent->pos()
-//                     << mouseEvent->button() << mouseEvent->buttons();
-            if (trialComboEventSwitch)
-            {
-
-            trialCombo->savePos(static_cast<QMouseEvent *>(event)->pos());
-            trialCombo->getList();
-            }
-            return trialComboEventSwitch;
-        }
-        default:
-            break;
-        }
-    return QMainWindow::eventFilter(target, event);
-}
-
 
 void EasyNetMainWindow::readSettings()
 {
@@ -573,7 +545,7 @@ void EasyNetMainWindow::createMenus()
     aboutMenu->addAction(versionAct);
 
     trialCombo = new LazyNutListComboBox("",this);
-    trialCombo->installEventFilter(this);
+//    trialCombo->installEventFilter(this);
 }
 
 void EasyNetMainWindow::createToolBars()

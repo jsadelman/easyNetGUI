@@ -2,6 +2,28 @@
 #define LAZYNUTLISTCOMBOBOX_H
 
 #include <QComboBox>
+#include <QPoint>
+#include <Qt>
+#include <QEvent>
+#include <QMutex>
+
+struct EventParams
+{
+    QEvent::Type            type;
+    QPoint                  localPos;
+    Qt::MouseButton         button;
+    Qt::MouseButtons        buttons;
+    Qt::KeyboardModifiers   modifiers;
+
+    void clear()
+    {
+        type = QEvent::None;
+        localPos = QPoint();
+        button = Qt::NoButton;
+        buttons = Qt::NoButton;
+        modifiers = Qt::NoModifier;
+    }
+};
 
 class LazyNutListComboBox : public QComboBox
 {
@@ -16,15 +38,23 @@ signals:
 public slots:
     void setGetListCmd(QString cmd);
     void getList(QString cmd = QString());
-    void savePos(const QPoint& pos);
+
+protected:
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void buildList(QStringList list);
+    void __debug_getList(QString = QString());
 
 private:
+    void repostEvent();
+
     QString getListCmd;
-    int counter;
-    QPoint mousePos;
+    bool eventSwitch;
+    QMutex eventMutex;
+    EventParams eventParams;
+    QString savedCurrentText;
+    int __debug_getList_counter = 0;
 
 };
 
