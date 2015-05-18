@@ -14,7 +14,7 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
 
 void CommandSequencer::initProcessLazyNutOutput()
 {
-    beginRex = QRegExp("BEGIN: (\\d+)");
+    beginRex = QRegExp("BEGIN: ([^\\n]+)");
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
