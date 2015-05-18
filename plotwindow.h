@@ -28,7 +28,7 @@ public:
     void accept() Q_DECL_OVERRIDE;
 
 signals:
-    createNewPlotOfType(QString, QString);
+    void createNewPlotOfType(QString, QString);
 
 };
 

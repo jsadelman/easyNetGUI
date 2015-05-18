@@ -109,3 +109,5 @@ DISTFILES += \
 
 
 CONFIG += c++11
+
+ICON = images/easyNet.hqx

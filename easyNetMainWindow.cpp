@@ -32,6 +32,8 @@ InputCmdLine::InputCmdLine(QWidget *parent)
 {
     connect(this,SIGNAL(returnPressed()),
             this,SLOT(sendCommand()));
+    QFont qf("Courier");
+    setFont(qf);
 }
 
 void InputCmdLine::sendCommand()
@@ -45,6 +47,8 @@ CmdOutput::CmdOutput(QWidget *parent)
     : QPlainTextEdit(parent)
 {
     setStyleSheet("background-color : black; color : white;");
+    QFont qf("Courier");
+    setFont(qf);
 }
 
 void CmdOutput::displayOutput(const QString & output)

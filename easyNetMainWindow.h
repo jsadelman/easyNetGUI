@@ -125,6 +125,7 @@ private slots:
     void getVersion();
 
     void lazyNutNotRunning();
+//    void requestVersion();
     void displayVersion(QString version);
 
 protected:
@@ -244,7 +245,6 @@ private:
     QAction         *setLazyNutBatAct;
     QAction         *versionAct;
 
-    LazyNutListComboBox  *trialCombo;
     bool                trialComboEventSwitch = false;
 };
 

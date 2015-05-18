@@ -65,7 +65,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, LazyNutObjectCatalogue *objectCatalo
     myLineColor = Qt::black;
     defaultPosition = QPointF(300,300);
     currentPosition = defaultPosition;
-    itemOffset = QPointF(30,30);
+    itemOffset = QPointF(0,150);
 
     itemHash = new QHash<QString,QGraphicsItem*>;
 }
