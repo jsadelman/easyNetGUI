@@ -7,6 +7,9 @@
 #include <QEventLoop>
 #include <QToolBar>
 #include <QWebView>
+#include <QGuiApplication>
+#include <QScreen>
+#include <QDebug>
 
 #include <iostream>
 #include <fstream>
@@ -66,6 +69,27 @@ void CmdOutput::displayOutput(const QString & output)
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    foreach (QScreen *screen, QGuiApplication::screens()) {
+        qDebug() << "Information for screen:" << screen->name();
+        qDebug() << "  Available geometry:" << screen->availableGeometry().x() << screen->availableGeometry().y() << screen->availableGeometry().width() << "x" << screen->availableGeometry().height();
+        qDebug() << "  Available size:" << screen->availableSize().width() << "x" << screen->availableSize().height();
+        qDebug() << "  Available virtual geometry:" << screen->availableVirtualGeometry().x() << screen->availableVirtualGeometry().y() << screen->availableVirtualGeometry().width() << "x" << screen->availableVirtualGeometry().height();
+        qDebug() << "  Available virtual size:" << screen->availableVirtualSize().width() << "x" << screen->availableVirtualSize().height();
+        qDebug() << "  Depth:" << screen->depth() << "bits";
+        qDebug() << "  Geometry:" << screen->geometry().x() << screen->geometry().y() << screen->geometry().width() << "x" << screen->geometry().height();
+        qDebug() << "  Logical DPI:" << screen->logicalDotsPerInch();
+        qDebug() << "  Logical DPI X:" << screen->logicalDotsPerInchX();
+        qDebug() << "  Logical DPI Y:" << screen->logicalDotsPerInchY();
+        qDebug() << "  Physical DPI:" << screen->physicalDotsPerInch();
+        qDebug() << "  Physical DPI X:" << screen->physicalDotsPerInchX();
+        qDebug() << "  Physical DPI Y:" << screen->physicalDotsPerInchY();
+        qDebug() << "  Physical size:" << screen->physicalSize().width() << "x" << screen->physicalSize().height() << "mm";
+        qDebug() << "  Refresh rate:" << screen->refreshRate() << "Hz";
+        qDebug() << "  Size:" << screen->size().width() << "x" << screen->size().height();
+        qDebug() << "  Virtual geometry:" << screen->virtualGeometry().x() << screen->virtualGeometry().y() << screen->virtualGeometry().width() << "x" << screen->virtualGeometry().height();
+        qDebug() << "  Virtual size:" << screen->virtualSize().width() << "x" << screen->virtualSize().height();
+    }
+
     initialiseLists();
     initialiseToolBar();
 
@@ -234,6 +258,9 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     createToolBars();
     createStatusBar();
     showViewMode(Welcome);
+    showViewMode(Model);
+    showViewMode(Welcome);
+
 
     if (lazyNutBat.isEmpty())
     {
@@ -276,24 +303,24 @@ void EasyNetMainWindow::initialiseToolBar()
     QLabel* setBoxLabel = new QLabel("Set: ");
     QLabel* inputBoxLabel = new QLabel("Input: ");
 
-    modelBox = new QComboBox;
-//    trialComboBox = new QComboBox;
+    modelComboBox = new LazyNutListComboBox("list model", this);
+    trialComboBox = new LazyNutListComboBox("list trial", this);
     setComboBox = new QComboBox;
     inputComboBox = new QComboBox;
 
-    QStringList s = {"hello"};
-    trialComboBox = new LazyNutListComboBox("list trial", this);
-//    trialComboBox->addItems(s);
-    connect(trialComboBox, SIGNAL(highlighted(int)), trialComboBox, SLOT(getList()));
-//    connect(trialComboBox, SIGNAL(highlighted(QString)), this, SLOT(msgBox(QString)));
+//    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
+      connect(modelComboBox, SIGNAL(activated(QString)),
+            this, SLOT(modelComboBoxClicked(QString)));
+
+    connect(trialComboBox, SIGNAL(currentIndexChanged(QString)),
+            trialComboBox, SLOT(on_ComboBoxClicked(QString)));
 
     spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     toolbar->addWidget(modelBoxLabel);
     // Add values in the combo box
-    toolbar->addWidget(modelBox);
-    modelBox->insertItem(0, "Untitled");
+    toolbar->addWidget(modelComboBox);
 //    toolbar->addAction(openAct);
 //    toolbar->addAction(QIcon(openpix), "Open File");
     toolbar->addSeparator();
@@ -322,7 +349,7 @@ void EasyNetMainWindow::initialiseToolBar()
     toolbar->addSeparator();
     toolbar->addAction("Run all");
 
-    updateToolBar();
+//    updateToolBar();
 
 }
 
@@ -334,41 +361,17 @@ void EasyNetMainWindow::msgBox(QString msg)
 
 }
 
-void EasyNetMainWindow::fillComboBox()
-{
-//    trialComboBox->insertItems(0,"test");
-
-}
 
 void EasyNetMainWindow::updateToolBar()
 {
-    disconnect(modelBox, SIGNAL(currentIndexChanged(QString)), 0, 0);
-
-    modelBox->clear();
-//    trialComboBox->clear();
-
-
-    QStringList modelBoxList = modelList;
-    modelBoxList << "Browse ...";
-    modelBox->insertItems(0,modelBoxList);
-
-//    QStringList trialBoxList = trialList;
-//    trialBoxList << "Browse ...";
-//    trialComboBox->insertItems(0,trialBoxList);
-
-    connect(modelBox, SIGNAL(currentIndexChanged(QString)),
-            this, SLOT(on_ComboBoxClicked(QString)));
-
 }
 
 
-void EasyNetMainWindow::on_ComboBoxClicked(QString txt)
+void EasyNetMainWindow::modelComboBoxClicked(QString txt)
 {
-    if (txt == "Browse ...")
+    if (txt == "Browse...")
         loadModel();
-    else
-        QMessageBox::information(this, "Item Selection",
-                             txt);
+
 }
 
 void EasyNetMainWindow::loadModel()
@@ -379,15 +382,19 @@ void EasyNetMainWindow::loadModel()
                                                     tr("Script Files (*.eNs *.eNm)"));
     if (!fileName.isEmpty())
     {
+        // change combobox text
+        modelComboBox->insertItem(0,"Loading");
+        modelComboBox->setCurrentIndex(0);
+
         // load and run script
         loadFile(fileName);
         showViewMode(Model);
         run();
-
+        // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
+        // should then call getList() and choose the appropriate model
     }
 
-    // change combobox text
-    updateToolBar();
+
 
 
 
@@ -965,6 +972,8 @@ void EasyNetMainWindow::hideAllDocks()
     dockExplorer->hide();
     dockDesignWindow->hide();
     dockCommandLog->hide();
+    statusBar()->show();
+
 }
 
 
@@ -1005,6 +1014,11 @@ void EasyNetMainWindow::showViewMode(int viewModeInt)
     default:
         break;
     }
+
+    statusBar()->show();
+//    showNormal();
+//    this->showMinimized();
+//    this->showMaximized();
 }
 
 

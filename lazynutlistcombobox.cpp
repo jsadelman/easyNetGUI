@@ -6,6 +6,7 @@
 #include <QShowEvent>
 #include <QCoreApplication>
 #include <QPoint>
+#include <QMessageBox>
 
 
 LazyNutListComboBox::LazyNutListComboBox(QString getListCmd, QWidget *parent) :
@@ -13,6 +14,7 @@ LazyNutListComboBox::LazyNutListComboBox(QString getListCmd, QWidget *parent) :
 {
     setEditable(false);
     eventParams.clear();
+    setSizeAdjustPolicy(AdjustToContents);
 }
 
 void LazyNutListComboBox::setEmptyItem(bool present)
@@ -147,10 +149,12 @@ bool LazyNutListComboBox::event(QEvent *event)
 void LazyNutListComboBox::buildList(QStringList list)
 {
     clear();
+    list.append("Browse...");
     addItems(list);
     setCurrentText(savedCurrentText);
     emit listReady();
     repostEvent();
+    setCurrentIndex(0);
 }
 
 
@@ -206,4 +210,14 @@ void LazyNutListComboBox::__debug_getList(QString /*cmd*/)
         param->setAnswerReceiver(this, SLOT(buildList(QStringList)));
         SessionManager::instance()->setupJob(param, sender());
     }
+}
+
+void LazyNutListComboBox::on_ComboBoxClicked(QString txt)
+{
+//    if (txt == "Browse...")
+////        loadModel();
+//        QMessageBox::information(this, "Item Selection",txt);
+////    else
+////        QMessageBox::information(this, "Item Selection",txt);
+
 }

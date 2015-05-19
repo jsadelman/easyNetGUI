@@ -45,6 +45,7 @@ protected:
 private slots:
     void buildList(QStringList list);
     void __debug_getList(QString = QString());
+    void on_ComboBoxClicked(QString txt);
 
 private:
     void repostEvent();

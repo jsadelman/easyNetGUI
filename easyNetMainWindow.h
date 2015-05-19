@@ -109,13 +109,7 @@ private slots:
     //bool saveAs();
     //void documentWasModified();
     void loadModel();
-    void fillComboBox();
     void msgBox(QString msg);
-
-    void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
-    void clearErrorOnStatusBar();
-    void showCmdOnStatusBar(QString cmd);
-    void addOneToLazyNutProgressBar();
 
     void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
     void clearErrorOnStatusBar();
@@ -136,7 +130,7 @@ private slots:
     void lazyNutNotRunning();
 //    void requestVersion();
     void displayVersion(QString version);
-    void on_ComboBoxClicked(QString txt);
+    void modelComboBoxClicked(QString txt);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -220,8 +214,7 @@ private:
     PlotWindow      *plotForm;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
-    QComboBox       *modelBox;
-//    QComboBox       *trialComboBox;
+    LazyNutListComboBox *modelComboBox;
     LazyNutListComboBox *trialComboBox;
     QComboBox       *setComboBox;
     QComboBox       *inputComboBox;
