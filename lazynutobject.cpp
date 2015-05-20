@@ -34,9 +34,9 @@ void LazyNutObject::initProperties()
 {
     XMLelement XMLroot = XMLelement(*domDoc);
     _name = XMLroot["this"]();
-    QString typeStr = XMLroot["type"]();
-    _type = typeStr.section('/',0,0);
-    _subtype = typeStr.section('/',1,1);
+    //QString typeStr = XMLroot["type"]();
+    _type = XMLroot["type"]();
+    _subtype = XMLroot["subtype"]();
 }
 
 

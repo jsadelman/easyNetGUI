@@ -282,7 +282,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
     // debug: load and run qtest at startup
-    loadFile(QString("%1/qtest").arg(scriptsDir));
+//    loadFile(QString("%1/qtest").arg(scriptsDir));
 //    run();
 
 }
