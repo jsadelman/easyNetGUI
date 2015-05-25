@@ -26,26 +26,26 @@
 ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent)
     : objectCatalogue(objectCatalogue), lazyNutObjectModel(nullptr), QMainWindow(parent)
 {
-    createTaxonomy();
+
+//    createTaxonomy();
     QSplitter *splitter = new QSplitter;
     splitter->setOrientation(Qt::Horizontal);
 
-//    lazyNutObjView = new QTableView;
+    typeList = new QListWidget(this);
+    typeList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    typeList->setSelectionMode(QAbstractItemView::SingleSelection);
+    connect(SessionManager::instance(), SIGNAL(lazyNutStarted()), this, SLOT(getTypes()));
+
+
     lazyNutObjectView = new QTreeView;
     lazyNutObjectView->header()->hide();
     lazyNutObjectView->expandAll();
     lazyNutObjectView->header()->setStretchLastSection(true);
-    lazyNutObjectView->setSelectionMode(QAbstractItemView::SingleSelection);
-
-
-    lazyNutObjTableModel = new LazyNutObjTableModel(objectCatalogue,this);
-    lazyNutObjTableView = new QTableView;
-    lazyNutObjTableView->setModel(lazyNutObjTableModel);
-
-    expandToFillButton = new ExpandToFillButton(lazyNutObjTableView);
+    lazyNutObjectView->setEditTriggers(QAbstractItemView::NoEditTriggers); // not sure
+    lazyNutObjectView->setSelectionMode(QAbstractItemView::SingleSelection); 
+    expandToFillButton = new ExpandToFillButton(lazyNutObjectView);
     lazyNutObjectView->setItemDelegateForColumn(1, expandToFillButton);
-    connect(expandToFillButton, SIGNAL(expandToFill(QString)),
-            this, SLOT(showList(QString)));
+    connect(expandToFillButton, SIGNAL(expandToFill(QString)), this, SLOT(showList(QString)));
 
 
 //    objTaxonomyView = new QTreeView;
@@ -72,33 +72,38 @@ ObjExplorer::ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *paren
 //    connect(lazyNutObjectListModel,SIGNAL(objectRequested(QString)),
 //            this,SLOT(setObjFromObjName(QString)));
 
-    lazyNutObjTableProxyModel = new LazyNutObjTableProxyModel(this);
-    lazyNutObjTableProxyModel->setDynamicSortFilter(true);
-    //lazyNutObjTableProxyModel->setFilterKeyColumns(QList<int>({1}));
-    //lazyNutObjTableProxyModel->addFilterFixedString(1,"layer");
-    lazyNutObjTableProxyModel->setSourceModel(lazyNutObjTableModel);
+    // gonna be substituted by ObjectCatalogue
+    lazyNutObjTableModel = new LazyNutObjTableModel(objectCatalogue,this);
+
+    lazyNutObjectTableProxy = new QSortFilterProxyModel(this);
+    lazyNutObjectTableProxy->setSourceModel(lazyNutObjTableModel);
+    lazyNutObjectTableProxy->setDynamicSortFilter(true);
+    lazyNutObjectTableProxy->setFilterKeyColumn(1);
+    connect(typeList, SIGNAL(currentTextChanged(QString)),
+            lazyNutObjectTableProxy, SLOT(setFilterFixedString(QString)));
 
 
-    lazyNutObjTableProxyView = new QTableView(this);
-    lazyNutObjTableProxyView->setModel(lazyNutObjTableProxyModel);
-    lazyNutObjTableProxyView->setSortingEnabled(true);
-    lazyNutObjTableProxyView->sortByColumn(0, Qt::AscendingOrder);
-    lazyNutObjTableProxyView->setColumnHidden(1,true);
-    lazyNutObjTableProxyView->setColumnHidden(2,true);
-    lazyNutObjTableProxyView->setSelectionMode(QAbstractItemView::SingleSelection);
-    lazyNutObjTableProxyView->horizontalHeader()->setStretchLastSection(true);
 
-    connect(lazyNutObjTableProxyView,SIGNAL(clicked(QModelIndex)),
-            lazyNutObjTableProxyModel,SLOT(mapIndexToSourceModel(QModelIndex)));
-    connect(lazyNutObjTableProxyModel,SIGNAL(getObj(QModelIndex)),
-            this, SLOT(setObjFromListIndex(QModelIndex)));
-
-    connectTaxonomyModel();
+//    lazyNutObjTableProxyModel = new LazyNutObjTableProxyModel(this);
+//    lazyNutObjTableProxyModel->setDynamicSortFilter(true);
+//    //lazyNutObjTableProxyModel->setFilterKeyColumns(QList<int>({1}));
+//    //lazyNutObjTableProxyModel->addFilterFixedString(1,"layer");
+//    lazyNutObjTableProxyModel->setSourceModel(lazyNutObjTableModel);
 
 
-    splitter->addWidget(taxWidget);
-    splitter->addWidget(lazyNutObjTableProxyView);
-//    splitter->addWidget(lazyNutObjectListView);
+    lazyNutObjectListView = new QListView(this);
+    lazyNutObjectListView->setModel(lazyNutObjectTableProxy);
+    lazyNutObjectListView->setModelColumn(0);
+    lazyNutObjectListView->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    connect(lazyNutObjectListView,SIGNAL(clicked(QModelIndex)),
+            this, SLOT(setObjFromProxyTableIndex(QModelIndex)));
+
+//    connectTaxonomyModel();
+
+
+    splitter->addWidget(typeList);
+    splitter->addWidget(lazyNutObjectListView);
     splitter->addWidget(lazyNutObjectView);
 
 //    lazyNutObjModel = new LazyNutObjModel(new LazyNutObj,objHash,this);
@@ -160,9 +165,14 @@ void ObjExplorer::setObjFromObjName(QString name)
 //        delete lazyNutObjectModel;
 
     lazyNutObjectModel = new LazyNutObjectModel(lno);
-    QItemSelectionModel *oldModel = lazyNutObjectView->selectionModel();
+    QAbstractItemModel *oldModel = lazyNutObjectView->model();
+    QItemSelectionModel *oldSelectionModel = lazyNutObjectView->selectionModel();
     lazyNutObjectView->setModel(lazyNutObjectModel);
-    delete oldModel;
+    if (oldSelectionModel)
+    {
+//        oldModel->deleteLater();
+        oldSelectionModel->deleteLater();
+    }
     lazyNutObjectView->expandAll();
     lazyNutObjectView->resizeColumnToContents(0);
     lazyNutObjectView->resizeColumnToContents(1);
@@ -175,6 +185,7 @@ void ObjExplorer::setObjFromObjName(QString name)
 
 void ObjExplorer::updateLazyNutObjCatalogue(QDomDocument *domDoc)
 {
+//    qDebug () << domDoc->toString();
     LazyNutObject *newObj = new LazyNutObject(domDoc);
 //    QString name = newObj->name();
 //    lazyNutObjTableModel->sendBeginResetModel();
@@ -188,51 +199,51 @@ void ObjExplorer::updateLazyNutObjCatalogue(QDomDocument *domDoc)
     //emit objCatalogueChanged();
 }
 
-void ObjExplorer::createTaxonomy()
-{
-    objTaxonomyModel = new TreeModel(QStringList({"type"}));
+//void ObjExplorer::createTaxonomy()
+//{
+//    objTaxonomyModel = new TreeModel(QStringList({"type"}));
 
-    taxListView = new QListView;
-    taxColumnView = new QColumnView;
-    taxTreeView = new QTreeView;
-    taxTreeView->setHeaderHidden(true);
+//    taxListView = new QListView;
+//    taxColumnView = new QColumnView;
+//    taxTreeView = new QTreeView;
+//    taxTreeView->setHeaderHidden(true);
 
-    taxViewMap["list"] = taxListView;
-    taxViewMap["column"] = taxColumnView;
-    taxViewMap["tree"] = taxTreeView;
+//    taxViewMap["list"] = taxListView;
+//    taxViewMap["column"] = taxColumnView;
+//    taxViewMap["tree"] = taxTreeView;
 
 
-    taxWidget = new QStackedWidget;
-    foreach(QString view, taxViewMap.keys())
-    {
-        taxWidget->addWidget(taxViewMap[view]);
-        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setSelectionMode(QAbstractItemView::SingleSelection);
-        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    }
+//    taxWidget = new QStackedWidget;
+//    foreach(QString view, taxViewMap.keys())
+//    {
+//        taxWidget->addWidget(taxViewMap[view]);
+//        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setSelectionMode(QAbstractItemView::SingleSelection);
+//        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setEditTriggers(QAbstractItemView::NoEditTriggers);
+//    }
 
-    createTaxonomyMenu();
-}
+//    createTaxonomyMenu();
+//}
 
-void ObjExplorer::createTaxonomyMenu()
-{
-    taxonomyMenu = menuBar()->addMenu("Taxonomy");
-    taxonomyMenu->addAction("Reload", this, SLOT(reloadTaxonomy()));
-    QMenu *taxViewMenu = taxonomyMenu->addMenu("View mode");
-    foreach(QString view, taxViewMap.keys())
-       taxViewMenu->addAction(view, this, SLOT(setTaxonomyView()));
+//void ObjExplorer::createTaxonomyMenu()
+//{
+//    taxonomyMenu = menuBar()->addMenu("Taxonomy");
+//    taxonomyMenu->addAction("Reload", this, SLOT(reloadTaxonomy()));
+//    QMenu *taxViewMenu = taxonomyMenu->addMenu("View mode");
+//    foreach(QString view, taxViewMap.keys())
+//       taxViewMenu->addAction(view, this, SLOT(setTaxonomyView()));
 
-}
+//}
 
-void ObjExplorer::setTaxonomyView()
-{
-    taxWidget->setCurrentWidget(taxViewMap.value(qobject_cast<QAction*>(sender())->text()));
-}
+//void ObjExplorer::setTaxonomyView()
+//{
+//    taxWidget->setCurrentWidget(taxViewMap.value(qobject_cast<QAction*>(sender())->text()));
+//}
 
-void ObjExplorer::reloadTaxonomy()
-{
-    if (SessionManager::instance()->isOn())
-        getTaxonomyTypes();
-}
+//void ObjExplorer::reloadTaxonomy()
+//{
+//    if (SessionManager::instance()->isOn())
+//        getTypes();
+//}
 
 void ObjExplorer::resetLazyNutObjTableModel()
 {
@@ -240,74 +251,76 @@ void ObjExplorer::resetLazyNutObjTableModel()
     lazyNutObjTableModel->sendEndResetModel();
 }
 
-void ObjExplorer::getTaxonomyTypes()
+void ObjExplorer::getTypes()
 {
-    delete objTaxonomyModel;
-    objTaxonomyModel = new TreeModel(QStringList({"type", "subtype"}));
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml list type"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SLOT(setTaxonomyTypes(QStringList)));
-    param->setNextJobReceiver(this, SLOT(getTaxonomySubtypes()));
+    param->setAnswerReceiver(this, SLOT(setTypes(QStringList)));
     SessionManager::instance()->setupJob(param, sender());
 }
 
-void ObjExplorer::setTaxonomyTypes(QStringList types)
+void ObjExplorer::setTypes(QStringList types)
 {
-    foreach (QString type, types)
-        objTaxonomyModel->appendValue(type);
+   typeList->clear(); // safety
+   typeList->addItems(types);
 }
 
-void ObjExplorer::getTaxonomySubtypes()
-{
-    QStringList cmdList;
-    for (int row = 0; row < objTaxonomyModel->rowCount(); ++row)
-        cmdList.append(objTaxonomyModel->data(objTaxonomyModel->index(row, 0), Qt::EditRole).toString());
+//void ObjExplorer::getTaxonomySubtypes()
+//{
+//    QStringList cmdList;
+//    for (int row = 0; row < objTaxonomyModel->rowCount(); ++row)
+//        cmdList.append(objTaxonomyModel->data(objTaxonomyModel->index(row, 0), Qt::EditRole).toString());
 
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = cmdList.replaceInStrings(QRegExp("^"), "xml subtypes ");
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SLOT(setTaxonomySubtypes(QStringList,QString)));
-    param->setEndOfJobReceiver(this, SLOT(connectTaxonomyModel()));
-    SessionManager::instance()->setupJob(param, sender());
-}
+//    LazyNutJobParam *param = new LazyNutJobParam;
+//    param->logMode |= ECHO_INTERPRETER; // debug purpose
+//    param->cmdList = cmdList.replaceInStrings(QRegExp("^"), "xml subtypes ");
+//    param->answerFormatterType = AnswerFormatterType::ListOfValues;
+//    param->setAnswerReceiver(this, SLOT(setTaxonomySubtypes(QStringList,QString)));
+//    param->setEndOfJobReceiver(this, SLOT(connectTaxonomyModel()));
+//    SessionManager::instance()->setupJob(param, sender());
+//}
 
-void ObjExplorer::setTaxonomySubtypes(QStringList subtypes, QString cmd)
-{
-    QRegExp typeNameRex("xml subtypes (\\w+)");
-    if (typeNameRex.indexIn(cmd) < 0)
-    {
-        qDebug() << "no type in ObjExplorer::setTaxonomySubtypes(). cmd = " << cmd;
-        return;
-    }
-    QString typeName = typeNameRex.cap(1);
-    QModelIndex typeIndex = objTaxonomyModel->match(objTaxonomyModel->index(0,0), Qt::DisplayRole,
-                            typeName, 1, Qt::MatchExactly).first();
-    foreach(QString subtype, subtypes)
-        objTaxonomyModel->appendValue(subtype, typeIndex);
+//void ObjExplorer::setTaxonomySubtypes(QStringList subtypes, QString cmd)
+//{
+//    QRegExp typeNameRex("xml subtypes (\\w+)");
+//    if (typeNameRex.indexIn(cmd) < 0)
+//    {
+//        qDebug() << "no type in ObjExplorer::setTaxonomySubtypes(). cmd = " << cmd;
+//        return;
+//    }
+//    QString typeName = typeNameRex.cap(1);
+//    QModelIndex typeIndex = objTaxonomyModel->match(objTaxonomyModel->index(0,0), Qt::DisplayRole,
+//                            typeName, 1, Qt::MatchExactly).first();
+//    foreach(QString subtype, subtypes)
+//        objTaxonomyModel->appendValue(subtype, typeIndex);
 
-}
+//}
 
-void ObjExplorer::connectTaxonomyModel()
-{
-    foreach(QString view, taxViewMap.keys())
-    {
-        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setModel(objTaxonomyModel);
-        connect(qobject_cast<QAbstractItemView*>(taxViewMap[view]), SIGNAL(clicked(const QModelIndex&)),
-                objTaxonomyModel, SLOT(getGenealogy(const QModelIndex&)));
-        connect(objTaxonomyModel,SIGNAL(sendGenealogy(QList<QVariant>)),
-                lazyNutObjTableProxyModel,SLOT(setFilterFromGenealogy(QList<QVariant>)));
+//void ObjExplorer::connectTaxonomyModel()
+//{
+//    foreach(QString view, taxViewMap.keys())
+//    {
+//        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setModel(objTaxonomyModel);
+//        connect(qobject_cast<QAbstractItemView*>(taxViewMap[view]), SIGNAL(clicked(const QModelIndex&)),
+//                objTaxonomyModel, SLOT(getGenealogy(const QModelIndex&)));
+//        connect(objTaxonomyModel,SIGNAL(sendGenealogy(QList<QVariant>)),
+//                lazyNutObjTableProxyModel,SLOT(setFilterFromGenealogy(QList<QVariant>)));
 
-    }
-    taxTreeView->expandAll();
-    taxTreeView->resizeColumnToContents(0);
-}
+//    }
+//    taxTreeView->expandAll();
+//    taxTreeView->resizeColumnToContents(0);
+//}
 
 void ObjExplorer::showList(QString cmd)
 {
     LazyNutListWidget *listWidget = new LazyNutListWidget(cmd);
     listWidget->setAttribute(Qt::WA_DeleteOnClose, true);
     listWidget->show();
+}
+
+void ObjExplorer::setObjFromProxyTableIndex(QModelIndex index)
+{
+    setObjFromObjName(lazyNutObjectTableProxy->data(index,Qt::DisplayRole).toString());
 }

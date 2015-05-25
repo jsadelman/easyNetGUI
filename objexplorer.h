@@ -22,10 +22,12 @@ class LazyNutObjectModel;
 class LazyNutObjectListModel;
 class LazyNutObjTableModel;
 class LazyNutObjTableProxyModel;
+class QSortFilterProxyModel;
 class QListView;
 class QTableView;
 class QTreeView;
 class QColumnView;
+class QListWidget;
 //class QSplitter;
 class QGroupBox;
 class QVBoxLayout;
@@ -50,12 +52,15 @@ public:
     LazyNutObjectListModel *lazyNutObjectListModel;
     LazyNutObjTableModel *lazyNutObjTableModel;
     LazyNutObjTableProxyModel *lazyNutObjTableProxyModel;
+    QSortFilterProxyModel *lazyNutObjectTableProxy;
 
-    QListView *lazyNutObjectListView;
+
+
+//    QListView *lazyNutObjectListView;
 //    QVBoxLayout *layout;
-    QTableView *lazyNutObjTableView;
+    QListView *lazyNutObjectListView;
     ExpandToFillButton *expandToFillButton;
-    QTableView *lazyNutObjTableProxyView;
+    QTableView *lazyNutObjectTableProxyView;
     QTreeView *lazyNutObjectView;
 //    QTreeView *objTaxonomyView;
     //QComboBox *cbox;
@@ -72,28 +77,29 @@ public slots:
     void setObjFromListIndex(QModelIndex index);
     void setObjFromObjName(QString name);
     void updateLazyNutObjCatalogue(QDomDocument *domDoc);
-    void setTaxonomyView();
-    void reloadTaxonomy();
+//    void setTaxonomyView();
+//    void reloadTaxonomy();
     void resetLazyNutObjTableModel();
 
 private slots:
-    void getTaxonomyTypes();
-    void setTaxonomyTypes(QStringList types);
-    void getTaxonomySubtypes();
-    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
-    void connectTaxonomyModel();
+    void getTypes();
+    void setTypes(QStringList types);
+//    void getTaxonomySubtypes();
+//    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
+//    void connectTaxonomyModel();
     void showList(QString cmd);
-
+    void setObjFromProxyTableIndex(QModelIndex index);
 
 
 private:
-    void createTaxonomy();
-    void createTaxonomyMenu();
+//    void createTaxonomy();
+//    void createTaxonomyMenu();
 
-     QListView *taxListView;
-     QColumnView *taxColumnView;
-     QTreeView *taxTreeView;
-     QStackedWidget *taxWidget;
+    QListWidget *typeList;
+    QListView *taxListView;
+    QColumnView *taxColumnView;
+    QTreeView *taxTreeView;
+    QStackedWidget *taxWidget;
 
     QMap<QString, QWidget*> taxViewMap;
     QMenu *taxonomyMenu;

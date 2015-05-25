@@ -217,10 +217,10 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
     designWindow = new DesignWindow(objectCatalogue, this);
-    connect(designWindow,SIGNAL(objectSelected(QString)),
-            objExplorer,SLOT(setObjFromObjName(QString)));
-    connect(objExplorer,SIGNAL(objectSelected(QString)),
-            designWindow,SLOT(dispatchObjectSelected(QString)));
+//    connect(designWindow,SIGNAL(objectSelected(QString)),
+//            objExplorer,SLOT(setObjFromObjName(QString)));
+//    connect(objExplorer,SIGNAL(objectSelected(QString)),
+//            designWindow,SLOT(dispatchObjectSelected(QString)));
 
 
     dockDesignWindow = new QDockWidget(tr("Design Window"), this);
@@ -529,6 +529,7 @@ void EasyNetMainWindow::runCmd(QString cmd)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = QStringList({cmd});
     param->logMode |= ECHO_INTERPRETER;
+    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateRecentlyModified()));
     SessionManager::instance()->setupJob(param);
 }
 //! [runCmd]

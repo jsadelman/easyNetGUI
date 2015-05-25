@@ -49,6 +49,7 @@ signals:
     // send output to editor
     void userLazyNutOutputReady(const QString&);
 
+    void lazyNutStarted();
     void isReady(bool);
     void isPaused(bool);
     void cmdError(QString,QStringList);

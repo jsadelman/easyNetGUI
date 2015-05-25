@@ -30,8 +30,8 @@ SessionManager::SessionManager()
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
-    connect(lazyNut, SIGNAL(error(int)),
-            this, SLOT(lazyNutProcessError(int)));
+    connect(lazyNut, SIGNAL(started()), this, SIGNAL(lazyNutStarted()));
+    connect(lazyNut, SIGNAL(error(int)), this, SLOT(lazyNutProcessError(int)));
     macroQueue = new MacroQueue;
 }
 

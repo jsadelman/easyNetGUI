@@ -19,6 +19,7 @@ void CommandSequencer::initProcessLazyNutOutput()
     errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
     answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
     eNelementsRex = QRegExp("<eNelements>");
+    xmlStartRex = QRegExp("<(\\w+)");
     svgRex = QRegExp("SVG file of (\\d+) bytes:");
     answerDoneRex = QRegExp("ANSWER: Done\\.(?=\\n)");
     lazyNutBuffer.clear();
@@ -108,18 +109,24 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             if (beginOffset < answerOffset && answerOffset < endOffset)
             {
                 QString answer = answerRex.cap(1);
-                if (eNelementsRex.indexIn(answer) > -1)
-                {
-                    int eNelementEnd = lazyNutBuffer.indexOf("</eNelements>", answerOffset) +
-                            QString("</eNelements>").length();
-                    answer = lazyNutBuffer.mid(answerOffset, eNelementEnd - answerOffset).remove("ANSWER:");
-                }
-                else if (svgRex.exactMatch(answer))
+//                if (eNelementsRex.indexIn(answer) > -1)
+//                {
+//                    int eNelementEnd = lazyNutBuffer.indexOf("</eNelements>", answerOffset) +
+//                            QString("</eNelements>").length();
+//                    answer = lazyNutBuffer.mid(answerOffset, eNelementEnd - answerOffset).remove("ANSWER:");
+//                }
+                if (svgRex.exactMatch(answer))
                 {
                     //                    int nbytes = svgRex.cap(1).toInt();
                     int svgStart = answerOffset + answerRex.matchedLength() +1;
                     int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + QString("</svg>").length();
                     answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
+                }
+                else if (xmlStartRex.indexIn(answer) > -1)
+                {
+                    QRegExp xmlEndRex(QString("</%1\\s*>").arg(xmlStartRex.cap(1)));
+                    int xmlEnd = xmlEndRex.indexIn(lazyNutBuffer, answerOffset) + xmlEndRex.matchedLength();
+                    answer = lazyNutBuffer.mid(answerOffset, xmlEnd - answerOffset).remove("ANSWER:");
                 }
                 emit answerReady(answer, currentCmd);
             }

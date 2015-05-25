@@ -13,7 +13,6 @@ public:
     ~LazyNutObject();
     const QString& name = _name;
     const QString& type = _type;
-    const QString& subtype = _subtype;
 
     QString getValue(const QString& label);
 
@@ -25,7 +24,6 @@ private:
 
     QString _name;
     QString _type;
-    QString _subtype;
 };
 
 #endif // LAZYNUTOBJECT_H

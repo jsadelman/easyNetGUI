@@ -21,7 +21,7 @@ LazyNutObjectModel::LazyNutObjectModel(LazyNutObject *lno, QObject *parent)
 
 LazyNutObjectModel::~LazyNutObjectModel()
 {
-    delete domDoc;
+//    delete domDoc;
 }
 
 QVariant LazyNutObjectModel::data(const QModelIndex &index, int role) const

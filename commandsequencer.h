@@ -59,6 +59,7 @@ private:
     QRegExp errorRex;
     QRegExp answerRex;
     QRegExp eNelementsRex;
+    QRegExp xmlStartRex;
     QRegExp svgRex;
     QRegExp answerDoneRex;
 
