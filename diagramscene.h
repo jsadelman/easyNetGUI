@@ -58,8 +58,8 @@ class QFont;
 class QGraphicsTextItem;
 class QGraphicsItem;
 class QColor;
-class LazyNutObject;
-typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
+class AsLazyNutObject;
+typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
 QT_END_NAMESPACE
 
 //! [0]

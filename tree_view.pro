@@ -54,7 +54,11 @@ SOURCES +=  \
     lazynutobjtablemodel.cpp \
     lazynutobjectmodel.cpp \
     lazynutobject.cpp \
-    expandtofillbutton.cpp
+    expandtofillbutton.cpp \
+    objectcatalogue.cpp \
+    lazynutobjectcacheelem.cpp \
+    proxymodelextrarows.cpp \
+    descriptionupdater.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -96,7 +100,11 @@ HEADERS  += \
     lazynutobjtablemodel.h \
     lazynutobjectmodel.h \
     lazynutobject.h \
-    expandtofillbutton.h
+    expandtofillbutton.h \
+    objectcatalogue.h \
+    lazynutobjectcacheelem.h \
+    proxymodelextrarows.h \
+    descriptionupdater.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

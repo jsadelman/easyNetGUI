@@ -16,7 +16,7 @@ XMLelement::XMLelement(QDomElement domElem)
 void XMLelement::setDomElement(QDomDocument domDoc)
 {
     domElement = domDoc.documentElement();
-    type = domElement.tagName();
+    tag = domElement.tagName();
 //    if (!isENelements())
 //        qDebug() << "error: root xml tag is not <eNelement>";
 }
@@ -24,7 +24,7 @@ void XMLelement::setDomElement(QDomDocument domDoc)
 void XMLelement::setDomElement(QDomElement domElem)
 {
     domElement = domElem;
-    type = domElement.tagName();
+    tag = domElement.tagName();
 //    if (!(isString() || isInteger() || isReal() || isObject() || isCommand() || isMap() || isList()))
 //        qDebug() << "error: xml tag name not recognised: " << type;
 }

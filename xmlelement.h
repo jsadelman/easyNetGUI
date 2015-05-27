@@ -17,14 +17,14 @@ public:
     XMLelement(QDomElement domElem);
     void setDomElement(QDomDocument domDoc);
     void setDomElement(QDomElement domElem);
-    bool isString() {return type == "string";}
-    bool isInteger() {return type == "integer";}
-    bool isReal() {return type == "real";}
-    bool isObject() {return type == "object";}
-    bool isCommand() {return type == "command";}
-    bool isMap() {return type == "map";}
-    bool isList() {return type == "list";}
-    bool isENelements() {return type == "eNelements";}
+    bool isString() {return tag == "string";}
+    bool isInteger() {return tag == "integer";}
+    bool isReal() {return tag == "real";}
+    bool isObject() {return tag == "object";}
+    bool isCommand() {return tag == "command";}
+    bool isMap() {return tag == "map";}
+    bool isList() {return tag == "list";}
+    bool isENelements() {return tag == "eNelements";}
     XMLelement firstChild(QString childType = QString());
     XMLelement nextSibling(QString siblingType = QString());
     QString attribute(QString attr);
@@ -44,7 +44,7 @@ public:
     XMLelement operator [](QString label);
 private:
     QDomElement domElement;
-    QString type;
+    QString tag;
 };
 
 #endif // XMLELEMENT_H

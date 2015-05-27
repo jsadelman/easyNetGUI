@@ -13,7 +13,7 @@
 #include "enumclasses.h"
 
 //class LazyNutObj;
-class LazyNutObject;
+class AsLazyNutObject;
 class QDomDocument;
 class ExpandToFillButton;
 //typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;

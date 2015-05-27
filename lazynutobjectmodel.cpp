@@ -7,14 +7,14 @@
 #include "enumclasses.h"
 
 LazyNutObjectModel::LazyNutObjectModel(QDomDocument *domDoc, QObject *parent)
-    : LazyNutObject(domDoc), QAbstractItemModel(parent)
+    : AsLazyNutObject(domDoc), QAbstractItemModel(parent)
 {
     rootItem = new DomItem(domDoc, 0);
     //    initProperties();
 }
 
-LazyNutObjectModel::LazyNutObjectModel(LazyNutObject *lno, QObject *parent)
-    : LazyNutObject(*lno), QAbstractItemModel(parent)
+LazyNutObjectModel::LazyNutObjectModel(AsLazyNutObject *lno, QObject *parent)
+    : AsLazyNutObject(*lno), QAbstractItemModel(parent)
 {
     rootItem = new DomItem(domDoc, 0);
 }

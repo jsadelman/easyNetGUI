@@ -158,7 +158,7 @@ void ObjExplorer::setObjFromListIndex(QModelIndex index)
 
 void ObjExplorer::setObjFromObjName(QString name)
 {
-    LazyNutObject *lno = objectCatalogue->value(name);
+    AsLazyNutObject *lno = objectCatalogue->value(name);
     if (!lno)
         return;
 //    if (lazyNutObjectModel)
@@ -186,7 +186,7 @@ void ObjExplorer::setObjFromObjName(QString name)
 void ObjExplorer::updateLazyNutObjCatalogue(QDomDocument *domDoc)
 {
 //    qDebug () << domDoc->toString();
-    LazyNutObject *newObj = new LazyNutObject(domDoc);
+    AsLazyNutObject *newObj = new AsLazyNutObject(domDoc);
 //    QString name = newObj->name();
 //    lazyNutObjTableModel->sendBeginResetModel();
     delete objectCatalogue->value(newObj->name);

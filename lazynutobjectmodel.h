@@ -10,13 +10,13 @@ class QDomDocument;
 
 // this class is based on the following example:
 // http://doc.qt.digia.com/4.6/itemviews-simpledommodel.html
-class LazyNutObjectModel : public QAbstractItemModel, public LazyNutObject
+class LazyNutObjectModel : public QAbstractItemModel, public AsLazyNutObject
 {
     Q_OBJECT
 
 public:
     LazyNutObjectModel(QDomDocument *domDoc, QObject *parent = 0);
-    LazyNutObjectModel(LazyNutObject *lno, QObject *parent = 0);
+    LazyNutObjectModel(AsLazyNutObject *lno, QObject *parent = 0);
     ~LazyNutObjectModel();
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;

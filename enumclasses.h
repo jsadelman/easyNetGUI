@@ -4,8 +4,8 @@
 #include <Qt>
 #include <QHash>
 
-class LazyNutObject;
-typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
+class AsLazyNutObject;
+typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
 
 // model/view data roles
 enum : unsigned int {ExpandToFillRole = Qt::UserRole};

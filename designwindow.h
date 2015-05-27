@@ -64,7 +64,7 @@ class QToolButton;
 class QToolBar;
 class QAbstractButton;
 class QGraphicsView;
-class LazyNutObject;
+class AsLazyNutObject;
 //typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 QT_END_NAMESPACE
 
