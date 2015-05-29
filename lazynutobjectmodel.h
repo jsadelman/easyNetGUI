@@ -39,14 +39,7 @@ signals:
 private slots:
     void getObjFromDescriptionIndex(const QModelIndex &index);
 
-private:
-    void initProperties();
-
-//    QDomDocument *domDoc;
     DomItem *rootItem;
-//    QString _name;
-//    QString _type;
-//    QString _subtype;
 };
 
 #endif // LAZYNUTOBJECTMODEL_H

@@ -11,7 +11,6 @@ LazyNutObjectModel::LazyNutObjectModel(QDomDocument *domDoc, QObject *parent)
     : QAbstractItemModel(parent)
 {
     rootItem = new DomItem(domDoc, 0);
-    //    initProperties();
 }
 
 LazyNutObjectModel::LazyNutObjectModel(AsLazyNutObject *lno, QObject *parent)
@@ -22,7 +21,7 @@ LazyNutObjectModel::LazyNutObjectModel(AsLazyNutObject *lno, QObject *parent)
 
 LazyNutObjectModel::~LazyNutObjectModel()
 {
-//    delete domDoc;
+    delete rootItem;
 }
 
 QVariant LazyNutObjectModel::data(const QModelIndex &index, int role) const
