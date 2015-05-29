@@ -58,7 +58,8 @@ SOURCES +=  \
     objectcatalogue.cpp \
     lazynutobjectcacheelem.cpp \
     proxymodelextrarows.cpp \
-    descriptionupdater.cpp
+    descriptionupdater.cpp \
+    objectcataloguefilter.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -104,7 +105,8 @@ HEADERS  += \
     objectcatalogue.h \
     lazynutobjectcacheelem.h \
     proxymodelextrarows.h \
-    descriptionupdater.h
+    descriptionupdater.h \
+    objectcataloguefilter.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

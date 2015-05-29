@@ -2,7 +2,8 @@
 
 DomItem::DomItem(QDomNode *node, int row, DomItem *parent)
 {
-    domNode = *node;
+    if (node)
+        domNode = *node;
     // Record the item's location within its parent.
     rowNumber = row;
     parentItem = parent;

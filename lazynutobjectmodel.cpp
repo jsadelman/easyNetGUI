@@ -5,9 +5,10 @@
 #include "xmlelement.h"
 #include "domitem.h"
 #include "enumclasses.h"
+#include "lazynutobject.h"
 
 LazyNutObjectModel::LazyNutObjectModel(QDomDocument *domDoc, QObject *parent)
-    : AsLazyNutObject(domDoc), QAbstractItemModel(parent)
+    : QAbstractItemModel(parent)
 {
     rootItem = new DomItem(domDoc, 0);
     //    initProperties();

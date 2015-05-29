@@ -2,6 +2,7 @@
 #include "lazynutobjectcacheelem.h"
 #include <QDomDocument>
 #include "lazynutobject.h"
+#include <QMetaObject>
 
 Q_DECLARE_METATYPE(QDomDocument*)
 
@@ -50,6 +51,7 @@ QVariant ObjectCatalogue::data(const QModelIndex &index, int role) const
         case 3:
             return obj->pending;
         case 4:
+//            return obj->domDoc == nullptr ? "" : QString().sprintf("%08p", obj->domDoc);
             return QVariant::fromValue(obj->domDoc);
         default:
             return QVariant();
@@ -162,10 +164,15 @@ bool ObjectCatalogue::create(const QString &name, const QString &type)
     if (!insertRows(0,1))
         return false;
 
-    if (!setData(index(0,0), name))
-        return false;
+    catalogue.at(0)->name = name;
+    catalogue.at(0)->type = type;
+    emit dataChanged(index(0,0), index(0,4));
+    return true;
 
-    return setData(index(0,1), type);
+//    if (!setData(index(0,0), name))
+//        return false;
+
+//    return setData(index(0,1), type);
 }
 
 bool ObjectCatalogue::destroy(const QString &name)
@@ -189,6 +196,13 @@ bool ObjectCatalogue::setDescriptionAndValidCache(const QString &name, QDomDocum
     if (!setPending(name, false))
         return false;
     return setDescription(name, domDoc);
+}
+
+bool ObjectCatalogue::invalidateCache(const QString &name)
+{
+    if (!setInvalid(name, true))
+        return false;
+    return setPending(name, true);
 }
 
 QDomDocument *ObjectCatalogue::description(const QString &name)

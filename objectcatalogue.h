@@ -27,6 +27,7 @@ public:
     bool destroy(const QString& name);
     bool setDescription(const QString& name, QDomDocument* domDoc);
     bool setDescriptionAndValidCache(const QString& name, QDomDocument* domDoc);
+    bool invalidateCache(const QString& name);
     QDomDocument *description(const QString& name);
     bool setInvalid(const QString& name, bool invalid);
     bool isInvalid(const QString& name);

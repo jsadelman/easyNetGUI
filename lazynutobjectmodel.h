@@ -4,13 +4,14 @@
 #include <QAbstractItemModel>
 #include "lazynutobject.h"
 
+
 class DomItem;
 class QDomDocument;
 
 
 // this class is based on the following example:
 // http://doc.qt.digia.com/4.6/itemviews-simpledommodel.html
-class LazyNutObjectModel : public QAbstractItemModel, public AsLazyNutObject
+class LazyNutObjectModel : public QAbstractItemModel
 {
     Q_OBJECT
 
