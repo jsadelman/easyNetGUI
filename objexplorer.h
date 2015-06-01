@@ -8,20 +8,23 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QStyledItemDelegate>
+#include <QLabel>
 
 #include "treemodel.h"
 #include "enumclasses.h"
 
-//class LazyNutObj;
+class ObjectCatalogue;
 class AsLazyNutObject;
 class QDomDocument;
 class ExpandToFillButton;
+class DescriptionUpdater;
 //typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
 class LazyNutObjectModel;
 class LazyNutObjectListModel;
+class ObjectCatalogueFilter;
 class LazyNutObjTableModel;
-class LazyNutObjTableProxyModel;
+//class LazyNutObjTableProxyModel;
 class QSortFilterProxyModel;
 class QListView;
 class QTableView;
@@ -35,33 +38,15 @@ class ComboBoxDelegate;
 class QStackedWidget;
 
 
-class ObjExplorer: public QMainWindow //QSplitter //QWidget
+class ObjExplorer: public QMainWindow
 {
     Q_OBJECT
 
 public:
-    ObjExplorer(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent = 0);
+    ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent = 0);
 // should be private:
 
 
-    LazyNutObjectCatalogue  *objectCatalogue;
-    LazyNutObjectModel *lazyNutObjectModel;
-
-//    LazyNutObjModel *lazyNutObjModel;
-    TreeModel *objTaxonomyModel;
-    LazyNutObjectListModel *lazyNutObjectListModel;
-    LazyNutObjTableModel *lazyNutObjTableModel;
-    LazyNutObjTableProxyModel *lazyNutObjTableProxyModel;
-    QSortFilterProxyModel *lazyNutObjectTableProxy;
-
-
-
-//    QListView *lazyNutObjectListView;
-//    QVBoxLayout *layout;
-    QListView *lazyNutObjectListView;
-    ExpandToFillButton *expandToFillButton;
-    QTableView *lazyNutObjectTableProxyView;
-    QTreeView *lazyNutObjectView;
 //    QTreeView *objTaxonomyView;
     //QComboBox *cbox;
 //    ComboBoxDelegate *comboBoxDelegate;
@@ -74,35 +59,42 @@ signals:
 
 public slots:
 //    void setObj(LazyNutObj* obj, LazyNutObjCatalogue *objectCatalogue);
-    void setObjFromListIndex(QModelIndex index);
-    void setObjFromObjName(QString name);
-    void updateLazyNutObjCatalogue(QDomDocument *domDoc);
+//    void setObjFromListIndex(QModelIndex index);
+//    void setObjFromObjName(QString name);
+//    void updateLazyNutObjCatalogue(QDomDocument *domDoc);
 //    void setTaxonomyView();
 //    void reloadTaxonomy();
-    void resetLazyNutObjTableModel();
+//    void resetLazyNutObjTableModel();
 
 private slots:
-    void getTypes();
-    void setTypes(QStringList types);
+    void queryTypes();
+    void initTypes(QStringList types);
+    void selectType(QString type);
 //    void getTaxonomySubtypes();
 //    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
 //    void connectTaxonomyModel();
     void showList(QString cmd);
-    void setObjFromProxyTableIndex(QModelIndex index);
+//    void setObjFromProxyTableIndex(QModelIndex index);
 
 
 private:
-//    void createTaxonomy();
-//    void createTaxonomyMenu();
-
+    ObjectCatalogue  *objectCatalogue;
+    //---------- Type list ---------//
     QListWidget *typeList;
-    QListView *taxListView;
-    QColumnView *taxColumnView;
-    QTreeView *taxTreeView;
-    QStackedWidget *taxWidget;
+    QString allObjectsString;
+    //---------- Object list ---------//
+    ObjectCatalogueFilter *objectListFilter;
+    QListView *objectListView;
+    //--------- Description ----------//
+    ObjectCatalogueFilter *descriptionFilter;
+    DescriptionUpdater *descriptionUpdater;
+    LazyNutObjectModel *objectModel;
+    ExpandToFillButton *expandToFillButton;
+    QTreeView *objectView;
 
-    QMap<QString, QWidget*> taxViewMap;
-    QMenu *taxonomyMenu;
+
+
+
 
 };
 

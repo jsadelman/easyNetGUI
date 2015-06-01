@@ -1,5 +1,6 @@
 #include <QFont>
 #include <QBrush>
+#include <QDebug>
 
 #include "lazynutobjectmodel.h"
 #include "xmlelement.h"
@@ -8,16 +9,11 @@
 #include "lazynutobject.h"
 
 LazyNutObjectModel::LazyNutObjectModel(QDomDocument *domDoc, QObject *parent)
-    : QAbstractItemModel(parent)
+    : xmlDescription(domDoc), QAbstractItemModel(parent)
 {
-    rootItem = new DomItem(domDoc, 0);
+    rootItem = new DomItem(xmlDescription, 0);
 }
 
-LazyNutObjectModel::LazyNutObjectModel(AsLazyNutObject *lno, QObject *parent)
-    : AsLazyNutObject(*lno), QAbstractItemModel(parent)
-{
-    rootItem = new DomItem(domDoc, 0);
-}
 
 LazyNutObjectModel::~LazyNutObjectModel()
 {
@@ -192,24 +188,63 @@ int LazyNutObjectModel::columnCount(const QModelIndex &parent) const
     return 2;
 }
 
+QString LazyNutObjectModel::name()
+{
+    return xmlDescription ? AsLazyNutObject(*xmlDescription).name() : QString();
+}
+
+QString LazyNutObjectModel::type()
+{
+    return xmlDescription ? AsLazyNutObject(*xmlDescription).type() : QString();
+}
+
+void LazyNutObjectModel::setDescription(QString descName, QDomDocument *domDoc)
+{
+    if (AsLazyNutObject(*domDoc).name() == descName)
+        setDescription(domDoc);
+
+    else
+        qDebug() << QString("LazyNutObjectModel::setDescription name %1 does not match QDomDocument description").arg(descName);
+}
+
+void LazyNutObjectModel::removeDescription(QString descName)
+{
+    if (descName == name())
+        clearDescription();
+
+    else
+        qDebug() << QString("LazyNutObjectModel::removedDescription name %1 does not match QDomDocument description").arg(descName);
+}
+
+void LazyNutObjectModel::updateDescription(QDomDocument *domDoc)
+{
+    if (domDoc)
+    {
+        if (AsLazyNutObject(*domDoc).name() == name())
+            setDescription(domDoc);
+        else
+            qDebug() << "LazyNutObjectModel::updateDescription current and new descriptions have different names";
+    }
+    else
+        clearDescription();
+}
+
+void LazyNutObjectModel::clearDescription()
+{
+    setDescription(nullptr);
+}
+
+void LazyNutObjectModel::setDescription(QDomDocument *xmlDescription)
+{
+    beginResetModel();
+    delete rootItem;
+    rootItem = new DomItem(xmlDescription, 0);
+    endResetModel();
+}
+
 void LazyNutObjectModel::getObjFromDescriptionIndex(const QModelIndex &index)
 {
     DomItem * item = static_cast<DomItem*>(index.internalPointer());
     if (XMLelement(item->node().toElement()).isObject() && index.column() == 1)
         emit objectRequested(data(index,Qt::DisplayRole).toString());
 }
-
-//QString LazyNutObjectModel::getValue(const QString &label)
-//{
-//    return XMLelement(*domDoc)[label]();
-//}
-
-//void LazyNutObjectModel::initProperties()
-//{
-//    XMLelement XMLroot = XMLelement(*domDoc);
-//    _name = XMLroot["this"]();
-//    QString typeStr = XMLroot["type"]();
-//    _type = typeStr.section('/',0,0);
-//    _subtype = typeStr.section('/',1,1);
-//}
-

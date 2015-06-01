@@ -16,8 +16,7 @@ class LazyNutObjectModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    LazyNutObjectModel(QDomDocument *domDoc, QObject *parent = 0);
-    LazyNutObjectModel(AsLazyNutObject *lno, QObject *parent = 0);
+    LazyNutObjectModel(QDomDocument *xmlDescription, QObject *parent = 0);
     ~LazyNutObjectModel();
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
@@ -28,17 +27,26 @@ public:
     QModelIndex parent(const QModelIndex &child) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-//    inline QString name() {return _name;}
-//    inline QString type() {return _type;}
-//    inline QString subtype() {return _subtype;}
-//    QString getValue(const QString& label);
+    QString name();
+    QString type();
+
+public slots:
+    void setDescription(QString descName, QDomDocument* xmlDescription);
+    void removeDescription(QString descName);
+    void updateDescription(QDomDocument* xmlDescription);
+    void clearDescription();
+
 
 signals:
     void objectRequested(QString);
 
 private slots:
+    void setDescription(QDomDocument* xmlDescription);
     void getObjFromDescriptionIndex(const QModelIndex &index);
 
+private:
+
+    QDomDocument *xmlDescription;
     DomItem *rootItem;
 };
 

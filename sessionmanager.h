@@ -58,6 +58,10 @@ signals:
     void lazyNutMacroStarted();
     void lazyNutMacroFinished();
 
+    void recentlyCreated(QDomDocument*);
+    void recentlyModified(QStringList);
+    void recentlyDestroyed(QStringList);
+
     void macroQueueStopped(bool);
 
     void lazyNutNotRunning();
@@ -76,7 +80,7 @@ public slots:
     void pause();
     void stop();
     void killLazyNut();
-
+    void updateLazyNutObjCatalogue();
     void updateRecentlyModified();
     void getDescriptions();
 
@@ -91,6 +95,7 @@ private slots:
     void macroEnded();
 
     void appendCmdListOnNextJob(QStringList cmdList);
+
 
 
 

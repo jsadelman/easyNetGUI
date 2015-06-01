@@ -11,6 +11,8 @@ class ObjectCatalogueFilter : public QSortFilterProxyModel
     Q_OBJECT
 public:
     ObjectCatalogueFilter(ObjectCatalogue *objectCatalogue, QObject * parent = 0);
+
+public slots:
     void setNoFilter() {setFilterRegExp(QString());}
     void setName(QString txt);
     void setNameList(QStringList list);
@@ -18,8 +20,8 @@ public:
     void setTypeList(QStringList list);
 
 signals:
-    void addedDescription(QString name, QDomDocument* domDoc);
-    void removedDescription(QString name);
+    void descriptionAdded(QString name, QDomDocument* domDoc);
+    void descriptionRemoved(QString name);
 
 private slots:
     void sendAddedDescription(QModelIndex parent, int first, int last);

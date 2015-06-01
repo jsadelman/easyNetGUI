@@ -44,7 +44,7 @@ void ObjectCatalogueFilter::sendAddedDescription(QModelIndex parent, int first, 
     {
         QString name = data(index(row,0)).toString();
         qDebug () << "addedDescription" << name;
-        emit addedDescription(name, objectCatalogue->description(name));
+        emit descriptionAdded(name, objectCatalogue->description(name));
     }
 }
 
@@ -55,7 +55,7 @@ void ObjectCatalogueFilter::sendRemovedDescription(QModelIndex parent, int first
     {
         QString name = data(index(row,0)).toString();
         qDebug () << "removedDescription" << name;
-        emit removedDescription(name);
+        emit descriptionRemoved(name);
     }
 }
 

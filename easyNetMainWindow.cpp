@@ -18,18 +18,17 @@
 #include "easyNetMainWindow.h"
 #include "treemodel.h"
 #include "objexplorer.h"
-#include "designwindow.h"
+//#include "designwindow.h"
 #include "codeeditor.h"
 #include "sessionmanager.h"
 #include "highlighter.h"
-#include "codeeditor.h"
 #include "editwindow.h"
 #include "plotwindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "lazynutlistcombobox.h"
+#include "objectcatalogue.h"
 
-#include "lazynutlistcombobox.h"
 
 InputCmdLine::InputCmdLine(QWidget *parent)
     : QLineEdit(parent)
@@ -205,7 +204,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //    foreach (QString type, lazyNutObjTypes)
 //        objTaxonomyModel->appendValue(type,parentIndex);
 
-    objectCatalogue = new LazyNutObjectCatalogue;
+    objectCatalogue = new ObjectCatalogue;
 
     objExplorer = new ObjExplorer(objectCatalogue,this);
 
@@ -216,18 +215,18 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
 
-    designWindow = new DesignWindow(objectCatalogue, this);
+//    designWindow = new DesignWindow(objectCatalogue, this);
 //    connect(designWindow,SIGNAL(objectSelected(QString)),
 //            objExplorer,SLOT(setObjFromObjName(QString)));
 //    connect(objExplorer,SIGNAL(objectSelected(QString)),
 //            designWindow,SLOT(dispatchObjectSelected(QString)));
 
 
-    dockDesignWindow = new QDockWidget(tr("Design Window"), this);
-    dockDesignWindow->setAllowedAreas(  Qt::LeftDockWidgetArea |
-                                    Qt::RightDockWidgetArea);
-    dockDesignWindow->setWidget(designWindow);
-    addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
+//    dockDesignWindow = new QDockWidget(tr("Design Window"), this);
+//    dockDesignWindow->setAllowedAreas(  Qt::LeftDockWidgetArea |
+//                                    Qt::RightDockWidgetArea);
+//    dockDesignWindow->setWidget(designWindow);
+//    addDockWidget(Qt::LeftDockWidgetArea, dockDesignWindow);
 
 
 
@@ -242,15 +241,15 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //            designWindow,SLOT(updateDiagramScene()));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             cmdOutput,SLOT(displayOutput(QString)));
-    connect(SessionManager::instance(),SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)),
-            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
-    connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
-            objExplorer,SLOT(resetLazyNutObjTableModel()));
-    connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
-            designWindow,SLOT(updateDiagramScene()));
-    connect(SessionManager::instance(),SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
-    connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
-    connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
+//    connect(SessionManager::instance(),SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)),
+//            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
+//    connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
+//            objExplorer,SLOT(resetLazyNutObjTableModel()));
+//    connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
+//            designWindow,SLOT(updateDiagramScene()));
+//    connect(SessionManager::instance(),SIGNAL(lazyNutNotRunning()),this,SLOT(lazyNutNotRunning()));
+//    connect(this,SIGNAL(savedLayoutToBeLoaded(QString)),designWindow,SIGNAL(savedLayoutToBeLoaded(QString)));
+//    connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
 
 
     createActions();
@@ -971,7 +970,7 @@ void EasyNetMainWindow::hideAllDocks()
 //    dockInput->hide();
     dockOutput->hide();
     dockExplorer->hide();
-    dockDesignWindow->hide();
+//    dockDesignWindow->hide();
     dockCommandLog->hide();
     statusBar()->show();
 
@@ -992,7 +991,7 @@ void EasyNetMainWindow::showViewMode(int viewModeInt)
         dockWelcome->show();
         break;
     case Model:
-        dockDesignWindow->show();
+//        dockDesignWindow->show();
         dockExplorer->show();
         break;
     case Trial:

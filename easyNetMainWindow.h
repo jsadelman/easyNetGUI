@@ -22,6 +22,7 @@ class LazyNut;
 class SessionManager;
 class AsLazyNutObject;
 typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
+class ObjectCatalogue;
 class EditWindow;
 class Highlighter;
 class PlotWindow;
@@ -185,7 +186,7 @@ private:
     CmdOutput       *cmdOutput;
     InputCmdLine    *inputCmdLine;
 //    TreeModel       *objTaxonomyModel;
-    LazyNutObjectCatalogue *objectCatalogue;
+    ObjectCatalogue *objectCatalogue;
 //    LazyNutObjCatalogue  *objCatalogue;
     ObjExplorer      *objExplorer;
     QLabel          *zebPic;

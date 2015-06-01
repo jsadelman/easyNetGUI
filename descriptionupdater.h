@@ -17,8 +17,6 @@ public:
 
 signals:
     void descriptionUpdated(QDomDocument*);
-    void objectDestroyed(QString name);
-
 
 private slots:
     void requestDescriptions(QModelIndex top, QModelIndex bottom);

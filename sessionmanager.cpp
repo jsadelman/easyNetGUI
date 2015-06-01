@@ -31,7 +31,7 @@ SessionManager::SessionManager()
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
     connect(lazyNut, SIGNAL(started()), this, SIGNAL(lazyNutStarted()));
-    connect(lazyNut, SIGNAL(error(int)), this, SLOT(lazyNutProcessError(int)));
+//    connect(lazyNut, SIGNAL(error(int)), this, SLOT(lazyNutProcessError(int)));
     macroQueue = new MacroQueue;
 }
 
@@ -130,6 +130,7 @@ void SessionManager::appendCmdListOnNextJob(QStringList cmdList)
     qDebug() << "appendCmdListOnNextJob() list size: " << cmdList.size();
     nextJob(sender())->cmdList.append(cmdList);
 }
+
 //! [appendCmdListOnNextJob]
 
 //! [updateRecentlyModified]
@@ -199,6 +200,11 @@ void SessionManager::lazyNutProcessError(int error)
 void SessionManager::killLazyNut()
 {
     lazyNut->kill();
+}
+
+void SessionManager::updateLazyNutObjCatalogue()
+{
+
 }
 
 

@@ -1,6 +1,9 @@
 #include "descriptionupdater.h"
 #include "objectcatalogue.h"
 #include "lazynutobject.h"
+#include "sessionmanager.h"
+#include "lazynutjobparam.h"
+#include "enumclasses.h"
 #include <QSortFilterProxyModel>
 #include <QDebug>
 
@@ -22,9 +25,6 @@ void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
             this, SLOT(requestDescriptions(QModelIndex,QModelIndex)));
     connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(requestDescriptions(QModelIndex,int,int)));
-//    connect(proxyModel, &QSortFilterProxyModel::rowsRemoved, [=](QModelIndex m ,int f ,int l){
-//        qDebug() << "removed " << f;
-//    });
 
 }
 
@@ -77,6 +77,11 @@ void DescriptionUpdater::requestDescription(QString name)
     {
         qDebug() << "requestDescription" << name;
         objectCatalogue->setPending(name, false);
-        objectCatalogue->setInvalid(name, false);
+        LazyNutJobParam *param = new LazyNutJobParam;
+        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->cmdList = QStringList({QString("xml %1").arg(name)});
+        param->answerFormatterType = AnswerFormatterType::XML;
+        param->setAnswerReceiver(this, SLOT(notifyDescriptionUpdated(QDomDocument*)));
+        SessionManager::instance()->setupJob(param, sender());
     }
 }
