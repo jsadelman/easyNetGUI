@@ -43,10 +43,10 @@ void DescriptionUpdater::requestDescriptions(QModelIndex parent, int first, int 
 
 void DescriptionUpdater::notifyDescriptionUpdated(QDomDocument *domDoc)
 {
-    if (objectCatalogue->setDescriptionAndValidCache(domDoc))
-        emit descriptionUpdated(domDoc);
-    else
-        qDebug() << "DescriptionUpdater::notifyDescriptionUpdated failed";
+//    if (objectCatalogue->setDescriptionAndValidCache(domDoc))
+//        emit descriptionUpdated(domDoc);
+//    else
+//        qDebug() << "DescriptionUpdater::notifyDescriptionUpdated failed";
 }
 
 void DescriptionUpdater::requestDescriptions(int first, int last)
@@ -83,7 +83,13 @@ void DescriptionUpdater::requestDescription(QString name)
         param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(name)});
         param->answerFormatterType = AnswerFormatterType::XML;
-        param->setAnswerReceiver(this, SLOT(notifyDescriptionUpdated(QDomDocument*)));
+//        param->setAnswerReceiver(this, SLOT(notifyDescriptionUpdated(QDomDocument*)));
+        param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*)));
         SessionManager::instance()->setupJob(param, sender());
+    }
+    else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
+    {
+        qDebug() << "DescriptionUpdater::requestDescription notify description ready";
+        emit descriptionUpdated(objectCatalogue->description(name));
     }
 }

@@ -190,11 +190,12 @@ bool ObjectCatalogue::setDescription(QDomDocument *domDoc)
 bool ObjectCatalogue::setDescriptionAndValidCache(QDomDocument *domDoc)
 {
     QString name = AsLazyNutObject(*domDoc).name();
-    if (!setInvalid(name, false))
+
+//    if (!setPending(name, false))
+//        return false;
+    if  (!setDescription(domDoc))
         return false;
-    if (!setPending(name, false))
-        return false;
-    return setDescription(domDoc);
+    return setInvalid(name, false);
 }
 
 bool ObjectCatalogue::invalidateCache(const QString &name)

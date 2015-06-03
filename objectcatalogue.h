@@ -23,22 +23,21 @@ public:
 //    bool insertRows(int row, int count, const QModelIndex & parent = QModelIndex()) Q_DECL_OVERRIDE;
     bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex()) Q_DECL_OVERRIDE;
 
-
-    bool create(const QString& name, const QString& type);
-    bool destroy(const QString& name);
-    bool setDescription(QDomDocument* domDoc);
-    bool setDescriptionAndValidCache(QDomDocument* domDoc);
-    bool invalidateCache(const QString& name);
     QDomDocument *description(const QString& name);
-    bool setInvalid(const QString& name, bool invalid);
     bool isInvalid(const QString& name);
-    bool setPending(const QString& name, bool pending);
     bool isPending(const QString& name);
     QString type(const QString& name);
 
 public slots:
+    bool create(const QString& name, const QString& type);
     bool create(QDomDocument* domDoc);
     bool destroy(QStringList names);
+    bool destroy(const QString& name);
+    bool setDescription(QDomDocument* domDoc);
+    bool setDescriptionAndValidCache(QDomDocument* domDoc);
+    bool setInvalid(const QString& name, bool invalid);
+    bool setPending(const QString& name, bool pending);
+    bool invalidateCache(const QString& name);
     bool invalidateCache(QStringList names);
 
 

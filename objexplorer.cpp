@@ -58,6 +58,9 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     descriptionFilter->setName("<no name>");
     descriptionUpdater = new DescriptionUpdater(this);
     descriptionUpdater->setProxyModel(descriptionFilter);
+    // debug
+//    DescriptionUpdater *du2 = new DescriptionUpdater(this);
+//    du2->setProxyModel(descriptionFilter);
 
     objectModel = new LazyNutObjectModel(nullptr, this);
     connect(descriptionFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
@@ -66,6 +69,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
             objectModel, SLOT(removeDescription(QString)));
     connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
             objectModel, SLOT(updateDescription(QDomDocument*)));
+
 
 
     objectView = new QTreeView;
