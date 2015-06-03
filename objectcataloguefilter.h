@@ -20,12 +20,12 @@ public slots:
     void setTypeList(QStringList list);
 
 signals:
-    void descriptionAdded(QString name, QDomDocument* domDoc);
-    void descriptionRemoved(QString name);
+    void objectCreated(QString, QString, QDomDocument*);
+    void objectDestroyed(QString name);
 
 private slots:
-    void sendAddedDescription(QModelIndex parent, int first, int last);
-    void sendRemovedDescription(QModelIndex parent, int first, int last);
+    void sendObjectCreated(QModelIndex parent, int first, int last);
+    void sendObjectDestroyed(QModelIndex parent, int first, int last);
 
 private:
     void setList(QStringList list);

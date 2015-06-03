@@ -1,8 +1,9 @@
 #include "objectcatalogue.h"
 #include "lazynutobjectcacheelem.h"
-#include <QDomDocument>
 #include "lazynutobject.h"
 #include <QMetaObject>
+#include <QDomDocument>
+#include <QDebug>
 
 Q_DECLARE_METATYPE(QDomDocument*)
 
@@ -123,20 +124,20 @@ Qt::ItemFlags ObjectCatalogue::flags(const QModelIndex &index) const
     return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 }
 
-bool ObjectCatalogue::insertRows(int row, int count, const QModelIndex &parent)
-{
-    Q_UNUSED(parent);
-    if (row < 0 || row > catalogue.count())
-        return false;
+//bool ObjectCatalogue::insertRows(int row, int count, const QModelIndex &parent)
+//{
+//    Q_UNUSED(parent);
+//    if (row < 0 || row > catalogue.count())
+//        return false;
 
-    beginInsertRows(QModelIndex(), row, row+count-1);
+//    beginInsertRows(QModelIndex(), row, row+count-1);
 
-    for (int i=0; i < count; ++i)
-        catalogue.insert(row, new LazyNutObjectCacheElem);
+//    for (int i=0; i < count; ++i)
+//        catalogue.insert(row, new LazyNutObjectCacheElem);
 
-    endInsertRows();
-    return true;
-}
+//    endInsertRows();
+//    return true;
+//}
 
 bool ObjectCatalogue::removeRows(int row, int count, const QModelIndex &parent)
 {
@@ -161,18 +162,17 @@ bool ObjectCatalogue::create(const QString &name, const QString &type)
     if (rowFromName(name) >= 0) // name exists already
         return false;
 
-    if (!insertRows(0,1))
-        return false;
+    beginInsertRows(QModelIndex(), 0, 0);
+    LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type);
+    catalogue.insert(0, elem);
+    endInsertRows();
 
-    catalogue.at(0)->name = name;
-    catalogue.at(0)->type = type;
-    emit dataChanged(index(0,0), index(0,4));
+
+//    catalogue.at(0)->name = name;
+//    catalogue.at(0)->type = type;
+//    emit dataChanged(index(0,0), index(0,4));
     return true;
 
-//    if (!setData(index(0,0), name))
-//        return false;
-
-//    return setData(index(0,1), type);
 }
 
 bool ObjectCatalogue::destroy(const QString &name)
@@ -180,22 +180,21 @@ bool ObjectCatalogue::destroy(const QString &name)
     return removeRow(rowFromName(name));
 }
 
-bool ObjectCatalogue::setDescription(const QString &name, QDomDocument *domDoc)
+bool ObjectCatalogue::setDescription(QDomDocument *domDoc)
 {
+    QString name = AsLazyNutObject(*domDoc).name();
     int row = rowFromName(name);
-    if (data(index(row, 1)).toString() != AsLazyNutObject(*domDoc).type()) // type mismatch
-        return false;
-
     return setData(index(row, 4), QVariant::fromValue(domDoc));
 }
 
-bool ObjectCatalogue::setDescriptionAndValidCache(const QString &name, QDomDocument *domDoc)
+bool ObjectCatalogue::setDescriptionAndValidCache(QDomDocument *domDoc)
 {
+    QString name = AsLazyNutObject(*domDoc).name();
     if (!setInvalid(name, false))
         return false;
     if (!setPending(name, false))
         return false;
-    return setDescription(name, domDoc);
+    return setDescription(domDoc);
 }
 
 bool ObjectCatalogue::invalidateCache(const QString &name)
@@ -237,6 +236,36 @@ bool ObjectCatalogue::isPending(const QString &name)
 QString ObjectCatalogue::type(const QString &name)
 {
     return data(index(rowFromName(name), 1)).toString();
+}
+
+bool ObjectCatalogue::create(QDomDocument *domDoc)
+{
+    bool success = true;
+    XMLelement elem = XMLelement(*domDoc).firstChild();
+    while (!elem.isNull())
+    {
+        success *= create(elem(), elem["type"]());
+        elem = elem.nextSibling();
+    }
+    return success;
+}
+
+bool ObjectCatalogue::destroy(QStringList names)
+{
+    bool success = true;
+    foreach (QString name, names)
+        success *= destroy(name);
+
+    return success;
+}
+
+bool ObjectCatalogue::invalidateCache(QStringList names)
+{
+    bool success = true;
+    foreach (QString name, names)
+        success *= invalidateCache(name);
+
+    return success;
 }
 
 int ObjectCatalogue::rowFromName(QString name)

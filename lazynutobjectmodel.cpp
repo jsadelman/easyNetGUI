@@ -9,9 +9,9 @@
 #include "lazynutobject.h"
 
 LazyNutObjectModel::LazyNutObjectModel(QDomDocument *domDoc, QObject *parent)
-    : xmlDescription(domDoc), QAbstractItemModel(parent)
+    : QAbstractItemModel(parent)
 {
-    rootItem = new DomItem(xmlDescription, 0);
+    rootItem = new DomItem(domDoc, 0);
 }
 
 
@@ -185,27 +185,23 @@ int LazyNutObjectModel::rowCount(const QModelIndex &parent) const
 
 int LazyNutObjectModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return 2;
 }
 
 QString LazyNutObjectModel::name()
 {
-    return xmlDescription ? AsLazyNutObject(*xmlDescription).name() : QString();
+    QDomNode node = rootItem->node();
+//    qDebug() <<  "LazyNutObjectModel::name()" << AsLazyNutObject(node.toDocument()).name();
+    return node.isNull() ? QString() : AsLazyNutObject(node.toDocument()).name();
 }
 
 QString LazyNutObjectModel::type()
 {
-    return xmlDescription ? AsLazyNutObject(*xmlDescription).type() : QString();
+    QDomNode node = rootItem->node();
+    return node.isNull() ? QString() : AsLazyNutObject(node.toDocument()).type();
 }
 
-void LazyNutObjectModel::setDescription(QString descName, QDomDocument *domDoc)
-{
-    if (AsLazyNutObject(*domDoc).name() == descName)
-        setDescription(domDoc);
-
-    else
-        qDebug() << QString("LazyNutObjectModel::setDescription name %1 does not match QDomDocument description").arg(descName);
-}
 
 void LazyNutObjectModel::removeDescription(QString descName)
 {
@@ -220,10 +216,11 @@ void LazyNutObjectModel::updateDescription(QDomDocument *domDoc)
 {
     if (domDoc)
     {
-        if (AsLazyNutObject(*domDoc).name() == name())
+        qDebug() << "LazyNutObjectModel::updateDescription " << AsLazyNutObject(*domDoc).name();
+//        if (AsLazyNutObject(*domDoc).name() == name())
             setDescription(domDoc);
-        else
-            qDebug() << "LazyNutObjectModel::updateDescription current and new descriptions have different names";
+//        else
+//            qDebug() << "LazyNutObjectModel::updateDescription current and new descriptions have different names";
     }
     else
         clearDescription();
@@ -234,15 +231,26 @@ void LazyNutObjectModel::clearDescription()
     setDescription(nullptr);
 }
 
-void LazyNutObjectModel::setDescription(QDomDocument *xmlDescription)
+void LazyNutObjectModel::setDescription(QString name, QString type, QDomDocument *domDoc)
+{
+    Q_UNUSED(name)
+    Q_UNUSED(type)
+    if (domDoc)
+        setDescription(domDoc);
+    else
+        clearDescription();
+
+}
+
+void LazyNutObjectModel::setDescription(QDomDocument *domDoc)
 {
     beginResetModel();
     delete rootItem;
-    rootItem = new DomItem(xmlDescription, 0);
+    rootItem = new DomItem(domDoc, 0);
     endResetModel();
 }
 
-void LazyNutObjectModel::getObjFromDescriptionIndex(const QModelIndex &index)
+void LazyNutObjectModel::sendObjectRequested(const QModelIndex &index)
 {
     DomItem * item = static_cast<DomItem*>(index.internalPointer());
     if (XMLelement(item->node().toElement()).isObject() && index.column() == 1)

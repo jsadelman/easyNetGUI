@@ -26,11 +26,11 @@ SessionManager *SessionManager::instance()
 }
 
 SessionManager::SessionManager()
-    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)\\n")
+    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)(?=\\r\\n)")
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
-    connect(lazyNut, SIGNAL(started()), this, SIGNAL(lazyNutStarted()));
+//    connect(lazyNut, SIGNAL(started()), this, SIGNAL(lazyNutStarted()));
 //    connect(lazyNut, SIGNAL(error(int)), this, SLOT(lazyNutProcessError(int)));
     macroQueue = new MacroQueue;
 }
@@ -41,7 +41,6 @@ void SessionManager::startLazyNut(QString lazyNutBat)
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
     lazyNut->start(lazyNutBat);
-    // TODO: here we should have a wait until timeout, since lazyNut could be on a remote server
     if (lazyNut->state() == QProcess::NotRunning)
     {
         delete lazyNut;
@@ -154,8 +153,37 @@ void SessionManager::getDescriptions()
     // no cmdList, since it is set by setCmdListOnNextJob
     param->cmdFormatter = [] (QString cmd) { return cmd.prepend("xml ");};
     param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(this, SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)));
+    param->setAnswerReceiver(this, SIGNAL(updateObjectCatalogue(QDomDocument*)));
     param->setEndOfJobReceiver(this, SIGNAL(updateDiagramScene()));
+    setupJob(param, sender());
+}
+
+void SessionManager::queryRecentlyCreated()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
+    param->answerFormatterType = AnswerFormatterType::XML;
+    param->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)));
+    param->setNextJobReceiver(this, SLOT(queryRecentlyModified()));
+    setupJob(param, sender());
+}
+
+void SessionManager::queryRecentlyModified()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
+    param->answerFormatterType = AnswerFormatterType::ListOfValues;
+    param->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)));
+    param->setNextJobReceiver(this, SLOT(queryRecentlyDestroyed()));
+    setupJob(param, sender());
+}
+
+void SessionManager::queryRecentlyDestroyed()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
+    param->answerFormatterType = AnswerFormatterType::ListOfValues;
+    param->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)));
     setupJob(param, sender());
 }
 //! [getDescriptions]
@@ -170,6 +198,7 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
         qDebug() << OOBsecret;
         lazyNutHeaderBuffer.clear();
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
+        emit lazyNutStarted();
     }
 }
 
@@ -202,9 +231,9 @@ void SessionManager::killLazyNut()
     lazyNut->kill();
 }
 
-void SessionManager::updateLazyNutObjCatalogue()
+void SessionManager::updateObjectCatalogue()
 {
-
+    queryRecentlyCreated();
 }
 
 

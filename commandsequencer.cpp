@@ -14,14 +14,14 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
 
 void CommandSequencer::initProcessLazyNutOutput()
 {
-    beginRex = QRegExp("BEGIN: ([^\\n]+)");
+    beginRex = QRegExp("BEGIN: ([^\\r\\n]+)");
     emptyLineRex = QRegExp("^[\\s\\t]*$");
-    errorRex = QRegExp("ERROR: ([^\\n]*)(?=\\n)");
-    answerRex = QRegExp("ANSWER: ([^\\n]*)(?=\\n)");
+    errorRex = QRegExp("ERROR: ([^\\r\\n]*)"); //(?=\\n)
+    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
     eNelementsRex = QRegExp("<eNelements>");
     xmlStartRex = QRegExp("<(\\w+)");
     svgRex = QRegExp("SVG file of (\\d+) bytes:");
-    answerDoneRex = QRegExp("ANSWER: Done\\.(?=\\n)");
+    answerDoneRex = QRegExp("ANSWER: Done\\.");//(?=\\n)
     lazyNutBuffer.clear();
     baseOffset = 0;
 }
@@ -77,17 +77,17 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         lineNumber = beginRex.cap(1);
-        QRegExp endRex(QString("END: %1[^\\n]*\\n").arg(lineNumber));
+        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(lineNumber));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
             return;
 
         // a hack for skipping lazyNut header, which currently contains BEGIN 1
-        if (lineNumber == "1")
-        {
-            baseOffset = endOffset + endRex.matchedLength();
-            continue;
-        }
+//        if (lineNumber == "1")
+//        {
+//            baseOffset = endOffset + endRex.matchedLength();
+//            continue;
+//        }
 //        qDebug() << "lineNumber" << lineNumber;
 
 

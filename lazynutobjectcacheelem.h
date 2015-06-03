@@ -8,7 +8,9 @@ struct LazyNutObjectCacheElem
 {
 public:
     LazyNutObjectCacheElem();
+    LazyNutObjectCacheElem(const QString& name, const QString& type);
     ~LazyNutObjectCacheElem();
+    void init();
     QDomDocument* domDoc;
     QString name;
     QString type;

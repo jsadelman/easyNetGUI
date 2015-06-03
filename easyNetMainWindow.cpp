@@ -205,6 +205,12 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //        objTaxonomyModel->appendValue(type,parentIndex);
 
     objectCatalogue = new ObjectCatalogue;
+    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
+            objectCatalogue, SLOT(create(QDomDocument*)));
+    connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
+            objectCatalogue, SLOT(invalidateCache(QStringList)));
+    connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
+            objectCatalogue, SLOT(destroy(QStringList)));
 
     objExplorer = new ObjExplorer(objectCatalogue,this);
 
@@ -528,7 +534,7 @@ void EasyNetMainWindow::runCmd(QString cmd)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = QStringList({cmd});
     param->logMode |= ECHO_INTERPRETER;
-    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateRecentlyModified()));
+    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
     SessionManager::instance()->setupJob(param);
 }
 //! [runCmd]
@@ -549,7 +555,7 @@ void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER;
     param->cmdList = cmdList;
-    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateRecentlyModified()));
+    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
     SessionManager::instance()->setupJob(param);
 }
 //! [runCmdAndUpdate]

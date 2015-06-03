@@ -31,9 +31,8 @@ public:
     QString type();
 
 public slots:
-    void setDescription(QString descName, QDomDocument* xmlDescription);
     void removeDescription(QString descName);
-    void updateDescription(QDomDocument* xmlDescription);
+    void updateDescription(QDomDocument* domDoc);
     void clearDescription();
 
 
@@ -41,12 +40,11 @@ signals:
     void objectRequested(QString);
 
 private slots:
-    void setDescription(QDomDocument* xmlDescription);
-    void getObjFromDescriptionIndex(const QModelIndex &index);
+    void setDescription(QString name, QString type, QDomDocument* domDoc);
+    void setDescription(QDomDocument* domDoc);
+    void sendObjectRequested(const QModelIndex &index);
 
 private:
-
-    QDomDocument *xmlDescription;
     DomItem *rootItem;
 };
 

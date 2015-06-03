@@ -29,11 +29,6 @@
 ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     : objectCatalogue(objectCatalogue), QMainWindow(parent)
 {
-    QSplitter *splitter = new QSplitter;
-    splitter->setOrientation(Qt::Horizontal);
-
-
-
     //---------- Type list ---------//
 
     typeList = new QListWidget(this);
@@ -50,23 +45,24 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     objectListView = new QListView(this);
     objectListView->setModel(objectListFilter);
     objectListView->setModelColumn(0);
+    objectListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     objectListView->setSelectionMode(QAbstractItemView::SingleSelection);
 
     //--------- Description ----------//
 
     descriptionFilter = new ObjectCatalogueFilter(objectCatalogue, this);
-    connect(objectListView, &QListView::clicked,
-            [=](const QModelIndex & index)
+    connect(objectListView, &QListView::clicked, [=](const QModelIndex & index)
     {
         descriptionFilter->setName(objectListFilter->data(index).toString());
     });
+    descriptionFilter->setName("<no name>");
     descriptionUpdater = new DescriptionUpdater(this);
     descriptionUpdater->setProxyModel(descriptionFilter);
 
     objectModel = new LazyNutObjectModel(nullptr, this);
-    connect(descriptionFilter, SIGNAL(descriptionAdded(QString,QDomDocument*)),
-            objectModel, SLOT(setDescription(QString,QDomDocument*)));
-    connect(descriptionFilter, SIGNAL(descriptionRemoved(QString)),
+    connect(descriptionFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
+            objectModel, SLOT(setDescription(QString, QString, QDomDocument*)));
+    connect(descriptionFilter, SIGNAL(objectDestroyed(QString)),
             objectModel, SLOT(removeDescription(QString)));
     connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
             objectModel, SLOT(updateDescription(QDomDocument*)));
@@ -74,21 +70,28 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
     objectView = new QTreeView;
     objectView->setModel(objectModel);
-    objectView->header()->hide();
-    objectView->expandAll();
     objectView->header()->setStretchLastSection(true);
-    objectView->setEditTriggers(QAbstractItemView::NoEditTriggers); // not sure
+    objectView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     objectView->setSelectionMode(QAbstractItemView::SingleSelection);
     expandToFillButton = new ExpandToFillButton(objectView);
     objectView->setItemDelegateForColumn(1, expandToFillButton);
     connect(expandToFillButton, SIGNAL(expandToFill(QString)), this, SLOT(showList(QString)));
+    connect(objectModel, &QAbstractItemModel::modelReset, [=]()
+    {
+        objectView->expandAll();
+        for (int col=0; col < objectView->model()->columnCount(); ++col)
+            objectView->resizeColumnToContents(col);
+    });
+    connect(objectView, SIGNAL(clicked(QModelIndex)), objectModel, SLOT(sendObjectRequested(QModelIndex)));
+    connect(objectModel, SIGNAL(objectRequested(QString)), descriptionFilter, SLOT(setName(QString)));
 
+    //------- splitter ----------//
 
-
+    QSplitter *splitter = new QSplitter;
+    splitter->setOrientation(Qt::Horizontal);
     splitter->addWidget(typeList);
     splitter->addWidget(objectListView);
     splitter->addWidget(objectView);
-
 
     setWindowTitle(tr("Object Explorer"));
     setCentralWidget(splitter);

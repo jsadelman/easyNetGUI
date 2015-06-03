@@ -43,8 +43,10 @@ void DescriptionUpdater::requestDescriptions(QModelIndex parent, int first, int 
 
 void DescriptionUpdater::notifyDescriptionUpdated(QDomDocument *domDoc)
 {
-    objectCatalogue->setInvalid(AsLazyNutObject(*domDoc).name(), false);
-    emit descriptionUpdated(domDoc);
+    if (objectCatalogue->setDescriptionAndValidCache(domDoc))
+        emit descriptionUpdated(domDoc);
+    else
+        qDebug() << "DescriptionUpdater::notifyDescriptionUpdated failed";
 }
 
 void DescriptionUpdater::requestDescriptions(int first, int last)

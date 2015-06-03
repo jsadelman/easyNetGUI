@@ -66,7 +66,7 @@ signals:
 
     void lazyNutNotRunning();
     // convenient signals for the implementation of updateRecentlyModified()
-    void updateLazyNutObjCatalogue(QDomDocument*);
+    void updateObjectCatalogue(QDomDocument*);
     void updateDiagramScene();
 
 
@@ -80,9 +80,12 @@ public slots:
     void pause();
     void stop();
     void killLazyNut();
-    void updateLazyNutObjCatalogue();
+    void updateObjectCatalogue();
     void updateRecentlyModified();
     void getDescriptions();
+    void queryRecentlyCreated();
+    void queryRecentlyModified();
+    void queryRecentlyDestroyed();
 
 
 private slots:
