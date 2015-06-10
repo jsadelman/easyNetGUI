@@ -11,6 +11,7 @@ class ObjectCatalogueFilter : public QSortFilterProxyModel
     Q_OBJECT
 public:
     ObjectCatalogueFilter(ObjectCatalogue *objectCatalogue, QObject * parent = 0);
+    bool isAllValid();
 
 public slots:
     void setNoFilter() {setFilterRegExp(QString());}

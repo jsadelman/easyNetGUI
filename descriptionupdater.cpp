@@ -30,23 +30,13 @@ void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
 
 void DescriptionUpdater::requestDescriptions(QModelIndex top, QModelIndex bottom)
 {
-//    qDebug() << top << bottom;
     requestDescriptions(top.row(), bottom.row());
 }
 
 void DescriptionUpdater::requestDescriptions(QModelIndex parent, int first, int last)
 {
     Q_UNUSED(parent)
-//    qDebug() << first << last;
     requestDescriptions(first, last);
-}
-
-void DescriptionUpdater::notifyDescriptionUpdated(QDomDocument *domDoc)
-{
-//    if (objectCatalogue->setDescriptionAndValidCache(domDoc))
-//        emit descriptionUpdated(domDoc);
-//    else
-//        qDebug() << "DescriptionUpdater::notifyDescriptionUpdated failed";
 }
 
 void DescriptionUpdater::requestDescriptions(int first, int last)
@@ -77,19 +67,18 @@ void DescriptionUpdater::requestDescription(QString name)
 {
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
-        qDebug() << "requestDescription" << name;
+//        qDebug() << "requestDescription" << name;
         objectCatalogue->setPending(name, false);
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(name)});
         param->answerFormatterType = AnswerFormatterType::XML;
-//        param->setAnswerReceiver(this, SLOT(notifyDescriptionUpdated(QDomDocument*)));
         param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*)));
         SessionManager::instance()->setupJob(param, sender());
     }
     else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
     {
-        qDebug() << "DescriptionUpdater::requestDescription notify description ready";
+//        qDebug() << "DescriptionUpdater::requestDescription notify description ready";
         emit descriptionUpdated(objectCatalogue->description(name));
     }
 }

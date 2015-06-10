@@ -137,6 +137,7 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private:
+    void checkScreens();
     void initialiseToolBar();
     void initialiseLists();
     void updateToolBar();

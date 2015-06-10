@@ -21,11 +21,11 @@ SOURCES +=  \
     treemodel.cpp \
     querycontext.cpp \
     objexplorer.cpp \
- #   arrow.cpp \
-#    diagramitem.cpp \
-#    diagramscene.cpp \
-#    diagramtextitem.cpp \
-#    designwindow.cpp \
+    arrow.cpp \
+   diagramitem.cpp \
+   diagramscene.cpp \
+    diagramtextitem.cpp \
+    designwindow.cpp \
     highlighter.cpp \
     codeeditor.cpp \
     editwindow.cpp \
@@ -66,11 +66,11 @@ HEADERS  += \
     treemodel.h \
     querycontext.h \
     objexplorer.h \
- #   arrow.h \
-#    diagramitem.h \
-#    diagramscene.h \
-#    diagramtextitem.h \
-#    designwindow.h \
+   arrow.h \
+    diagramitem.h \
+    diagramscene.h \
+    diagramtextitem.h \
+    designwindow.h \
     highlighter.h \
     codeeditor.h \
     editwindow.h \

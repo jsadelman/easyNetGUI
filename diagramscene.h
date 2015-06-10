@@ -59,7 +59,11 @@ class QGraphicsTextItem;
 class QGraphicsItem;
 class QColor;
 class AsLazyNutObject;
-typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
+class ObjectCatalogue;
+class ObjectCatalogueFilter;
+class DescriptionUpdater;
+class QDomDocument;
+
 QT_END_NAMESPACE
 
 //! [0]
@@ -70,8 +74,8 @@ class DiagramScene : public QGraphicsScene
 public:
     enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
-    explicit DiagramScene(QMenu *itemMenu, LazyNutObjectCatalogue *objectCatalogue, QObject *parent = 0);
-    void setObjCatalogue(LazyNutObjectCatalogue *_objectCatalogue);
+    explicit DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue, QObject *parent = 0);
+    void setObjCatalogue(ObjectCatalogue *catalogue);
     QFont font() const { return myFont; }
     QColor textColor() const { return myTextColor; }
     QColor itemColor() const { return myItemColor; }
@@ -88,7 +92,7 @@ public slots:
     void setItemType(DiagramItem::DiagramType type);
     void setArrowTipType(Arrow::ArrowTipType type);
     void editorLostFocus(DiagramTextItem *item);
-    void syncToObjCatalogue();
+//    void syncToObjCatalogue();
     void setSelected(QString name);
     void savedLayoutToBeLoaded(QString _savedLayout);
     void saveLayout();
@@ -109,10 +113,21 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
+private slots:
+    void positionObject(QString name, QString type, QDomDocument* domDoc);
+    void removeObject(QString name);
+    void renderObject(QDomDocument* domDoc);
+
 private:
-    LazyNutObjectCatalogue *objectCatalogue;
-    QHash<QString,QGraphicsItem*> *itemHash;
+    void render();
     bool isItemChange(int type);
+
+    ObjectCatalogue *objectCatalogue;
+    QHash<QString,QGraphicsItem*> itemHash;
+    ObjectCatalogueFilter *objectFilter;
+    DescriptionUpdater *descriptionUpdater;
+    QList<QDomDocument*> renderList;
+
 
     QString savedLayout;
     bool layoutLoaded = false;
@@ -125,6 +140,7 @@ private:
     QPointF defaultPosition;
     QPointF currentPosition;
     QPointF itemOffset;
+    QPointF arrowOffset;
     QGraphicsLineItem *line;
     QFont myFont;
     DiagramTextItem *textItem;

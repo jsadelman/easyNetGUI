@@ -52,33 +52,65 @@
 const qreal Pi = 3.14;
 
 //! [0]
-Arrow::Arrow(DiagramItem *startItem, DiagramItem *endItem, ArrowTipType arrowTipType, QGraphicsItem *parent)
-    :  QGraphicsPathItem(parent)
+Arrow::Arrow(QString name, DiagramItem *startItem, DiagramItem *endItem, ArrowTipType arrowTipType, QGraphicsItem *parent)
+    :  name(name), startItem(startItem), endItem(endItem), arrowTipType(arrowTipType), QGraphicsPathItem(parent)
 {
-    myStartItem = startItem;
-    myEndItem = endItem;
-    if (myStartItem == myEndItem)
-        myArrowType = SelfLoop;
+    arrowStart = QPoint();
+    if (startItem == endItem)
+        arrowType = SelfLoop;
     else
-        myArrowType = Line;
-    myArrowTipType = arrowTipType;
+        arrowType = Line;
+
+    init();
+}
+
+Arrow::Arrow(QString name, QPointF startingPoint, Arrow::ArrowTipType arrowTipType, QGraphicsItem *parent)
+    :  name(name), arrowStart(startingPoint), arrowTipType(arrowTipType), QGraphicsPathItem(parent)
+{
+    startItem = nullptr;
+    endItem = nullptr;
+    arrowType = Line;
+    init();
+}
+
+Arrow::Arrow(QString name, ArrowTipType arrowTipType, QGraphicsItem *parent)
+   :  name(name), arrowTipType(arrowTipType), QGraphicsPathItem(parent)
+{
+    startItem = nullptr;
+    endItem = nullptr;
+    arrowType = Line;
+    arrowStart = QPointF();
+    init();
+}
+
+Arrow::Arrow(ArrowTipType arrowTipType, QGraphicsItem *parent)
+   : arrowTipType(arrowTipType), QGraphicsPathItem(parent)
+{
+    startItem = nullptr;
+    endItem = nullptr;
+    name = QString();
+    arrowType = Line;
+    arrowStart = QPointF();
+    init();
+}
+
+void Arrow::init()
+{
     setFlag(QGraphicsItem::ItemIsSelectable, true);
+    defaultLength = 100;
     myColor = Qt::black;
     penWidth = 2;
     arrowSize = 10;
     setPen(QPen(myColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 }
-//! [0]
 
-//! [1]
+
 QRectF Arrow::boundingRect() const
 {
     qreal extra = (pen().width() + 20) / 2.0;
     return path().boundingRect().adjusted(-extra, -extra, extra, extra);
 }
-//! [1]
 
-//! [2]
 QPainterPath Arrow::shape() const
 {
     QPainterPath shapePath;
@@ -100,153 +132,156 @@ QPainterPath Arrow::shape() const
 
 
 }
-//! [2]
 
-//! [3]
 void Arrow::updatePosition()
 {
     // any time an arrow is to be moved, this function resets path, which in turn
     // is used by boundingRect() and shape() to determine e.g.
     // the area that has to be repainted (boundingRect) and the selected area (shape).
     // boundingRect() and shape() are not called by the user but managed by the Scene.
-    switch (myArrowType)
+    switch (arrowType)
     {
     case Line:
     {
-        QPainterPath updatePath(mapFromItem(myStartItem,myStartItem->connectionPoint(this)));
-        updatePath.lineTo(mapFromItem(myEndItem,myEndItem->connectionPoint(this)));
+        QPainterPath updatePath;
+        if (!startItem && !endItem)
+        {
+            arrowEnd = arrowStart - QPointF(0, defaultLength);
+            updatePath.moveTo(arrowStart);
+            updatePath.lineTo(arrowEnd);
+        }
+        else if (!startItem)
+        {
+            arrowEnd = mapFromItem(endItem,endItem->connectionPoint(this));
+            arrowStart = arrowEnd + QPointF(0, defaultLength);
+            updatePath.moveTo(arrowStart);
+            updatePath.lineTo(arrowEnd);
+        }
+        else if (!endItem)
+        {
+            arrowStart = mapFromItem(startItem,startItem->connectionPoint(this));
+            arrowEnd = arrowStart - QPointF(0, defaultLength);
+            updatePath.moveTo(arrowStart);
+            updatePath.lineTo(arrowEnd);
+        }
+        else
+        {
+            updatePath.moveTo(mapFromItem(startItem,startItem->connectionPoint(this)));
+            updatePath.lineTo(mapFromItem(endItem,endItem->connectionPoint(this)));
+        }
         setPath(updatePath);
         break;
     }
     case SelfLoop:
     {
-        QPainterPath updatePath(mapFromItem(myStartItem,myStartItem->loopPath(this)));
+        QPainterPath updatePath(mapFromItem(startItem,startItem->loopPath(this)));
         setPath(updatePath);
         break;
     }
     }
 }
-//! [3]
 
-//! [4]
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
           QWidget *)
 {
-    if (myArrowType == Line && myStartItem->collidesWithItem(myEndItem))
-        return;
-
     QPen myPen = pen();
     myPen.setColor(myColor);
     myPen.setWidth(penWidth);
     painter->setPen(myPen);
     painter->setBrush(Qt::NoBrush);
-//! [4] //! [5]
 
-    switch (myArrowType)
+    switch (arrowType)
     {
     case Line:
     {
-        QPointF startPoint = myStartItem->pos() + myStartItem->connectionPoint(this);
-        QLineF connectLine = QLineF(startPoint, myEndItem->pos() + myEndItem->connectionPoint(this));
-        QPolygonF endPolygon = myEndItem->polygon();
-        QPointF p1 = endPolygon.first() + myEndItem->pos();
-        QPointF p2;
-        QPointF intersectPoint;
-        QLineF polyLine;
-        for (int i = 1; i < endPolygon.count(); ++i) {
-            p2 = endPolygon.at(i) + myEndItem->pos();
-            polyLine = QLineF(p1, p2);
-            QLineF::IntersectType intersectType =
-                    polyLine.intersect(connectLine, &intersectPoint);
-            if (intersectType == QLineF::BoundedIntersection)
-                break;
-            p1 = p2;
+        if (!startItem && !endItem)
+        {
+            arrowEnd = arrowStart - QPointF(0, defaultLength);
         }
-
-        setLine(QLineF(intersectPoint, startPoint));
-        QPainterPath arrowPath(startPoint);
-        arrowPath.lineTo(intersectPoint);
+        else if (!startItem)
+        {
+            arrowEnd = endItem->connectionPoint(this) + endItem->pos();
+            arrowStart = arrowEnd + QPointF(0, defaultLength);
+        }
+        else if (!endItem)
+        {
+            arrowStart = startItem->connectionPoint(this) + startItem->pos();
+            arrowEnd = arrowStart - QPointF(0, defaultLength);
+        }
+        else
+        {
+            if (startItem->collidesWithItem(endItem))
+                return;
+            arrowStart = startItem->connectionPoint(this) + startItem->pos();
+            QLineF connectLine = QLineF(arrowStart, endItem->connectionPoint(this) + endItem->pos());
+            QPolygonF endPolygon = endItem->polygon();
+            QPointF p1 = endPolygon.first() + endItem->pos();
+            QPointF p2;
+            QPointF intersectPoint;
+            QLineF polyLine;
+            for (int i = 1; i < endPolygon.count(); ++i) {
+                p2 = endPolygon.at(i) + endItem->pos();
+                polyLine = QLineF(p1, p2);
+                QLineF::IntersectType intersectType =
+                        polyLine.intersect(connectLine, &intersectPoint);
+                if (intersectType == QLineF::BoundedIntersection)
+                    break;
+                p1 = p2;
+            }
+            arrowEnd = intersectPoint;
+        }
+        QPainterPath arrowPath(arrowStart);
+        arrowPath.lineTo(arrowEnd);
         setPath(arrowPath);
-        switch (myArrowTipType) {
-        case Excitatory:
-        {
-            // this trig calculation is from the diagramscene example
-            double angle = ::acos(line().dx() / line().length());
-            if (line().dy() >= 0)
-                angle = (Pi * 2) - angle;
-
-            QPointF arrowP1 = line().p1() + QPointF(sin(angle + Pi / 3) * arrowSize,
-                                                    cos(angle + Pi / 3) * arrowSize);
-            QPointF arrowP2 = line().p1() + QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-                                                    cos(angle + Pi - Pi / 3) * arrowSize);
-
-            arrowHead.clear();
-            arrowHead << line().p1() << arrowP1 << arrowP2;
-            //! [6] //! [7]
-            painter->drawPath(path());
-            painter->setBrush(myColor);
-            painter->drawPolygon(arrowHead);
-            break;
-        }
-        case Inhibitory:
-        {
-            headCenter = line().p1() + QPointF(line().dx() / line().length(),
-                                               line().dy() / line().length()) *
-                    arrowSize / 2;
-            painter->drawPath(path());
-            painter->setBrush(myColor);
-            painter->drawEllipse(headCenter, arrowSize / 2, arrowSize / 2);
-            break;
-        }
-        }
         break;
     }
     case SelfLoop:
     {
-        QPainterPath arrowPath = myStartItem->loopPath(this);
-        arrowPath.translate(myStartItem->pos());
+        QPainterPath arrowPath = startItem->loopPath(this);
+        arrowPath.translate(startItem->pos());
         setPath(arrowPath);
-        switch (myArrowTipType) {
-        case Excitatory:
-        {
-            qreal tangentAngle = (path().angleAtPercent(1) + 180) * Pi / 180;
-            QPointF arrowP1 = path().currentPosition() +
-                              QPointF(cos(tangentAngle + Pi/6), -sin(tangentAngle + Pi/6)) * arrowSize;
-            QPointF arrowP2 = path().currentPosition() +
-                              QPointF(cos(tangentAngle - Pi/6), -sin(tangentAngle - Pi/6)) * arrowSize;
-            arrowHead.clear();
-            arrowHead << path().currentPosition() << arrowP1 << arrowP2;
-            painter->drawPath(path());
-            painter->setBrush(myColor);
-            painter->drawPolygon(arrowHead);
-            break;
-        }
-        case Inhibitory:
-        {
-            qreal tangentAngle = (::fabs(path().angleAtPercent(1)) + 180) * Pi / 180;
-            headCenter = path().currentPosition() +
-                         QPointF(cos(tangentAngle), sin(tangentAngle)) * arrowSize / 2;
-            painter->drawPath(path());
-            painter->setBrush(myColor);
-            painter->drawEllipse(headCenter, arrowSize / 2, arrowSize / 2);
-            break;
-        }
-        }
+        break;
     }
+    default:
+        return;
+    }
+    qreal reverseAngle = (path().angleAtPercent(1) + 180) * Pi / 180;
+
+    switch (arrowTipType) {
+    case Excitatory:
+    {
+        QPointF arrowP1 = path().currentPosition() +
+                QPointF(cos(reverseAngle + Pi/6), -sin(reverseAngle + Pi/6)) * arrowSize;
+        QPointF arrowP2 = path().currentPosition() +
+                QPointF(cos(reverseAngle - Pi/6), -sin(reverseAngle - Pi/6)) * arrowSize;
+        arrowHead.clear();
+        arrowHead << path().currentPosition() << arrowP1 << arrowP2;
+        painter->drawPath(path());
+        painter->setBrush(myColor);
+        painter->drawPolygon(arrowHead);
+        break;
+    }
+    case Inhibitory:
+    {
+        headCenter = path().currentPosition() +
+                QPointF(cos(reverseAngle), -sin(reverseAngle)) * arrowSize / 2;
+        painter->drawPath(path());
+        painter->setBrush(myColor);
+        painter->drawEllipse(headCenter, arrowSize / 2, arrowSize / 2);
+        break;
+    }
+    default:
+        painter->drawPath(path());
     }
 
-//! [5] //! [6]
-
-
-        if (isSelected())
-        {
-            QColor selectionColor = QColor("yellow");
-            selectionColor.setAlpha(100);
-            painter->setPen(QPen(selectionColor,6,Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-            painter->setBrush(Qt::NoBrush);
-            painter->drawPath(path());
-
-        }
+    if (isSelected())
+    {
+        QColor selectionColor = QColor("yellow");
+        selectionColor.setAlpha(100);
+        painter->setPen(QPen(selectionColor,6,Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawPath(path());
+    }
 }
 
 

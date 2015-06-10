@@ -15,6 +15,16 @@ ObjectCatalogueFilter::ObjectCatalogueFilter(ObjectCatalogue *objectCatalogue, Q
             this, SLOT(sendObjectDestroyed(QModelIndex,int,int)));
 }
 
+bool ObjectCatalogueFilter::isAllValid()
+{
+    bool invalid(false);
+    for (int row = 0; row < rowCount(); ++row)
+    {
+        invalid |= data(index(row,2)).toBool();
+    }
+    return !invalid;
+}
+
 void ObjectCatalogueFilter::setName(QString txt)
 {
     setList(QStringList({txt}));

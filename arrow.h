@@ -63,8 +63,12 @@ public:
     enum ArrowTipType {Excitatory, Inhibitory};
     enum ArrowType {Line, SelfLoop};
 
-    Arrow(DiagramItem *startItem, DiagramItem *endItem, ArrowTipType arrowTipType = Excitatory,
+    Arrow(QString name, DiagramItem *startItem, DiagramItem *endItem, ArrowTipType arrowTipType = Excitatory,
       QGraphicsItem *parent = 0);
+    Arrow(QString name, QPointF arrowStart, ArrowTipType arrowTipType = Excitatory,
+      QGraphicsItem *parent = 0);
+    Arrow(QString name, ArrowTipType arrowTipType = Excitatory, QGraphicsItem *parent = 0);
+    Arrow(ArrowTipType arrowTipType = Excitatory, QGraphicsItem *parent = 0);
 
     int type() const { return Type; }
     QRectF boundingRect() const;
@@ -72,9 +76,14 @@ public:
     void setColor(const QColor &color) { myColor = color; }
     void setPenWidth(int width) { penWidth = width; }
     void setArrowSize(qreal size) { arrowSize = size; }
-    DiagramItem *startItem() const { return myStartItem; }
-    DiagramItem *endItem() const { return myEndItem; }
-    ArrowType arrowType() const {return myArrowType; }
+    void setName(QString _name) {name = _name;}
+    void setStartItem(DiagramItem *_startItem) {startItem = _startItem;}
+    void setEndItem(DiagramItem *_endItem) {endItem = _endItem;}
+    void setArrowStart(QPointF _arrowStart) {arrowStart = _arrowStart;}
+    DiagramItem *getStartItem() const { return startItem; }
+    DiagramItem *getEndItem() const { return endItem; }
+    ArrowType getArrowType() const {return arrowType; }
+    void setArrowType(ArrowType _arrowType) {arrowType = _arrowType;}
 
     void updatePosition();
 
@@ -86,10 +95,16 @@ protected:
     QLineF line() const {return myLine;}
 
 private:
-    DiagramItem *myStartItem;
-    DiagramItem *myEndItem;
-    ArrowType myArrowType;
-    ArrowTipType myArrowTipType;
+    void init();
+
+    QString name;
+    DiagramItem *startItem;
+    DiagramItem *endItem;
+    QPointF arrowStart;
+    QPointF arrowEnd;
+    ArrowType arrowType;
+    ArrowTipType arrowTipType;
+    int defaultLength;
     QColor myColor;
     int penWidth;
     qreal arrowSize;

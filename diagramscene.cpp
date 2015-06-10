@@ -41,6 +41,8 @@
 #include "diagramscene.h"
 #include "arrow.h"
 #include "lazynutobject.h"
+#include "objectcataloguefilter.h"
+#include "descriptionupdater.h"
 
 
 #include <QTextCursor>
@@ -52,7 +54,7 @@
 #include <QDebug>
 
 //! [0]
-DiagramScene::DiagramScene(QMenu *itemMenu, LazyNutObjectCatalogue *objectCatalogue, QObject *parent)
+DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue, QObject *parent)
     : objectCatalogue(objectCatalogue), QGraphicsScene(parent)
 {
     myItemMenu = itemMenu;
@@ -66,13 +68,25 @@ DiagramScene::DiagramScene(QMenu *itemMenu, LazyNutObjectCatalogue *objectCatalo
     defaultPosition = QPointF(300,300);
     currentPosition = defaultPosition;
     itemOffset = QPointF(0,150);
+    arrowOffset = QPointF(50,0);
 
-    itemHash = new QHash<QString,QGraphicsItem*>;
+    objectFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+    objectFilter->setTypeList(QStringList({"layer", "connection"}));
+    descriptionUpdater = new DescriptionUpdater(this);
+    descriptionUpdater->setProxyModel(objectFilter);
+    connect(objectFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
+            this, SLOT(positionObject(QString, QString, QDomDocument*)));
+    connect(objectFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+            this, SLOT(renderObject(QDomDocument*)));
+
+
 }
 
-void DiagramScene::setObjCatalogue(LazyNutObjectCatalogue *_objectCatalogue)
+void DiagramScene::setObjCatalogue(ObjectCatalogue *catalogue)
 {
-    objectCatalogue = _objectCatalogue;
+    objectCatalogue = catalogue;
 }
 //! [0]
 
@@ -130,9 +144,9 @@ void DiagramScene::read(const QJsonObject &json)
     {
         QJsonObject itemObject = itemArray[itemIndex].toObject();
         QString name = itemObject["name"].toString();
-        if (itemHash->contains(name))
+        if (itemHash.contains(name))
         {
-            QGraphicsItem * item = itemHash->value(name);
+            QGraphicsItem * item = itemHash.value(name);
             if (item->type() == DiagramItem::Type) // it should always be true
             {
                 DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
@@ -187,73 +201,73 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
     }
 }
 
-void DiagramScene::syncToObjCatalogue()
-{
-    if (objectCatalogue == nullptr)
-        return;
-    // display new layers, hold new connections in a list
-    QStringList newConnections{};
-    foreach(QString name, objectCatalogue->keys().toSet() - itemHash->keys().toSet())
-    {
-        if (objectCatalogue->value(name)->type == "layer")
-        {
-            DiagramItem *item = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
-            //item->setLabel(name);
-            item->setBrush(myItemColor);
-            addItem(item);
-            item->setPos(currentPosition);
-            currentPosition += itemOffset;
-            emit itemInserted(item);
-            itemHash->insert(name,item);
-        }
-        else if (objectCatalogue->value(name)->type == "connection")
-            newConnections << name;
-    }
-    // display new connections
-    foreach(QString name, newConnections)
-    {
-        DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
-                    (itemHash->value(objectCatalogue->value(name)->getValue("Source")));
-        DiagramItem *endItem   = qgraphicsitem_cast<DiagramItem *>
-                    (itemHash->value(objectCatalogue->value(name)->getValue("Target")));
-        // arrows without start and end are not plotted in this version
-        if (!(startItem && endItem))
-            continue;
-        Arrow *arrow = new Arrow(startItem, endItem, Arrow::Excitatory);
-        arrow->setColor(myLineColor);
-        startItem->addArrow(arrow);
-        if (startItem != endItem)
-            endItem->addArrow(arrow);
-        arrow->setZValue(-1000.0);
-        addItem(arrow);
-        itemHash->insert(name,arrow);
-    }
-    // remove deleted objects
-    // (see DesignWindow::deleteItem)
-    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
-    {
-        QGraphicsItem* item = itemHash->value(name);
-        if (item->type() == Arrow::Type)
-        {
-            removeItem(item);
-            Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
-            arrow->startItem()->removeArrow(arrow);
-            arrow->endItem()->removeArrow(arrow);
-            delete item;
-            itemHash->remove(name);
-        }
-    }
-    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
-    {
-        QGraphicsItem* item = itemHash->value(name);
-        if (item->type() == DiagramItem::Type)
-        {
-            qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
-            removeItem(item);
-            delete item;
-            itemHash->remove(name);
-        }
-    }
+//void DiagramScene::syncToObjCatalogue()
+//{
+//    if (objectCatalogue == nullptr)
+//        return;
+//    // display new layers, hold new connections in a list
+//    QStringList newConnections{};
+//    foreach(QString name, objectCatalogue->keys().toSet() - itemHash->keys().toSet())
+//    {
+//        if (objectCatalogue->value(name)->type == "layer")
+//        {
+//            DiagramItem *item = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
+//            //item->setLabel(name);
+//            item->setBrush(myItemColor);
+//            addItem(item);
+//            item->setPos(currentPosition);
+//            currentPosition += itemOffset;
+//            emit itemInserted(item);
+//            itemHash->insert(name,item);
+//        }
+//        else if (objectCatalogue->value(name)->type == "connection")
+//            newConnections << name;
+//    }
+//    // display new connections
+//    foreach(QString name, newConnections)
+//    {
+//        DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
+//                    (itemHash->value(objectCatalogue->value(name)->getValue("Source")));
+//        DiagramItem *endItem   = qgraphicsitem_cast<DiagramItem *>
+//                    (itemHash->value(objectCatalogue->value(name)->getValue("Target")));
+//        // arrows without start and end are not plotted in this version
+//        if (!(startItem && endItem))
+//            continue;
+//        Arrow *arrow = new Arrow(name, startItem, endItem, Arrow::Excitatory);
+//        arrow->setColor(myLineColor);
+//        startItem->addArrow(arrow);
+//        if (startItem != endItem)
+//            endItem->addArrow(arrow);
+//        arrow->setZValue(-1000.0);
+//        addItem(arrow);
+//        itemHash->insert(name,arrow);
+//    }
+//    // remove deleted objects
+//    // (see DesignWindow::deleteItem)
+//    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
+//    {
+//        QGraphicsItem* item = itemHash->value(name);
+//        if (item->type() == Arrow::Type)
+//        {
+//            removeItem(item);
+//            Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+//            arrow->getStartItem()->removeArrow(arrow);
+//            arrow->getEndItem()->removeArrow(arrow);
+//            delete item;
+//            itemHash->remove(name);
+//        }
+//    }
+//    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
+//    {
+//        QGraphicsItem* item = itemHash->value(name);
+//        if (item->type() == DiagramItem::Type)
+//        {
+//            qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
+//            removeItem(item);
+//            delete item;
+//            itemHash->remove(name);
+//        }
+//    }
 //    if (!layoutLoaded)
 //    {
 //        QFile savedLayoutFile(savedLayout);
@@ -265,16 +279,16 @@ void DiagramScene::syncToObjCatalogue()
 //        }
 //        //layoutLoaded = true;
 //    }
-}
+//}
 
 void DiagramScene::setSelected(QString name)
 {
-    if (itemHash->contains(name))
+    if (itemHash.contains(name))
     {
         clearSelection();
         foreach (QGraphicsItem *item, items())
         {
-            if (item == itemHash->value(name))
+            if (item == itemHash.value(name))
             {
                 item->setSelected(true);
                 return;
@@ -382,7 +396,7 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
                 ) {
             DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>(startItems.first());
             DiagramItem *endItem = qgraphicsitem_cast<DiagramItem *>(endItems.first());
-            Arrow *arrow = new Arrow(startItem, endItem, myArrowTipType);
+            Arrow *arrow = new Arrow();
             arrow->setColor(myLineColor);
             startItem->addArrow(arrow);
             if (startItem != endItem)
@@ -406,12 +420,108 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         if (items(mouseEvent->scenePos()).size()> 0)
         {
             QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
-            QString name = itemHash->key(item);
+            QString name = itemHash.key(item);
 //            if (!name.isEmpty())
                 emit objectSelected(name);
         }
     }
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+}
+
+void DiagramScene::positionObject(QString name, QString type, QDomDocument *domDoc)
+{
+    // layers are placed on the scene before arrows
+    Q_UNUSED(domDoc)
+    if (type == "layer")
+    {
+        DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
+        diagramItem->setBrush(myItemColor);
+        addItem(diagramItem);
+        diagramItem->setPos(currentPosition);
+        currentPosition += itemOffset;
+        itemHash.insert(name,diagramItem);
+    }
+}
+
+void DiagramScene::removeObject(QString name)
+{
+    QGraphicsItem* item = itemHash.value(name);
+    if (item->type() == Arrow::Type)
+    {
+        removeItem(item);
+        Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+        if (arrow->getStartItem())
+            arrow->getStartItem()->removeArrow(arrow);
+        if (arrow->getEndItem())
+            arrow->getEndItem()->removeArrow(arrow);
+        delete arrow;
+        itemHash.remove(name);
+    }
+    else if (item->type() == DiagramItem::Type)
+    {
+        DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
+//        qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
+        removeItem(item);
+        delete diagramItem;
+        itemHash.remove(name);
+    }
+}
+
+void DiagramScene::renderObject(QDomDocument *domDoc)
+{
+    // wait until all descriptions of recently_* objects have arrived
+    renderList.append(domDoc);
+    if (objectFilter->isAllValid())
+        render();
+}
+
+void DiagramScene::render()
+{
+    // layers don't need any rendering and they are already in itemHash
+    // connections need rendering since they need their source and dest layers, if present,
+    // and are not in itemHash
+    foreach(QDomDocument* domDoc, renderList)
+    {
+        if (AsLazyNutObject(*domDoc).type() == "connection")
+        {
+            QString name = AsLazyNutObject(*domDoc).name();
+            DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
+                    (itemHash.value(AsLazyNutObject(*domDoc)["Source"]()));
+            DiagramItem *endItem = qgraphicsitem_cast<DiagramItem *>
+                    (itemHash.value(AsLazyNutObject(*domDoc)["Target"]()));
+            Arrow *arrow;
+            if (itemHash.contains(name))
+                arrow = qgraphicsitem_cast<Arrow*>(itemHash.value(name));
+            else
+            {
+                arrow = new Arrow(name);
+                addItem(arrow);
+                itemHash.insert(name,arrow);
+            }
+            arrow->setStartItem(startItem);
+            arrow->setEndItem(endItem);
+            if (!startItem && !endItem)
+            {
+                arrow->setArrowStart(currentPosition);
+                currentPosition += arrowOffset;
+            }
+            if (startItem && startItem == endItem)
+                arrow->setArrowType(Arrow::SelfLoop);
+            else
+                arrow->setArrowType(Arrow::Line);
+            arrow->setColor(myLineColor);
+            if (startItem && !startItem->arrowList().contains(arrow))
+                startItem->addArrow(arrow);
+            if (endItem && !endItem->arrowList().contains(arrow))
+                endItem->addArrow(arrow);
+            if (startItem && endItem)
+                arrow->setZValue(-1000.0);
+            else
+                arrow->setZValue(1000.0);
+            arrow->updatePosition();
+        }
+    }
+    renderList.clear();
 }
 
 //! [13]

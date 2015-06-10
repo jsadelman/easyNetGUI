@@ -166,11 +166,6 @@ bool ObjectCatalogue::create(const QString &name, const QString &type)
     LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type);
     catalogue.insert(0, elem);
     endInsertRows();
-
-
-//    catalogue.at(0)->name = name;
-//    catalogue.at(0)->type = type;
-//    emit dataChanged(index(0,0), index(0,4));
     return true;
 
 }

@@ -129,6 +129,14 @@ void DiagramItem::setGeometry()
                                       myCenter + QPointF(dockingLineProportion*halfwidth,0));
         verticalDockingLine =   QLineF(myCenter + QPointF(0,dockingLineProportion*halfheight),
                                       myCenter + QPointF(0,-dockingLineProportion*halfheight));
+        // docking lines for dangling arrows
+        QLineF incomingArrowsDockingSide = QLineF(myPolygon.at(3),myPolygon.at(2)); // lower side
+        incomingArrowsDockingLine = QLineF(incomingArrowsDockingSide.pointAt(0.5*(1 - dockingLineProportion)),
+                                           incomingArrowsDockingSide.pointAt(0.5*(1 + dockingLineProportion)));
+        QLineF outgoingArrowsDockingSide = QLineF(myPolygon.at(0),myPolygon.at(1)); // upper side
+        outgoingArrowsDockingLine = QLineF(outgoingArrowsDockingSide.pointAt(0.5*(1 - dockingLineProportion)),
+                                           outgoingArrowsDockingSide.pointAt(0.5*(1 + dockingLineProportion)));
+
         // right side of the rectangle
         selfLoopDockingSide = QLineF(myPolygon.at(1),myPolygon.at(2));
         myLoopRotation = -180; // clockwise
@@ -245,8 +253,8 @@ void DiagramItem::removeArrow(Arrow *arrow)
 void DiagramItem::removeArrows()
 {
     foreach (Arrow *arrow, arrows) {
-        arrow->startItem()->removeArrow(arrow);
-        arrow->endItem()->removeArrow(arrow);
+        arrow->getStartItem()->removeArrow(arrow);
+        arrow->getEndItem()->removeArrow(arrow);
         scene()->removeItem(arrow);
         delete arrow;
     }
@@ -295,37 +303,79 @@ QPointF DiagramItem::connectionPoint(Arrow *arrow) const
     // Determine how many arrows of the type Line
     // connect arrow's startItem to endItem or viceversa.
     // Determine the index of this arrow within that set of arrows.
-    if (arrow->arrowType() != Arrow::Line)
+    if (arrow->getArrowType() != Arrow::Line)
         return myCenter; // should never hit this instruction
-    DiagramItem* startItem = arrow->startItem();
-    DiagramItem* endItem = arrow->endItem();
+    DiagramItem* startItem = arrow->getStartItem();
+    DiagramItem* endItem = arrow->getEndItem();
     int arrowCount = 0;
     int arrowIndex = 0; // starts from 1, initialised to 0 to make compiler happy
-    foreach (Arrow * other, arrowList())
+    if (!( (startItem == this && endItem != this) ||
+           (startItem != this && endItem == this) )) // this should be either start or end, not both
+        return myCenter; // should never hit this instruction
+    else if (!startItem) // incoming arrow
     {
-        if ( ((startItem == other->startItem() && endItem == other->endItem()) ||
-              (startItem == other->endItem() && endItem == other->startItem())) &&
-             other->arrowType()== Arrow::Line)
+        foreach (Arrow * other, arrowList())
         {
-            arrowCount++;
-            if (arrow == other)            
-                arrowIndex = arrowCount;
+            if (!other->getStartItem()) // also incoming arrow
+            {
+                arrowCount++;
+                if (arrow == other)
+                    arrowIndex = arrowCount;
+            }
+        }
+    }
+    else if (!endItem) // outgoing arrow
+    {
+        foreach (Arrow * other, arrowList())
+        {
+            if (!other->getEndItem()) // also outgoing arrow
+            {
+                arrowCount++;
+                if (arrow == other)
+                    arrowIndex = arrowCount;
+            }
+        }
+    }
+    else // fully connected arrow
+    {
+        foreach (Arrow * other, arrowList())
+        {
+            if ( ((startItem == other->getStartItem() && endItem == other->getEndItem()) ||
+                  (startItem == other->getEndItem() && endItem == other->getStartItem())) &&
+                 other->getArrowType()== Arrow::Line)
+            {
+                arrowCount++;
+                if (arrow == other)
+                    arrowIndex = arrowCount;
+            }
         }
     }
     if (arrowCount == 1)
     {
-        return myCenter;
+        if (!startItem)
+            return incomingArrowsDockingLine.pointAt(0.5);
+        else if (!endItem)
+            return outgoingArrowsDockingLine.pointAt(0.5);
+        else
+            return myCenter;
     }
     else
     {
         qreal relativePointLocation = (qreal)(arrowIndex-1)/(qreal)(arrowCount-1);
-        // use vertical or horizontal docking line depending on arrow's angle
-        if ((endItem->pos().x() - startItem->pos().x()) == 0 ||
-             ::fabs( (endItem->pos().y() - startItem->pos().y()) /
-                (endItem->pos().x() - startItem->pos().x()) ) > 1)
-            return horizontalDockingLine.pointAt(relativePointLocation);
+        if (!startItem)
+            return incomingArrowsDockingLine.pointAt(relativePointLocation);
+        else if (!endItem)
+            return outgoingArrowsDockingLine.pointAt(relativePointLocation);
         else
-            return verticalDockingLine.pointAt(relativePointLocation);
+        {
+            // use vertical or horizontal docking line depending on arrow's angle
+            if ((endItem->pos().x() - startItem->pos().x()) == 0 ||
+                    ::fabs( (endItem->pos().y() - startItem->pos().y()) /
+                            (endItem->pos().x() - startItem->pos().x()) ) > 1)
+                return horizontalDockingLine.pointAt(relativePointLocation);
+            else
+                return verticalDockingLine.pointAt(relativePointLocation);
+        }
     }
 
 }
@@ -334,13 +384,13 @@ QPainterPath DiagramItem::loopPath(Arrow *arrow) const
 {
     // Use only with arrows of type SelfLoop.
     // similarly to connectionPoint, compute arrowCount and arrowIndex
-    if (arrow->arrowType() != Arrow::SelfLoop)
+    if (arrow->getArrowType() != Arrow::SelfLoop)
         return QPainterPath();
     int arrowCount = 0;
     int arrowIndex = 0; // starts from 1, initialised to 0 to make compiler happy
     foreach (Arrow * other, arrowList())
     {
-        if ( this == other->startItem() && this == other->endItem() )
+        if ( this == other->getStartItem() && this == other->getEndItem() )
         {
             arrowCount++;
             if (arrow == other)

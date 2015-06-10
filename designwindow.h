@@ -65,6 +65,7 @@ class QToolBar;
 class QAbstractButton;
 class QGraphicsView;
 class AsLazyNutObject;
+class ObjectCatalogue;
 //typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 QT_END_NAMESPACE
 
@@ -74,8 +75,8 @@ class DesignWindow : public QWidget
     Q_OBJECT
 
 public:
-   DesignWindow(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent = 0);
-   void setObjCatalogue(LazyNutObjectCatalogue *objHash);
+   DesignWindow(ObjectCatalogue *objectCatalogue, QWidget *parent = 0);
+   void setObjCatalogue(ObjectCatalogue *catalogue);
 
 public slots:
    void updateDiagramScene();
@@ -130,7 +131,7 @@ private:
 
     DiagramScene *scene;
     QGraphicsView *view;
-    LazyNutObjectCatalogue *objectCatalogue;
+    ObjectCatalogue *objectCatalogue;
 
 //    QAction *exitAction;
 //    QAction *addAction;

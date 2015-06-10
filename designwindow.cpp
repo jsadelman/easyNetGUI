@@ -49,7 +49,7 @@
 const int InsertTextButton = 10;
 
 //! [0]
-DesignWindow::DesignWindow(LazyNutObjectCatalogue *objectCatalogue, QWidget *parent)
+DesignWindow::DesignWindow(ObjectCatalogue *objectCatalogue, QWidget *parent)
  : objectCatalogue(objectCatalogue), QWidget(parent)
 {
 //    createActions();
@@ -102,14 +102,14 @@ DesignWindow::DesignWindow(LazyNutObjectCatalogue *objectCatalogue, QWidget *par
     //createTestDiagram();
 }
 
-void DesignWindow::setObjCatalogue(LazyNutObjectCatalogue *objHash)
+void DesignWindow::setObjCatalogue(ObjectCatalogue *catalogue)
 {
-    scene->setObjCatalogue(objHash);
+    scene->setObjCatalogue(catalogue);
 }
 
 void DesignWindow::updateDiagramScene()
 {
-    scene->syncToObjCatalogue();
+    //scene->syncToObjCatalogue();
 }
 
 void DesignWindow::dispatchObjectSelected(QString name)
@@ -180,8 +180,8 @@ void DesignWindow::deleteItem()
         if (item->type() == Arrow::Type) {
             scene->removeItem(item);
             Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
-            arrow->startItem()->removeArrow(arrow);
-            arrow->endItem()->removeArrow(arrow);
+            arrow->getStartItem()->removeArrow(arrow);
+            arrow->getEndItem()->removeArrow(arrow);
             delete item;
         }
     }
@@ -388,7 +388,7 @@ void DesignWindow::createTestDiagram()
     emit scene->itemInserted(endItem);
 
     scene->setMode(DiagramScene::InsertLine);
-    Arrow *arrow = new Arrow(startItem, endItem, Arrow::Inhibitory);
+    Arrow *arrow = new Arrow("AB1", startItem, endItem, Arrow::Inhibitory);
     arrow->setColor(scene->lineColor());
     startItem->addArrow(arrow);
     endItem->addArrow(arrow);
@@ -396,7 +396,7 @@ void DesignWindow::createTestDiagram()
     scene->addItem(arrow);
     arrow->updatePosition();
 
-    arrow = new Arrow(startItem, endItem);
+    arrow = new Arrow("AB2",startItem, endItem);
     arrow->setColor(scene->lineColor());
     startItem->addArrow(arrow);
     endItem->addArrow(arrow);

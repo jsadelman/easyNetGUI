@@ -192,7 +192,6 @@ int LazyNutObjectModel::columnCount(const QModelIndex &parent) const
 QString LazyNutObjectModel::name()
 {
     QDomNode node = rootItem->node();
-//    qDebug() <<  "LazyNutObjectModel::name()" << AsLazyNutObject(node.toDocument()).name();
     return node.isNull() ? QString() : AsLazyNutObject(node.toDocument()).name();
 }
 
@@ -215,13 +214,7 @@ void LazyNutObjectModel::removeDescription(QString descName)
 void LazyNutObjectModel::updateDescription(QDomDocument *domDoc)
 {
     if (domDoc)
-    {
-        qDebug() << "LazyNutObjectModel::updateDescription " << AsLazyNutObject(*domDoc).name();
-//        if (AsLazyNutObject(*domDoc).name() == name())
-            setDescription(domDoc);
-//        else
-//            qDebug() << "LazyNutObjectModel::updateDescription current and new descriptions have different names";
-    }
+        setDescription(domDoc);
     else
         clearDescription();
 }

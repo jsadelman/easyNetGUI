@@ -21,7 +21,6 @@ signals:
 private slots:
     void requestDescriptions(QModelIndex top, QModelIndex bottom);
     void requestDescriptions(QModelIndex parent, int first, int last);
-    void notifyDescriptionUpdated(QDomDocument* domDoc);
 
 private:
     void requestDescriptions(int first, int last);

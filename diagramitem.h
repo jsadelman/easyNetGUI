@@ -113,6 +113,8 @@ protected:
     QList<Arrow *> arrows;
     QLineF horizontalDockingLine;
     QLineF verticalDockingLine;
+    QLineF incomingArrowsDockingLine;
+    QLineF outgoingArrowsDockingLine;
     QLineF selfLoopDockingSide;
     qreal myLoopRotation; // + or - 180 degrees
     qreal dockingLineProportion;
