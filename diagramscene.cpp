@@ -65,7 +65,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue, QO
     myItemColor = Qt::white;
     myTextColor = Qt::black;
     myLineColor = Qt::black;
-    defaultPosition = QPointF(300,300);
+    defaultPosition = QPointF(300,150);
     currentPosition = defaultPosition;
     itemOffset = QPointF(0,150);
     arrowOffset = QPointF(50,0);
@@ -437,8 +437,8 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
         DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
         diagramItem->setBrush(myItemColor);
         addItem(diagramItem);
-        diagramItem->setPos(currentPosition);
         currentPosition += itemOffset;
+        diagramItem->setPos(currentPosition);
         itemHash.insert(name,diagramItem);
     }
 }
@@ -502,8 +502,8 @@ void DiagramScene::render()
             arrow->setEndItem(endItem);
             if (!startItem && !endItem)
             {
-                arrow->setArrowStart(currentPosition);
                 currentPosition += arrowOffset;
+                arrow->setArrowStart(currentPosition);
             }
             if (startItem && startItem == endItem)
                 arrow->setArrowType(Arrow::SelfLoop);

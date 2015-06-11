@@ -31,7 +31,12 @@ PlotWindow::PlotWindow(QWidget *parent)
 
     createPlotControlPanel();
     setUnifiedTitleAndToolBarOnMac(true);
-
+    // debug
+//    QFile svgfile("C:/Users/mm14722/programs/easyNet/test2.svg");
+//    svgfile.open(QIODevice::ReadOnly);
+//    QByteArray ba = svgfile.readAll();
+//    svgfile.close();
+//    displaySVG(ba);
 }
 
 int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
@@ -198,7 +203,7 @@ void PlotWindow::importHomonyms(QDomDocument *settingsList)
 void PlotWindow::sendDrawCmd()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-//    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({QString("%1 get").arg(currentPlot)});
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));

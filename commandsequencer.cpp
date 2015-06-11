@@ -118,9 +118,9 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                 if (svgRex.exactMatch(answer))
                 {
                     //                    int nbytes = svgRex.cap(1).toInt();
-                    int svgStart = answerOffset + answerRex.matchedLength() +1;
+                    int svgStart = answerOffset + answerRex.matchedLength();// +2;
                     int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + QString("</svg>").length();
-                    answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
+                    answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart).remove(QRegExp("^[\\r\\n]*"));
                 }
                 else if (xmlStartRex.indexIn(answer) > -1)
                 {

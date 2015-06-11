@@ -33,13 +33,13 @@ void LazyNutListComboBox::setGetListCmd(QString cmd)
 
 void LazyNutListComboBox::getList(QString cmd)
 {
-    if (!SessionManager::instance()->isReady())
-    {
-        emit listReady();
-        repostEvent();
-    }
-    else
-    {
+//    if (!SessionManager::instance()->isReady())
+//    {
+//        emit listReady();
+//        repostEvent();
+//    }
+//    else
+//    {
         savedCurrentText = currentText();
         getListCmd = cmd.isEmpty() ? getListCmd : cmd;
         if (!getListCmd.isEmpty())
@@ -56,7 +56,7 @@ void LazyNutListComboBox::getList(QString cmd)
             emit listReady();
             repostEvent();
         }
-    }
+//    }
 }
 
 
@@ -149,12 +149,12 @@ bool LazyNutListComboBox::event(QEvent *event)
 void LazyNutListComboBox::buildList(QStringList list)
 {
     clear();
-    list.append("Browse...");
+//    list.append("Browse...");
     addItems(list);
     setCurrentText(savedCurrentText);
     emit listReady();
     repostEvent();
-    setCurrentIndex(0);
+//    setCurrentIndex(0);
 }
 
 
@@ -163,6 +163,7 @@ void LazyNutListComboBox::repostEvent()
     if (eventSwitch) // safety, should always be true
     {
         eventSwitch = false;
+        eventMutex.tryLock();
         eventMutex.unlock();
         switch (eventParams.type)
         {
