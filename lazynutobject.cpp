@@ -43,21 +43,6 @@ AsLazyNutObject::AsLazyNutObject(QDomDocument domDoc)
 //}
 
 
-//void LazyNutObject::initProperties()
-//{
-//    XMLelement XMLroot = XMLelement(*domDoc);
-//    //qDebug() << domDoc->toString();
-//    if (!(XMLroot.label() == "this"))
-//        qDebug () << "LazyNutObject: object description has no 'this' label";
-//    _name = XMLroot.value();
-//    _type = XMLroot["type"]();
-//    if (_name.isEmpty())
-//        qDebug () << "LazyNutObject: object description has empty name";
-//    if (_type.isEmpty())
-//        qDebug () << "LazyNutObject: object description has empty type";
-//    // TODO: check type is admissible
-//}
-
 
 //QString LazyNutObject::getValue(const QString &label)
 //{
