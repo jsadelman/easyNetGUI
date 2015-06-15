@@ -77,19 +77,10 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         lineNumber = beginRex.cap(1);
-        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(lineNumber));
+        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
             return;
-
-        // a hack for skipping lazyNut header, which currently contains BEGIN 1
-//        if (lineNumber == "1")
-//        {
-//            baseOffset = endOffset + endRex.matchedLength();
-//            continue;
-//        }
-//        qDebug() << "lineNumber" << lineNumber;
-
 
         // extract ERROR lines
         int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
@@ -109,22 +100,15 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             if (beginOffset < answerOffset && answerOffset < endOffset)
             {
                 QString answer = answerRex.cap(1);
-//                if (eNelementsRex.indexIn(answer) > -1)
-//                {
-//                    int eNelementEnd = lazyNutBuffer.indexOf("</eNelements>", answerOffset) +
-//                            QString("</eNelements>").length();
-//                    answer = lazyNutBuffer.mid(answerOffset, eNelementEnd - answerOffset).remove("ANSWER:");
-//                }
                 if (svgRex.exactMatch(answer))
                 {
-                    //                    int nbytes = svgRex.cap(1).toInt();
-                    int svgStart = answerOffset + answerRex.matchedLength();// +2;
+                    int svgStart = answerOffset + answerRex.matchedLength();
                     int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + QString("</svg>").length();
                     answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart).remove(QRegExp("^[\\r\\n]*"));
                 }
                 else if (xmlStartRex.indexIn(answer) > -1)
                 {
-                    QRegExp xmlEndRex(QString("</%1\\s*>").arg(xmlStartRex.cap(1)));
+                    QRegExp xmlEndRex(QString("</%1\\s*>").arg(QRegExp::escape(xmlStartRex.cap(1))));
                     int xmlEnd = xmlEndRex.indexIn(lazyNutBuffer, answerOffset) + xmlEndRex.matchedLength();
                     answer = lazyNutBuffer.mid(answerOffset, xmlEnd - answerOffset).remove("ANSWER:");
                 }
