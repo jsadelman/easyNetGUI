@@ -110,7 +110,10 @@ private slots:
     //bool saveAs();
     //void documentWasModified();
     void loadModel();
+    void loadStimulusSet();
     void msgBox(QString msg);
+    void runTrial();
+    void runAllTrial();
 
     void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
     void clearErrorOnStatusBar();
@@ -178,6 +181,7 @@ private:
     QString         curFile;
     QString         curJson;
     QString         scriptsDir;
+    QString         stimDir;
     QString         easyNetHome = "";
 
     QStringList     modelList;
@@ -250,6 +254,8 @@ private:
     QAction         *newScriptAct;
     QAction         *newLogAct;
     QAction         *openAct;
+    QAction         *loadModelAct;
+    QAction         *loadStimulusSetAct;
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
