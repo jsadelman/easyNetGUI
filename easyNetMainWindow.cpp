@@ -293,6 +293,11 @@ void EasyNetMainWindow::initialiseToolBar()
     trialComboBox = new LazyNutListComboBox("list trial", this);
     setComboBox = new QComboBox;
     inputComboBox = new QComboBox;
+    inputComboBox->setEditable(true);
+//    inputComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    inputComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    inputComboBox->setMinimumSize(100, inputComboBox->minimumHeight());
+
 
 //    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
       connect(modelComboBox, SIGNAL(activated(QString)),
