@@ -336,13 +336,82 @@ void EasyNetMainWindow::initialiseToolBar()
 
     // toolBar is a pointer to an existing toolbar
     toolbar->addWidget(spacer);
-    toolbar->addAction("Run");
+    toolbar->addAction("Run",this, SLOT(runTrial()));
     toolbar->addSeparator();
-    toolbar->addAction("Run all");
+    toolbar->addAction("Run all",this, SLOT(runAllTrial()));
 
 //    updateToolBar();
 
 }
+
+void EasyNetMainWindow::runTrial()
+{
+    QString currentTrial = trialComboBox->currentText(); // "brief_masked";
+    QString currentModel = modelComboBox->currentText(); // "iam";
+    QString currentStimulus = inputComboBox->currentText(); // "mave";
+
+    // check that above strings are in order
+    if (currentTrial.isEmpty())
+    {
+        msgBox("Choose which type of trial to run");
+        return;
+    }
+    if (currentModel.isEmpty())
+    {
+        msgBox("Choose which model to run");
+        return;
+    }
+    if (currentStimulus.isEmpty())
+    {
+        msgBox("Specify the stimulus to run");
+        return;
+    }
+
+    QString quietMode = "quietly ";
+    QString stepCmd  = " step";
+    QString modelArg = QString(" model=") + currentModel;
+    QString stimArg = QString(" stimulus=") + currentStimulus;
+
+    QString cmd = quietMode + currentTrial + stepCmd + modelArg + stimArg;
+    runCmd(cmd);
+}
+
+
+void EasyNetMainWindow::runAllTrial()
+{
+    QString currentTrial = trialComboBox->currentText();
+    QString currentModel = modelComboBox->currentText();
+    QString stimulusSet = setComboBox->currentText();
+
+    // check that above strings are in order
+    if (currentTrial.isEmpty())
+    {
+        msgBox("Choose which type of trial to run");
+        return;
+    }
+    if (currentModel.isEmpty())
+    {
+        msgBox("Choose which model to run");
+        return;
+    }
+    if (stimulusSet.isEmpty())
+    {
+        msgBox("Specify the stimulus set to use");
+        return;
+    }
+
+    QString quietMode = "quietly ";
+    QString stepCmd  = " run_trials";
+    QString modelArg = QString(" model=") + currentModel + QString(" ");
+    QString stimArg = stimulusSet;
+
+    QString cmd = quietMode + stimArg + stepCmd + modelArg + currentTrial;
+    // andrews run_trials iam ldt
+    runCmd(cmd);
+}
+
+
+
 
 void EasyNetMainWindow::msgBox(QString msg)
 {
@@ -414,6 +483,8 @@ void EasyNetMainWindow::writeSettings()
     settings.setValue("pos", pos());
     settings.setValue("size", size());
     settings.setValue("scriptsDir",scriptsDir);
+    settings.setValue("stimDir",stimDir);
+
 }
 
 
@@ -647,6 +718,14 @@ void EasyNetMainWindow::createActions()
     newLogAct->setShortcuts(QKeySequence::New);
 //    newLogAct->setStatusTip(tr("Create a new file"));
     connect(newLogAct, SIGNAL(triggered()), this, SLOT(newLogFile()));
+    loadModelAct = new QAction(QIcon(":/images/open.png"), tr("&Load model"), this);
+    loadModelAct->setShortcuts(QKeySequence::Open);
+    loadModelAct->setStatusTip(tr("Load a previously specified model"));
+    connect(loadModelAct, SIGNAL(triggered()), this, SLOT(loadModel()));
+
+    loadStimulusSetAct = new QAction(tr("Load &stimulus set"), this);
+    loadStimulusSetAct->setStatusTip(tr("Load a stimulus set"));
+    connect(loadStimulusSetAct, SIGNAL(triggered()), this, SLOT(loadStimulusSet()));
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
@@ -690,9 +769,12 @@ void EasyNetMainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     //fileMenu->addAction(newAct);
+    fileMenu->addAction(loadModelAct);
     fileMenu->addAction(openAct);
     //fileMenu->addAction(saveAct);
     //fileMenu->addAction(saveAsAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(loadStimulusSetAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
