@@ -110,7 +110,7 @@ private slots:
     //bool saveAs();
     //void documentWasModified();
     void loadModel();
-    void loadStimulusSet();
+//    void loadStimulusSet();
     void msgBox(QString msg);
     void runTrial();
     void runAllTrial();

@@ -299,6 +299,11 @@ void EasyNetMainWindow::initialiseToolBar()
     inputComboBox->setMinimumSize(100, inputComboBox->minimumHeight());
 
 
+// want to catch Enter key press
+//    connect(inputComboBox, SIGNAL(activated()),
+//          this, SLOT(runTrial()));
+
+
 //    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
       connect(modelComboBox, SIGNAL(activated(QString)),
             this, SLOT(modelComboBoxClicked(QString)));
@@ -373,7 +378,15 @@ void EasyNetMainWindow::runTrial()
     QString stimArg = QString(" stimulus=") + currentStimulus;
 
     QString cmd = quietMode + currentTrial + stepCmd + modelArg + stimArg;
-    runCmd(cmd);
+//    runCmd(cmd);
+
+//    after running cmd, call draw on plotForm
+//     this seems like far too much code to achieve this !!
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER;
+    param->cmdList = QStringList({cmd});
+    param->setNextJobReceiver(plotForm, SLOT(draw()));
+    SessionManager::instance()->setupJob(param);
 }
 
 
@@ -442,10 +455,6 @@ void EasyNetMainWindow::loadModel()
                                                     tr("Script Files (*.eNs *.eNm)"));
     if (!fileName.isEmpty())
     {
-        // change combobox text
-        modelComboBox->insertItem(0,"Loading");
-        modelComboBox->setCurrentIndex(0);
-
         // load and run script
         loadFile(fileName);
         showViewMode(Model);
@@ -770,7 +779,7 @@ void EasyNetMainWindow::createMenus()
     fileMenu = menuBar()->addMenu(tr("&File"));
     //fileMenu->addAction(newAct);
     fileMenu->addAction(loadModelAct);
-    fileMenu->addAction(openAct);
+ //   fileMenu->addAction(openAct);
     //fileMenu->addAction(saveAct);
     //fileMenu->addAction(saveAsAct);
     fileMenu->addSeparator();
