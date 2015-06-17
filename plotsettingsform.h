@@ -41,6 +41,9 @@ private:
     PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
     QString getSettingCmdLine(QString setting);
 
+    QStringList tabOrder;
+    QMap<QString, QVBoxLayout*> layoutMap;
+    QMap<QString, QWidget*> twidgetMap;
     QMap<QString, PlotSettingsBaseWidget*> widgetMap;
     QVBoxLayout *mainLayout;
     QDomDocument *domDoc;

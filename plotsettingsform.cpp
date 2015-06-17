@@ -23,10 +23,30 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidg
     while (!settingsElement.isNull())
     {
         PlotSettingsBaseWidget *widget = createWidget(settingsElement);
-        widgetMap[widget->name()] = widget;
-//        mainLayout->addWidget(widget);
-        addTab(widget, settingsElement.label());
+        widgetMap.insert(widget->name(), widget);
+        QString tabname = settingsElement["pretty name"]();
+        QWidget* tab = 0;
+        QVBoxLayout* lay = 0;
+        bool novel=!twidgetMap.contains(tabname);
+        if(novel)
+        {
+          tabOrder.append(tabname);
+          twidgetMap[tabname] = new QWidget;
+          layoutMap[tabname] = new QVBoxLayout;
+        }
+        tab=twidgetMap[tabname];
+        lay=layoutMap[tabname];
+        lay->addWidget(widget);
+
+        //        mainLayout->addWidget(widget);
+        //addTab(widget, settingsElement.label());
         settingsElement = settingsElement.nextSibling();
+    }
+
+    for(auto tabname: tabOrder)
+    {
+        twidgetMap[tabname]->setLayout(layoutMap[tabname]);
+        addTab(twidgetMap[tabname],tabname);
     }
 //    setLayout(mainLayout);
     initDependersSet();

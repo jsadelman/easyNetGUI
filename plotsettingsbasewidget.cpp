@@ -29,7 +29,8 @@ void PlotSettingsBaseWidget::createDisplay()
 //    setFrameShape(QFrame::Panel);
     gridLayout = new QGridLayout;
     nameLabel = new QLabel;
-    QString labelText = settingsElement["pretty name"]().isEmpty() ? name() : settingsElement["pretty name"]();
+//    QString labelText = settingsElement["pretty name"]().isEmpty() ? name() : settingsElement["pretty name"]();
+    QString labelText = settingsElement.label();
     if (!hasDefault())
         labelText.append("*");
 
