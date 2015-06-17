@@ -48,7 +48,6 @@ void PlotSettingsForm::initDependersSet()
 
         settingsElement = settingsElement.nextSibling();
     }
-    qDebug() << dependersSet;
 }
 
 
@@ -73,7 +72,6 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
     // TODO: implement this with a factory
     QString type = settingsElement["type"]();
     QString choice = settingsElement["choice"]();
-    qDebug() << "createWidget " << type << choice;
     PlotSettingsBaseWidget *widget;
     if (type == "numeric")
         widget = new PlotSettingsNumericWidget(settingsElement);
