@@ -28,107 +28,44 @@
 #include "lazynutjob.h"
 #include "lazynutlistcombobox.h"
 #include "objectcatalogue.h"
-
-
-InputCmdLine::InputCmdLine(QWidget *parent)
-    : QLineEdit(parent)
-{
-    connect(this,SIGNAL(returnPressed()),
-            this,SLOT(sendCommand()));
-    QFont qf("Courier");
-    setFont(qf);
-}
-
-void InputCmdLine::sendCommand()
-{
-    QString line = text();
-    emit commandReady(line);
-    clear();
-}
-
-CmdOutput::CmdOutput(QWidget *parent)
-    : QPlainTextEdit(parent)
-{
-    setStyleSheet("background-color : black; color : white;");
-    QFont qf("Courier");
-    setFont(qf);
-}
-
-void CmdOutput::displayOutput(const QString & output)
-{
-    // http://stackoverflow.com/questions/13559990/qt-append-text-to-qplaintextedit-without-adding-newline-and-keep-scroll-at-the
-
-    moveCursor (QTextCursor::End);
-    insertPlainText (output);
-    moveCursor (QTextCursor::End);
-}
-
+#include "objectcataloguefilter.h"
+#include "lazynutconsole.h"
 
 
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
 
+    objectCatalogue = new ObjectCatalogue;
+
 //    checkScreens();
-    initialiseLists();
     initialiseToolBar();
 
     setWindowIcon(QIcon(":/images/zebra.png"));
-    QTextEdit* dummyEdit = new QTextEdit(this);
-    dummyEdit->hide();
-    setCentralWidget(dummyEdit);
-//    createActions();
 
-/*    welcomeScreen = new QTextEdit(this);
-    QFile myfile(":/images/Welcome.html");
-//    f = QFile("welcome.html");
-    if (myfile.exists())
-        myfile.open(QIODevice::ReadOnly);
-    else
-            int oops=1;
-    QTextStream textStream(&myfile);
-    QString line = textStream.readAll();
-    myfile.close();
-    welcomeScreen->insertHtml(line);
-*/
+    // a dummy widget to enable 4 docks with no central widget
+    QWidget* dummyWidget = new QWidget(this);
+    dummyWidget->hide();
+    setCentralWidget(dummyWidget);
+
     welcomeScreen = new QWebView(this);
     webWelcomeScreen = new QWebView(this);
 
-    zebPic = new QLabel();
-    QPixmap image(":/images/zebra.png");
-    zebPic->setPixmap(image);
-
-/*    dockZeb = new QDockWidget(this);
-    dockZeb->setAllowedAreas(  Qt::RightDockWidgetArea);
-    dockZeb->setWidget(zebPic);
-    dockZeb->resize(200,200);
-    addDockWidget(Qt::RightDockWidgetArea, dockZeb);
-*/
     dockWelcome = new QDockWidget(tr("Welcome"), this);
     dockWelcome->setAllowedAreas(  Qt::TopDockWidgetArea );
     dockWelcome->setWidget(welcomeScreen);
     addDockWidget(Qt::TopDockWidgetArea, dockWelcome);
 
+/*
     dockWebWelcome = new QDockWidget(this);
     dockWebWelcome->setAllowedAreas(  Qt::BottomDockWidgetArea );
     dockWebWelcome->setWidget(webWelcomeScreen);
     addDockWidget(Qt::BottomDockWidgetArea, dockWebWelcome);
+*/
 
-    lazyNutInterpreter = new QGroupBox(this);
-    cmdOutput = new CmdOutput(this);
-    cmdOutput->setReadOnly(true);
-    inputCmdLine = new InputCmdLine(this);
-    QVBoxLayout *interpreterLayout = new QVBoxLayout;
-    interpreterLayout->addWidget(cmdOutput);
-    interpreterLayout->addWidget(inputCmdLine);
-    lazyNutInterpreter->setLayout(interpreterLayout);
-
-
-//   nmCmd = new NmCmd(this);
+    lazyNutConsole = new LazyNutConsole(this);
     dockInterpreter = new QDockWidget(tr("lazyNut interpreter"), this);
-//    dockParse->setAllowedAreas(  Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-    dockInterpreter->setWidget(lazyNutInterpreter);
-    //addDockWidget(Qt::BottomDockWidgetArea, dockParse);
+    dockInterpreter->setWidget(lazyNutConsole);
     addDockWidget(Qt::RightDockWidgetArea, dockInterpreter);
 
 //    scriptEdit = new CodeEditor(this);
@@ -142,30 +79,18 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     dockEdit->setWidget(scriptEdit);
     addDockWidget(Qt::LeftDockWidgetArea, dockEdit);
 
-
-//    CodeEditor *tmpEdit = new CodeEditor(this);
-//    tmpEdit->setReadOnly(true);
-//    highlighter = new Highlighter(tmpEdit->document());
-
-    /*
-//    QGraphicsSvgItem *svgViewer = new QGraphicsSvgItem("example.svg");
-    QGraphicsScene *scene=new QGraphicsScene(QRect(10, 10, 680, 520));
-    QGraphicsView *view=new QGraphicsView(this);
-    QGraphicsPixmapItem *image1=new QGraphicsPixmapItem(QPixmap("zebra.png"));
-
-    scene ->addItem(image1);
-    view ->setScene(scene);
-    view ->setGeometry(QRect(270, 35, 700, 540));
-*/
-    plotForm = new PlotWindow(this);
+    plotWindow = new PlotWindow(this);
     dockOutput = new QDockWidget(tr("Output"), this);
     dockOutput->setAllowedAreas(  Qt::LeftDockWidgetArea |
                                     Qt::RightDockWidgetArea);
-    dockOutput->setWidget(plotForm);
+    dockOutput->setWidget(plotWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockOutput);
 
 //    commandLog = new CodeEditor(this);
     commandLog = new EditWindow(this, newLogAct, NULL, true); // no cut, no paste
+    connect(SessionManager::instance(), SIGNAL(commandSent(QString)),
+            commandLog, SLOT(addText(QString)));
+
 
     //commandLog->textEdit->setReadOnly(true);
     highlighter2 = new Highlighter(commandLog->textEdit->document());
@@ -185,7 +110,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //    foreach (QString type, lazyNutObjTypes)
 //        objTaxonomyModel->appendValue(type,parentIndex);
 
-    objectCatalogue = new ObjectCatalogue;
     connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
             objectCatalogue, SLOT(create(QDomDocument*)));
     connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
@@ -226,8 +150,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
 //    connect(sessionManager,SIGNAL(updateDiagramScene()),
 //            designWindow,SLOT(updateDiagramScene()));
-    connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
-            cmdOutput,SLOT(displayOutput(QString)));
 //    connect(SessionManager::instance(),SIGNAL(updateLazyNutObjCatalogue(QDomDocument*)),
 //            objExplorer,SLOT(updateLazyNutObjCatalogue(QDomDocument*)));
 //    connect(SessionManager::instance(),SIGNAL(updateDiagramScene()),
@@ -262,8 +184,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     }
     if (!lazyNutBat.isEmpty())
         SessionManager::instance()->startLazyNut(lazyNutBat);
-        connect(inputCmdLine,SIGNAL(commandReady(QString)),
-                this,SLOT(runCmd(QString)));
 
 
 
@@ -271,12 +191,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //    loadFile(QString("%1/qtest").arg(scriptsDir));
 //    run();
 
-}
-
-void EasyNetMainWindow::initialiseLists()
-{
-    modelList = QStringList() << "IA" << "SCM" << "I've just hacked this list";
-    trialList = QStringList() << "ldt" << "brief_masked" << "I've just hacked this list";
 }
 
 void EasyNetMainWindow::initialiseToolBar()
@@ -289,8 +203,8 @@ void EasyNetMainWindow::initialiseToolBar()
     QLabel* setBoxLabel = new QLabel("Set: ");
     QLabel* inputBoxLabel = new QLabel("Input: ");
 
-    modelComboBox = new LazyNutListComboBox("list model", this);
-    trialComboBox = new LazyNutListComboBox("list trial", this);
+    modelComboBox = new QComboBox(this);
+    trialComboBox = new QComboBox(this);
     setComboBox = new QComboBox;
     inputComboBox = new QComboBox;
     inputComboBox->setEditable(true);
@@ -305,11 +219,18 @@ void EasyNetMainWindow::initialiseToolBar()
 
 
 //    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
-      connect(modelComboBox, SIGNAL(activated(QString)),
-            this, SLOT(modelComboBoxClicked(QString)));
 
-    connect(trialComboBox, SIGNAL(currentIndexChanged(QString)),
-            trialComboBox, SLOT(on_ComboBoxClicked(QString)));
+      modelListFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+      modelComboBox->setModel(modelListFilter);
+      modelComboBox->setModelColumn(0);
+//      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
+      modelListFilter->setType("grouping");
+
+      trialListFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+      trialComboBox->setModel(trialListFilter);
+      trialComboBox->setModelColumn(0);
+//      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
+      trialListFilter->setType("steps");
 
     spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -378,15 +299,15 @@ void EasyNetMainWindow::runTrial()
     QString stimArg = QString(" stimulus=") + currentStimulus;
 
     QString cmd = quietMode + currentTrial + stepCmd + modelArg + stimArg;
-//    runCmd(cmd);
+    SessionManager::instance()->runCmd(cmd);
 
 //    after running cmd, call draw on plotForm
 //     this seems like far too much code to achieve this !!
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
-    param->cmdList = QStringList({cmd});
-    param->setNextJobReceiver(plotForm, SLOT(draw()));
-    SessionManager::instance()->setupJob(param);
+//    LazyNutJobParam *param = new LazyNutJobParam;
+//    param->logMode |= ECHO_INTERPRETER;
+//    param->cmdList = QStringList({cmd});
+//    param->setNextJobReceiver(plotForm, SLOT(draw()));
+//    SessionManager::instance()->setupJob(param);
 }
 
 
@@ -420,7 +341,7 @@ void EasyNetMainWindow::runAllTrial()
 
     QString cmd = quietMode + stimArg + stepCmd + modelArg + currentTrial;
     // andrews run_trials iam ldt
-    runCmd(cmd);
+    SessionManager::instance()->runCmd(cmd);
 }
 
 
@@ -440,12 +361,7 @@ void EasyNetMainWindow::updateToolBar()
 }
 
 
-void EasyNetMainWindow::modelComboBoxClicked(QString txt)
-{
-    if (txt == "Browse...")
-        loadModel();
 
-}
 
 void EasyNetMainWindow::loadModel()
 {
@@ -618,16 +534,6 @@ void EasyNetMainWindow::open()
  //   }
 }
 
-//! [runCmd]
-void EasyNetMainWindow::runCmd(QString cmd)
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = QStringList({cmd});
-    param->logMode |= ECHO_INTERPRETER;
-    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
-    SessionManager::instance()->setupJob(param);
-}
-//! [runCmd]
 
 void EasyNetMainWindow::runModel()
 {
@@ -667,7 +573,7 @@ void EasyNetMainWindow::getVersion()
 void EasyNetMainWindow::echoCommand(const QString &line)
 {
 //    QString return_line = runCmd(line);
-    runCmd(line);
+    SessionManager::instance()->runCmd(line);
 //    if (return_line.size() > 1)
 //    commandLog->textEdit->insertPlainText(return_line);
         commandLog->textEdit->insertPlainText(line);
@@ -1069,9 +975,8 @@ QString EasyNetMainWindow::strippedName(const QString &fullFileName)
 
 void EasyNetMainWindow::hideAllDocks()
 {
-//    dockZeb->hide();
     dockWelcome->hide();
-    dockWebWelcome->hide();
+//    dockWebWelcome->hide();
     dockEdit->hide();
     dockInterpreter->hide();
 //    dockInput->hide();
@@ -1091,10 +996,10 @@ void EasyNetMainWindow::showViewMode(int viewModeInt)
     case Welcome:
         welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
 //        QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
-        webWelcomeScreen->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
-        webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
+//        webWelcomeScreen->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
+//        webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
 
-        dockWebWelcome->show();
+//        dockWebWelcome->show();
         dockWelcome->show();
         break;
     case Model:

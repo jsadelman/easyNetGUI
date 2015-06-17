@@ -26,38 +26,14 @@ class ObjectCatalogue;
 class EditWindow;
 class Highlighter;
 class PlotWindow;
+class ObjectCatalogueFilter;
 class LazyNutListComboBox;
-
-class LazyNutListComboBox;
+class LazyNutConsole;
 
 QT_END_NAMESPACE
 
-class InputCmdLine : public QLineEdit
-{
-    Q_OBJECT
 
-public:
-    InputCmdLine(QWidget *parent = 0);
 
-public slots:
-    void sendCommand();
-
-signals:
-    void commandReady(const QString & command);
-
-};
-
-class CmdOutput : public QPlainTextEdit
-{
-    Q_OBJECT
-
-public:
-    CmdOutput(QWidget *parent = 0);
-
-public slots:
-    void displayOutput(const QString & output);
-
-};
 
 class LazyNutScriptEditor: public QPlainTextEdit
 {
@@ -124,7 +100,6 @@ private slots:
 //    void runScript();
     void runModel();
     void runSelection();
-    void runCmd(QString cmd);
     void runCmdAndUpdate(QStringList cmdList);
     void setEasyNetHome();
     void setLazyNutBat();
@@ -134,7 +109,6 @@ private slots:
     void lazyNutNotRunning();
 //    void requestVersion();
     void displayVersion(QString version);
-    void modelComboBoxClicked(QString txt);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -142,7 +116,6 @@ protected:
 private:
     void checkScreens();
     void initialiseToolBar();
-    void initialiseLists();
     void updateToolBar();
 
     void initViewActions();
@@ -187,16 +160,12 @@ private:
     QStringList     modelList;
     QStringList     trialList;
 
-    QGroupBox       *lazyNutInterpreter;
-    CmdOutput       *cmdOutput;
-    InputCmdLine    *inputCmdLine;
 //    TreeModel       *objTaxonomyModel;
     ObjectCatalogue *objectCatalogue;
 //    LazyNutObjCatalogue  *objCatalogue;
+    LazyNutConsole *lazyNutConsole;
     ObjExplorer      *objExplorer;
-    QLabel          *zebPic;
 
-    QDockWidget     *dockZeb;
     QDockWidget     *dockWelcome;
     QDockWidget     *dockWebWelcome;
     QDockWidget     *dockEdit;
@@ -217,14 +186,16 @@ private:
     Highlighter     *highlighter2;
 //    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
-    PlotWindow      *plotForm;
+    PlotWindow      *plotWindow;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
-    LazyNutListComboBox *modelComboBox;
-    LazyNutListComboBox *trialComboBox;
+    QComboBox       *modelComboBox;
+    QComboBox       *trialComboBox;
     QComboBox       *setComboBox;
     QComboBox       *inputComboBox;
     QWidget         *spacer;
+    ObjectCatalogueFilter* modelListFilter;
+    ObjectCatalogueFilter* trialListFilter;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;

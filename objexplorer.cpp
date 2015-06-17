@@ -29,6 +29,7 @@
 ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     : objectCatalogue(objectCatalogue), QMainWindow(parent)
 {
+
     //---------- Type list ---------//
 
     typeList = new QListWidget(this);
@@ -232,7 +233,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 void ObjExplorer::queryTypes()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+//    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml list type"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SLOT(initTypes(QStringList)));

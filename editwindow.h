@@ -30,6 +30,7 @@ private slots:
     bool save();
     bool saveAs();
     void documentWasModified();
+    void addText(QString txt);
 
 private:
     void createActions();

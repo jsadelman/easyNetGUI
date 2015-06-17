@@ -70,7 +70,7 @@ void DescriptionUpdater::requestDescription(QString name)
 //        qDebug() << "requestDescription" << name;
         objectCatalogue->setPending(name, false);
         LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode |= ECHO_INTERPRETER; // debug purpose
+//        param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(name)});
         param->answerFormatterType = AnswerFormatterType::XML;
         param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*)));

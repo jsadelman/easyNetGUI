@@ -52,10 +52,12 @@ void ObjectCatalogueFilter::setTypeList(QStringList list)
 void ObjectCatalogueFilter::sendObjectCreated(QModelIndex parent, int first, int last)
 {
     Q_UNUSED(parent)
+
     for (int row = first; row <= last; ++row)
     {
         QString name = data(index(row,0)).toString();
         QString type = data(index(row,1)).toString();
+        qDebug() << "Name: " << name << " Type: " << type;
         QDomDocument* domDoc = objectCatalogue->description(name);
         emit objectCreated(name, type, domDoc);
     }

@@ -35,7 +35,7 @@ QList<QStringList> *myData = new QList<QStringList>;
 *myData << col1 << col2 << col3;
 QString name = "Andrews_92_short";
 
-    editor->AddDataFrame(name, headerList, myData);
+//    editor->AddDataFrame(name, headerList, myData);
 }
 
 void DataFrameWindow::getDataFrameHeaders(QString df_name)
@@ -76,7 +76,7 @@ void DataFrameWindow::processData(QList<QStringList> dataList)
 
 void DataFrameWindow::AddDataFrame(QString name, QStringList *headerList, QList<QStringList> *myData)
 {
-    editor->AddDataFrame(name, headerList, myData);
+//    editor->AddDataFrame(name, headerList, myData);
 }
 
 

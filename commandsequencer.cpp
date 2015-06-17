@@ -35,7 +35,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
     foreach (QString cmd, commands)
     {
         // skip empty lines, which do not trigger any response from lazyNut
-        if (!emptyLineRex.exactMatch(cmd))
+        if ((!emptyLineRex.exactMatch(cmd)) && (!cmd.startsWith("#")))
             commandList.append(cmd);
     }
 
@@ -51,10 +51,15 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
 
     qDebug() << "BUSY" << "first cmd: " << commandList.first();
 
+
     // send cmds to lazyNut without removing them from commandList
     // they will be removed when their resp. lazyNut output is received
     foreach (QString cmd, commandList)
+    {
+        if (logMode &= ECHO_INTERPRETER)
+            emit commandSent(cmd);
         lazyNut->sendCommand(cmd);
+    }
 }
 
 void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int mode)

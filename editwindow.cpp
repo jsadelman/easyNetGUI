@@ -307,3 +307,10 @@ QString EditWindow::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 
+
+void EditWindow::addText(QString txt)
+{
+    textEdit->moveCursor(QTextCursor::End);
+    textEdit->appendPlainText(txt);
+    textEdit->moveCursor(QTextCursor::End);
+}

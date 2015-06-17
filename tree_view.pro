@@ -8,6 +8,7 @@
 QT      += core gui xml
 QT      += webkit webkitwidgets
 QT      += svg
+QT      += sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -61,7 +62,10 @@ SOURCES +=  \
     descriptionupdater.cpp \
     objectcataloguefilter.cpp \
     dataframewindow.cpp \
-    tableeditor.cpp
+    tableeditor.cpp \
+    inputcmdline.cpp \
+    cmdoutput.cpp \
+    lazynutconsole.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -110,7 +114,10 @@ HEADERS  += \
     descriptionupdater.h \
     objectcataloguefilter.h \
     dataframewindow.h \
-    tableeditor.h
+    tableeditor.h \
+    inputcmdline.h \
+    cmdoutput.h \
+    lazynutconsole.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

@@ -54,6 +54,7 @@ signals:
     void isPaused(bool);
     void cmdError(QString,QStringList);
     void commandExecuted(QString);
+    void commandSent(QString);
     void commandsInJob(int);
     void lazyNutMacroStarted();
     void lazyNutMacroFinished();
@@ -86,7 +87,7 @@ public slots:
     void queryRecentlyCreated();
     void queryRecentlyModified();
     void queryRecentlyDestroyed();
-
+    void runCmd(QString cmd);
 
 private slots:
 
