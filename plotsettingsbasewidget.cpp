@@ -111,7 +111,7 @@ void PlotSettingsBaseWidget::createDisplay()
     vboxLayout->addLayout(gridLayout);
     vboxLayout->addWidget(rawEdit);
     rawEdit->hide();
-    vboxLayout->addStretch();
+//    vboxLayout->addStretch();
     setLayout(vboxLayout);
 
     valueSet =  hasDefault() ?

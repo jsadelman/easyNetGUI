@@ -45,6 +45,7 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidg
 
     for(auto tabname: tabOrder)
     {
+        layoutMap[tabname]->addStretch();
         twidgetMap[tabname]->setLayout(layoutMap[tabname]);
         addTab(twidgetMap[tabname],tabname);
     }
