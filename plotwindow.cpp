@@ -115,7 +115,7 @@ void PlotWindow::createPlotControlPanel()
     dockPlotControlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     dockPlotControlPanel->setWidget(plotControlPanelWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
-    dockPlotControlPanel->setMinimumWidth(400);
+    dockPlotControlPanel->setMinimumWidth(800);
 
 }
 
