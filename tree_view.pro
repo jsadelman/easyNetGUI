@@ -60,7 +60,8 @@ SOURCES +=  \
     proxymodelextrarows.cpp \
     descriptionupdater.cpp \
     objectcataloguefilter.cpp \
-    simplelistmodel.cpp
+    simplelistmodel.cpp \
+    selectfromlistmodel.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -108,7 +109,8 @@ HEADERS  += \
     proxymodelextrarows.h \
     descriptionupdater.h \
     objectcataloguefilter.h \
-    simplelistmodel.h
+    simplelistmodel.h \
+    selectfromlistmodel.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
