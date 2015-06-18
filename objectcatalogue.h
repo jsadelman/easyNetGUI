@@ -12,7 +12,7 @@ class ObjectCatalogue : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit ObjectCatalogue(QObject * parent = 0);
+    static ObjectCatalogue* instance(); // singleton
     ~ObjectCatalogue();
     int rowCount(const QModelIndex & parent = QModelIndex()) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex & parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -42,6 +42,11 @@ public slots:
 
 
 private:
+    ObjectCatalogue(QObject * parent = 0);
+    ObjectCatalogue(ObjectCatalogue const&){}
+    ObjectCatalogue& operator=(ObjectCatalogue const&){}
+    static ObjectCatalogue* objectCatalogue;
+
     int rowFromName(QString name);
     bool setBit(const QString& name, bool bit, int column);
     bool isBit(const QString& name, int column);

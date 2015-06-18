@@ -185,15 +185,14 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 //    foreach (QString type, lazyNutObjTypes)
 //        objTaxonomyModel->appendValue(type,parentIndex);
 
-    objectCatalogue = new ObjectCatalogue;
     connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
-            objectCatalogue, SLOT(create(QDomDocument*)));
+            ObjectCatalogue::instance(), SLOT(create(QDomDocument*)));
     connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
-            objectCatalogue, SLOT(invalidateCache(QStringList)));
+            ObjectCatalogue::instance(), SLOT(invalidateCache(QStringList)));
     connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
-            objectCatalogue, SLOT(destroy(QStringList)));
+            ObjectCatalogue::instance(), SLOT(destroy(QStringList)));
 
-    objExplorer = new ObjExplorer(objectCatalogue,this);
+    objExplorer = new ObjExplorer(ObjectCatalogue::instance(),this);
 
     dockExplorer = new QDockWidget(tr("Object Explorer"), this);
     dockExplorer->setAllowedAreas( Qt::RightDockWidgetArea );
@@ -202,7 +201,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
 
-    designWindow = new DesignWindow(objectCatalogue, this);
+    designWindow = new DesignWindow(ObjectCatalogue::instance(), this);
 //    connect(designWindow,SIGNAL(objectSelected(QString)),
 //            objExplorer,SLOT(setObjFromObjName(QString)));
 //    connect(objExplorer,SIGNAL(objectSelected(QString)),

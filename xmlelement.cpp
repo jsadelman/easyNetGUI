@@ -64,6 +64,11 @@ QString XMLelement::value()
     return domElement.attribute("value");
 }
 
+QString XMLelement::type()
+{
+    return domElement.attribute("type");
+}
+
 void XMLelement::setLabel(QString label)
 {
     domElement.setAttribute("label", label);

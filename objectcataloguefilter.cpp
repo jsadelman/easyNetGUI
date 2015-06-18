@@ -13,6 +13,8 @@ ObjectCatalogueFilter::ObjectCatalogueFilter(ObjectCatalogue *objectCatalogue, Q
             this, SLOT(sendObjectCreated(QModelIndex,int,int)));
     connect(this, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
             this, SLOT(sendObjectDestroyed(QModelIndex,int,int)));
+    connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(sendObjectModified(QModelIndex,QModelIndex,QVector<int>)));
 }
 
 bool ObjectCatalogueFilter::isAllValid()
@@ -69,6 +71,17 @@ void ObjectCatalogueFilter::sendObjectDestroyed(QModelIndex parent, int first, i
         QString name = data(index(row,0)).toString();
         qDebug () << "objectDestroyed" << name;
         emit objectDestroyed(name);
+    }
+}
+
+void ObjectCatalogueFilter::sendObjectModified(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles)
+{
+    Q_UNUSED(roles)
+    for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
+    {
+        QString name = data(index(row,0)).toString();
+        qDebug () << "objectModified" << name;
+        emit objectModified(name);
     }
 }
 

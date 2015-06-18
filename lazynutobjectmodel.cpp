@@ -111,7 +111,7 @@ Qt::ItemFlags LazyNutObjectModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return 0;
 
-    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     if (XMLelement(static_cast<DomItem*>(index.internalPointer())->node().toElement()).isCommand())
         flags |= Qt::ItemNeverHasChildren;
 

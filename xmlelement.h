@@ -25,6 +25,7 @@ public:
     bool isMap() {return tag == "map";}
     bool isList() {return tag == "list";}
     bool isENelements() {return tag == "eNelements";}
+    bool isParameter() {return tag == "parameter";}
     XMLelement firstChild(QString childType = QString());
     XMLelement nextSibling(QString siblingType = QString());
     QString attribute(QString attr);
@@ -32,6 +33,7 @@ public:
     bool isNull();
     QString label();
     QString value();
+    QString type();
     void setLabel(QString label);
     void setValue(QString value);
     void setAttribute(QString name, QString value);
