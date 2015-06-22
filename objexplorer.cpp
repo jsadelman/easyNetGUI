@@ -81,6 +81,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     connect(objectModel, &QAbstractItemModel::modelReset, [=]()
     {
         objectView->expandAll();
+        //objectView->expand(objectModel->index(0,0));
         for (int col=0; col < objectView->model()->columnCount(); ++col)
             objectView->resizeColumnToContents(col);
     });
