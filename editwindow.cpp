@@ -16,6 +16,7 @@ EditWindow::EditWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, b
     textEdit = new CodeEditor(this);
     setCentralWidget(textEdit);
     textEdit->setReadOnly(isReadOnly);
+    setCurrentFile("Untitled");
 
 //    newAct = p_newAct;
 //    openAct = p_openAct;

@@ -281,6 +281,34 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
 //    }
 //}
 
+void DiagramScene::prepareToLoadLayout(QString fileName)
+{
+    savedLayout = fileName;
+    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+            this, SLOT(loadLayout()));
+}
+
+void DiagramScene::loadLayout()
+{
+    if (!objectFilter->isAllValid())
+        return;
+
+//    if (!layoutLoaded)
+    {
+        QFile savedLayoutFile(savedLayout);
+        if (savedLayoutFile.open(QIODevice::ReadOnly))
+        {
+            QByteArray savedLayoutData = savedLayoutFile.readAll();
+            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
+            read(savedLayoutDoc.object());
+        }
+        //layoutLoaded = true;
+    }
+
+    disconnect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+                   this, SLOT(loadLayout()));
+}
+
 void DiagramScene::setSelected(QString name)
 {
     if (itemHash.contains(name))

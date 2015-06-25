@@ -107,6 +107,11 @@ void DesignWindow::setObjCatalogue(ObjectCatalogue *catalogue)
     scene->setObjCatalogue(catalogue);
 }
 
+void DesignWindow::prepareToLoadLayout(QString fileName)
+{
+    scene->prepareToLoadLayout(fileName);
+}
+
 void DesignWindow::updateDiagramScene()
 {
     //scene->syncToObjCatalogue();
