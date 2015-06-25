@@ -115,7 +115,7 @@ void PlotWindow::createPlotControlPanel()
     dockPlotControlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     dockPlotControlPanel->setWidget(plotControlPanelWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
-    dockPlotControlPanel->setMinimumWidth(800);
+//    dockPlotControlPanel->setMinimumWidth(800);
 
 }
 
@@ -224,8 +224,8 @@ void PlotWindow::displaySVG(QByteArray plotByteArray)
     if (height<1)
         height = 500;
     QSize size(width,height); // plot_svg->sizeHint();
-    plot_svg->setMaximumSize(size);
-    plot_svg->setMinimumSize(size);
+//    plot_svg->setMaximumSize(size);
+//    plot_svg->setMinimumSize(size);
 
 //    load the byte array into the plot
     plot_svg->load(plotByteArray);

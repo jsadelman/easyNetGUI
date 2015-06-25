@@ -77,6 +77,7 @@ class DesignWindow : public QWidget
 public:
    DesignWindow(ObjectCatalogue *objectCatalogue, QWidget *parent = 0);
    void setObjCatalogue(ObjectCatalogue *catalogue);
+   void prepareToLoadLayout(QString fileName);
 
 public slots:
    void updateDiagramScene();

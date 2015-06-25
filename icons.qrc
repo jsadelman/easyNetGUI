@@ -122,5 +122,9 @@
         <file>images/reload-6x.png</file>
         <file>images/reload-8x.png</file>
         <file>images/test.svg</file>
+        <file>images/minimize.png</file>
+        <file>images/minimizeSelected.png</file>
+        <file>images/maximize.png</file>
+        <file>images/maximizeSelected.png</file>
     </qresource>
 </RCC>

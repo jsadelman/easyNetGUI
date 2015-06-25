@@ -57,7 +57,7 @@ void ObjectCatalogueFilter::sendObjectCreated(QModelIndex parent, int first, int
     {
         QString name = data(index(row,0)).toString();
         QString type = data(index(row,1)).toString();
-        qDebug() << "Name: " << name << " Type: " << type;
+//        qDebug() << "Name: " << name << " Type: " << type;
         QDomDocument* domDoc = objectCatalogue->description(name);
         emit objectCreated(name, type, domDoc);
     }
