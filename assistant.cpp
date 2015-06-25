@@ -42,7 +42,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QProcess>
-
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 
 #include "assistant.h"
@@ -91,8 +91,11 @@ bool Assistant::startAssistant()
 #endif
 
         QStringList args;
+        QString link = QApplication::applicationDirPath() + "/documentation/easyNetHelp.qhc";
         args << QLatin1String("-collectionFile")
-            <<  QLatin1String("C:/Users/pscjd/Google Drive/lazyNutGUI/documentation/easyNetHelp.qhc")
+//             <<  QLatin1String("C:/Users/pscjd/Google Drive/lazyNutGUI/documentation/easyNetHelp.qhc")
+            <<  QLatin1String(":/documentation/easyNetHelp.qhc")
+//             <<  link
             <<  QLatin1String("-enableRemoteControl");
 
         proc->start(app, args);

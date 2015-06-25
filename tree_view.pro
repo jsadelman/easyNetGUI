@@ -131,13 +131,16 @@ HEADERS  += \
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
+    documentation.qrc
     #html.qrc
 
 QMAKE_CXXFLAGS += -std=c++11
 
 DISTFILES += \
     images/test.svg \
-    images/image001.jpg
+    images/image001.jpg \
+    documentation/easyNetHelp.qch \
+    documentation/easyNetHelp.qhc
 
 
 CONFIG += c++11

@@ -52,8 +52,9 @@
 HelpWindow::HelpWindow()
 {
     textViewer = new TextEdit;
-
-    textViewer->setContents(QLatin1String("C:/Users/pscjd/Google Drive/lazyNutGUI/documentation/intro.html"));
+    QString link = QApplication::applicationDirPath() + "/documentation/intro.html";
+//    textViewer->setContents(link);
+    textViewer->setContents(QLatin1String(":/documentation/intro.html"));
 
     setCentralWidget(textViewer);
     setWindowTitle(tr("easyNet help"));
