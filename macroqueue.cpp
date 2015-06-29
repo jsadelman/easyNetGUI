@@ -3,7 +3,7 @@
 
 void MacroQueue::run(QStateMachine *macro)
 {
-    qDebug() << "Jobs in MacroQueue:" << queue.size();
+//    qDebug() << "Jobs in MacroQueue:" << queue.size();
     macro->start();
 }
 

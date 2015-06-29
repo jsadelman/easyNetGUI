@@ -64,6 +64,7 @@ signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
     void viewModeClicked(int);
+    void paramTabEntered(QString);
 
 private slots:
     void save();
@@ -90,7 +91,6 @@ private slots:
     void showCmdOnStatusBar(QString cmd);
     void addOneToLazyNutProgressBar();
 
-    void echoCommand(const QString &line);
     void runScript();
     void runSelection();
     void runCmdAndUpdate(QStringList cmdList);
@@ -106,6 +106,9 @@ private slots:
 
     void updateStimuliView(QString text);
     void showDocumentation();
+    void explorerTabChanged(int idx);
+    void setParamDataFrame(QString name);
+    void setParam(QString newParamValue);
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -148,10 +151,10 @@ private:
 #endif
     QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
     QString         curFile;
-    QString         curJson;
     QString         scriptsDir;
     QString         stimDir;
     QString         easyNetHome = "";
+    QString         paramDataFrame;
 
     QStringList     modelList;
     QStringList     trialList;
@@ -162,10 +165,10 @@ private:
     QTextEdit *textEdit4;
     QTextEdit *textEdit5;
     QTextEdit *textEdit12;
-    QTabWidget *centrePanel;
-    QTabWidget *leftPanel;
-    QTabWidget *lowerRightPanel;
-    QTabWidget *upperRightPanel;
+    QTabWidget *visualiserPanel;
+    QTabWidget *lazynutPanel;
+    QTabWidget *outputPanel;
+    QTabWidget *explorerPanel;
     MaxMinPanel* codePanelDock;
 
     QListWidget* customerList;
@@ -197,9 +200,12 @@ private:
     Highlighter     *highlighter2;
 //    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
+    DesignWindow    *conversionWindow;
     PlotWindow      *plotWindow;
     TableEditor     *stimSetForm;
     TableEditor     *tablesWindow;
+    TableEditor     *paramEdit;
+    TableEditor     *debugLog;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
     QComboBox       *modelComboBox;
@@ -212,6 +218,9 @@ private:
     Assistant       *assistant;
 //    TextEdit        *textViewer;
     HelpWindow      *infoWindow;
+    int             stimSetTabIdx;
+    int             infoTabIdx;
+    int             paramTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;

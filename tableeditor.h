@@ -16,6 +16,7 @@ class QVBoxLayout;
 class QHBoxLayout;
 class QListView;
 class QModelIndex;
+class QStandardItemModel;
 
 class ObjectCatalogue;
 class DataFrameModel;
@@ -36,12 +37,18 @@ public:
 signals:
     void currentKeyChanged(QString key);
     void newTableSelection(QString name);
+    void setParamDataFrameSignal(QString);
+    void newParamValueSig(QString);
 
 private slots:
-    void submit();
+//    void submit();
     void addDataFrameToWidget(QDomDocument* domDoc);
+    void addRowToTable(QString text);
     void rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected );
+    void updateParamTable(QString model);
+    void resizeColumns();
 
+    void on_copy_clicked();
 private:
 
     QToolBar *fileToolBar;
@@ -60,16 +67,19 @@ private:
     QPushButton *revertButton;
     QPushButton *quitButton;
     QDialogButtonBox *buttonBox;
-    QSqlTableModel *model;
+//    QSqlTableModel *model;
+    QStandardItemModel *model;
     DataFrameModel *dfModel;
     QTableView     *view;
     QLabel         *tableTitle;
     QLabel         *listTitle;
+    QStringList   list;
 
     void createToolBars();
     void createActions();
     void setView(QString name);
     init(const QString &tableName, QWidget *parent);
+    void setViewToStringList();
 };
 
 

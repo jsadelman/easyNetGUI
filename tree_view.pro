@@ -70,7 +70,8 @@ SOURCES +=  \
     assistant.cpp \
     findfiledialog.cpp \
     textedit.cpp \
-    helpwindow.cpp
+    helpwindow.cpp \
+    parameditor.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -127,7 +128,8 @@ HEADERS  += \
     assistant.h \
     findfiledialog.h \
     textedit.h \
-    helpwindow.h
+    helpwindow.h \
+    parameditor.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

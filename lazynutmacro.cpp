@@ -16,12 +16,12 @@ LazyNutMacro::LazyNutMacro(MacroQueue *queue, QObject *parent) :
 
 void LazyNutMacro::macroStarted()
 {
-     qDebug() << "macroStarted";
+//     qDebug() << "macroStarted";
 }
 
 
 void LazyNutMacro::macroEnded()
 {
     macroQueue->freeToRun();
-    qDebug() << "macroEnded";
+//    qDebug() << "macroEnded";
 }

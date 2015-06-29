@@ -1,42 +1,3 @@
-/****************************************************************************
-**
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
-**     of its contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
 #include <QDomDocument>
 #include <QtWidgets>
 #include <QVBoxLayout>
@@ -44,8 +5,8 @@
 #include <QListView>
 #include <QItemSelectionModel>
 #include <QModelIndex>
-#include <QtWidgets>
 #include <QtSql>
+#include <QStandardItemModel>
 
 
 #include "tableeditor.h"
@@ -56,18 +17,30 @@
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
 {
+    // this style of constructor is used for stimSetForm
     init(tableName, parent);
 //    listTitle->hide();
     objectListView->hide();
+    connect(this,SIGNAL(currentKeyChanged(QString)),
+            parent,SLOT(currentStimulusChanged(QString)));
+    // can't edit stimulus sets (at present)
+    view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    // but can edit parameter sets
+    if (tableName=="Parameters")
+        view->setEditTriggers(QAbstractItemView::AllEditTriggers);
 
+    setViewToStringList(); // temp!!!
 }
 
 TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &tableName, QWidget *parent)
     : QMainWindow (parent)
 {
+    // this style of constructor is used for dataframes in the Tables tab
     init(tableName, parent);
     objectCatalogue = _objectCatalogue;
     setFilter("dataframe");
+    view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
 }
 
 TableEditor::init(const QString &tableName, QWidget *parent)
@@ -100,8 +73,7 @@ TableEditor::init(const QString &tableName, QWidget *parent)
     splitter->addWidget(view);
     setCentralWidget(splitter);
 
-    connect(this,SIGNAL(currentKeyChanged(QString)),
-            parent,SLOT(currentStimulusChanged(QString)));
+
 
     // other appearance stuff here
 
@@ -163,13 +135,13 @@ void TableEditor::createActions()
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+//    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+//    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
 //     saveAsAct = new QAction(tr("Save &As..."), this);
 //    saveAsAct->setShortcuts(QKeySequence::SaveAs);
@@ -194,10 +166,9 @@ void TableEditor::createActions()
     copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
-//    connect(copyAct, SIGNAL(triggered()), textEdit, SLOT(copy()));
-    copyAct->setEnabled(false);
-//    connect(textEdit, SIGNAL(copyAvailable(bool)),
-//            copyAct, SLOT(setEnabled(bool)));
+    connect(copyAct, SIGNAL(triggered()), this, SLOT(on_copy_clicked()));
+    copyAct->setEnabled(true);
+
 
 //    if (!isReadOnly)
 //    {
@@ -240,18 +211,18 @@ void TableEditor::createToolBars()
 }
 
 
-void TableEditor::submit()
-{
-    model->database().transaction();
-    if (model->submitAll()) {
-        model->database().commit();
-    } else {
-        model->database().rollback();
-        QMessageBox::warning(this, tr("Cached Table"),
-                             tr("The database reported an error: %1")
-                             .arg(model->lastError().text()));
-    }
-}
+//void TableEditor::submit()
+//{
+//    model->database().transaction();
+//    if (model->submitAll()) {
+//        model->database().commit();
+//    } else {
+//        model->database().rollback();
+//        QMessageBox::warning(this, tr("Cached Table"),
+//                             tr("The database reported an error: %1")
+//                             .arg(model->lastError().text()));
+//    }
+//}
 
 void TableEditor::setView(QString name)
 {
@@ -262,20 +233,128 @@ void TableEditor::setView(QString name)
 void TableEditor::addDataFrameToWidget(QDomDocument* domDoc)
 {
     dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
+    connect(dfModel, SIGNAL(newParamValueSig(QString)),
+            this,SIGNAL(newParamValueSig(QString)));
+
     view->setModel(dfModel);
     view->resizeColumnsToContents();
     view->show();
     // at this point we have a view widget showing the table
+    view->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
 
     QItemSelectionModel* selModel = view->selectionModel();
     connect(selModel, SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
             this,SLOT(rowChangedSlot( const QModelIndex& , const QModelIndex& )));
 }
 
+void TableEditor::setViewToStringList()
+{
+    model = new QStandardItemModel();
+//    list = new QStringList;
+
+    model->setHorizontalHeaderLabels({"Index","Command","Time"});
+
+    QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(this);
+
+    proxyModel->setSourceModel(model);
+
+    view->setModel(proxyModel);
+//    view->setModel(model);
+    view->resizeColumnsToContents();
+    view->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
+    view->show();
+    view->setSortingEnabled(true);
+}
+
+void TableEditor::addRowToTable(QString text)
+{
+    QList<QStandardItem *> rowData;
+//    QStandardItem *idx;
+//    idx = new QStandardItem;
+    int i = model->rowCount(); // + 1;
+    QString number = QString("%1").arg(i, 4, 10, QChar('0'));
+    rowData << new QStandardItem(number);
+//    idx->setData(i, Qt::DisplayRole);
+//    rowData << idx;
+    rowData << new QStandardItem(text);
+    double r = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+    rowData << new QStandardItem(QString::number(r)); // this will contain the time
+    model->appendRow(rowData);
+//    model->setItem(i,0,idx);
+    view->resizeColumnsToContents();
+}
+
 void TableEditor::rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected )
 {
     QString key = (view->model()->data(selected.sibling(selected.row(), 0) ,0)).toString();
-    qDebug() << key;
+//    qDebug() << key;
     emit currentKeyChanged(key);
+
+}
+
+void TableEditor::updateParamTable(QString model)
+{
+//    qDebug() << "Entered updateParamTable():" << model;
+    QString name = QString("(") + model + QString(" parameters)");
+    emit setParamDataFrameSignal(name);
+    emit newTableSelection(name);
+}
+
+void TableEditor::resizeColumns()
+{
+    view->resizeColumnsToContents();
+
+//    for (int i=0; i<view->columns();i++)
+//        setColumnWidth(i, .view->width() / columns());
+}
+
+void TableEditor::on_copy_clicked()
+{
+    QAbstractItemModel *abmodel = view->model();
+    QItemSelectionModel *model = view->selectionModel();
+    QModelIndexList list = model->selectedIndexes();
+
+    if(list.size() < 2)
+    {
+//         select all
+                list.clear();
+                for(int i=0;i<abmodel->rowCount();i++)
+                    for(int j=0;j<abmodel->columnCount();j++)
+                        list.append(abmodel->index(i,j));
+    }
+    qSort(list);
+    qDebug() << list;
+
+    QString copy_table;
+    QModelIndex last = list.last();
+    QModelIndex previous = list.first();
+
+    list.removeFirst();
+
+    for(int i = 0; i < list.size(); i++)
+    {
+        QVariant data = abmodel->data(previous);
+        QString text = data.toString();
+
+        QModelIndex index = list.at(i);
+        copy_table.append(text);
+
+        if(index.row() != previous.row())
+
+        {
+            copy_table.append('\n');
+        }
+        else
+        {
+            copy_table.append('\t');
+        }
+        previous = index;
+    }
+
+    copy_table.append(abmodel->data(list.last()).toString());
+    copy_table.append('\n');
+
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(copy_table);
 
 }
