@@ -7,9 +7,17 @@
 
 Q_DECLARE_METATYPE(QDomDocument*)
 
+ObjectCatalogue* ObjectCatalogue::objectCatalogue = nullptr;
+
+
 ObjectCatalogue::ObjectCatalogue(QObject *parent)
     : QAbstractTableModel(parent)
 {
+}
+
+ObjectCatalogue *ObjectCatalogue::instance()
+{
+    return objectCatalogue ? objectCatalogue : (objectCatalogue = new ObjectCatalogue);
 }
 
 ObjectCatalogue::~ObjectCatalogue()

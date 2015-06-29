@@ -2,15 +2,14 @@
 #define OBJECTCATALOGUEFILTER_H
 
 #include <QSortFilterProxyModel>
-
-class ObjectCatalogue;
+#include "objectcatalogue.h"
 class QDomDocument;
 
 class ObjectCatalogueFilter : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    ObjectCatalogueFilter(ObjectCatalogue *objectCatalogue, QObject * parent = 0);
+    ObjectCatalogueFilter(QObject * parent = 0);
     bool isAllValid();
 
 public slots:
@@ -23,14 +22,15 @@ public slots:
 signals:
     void objectCreated(QString, QString, QDomDocument*);
     void objectDestroyed(QString name);
+    void objectModified(QString name);
 
 private slots:
     void sendObjectCreated(QModelIndex parent, int first, int last);
     void sendObjectDestroyed(QModelIndex parent, int first, int last);
+    void sendObjectModified(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles);
 
 private:
     void setList(QStringList list);
-    ObjectCatalogue *objectCatalogue;
 };
 
 #endif // OBJECTCATALOGUEFILTER_H

@@ -14,6 +14,7 @@
 PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent)
     : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QTabWidget(parent)
 {
+    qDebug() << domDoc->toString();
 //    mainLayout = new QVBoxLayout;
 //    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 //    setTabPosition(QTabWidget::West);
@@ -122,15 +123,12 @@ void PlotSettingsForm::checkDependencies()
         dependerOnUpdate = widget->name();
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose
-        param->cmdList = QStringList({
-                                         getSettingCmdLine(dependerOnUpdate),
-                                         QString("xml %1 list_settings").arg(plotName)
-                                     });
+        param->cmdList = getSettingsCmdList();
+        param->cmdList.append(QString("xml %1 list_settings").arg(plotName));
         param->answerFormatterType = AnswerFormatterType::XML;
         param->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)));
         SessionManager::instance()->setupJob(param, sender());
     }
-
 }
 
 void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
@@ -144,32 +142,8 @@ void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
     while (!settingsElement.isNull())
     {
         if (settingsElement["dependencies"].listValues().contains(dependerOnUpdate))
-        {
             widgetMap[settingsElement.label()]->updateWidget(settingsElement);
-//            PlotSettingsBaseWidget *newWidget = createWidget(settingsElement);
-//            for (int i = 0; i < newWidget->extraWidgets().count(); ++i)
-//            {
-//                delete widgetMap[settingsElement.label()]->extraWidgets().at(i);
-//                widgetMap[settingsElement.label()]->extraWidgets()[i] = newWidget->extraWidgets().at(i);
-//            }
-//            delete widgetMap[settingsElement.label()];
-//            widgetMap[settingsElement.label()] = newWidget;
 
-//            int layoutIndex = mainLayout->indexOf(widgetMap[settingsElement.label()]);
-//            PlotSettingsBaseWidget *oldWidget = mainLayout->takeAt(layoutIndex);
-//            PlotSettingsBaseWidget *widget = createWidget(settingsElement);
-//            mainLayout->insertWidget(layoutIndex, widget);
-//            for(int i = 0; i < oldWidget->extraWidgets().count(); ++i)
-//            {
-//                QWidget* oldExtraWidget = oldWidget->extraWidgets().at(i);
-//                QWidget* extraWidget = widget->extraWidgets().at(i);
-//                mainLayout->takeAt(layoutIndex + i + 1);
-//                mainLayout->insertWidget(layoutIndex + i + 1, extraWidget);
-//                delete oldExtraWidget;
-//            }
-//            delete oldWidget;
-//            widgetMap[widget->name()] = widget;
-        }
         settingsElement = settingsElement.nextSibling();
     }
 }

@@ -29,14 +29,14 @@ void XMLelement::setDomElement(QDomElement domElem)
 //        qDebug() << "error: xml tag name not recognised: " << type;
 }
 
-XMLelement XMLelement::firstChild(QString childType)
+XMLelement XMLelement::firstChild(QString childTag)
 {
-    return XMLelement(domElement.firstChildElement(childType));
+    return XMLelement(domElement.firstChildElement(childTag));
 }
 
-XMLelement XMLelement::nextSibling(QString siblingType)
+XMLelement XMLelement::nextSibling(QString siblingTag)
 {
-    return XMLelement(domElement.nextSiblingElement(siblingType));
+    return XMLelement(domElement.nextSiblingElement(siblingTag));
 }
 
 QString XMLelement::attribute(QString attr)
@@ -62,6 +62,11 @@ QString XMLelement::label()
 QString XMLelement::value()
 {
     return domElement.attribute("value");
+}
+
+QString XMLelement::type()
+{
+    return domElement.attribute("type");
 }
 
 void XMLelement::setLabel(QString label)

@@ -5,14 +5,16 @@
 #include <QDomDocument>
 Q_DECLARE_METATYPE(QDomDocument*)
 
-ObjectCatalogueFilter::ObjectCatalogueFilter(ObjectCatalogue *objectCatalogue, QObject *parent)
-    : objectCatalogue(objectCatalogue), QSortFilterProxyModel(parent)
+ObjectCatalogueFilter::ObjectCatalogueFilter(QObject *parent)
+    : QSortFilterProxyModel(parent)
 {
-    setSourceModel(objectCatalogue);
+    setSourceModel(ObjectCatalogue::instance());
     connect(this, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(sendObjectCreated(QModelIndex,int,int)));
     connect(this, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
             this, SLOT(sendObjectDestroyed(QModelIndex,int,int)));
+    connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(sendObjectModified(QModelIndex,QModelIndex,QVector<int>)));
 }
 
 bool ObjectCatalogueFilter::isAllValid()
@@ -57,8 +59,7 @@ void ObjectCatalogueFilter::sendObjectCreated(QModelIndex parent, int first, int
     {
         QString name = data(index(row,0)).toString();
         QString type = data(index(row,1)).toString();
-        qDebug() << "Name: " << name << " Type: " << type;
-        QDomDocument* domDoc = objectCatalogue->description(name);
+        QDomDocument* domDoc = ObjectCatalogue::instance()->description(name);
         emit objectCreated(name, type, domDoc);
     }
 }
@@ -69,8 +70,19 @@ void ObjectCatalogueFilter::sendObjectDestroyed(QModelIndex parent, int first, i
     for (int row = first; row <= last; ++row)
     {
         QString name = data(index(row,0)).toString();
-        qDebug () << "objectDestroyed" << name;
+//        qDebug () << "objectDestroyed" << name;
         emit objectDestroyed(name);
+    }
+}
+
+void ObjectCatalogueFilter::sendObjectModified(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles)
+{
+    Q_UNUSED(roles)
+    for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
+    {
+        QString name = data(index(row,0)).toString();
+//        qDebug () << "objectModified" << name;
+        emit objectModified(name);
     }
 }
 

@@ -40,7 +40,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
     //---------- Object list ---------//
 
-    objectListFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+    objectListFilter = new ObjectCatalogueFilter(this);
     connect(typeList, SIGNAL(currentTextChanged(QString)), this, SLOT(selectType(QString)));
 
     objectListView = new QListView(this);
@@ -51,7 +51,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
     //--------- Description ----------//
 
-    descriptionFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+    descriptionFilter = new ObjectCatalogueFilter(this);
     connect(objectListView, &QListView::clicked, [=](const QModelIndex & index)
     {
         descriptionFilter->setName(objectListFilter->data(index).toString());

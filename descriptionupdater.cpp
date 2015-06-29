@@ -67,7 +67,7 @@ void DescriptionUpdater::requestDescription(QString name)
 {
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
-//        qDebug() << "requestDescription" << name;
+        qDebug() << "requestDescription" << name;
         objectCatalogue->setPending(name, false);
         LazyNutJobParam *param = new LazyNutJobParam;
 //        param->logMode |= ECHO_INTERPRETER; // debug purpose

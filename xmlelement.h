@@ -25,13 +25,15 @@ public:
     bool isMap() {return tag == "map";}
     bool isList() {return tag == "list";}
     bool isENelements() {return tag == "eNelements";}
-    XMLelement firstChild(QString childType = QString());
-    XMLelement nextSibling(QString siblingType = QString());
+    bool isParameter() {return tag == "parameter";}
+    XMLelement firstChild(QString childTag = QString());
+    XMLelement nextSibling(QString siblingTag = QString());
     QString attribute(QString attr);
     bool hasAttribute(QString attr);
     bool isNull();
     QString label();
     QString value();
+    QString type();
     void setLabel(QString label);
     void setValue(QString value);
     void setAttribute(QString name, QString value);
