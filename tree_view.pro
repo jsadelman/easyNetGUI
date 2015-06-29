@@ -68,7 +68,12 @@ SOURCES +=  \
     lazynutconsole.cpp \
     simplelistmodel.cpp \
     selectfromlistmodel.cpp \
-    pairedlistwidget.cpp
+    pairedlistwidget.cpp \
+    maxminpanel.cpp \
+    assistant.cpp \
+    findfiledialog.cpp \
+    textedit.cpp \
+    helpwindow.cpp \
 
 HEADERS  += \
     treeitem.h \
@@ -123,16 +128,25 @@ HEADERS  += \
     lazynutconsole.h \
     simplelistmodel.h \
     selectfromlistmodel.h \
-    pairedlistwidget.h
+    pairedlistwidget.h \
+    maxminpanel.h \
+    assistant.h \
+    findfiledialog.h \
+    textedit.h \
+    helpwindow.h \
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
+    documentation.qrc
     #html.qrc
 
 QMAKE_CXXFLAGS += -std=c++11
 
 DISTFILES += \
-    images/test.svg
+    images/test.svg \
+    images/image001.jpg \
+    documentation/easyNetHelp.qch \
+    documentation/easyNetHelp.qhc
 
 
 CONFIG += c++11

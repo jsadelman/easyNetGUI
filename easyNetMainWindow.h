@@ -14,6 +14,7 @@ class QDockWidget;
 class QSignalMapper;
 class QStackedWidget;
 class QProgressBar;
+class QDomDocument;
 
 class ObjExplorer;
 
@@ -28,26 +29,15 @@ class Highlighter;
 class PlotWindow;
 class ObjectCatalogueFilter;
 class LazyNutListComboBox;
+//class LazyNutScriptEditor;
+class MaxMinPanel;
+class TableEditor;
 class LazyNutConsole;
+class Assistant;
+class TextEdit;
+class HelpWindow;
 
 QT_END_NAMESPACE
-
-
-
-
-class LazyNutScriptEditor: public QPlainTextEdit
-{
-    Q_OBJECT
-
-public:
-    LazyNutScriptEditor(QWidget *parent = 0);
-
-public slots:
-    QStringList getSelectedText();
-    QStringList getAllText();
-
-};
-
 
 class EasyNetMainWindow : public QMainWindow
 {
@@ -76,17 +66,21 @@ signals:
     void viewModeClicked(int);
 
 private slots:
-    void showViewMode(int viewModeInt);
+    void save();
+    void about();
+    void updateTableView(QString text);
+
+//    void showViewMode(int viewModeInt);
     void newScriptFile();
     void newLogFile();
     void open();
-    void run();
     void setLazyNutIsReady(bool isReady);
     //bool save();
     //bool saveAs();
     //void documentWasModified();
     void loadModel();
-//    void loadStimulusSet();
+    void loadStimulusSet();
+    void currentStimulusChanged(QString stim);
     void msgBox(QString msg);
     void runTrial();
     void runAllTrial();
@@ -97,27 +91,30 @@ private slots:
     void addOneToLazyNutProgressBar();
 
     void echoCommand(const QString &line);
-//    void runScript();
-    void runModel();
+    void runScript();
     void runSelection();
     void runCmdAndUpdate(QStringList cmdList);
     void setEasyNetHome();
     void setLazyNutBat();
     void showPauseState(bool isPaused);
     void getVersion();
+//    void showDocumentation();
 
     void lazyNutNotRunning();
 //    void requestVersion();
     void displayVersion(QString version);
 
+    void updateStimuliView(QString text);
+    void showDocumentation();
 protected:
     void closeEvent(QCloseEvent *event);
 
 private:
+    void checkLazyNut();
+    void constructForms();
     void checkScreens();
+    void createDockWindows();
     void initialiseToolBar();
-    void updateToolBar();
-
     void initViewActions();
     void createViewActions();
     void createActions();
@@ -130,7 +127,6 @@ private:
 //    bool saveFile(const QString &fileName);
 
     void setCurrentFile(EditWindow *window, const QString &fileName);
-    QString strippedName(const QString &fullFileName);
     void readSettings();
     void writeSettings();
 //    void runLazyNutBat();
@@ -160,6 +156,21 @@ private:
     QStringList     modelList;
     QStringList     trialList;
 
+    QTextEdit *textEdit1;
+    QTextEdit *textEdit2;
+    QTextEdit *textEdit3;
+    QTextEdit *textEdit4;
+    QTextEdit *textEdit5;
+    QTextEdit *textEdit12;
+    QTabWidget *centrePanel;
+    QTabWidget *leftPanel;
+    QTabWidget *lowerRightPanel;
+    QTabWidget *upperRightPanel;
+    MaxMinPanel* codePanelDock;
+
+    QListWidget* customerList;
+    QListWidget* paragraphsList;
+
 //    TreeModel       *objTaxonomyModel;
 //    LazyNutObjCatalogue  *objCatalogue;
     LazyNutConsole *lazyNutConsole;
@@ -186,6 +197,8 @@ private:
 //    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
     PlotWindow      *plotWindow;
+    TableEditor     *stimSetForm;
+    TableEditor     *tablesWindow;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
     QComboBox       *modelComboBox;
@@ -195,6 +208,9 @@ private:
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;
+    Assistant       *assistant;
+//    TextEdit        *textViewer;
+    HelpWindow      *infoWindow;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
@@ -202,6 +218,10 @@ private:
     QMenu           *runMenu;
     QMenu           *settingsMenu;
     QMenu           *aboutMenu;
+    QMenu           *editMenu;
+    QMenu           *viewMenu;
+    QMenu           *helpMenu;
+
 
     // status bar widgets
     QLabel          *readyLabel;
@@ -229,7 +249,7 @@ private:
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
-    QAction         *runAction;
+//    QAction         *runAction;
     QAction         *runScriptAct;
     QAction         *runSelectionAct;
     QAction         *stopAct;
@@ -237,8 +257,19 @@ private:
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
     QAction         *versionAct;
+    QAction         *assistantAct;
 
-    bool                trialComboEventSwitch = false;
+    QToolBar *fileToolBar;
+    QToolBar *editToolBar;
+    QAction *saveAct;
+    QAction *printAct;
+    QAction *aboutAct;
+    QAction *aboutQtAct;
+    QAction *quitAct;
+
+    bool trialComboEventSwitch = false;
+    bool test_gui;
+
 };
 
 #endif // NMCONSOLE_H

@@ -96,6 +96,7 @@ public slots:
     void setSelected(QString name);
     void savedLayoutToBeLoaded(QString _savedLayout);
     void saveLayout();
+    void prepareToLoadLayout(QString fileName);
 
 
 signals:
@@ -117,6 +118,7 @@ private slots:
     void positionObject(QString name, QString type, QDomDocument* domDoc);
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
+    void loadLayout();
 
 private:
     void render();

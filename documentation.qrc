@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>documentation/easyNetHelp.qhc</file>
+        <file>documentation/easyNetHelp.qch</file>
+        <file>documentation/index.html</file>
+        <file>documentation/intro.html</file>
+        <file>documentation/images/440a.jpg</file>
+        <file>documentation/images/image001.jpg</file>
+    </qresource>
+</RCC>

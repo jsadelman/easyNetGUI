@@ -159,7 +159,7 @@ void PlotSettingsForm::updateSize()
             widget(i)->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
     }
 //    layout()->activate();
-    setFixedHeight(currentWidget()->minimumSizeHint().height());
+//    setFixedHeight(currentWidget()->minimumSizeHint().height());
 }
 
 

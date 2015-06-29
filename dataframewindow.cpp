@@ -7,11 +7,11 @@
 
 DataFrameWindow::DataFrameWindow(QWidget *parent)
 {
-    editor = new TableEditor ("tbl",this);
-    editor->setMinimumWidth(this->width());
-    editor->setMinimumHeight(this->height());
-    editor->show();
-    testDataFrame();
+//    editor = new TableEditor ("tbl",this);
+//    editor->setMinimumWidth(this->width());
+//    editor->setMinimumHeight(this->height());
+//    editor->show();
+//    testDataFrame();
 }
 
 DataFrameWindow::~DataFrameWindow()
