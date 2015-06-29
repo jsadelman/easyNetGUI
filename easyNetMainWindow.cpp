@@ -812,6 +812,11 @@ void EasyNetMainWindow::setLazyNutBat()
     SessionManager::instance()->startLazyNut(lazyNutBat);
 }
 
+void EasyNetMainWindow::setLargerFont()
+{
+//    a.setFont(largerFont);
+}
+
 void EasyNetMainWindow::showPauseState(bool isPaused)
 {
     if (isPaused)
@@ -884,6 +889,10 @@ void EasyNetMainWindow::createActions()
     setEasyNetHomeAct->setStatusTip(tr("Set easyNet home directory"));
     connect(setEasyNetHomeAct,SIGNAL(triggered()),this, SLOT(setEasyNetHome()));
 
+    setLargerFontAct = new QAction(QString(tr("Large font")), this);
+    setLargerFontAct->setStatusTip(QString(tr("Switch to a larger font")));
+    connect(setLargerFontAct,SIGNAL(triggered()),this, SLOT(setLargerFontBat()));
+
     setLazyNutBatAct = new QAction(QString(tr("Set %1").arg(lazyNutBasename)), this);
     setLazyNutBatAct->setStatusTip(QString(tr("Set %1").arg(lazyNutBasename)));
     connect(setLazyNutBatAct,SIGNAL(triggered()),this, SLOT(setLazyNutBat()));
@@ -931,6 +940,8 @@ void EasyNetMainWindow::createMenus()
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
     settingsMenu->addAction(setEasyNetHomeAct);
     settingsMenu->addAction(setLazyNutBatAct);
+    settingsMenu->addAction(setLargerFontAct);
+
 //    settingsMenu->addAction(synchModeAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));

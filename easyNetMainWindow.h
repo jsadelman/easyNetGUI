@@ -109,6 +109,7 @@ private slots:
     void explorerTabChanged(int idx);
     void setParamDataFrame(QString name);
     void setParam(QString newParamValue);
+    void setLargerFont();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -266,6 +267,7 @@ private:
     QAction         *pauseAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
+    QAction         *setLargerFontAct;
     QAction         *versionAct;
     QAction         *assistantAct;
 
