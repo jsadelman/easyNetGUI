@@ -45,9 +45,15 @@ public:
     QStringList rowNames();
     QStringList colNames();
 
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
+
+    signals:
+        newParamValueSig (QString);
+
 private:
     QDomNode tBody() const {return domDoc->firstChild().firstChild();}
     QDomDocument *domDoc;
+    Qt::ItemFlags flags(const QModelIndex &index) const;
 };
 
 #endif // DATAFRAMEMODEL_H

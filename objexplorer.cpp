@@ -4,7 +4,6 @@
 #include <QComboBox>
 #include <QStringList>
 #include <QListView>
-#include <QTableView>
 #include <QTreeView>
 #include <QSplitter>
 #include <QGroupBox>

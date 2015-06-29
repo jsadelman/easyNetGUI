@@ -49,15 +49,16 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
     emit commandsInJob(commandList.size());
     emit isReady(ready);
 
-    qDebug() << "BUSY" << "first cmd: " << commandList.first();
+//    qDebug() << "BUSY" << "first cmd: " << commandList.first();
 
 
     // send cmds to lazyNut without removing them from commandList
     // they will be removed when their resp. lazyNut output is received
     foreach (QString cmd, commandList)
     {
+        emit commandSent(cmd);
         if (logMode &= ECHO_INTERPRETER)
-            emit commandSent(cmd);
+            emit logCommand(cmd);
         lazyNut->sendCommand(cmd);
     }
 }
@@ -129,7 +130,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             lazyNutBuffer.clear();
             ready = true;
             emit isReady(ready);
-            qDebug() << "READY";
+//            qDebug() << "READY";
             emit commandsExecuted();
             return;
         }

@@ -93,8 +93,8 @@ bool Assistant::startAssistant()
         QStringList args;
         QString link = QApplication::applicationDirPath() + "/documentation/easyNetHelp.qhc";
         args << QLatin1String("-collectionFile")
-//             <<  QLatin1String("C:/Users/pscjd/Google Drive/lazyNutGUI/documentation/easyNetHelp.qhc")
-            <<  QLatin1String(":/documentation/easyNetHelp.qhc")
+             <<  QLatin1String("C:/Users/pscjd/Google Drive/lazyNutGUI/documentation/easyNetHelp.qhc")
+//            <<  QLatin1String(":/documentation/easyNetHelp.qhc")
 //             <<  link
             <<  QLatin1String("-enableRemoteControl");
 

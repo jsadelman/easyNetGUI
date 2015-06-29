@@ -27,7 +27,6 @@ class LazyNutObjTableModel;
 //class LazyNutObjTableProxyModel;
 class QSortFilterProxyModel;
 class QListView;
-class QTableView;
 class QTreeView;
 class QColumnView;
 class QListWidget;
