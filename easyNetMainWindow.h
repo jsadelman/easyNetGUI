@@ -36,6 +36,8 @@ class LazyNutConsole;
 class Assistant;
 class TextEdit;
 class HelpWindow;
+class QSvgWidget;
+class TrialWidget;
 
 QT_END_NAMESPACE
 
@@ -202,6 +204,7 @@ private:
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
     PlotWindow      *plotWindow;
+    QSvgWidget      *plotViewer;
     TableEditor     *stimSetForm;
     TableEditor     *tablesWindow;
     TableEditor     *paramEdit;
@@ -210,6 +213,7 @@ private:
     QToolBar        *toolbar;
     QComboBox       *modelComboBox;
     QComboBox       *trialComboBox;
+    TrialWidget     *trialWidget;
     QComboBox       *setComboBox;
     QComboBox       *inputComboBox;
     QWidget         *spacer;

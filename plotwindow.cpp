@@ -26,8 +26,7 @@ PlotWindow::PlotWindow(QWidget *parent)
       plotSettingsForm(nullptr),
       QMainWindow(parent)
 {
-    plot_svg = new QSvgWidget(this);
-    setCentralWidget(plot_svg);
+//    plot_svg = new QSvgWidget(this);
 
     createPlotControlPanel();
     setUnifiedTitleAndToolBarOnMac(true);
@@ -109,13 +108,15 @@ void PlotWindow::createPlotControlPanel()
     plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     plotControlPanelScrollArea->setWidgetResizable(true);
     plotControlPanelWindow->setCentralWidget(plotControlPanelScrollArea);
+    QWidget* dummy = new QWidget;
+    setCentralWidget(dummy);
 
     // dock plotControlPanel to the left of plot_svg
     QDockWidget *dockPlotControlPanel = new QDockWidget("Plot Control Panel", this);
     dockPlotControlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     dockPlotControlPanel->setWidget(plotControlPanelWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
-//    dockPlotControlPanel->setMinimumWidth(800);
+    dockPlotControlPanel->setMinimumWidth(800);
 
 }
 
@@ -227,8 +228,8 @@ void PlotWindow::displaySVG(QByteArray plotByteArray)
 //    plot_svg->setMaximumSize(size);
 //    plot_svg->setMinimumSize(size);
 
-//    load the byte array into the plot
-    plot_svg->load(plotByteArray);
+//    send signal to load the byte array into the plot
+    emit plot(plotByteArray);
 
 }
 

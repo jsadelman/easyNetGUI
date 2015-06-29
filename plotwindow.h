@@ -30,6 +30,7 @@ public:
 signals:
     void createNewPlotOfType(QString, QString);
 
+
 };
 
 class NewPlotPage: public QWizardPage
@@ -59,6 +60,8 @@ public:
     PlotWindow(QWidget *parent = 0);
     int getValueFromByteArray(QByteArray ba, QString key);
 
+signals:
+        void plot(QByteArray);
 
 private slots:
     void sendDrawCmd();
@@ -98,7 +101,7 @@ private:
     QMainWindow *plotControlPanelWindow;
     QScrollArea *plotControlPanelScrollArea;
     QVBoxLayout *plotControlPanelLayout;
-    QSvgWidget *plot_svg;
+//    QSvgWidget *plot_svg;
 
     PlotSettingsForm *plotSettingsForm;
     QLabel *plotTitleLabel;

@@ -10,6 +10,7 @@
 #include <QScreen>
 #include <QDebug>
 #include <QtCore/QLibraryInfo>
+#include <QSvgWidget>
 
 
 #include <iostream>
@@ -38,6 +39,7 @@
 #include "assistant.h"
 #include "textedit.h"
 #include "helpwindow.h"
+#include "trialwidget.h"
 
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -142,7 +144,7 @@ void EasyNetMainWindow::constructForms()
     tablesWindow = new TableEditor (ObjectCatalogue::instance(),"Tables",this);
     connect(tablesWindow,SIGNAL(newTableSelection(QString)),this,SLOT(updateTableView(QString)));
     paramEdit = new TableEditor ("Parameters",this);
-
+    plotViewer = new QSvgWidget(this);
 
     infoWindow = new HelpWindow;
     assistant = new Assistant;
@@ -159,7 +161,8 @@ void EasyNetMainWindow::constructForms()
     {
         visualiserPanel->addTab(designWindow, tr("Model"));
         visualiserPanel->addTab(conversionWindow, tr("Conversions"));
-        outputPanel->addTab(plotWindow, tr("Plots"));
+        visualiserPanel->addTab(plotWindow, tr("Plot settings"));
+        outputPanel->addTab(plotViewer, tr("Plots"));
         lazynutPanel->addTab(lazyNutConsole, tr("Console"));
         explorerPanel->addTab(objExplorer, tr("Objects"));
         explorerPanel->addTab(tablesWindow, tr("Tables"));
@@ -188,8 +191,12 @@ void EasyNetMainWindow::constructForms()
              this,SLOT(setParamDataFrame(QString)));
     connect(paramEdit, SIGNAL(newParamValueSig(QString)),
             this,SLOT(setParam(QString)));
+    connect(plotWindow, SIGNAL(plot(QByteArray)),
+            plotViewer,SLOT(load(QByteArray)));
+
 
 }
+
 
 void EasyNetMainWindow::setParamDataFrame(QString name)
 {
@@ -273,6 +280,8 @@ void EasyNetMainWindow::initialiseToolBar()
     trialComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     trialComboBox->setMinimumSize(100, trialComboBox->minimumHeight());
 
+
+
     setComboBox = new QComboBox;
     setComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(setComboBox,SIGNAL(currentIndexChanged(QString)),
@@ -329,6 +338,12 @@ void EasyNetMainWindow::initialiseToolBar()
     // Add values in the combo box
     toolbar->addWidget(trialComboBox);
     toolbar->addSeparator();
+
+    trialWidget = new TrialWidget(this);
+    toolbar->addWidget(trialWidget);
+    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
+
+
 
 //    toolbar->addWidget(setBoxLabel);
     toolbar->addWidget(setButton);
@@ -481,15 +496,14 @@ void EasyNetMainWindow::runTrial()
     QString stimArg = QString(" stimulus=") + currentStimulus;
 
     QString cmd = quietMode + currentTrial + stepCmd + modelArg + stimArg;
-    SessionManager::instance()->runCmd(cmd);
 
 //    after running cmd, call draw on plotForm
 //     this seems like far too much code to achieve this !!
-//    LazyNutJobParam *param = new LazyNutJobParam;
-//    param->logMode |= ECHO_INTERPRETER;
-//    param->cmdList = QStringList({cmd});
-//    param->setNextJobReceiver(plotForm, SLOT(draw()));
-//    SessionManager::instance()->setupJob(param);
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER;
+    param->cmdList = QStringList({cmd});
+    param->setNextJobReceiver(plotWindow, SLOT(draw()));
+    SessionManager::instance()->setupJob(param);
 }
 
 
