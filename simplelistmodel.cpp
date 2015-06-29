@@ -1,5 +1,6 @@
 #include "simplelistmodel.h"
 #include <QSet>
+#include <QDebug>
 
 StringListModel::StringListModel(QStringList list, QObject *parent)
     : list(list), QAbstractListModel(parent)
@@ -67,6 +68,8 @@ Qt::ItemFlags StringListModel::flags(const QModelIndex &index) const
 
 bool StringListModel::insertRows(int row, int count, const QModelIndex &parent)
 {
+    if (row < 0 || row > rowCount() || count <= 0)
+        return false;
     beginInsertRows(parent, row, row + count -1);
     for (int i = row; i < row + count; ++i)
         list.insert(i, QString());
@@ -76,7 +79,7 @@ bool StringListModel::insertRows(int row, int count, const QModelIndex &parent)
 
 bool StringListModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-    if (row < 0 || row >= rowCount() || count < 0 || row + count >= rowCount())
+    if (row < 0 || row >= rowCount() || count <= 0 || row + count -1 >= rowCount())
         return false;
     beginRemoveRows(parent, row, row + count -1);
     QStringList::iterator from = list.begin() + row;
@@ -115,6 +118,7 @@ bool StringListModel::removeStrings(QStringList txtList)
 
 bool StringListModel::updateList(QStringList newList)
 {
+    qDebug() << "StringListModel::updateList";
     bool success = true;
     QSet<QString> setDiff;
     // append new items

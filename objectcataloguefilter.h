@@ -9,7 +9,7 @@ class ObjectCatalogueFilter : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    ObjectCatalogueFilter(ObjectCatalogue *objectCatalogue = ObjectCatalogue::instance(), QObject * parent = 0);
+    ObjectCatalogueFilter(QObject * parent = 0);
     bool isAllValid();
 
 public slots:
@@ -31,7 +31,6 @@ private slots:
 
 private:
     void setList(QStringList list);
-    ObjectCatalogue *objectCatalogue;
 };
 
 #endif // OBJECTCATALOGUEFILTER_H

@@ -319,8 +319,8 @@ void PlotWindow::getSettingsXML()
 
 void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
 {
-    if (plotSettingsForm)
-        importHomonyms(settingsList);
+//    if (plotSettingsForm)
+//        importHomonyms(settingsList);
 
     plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, this);
     plotTitleLabel = new QLabel(QString("%1 (%2)").arg(currentPlot).arg(currentPlotType));

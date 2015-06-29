@@ -19,10 +19,13 @@ public:
     bool appendString(QString txt);
     bool removeString(QString txt);
     bool removeStrings(QStringList txtList);
-    bool updateList(QStringList newList);
 
     QStringList getList() {return list;}
     bool contains(QString s) {return list.contains(s);}
+
+public slots:
+    bool updateList(QStringList newList);
+
 
 private:
     QStringList list;

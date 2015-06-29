@@ -61,7 +61,8 @@ SOURCES +=  \
     descriptionupdater.cpp \
     objectcataloguefilter.cpp \
     simplelistmodel.cpp \
-    selectfromlistmodel.cpp
+    selectfromlistmodel.cpp \
+    pairedlistwidget.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -110,7 +111,8 @@ HEADERS  += \
     descriptionupdater.h \
     objectcataloguefilter.h \
     simplelistmodel.h \
-    selectfromlistmodel.h
+    selectfromlistmodel.h \
+    pairedlistwidget.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

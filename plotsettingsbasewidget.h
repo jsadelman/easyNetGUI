@@ -21,7 +21,9 @@ class QRadioButton;
 class QListWidget;
 class QListWidgetItem;
 class LazyNutListWidget;
-class LazyNutPairedListWidget;
+class PairedListWidget;
+class QAbstractItemModel;
+class ObjectCatalogueFilter;
 
 class PlotSettingsAbstractBaseWidget
 {
@@ -29,7 +31,7 @@ public:
     virtual ~PlotSettingsAbstractBaseWidget() {}
     virtual QString name() = 0;
     virtual QString value() = 0;
-    virtual QList<QWidget*> extraWidgets() = 0;
+    virtual QString settingMethod() = 0; // "setting" or "setting_object"
 
 };
 
@@ -41,15 +43,16 @@ class PlotSettingsBaseWidget : public QFrame//, PlotSettingsAbstractBaseWidget
 public:
     explicit PlotSettingsBaseWidget(XMLelement settingsElement, QWidget *parent = 0);
     virtual ~PlotSettingsBaseWidget() {}
-    QString name() {return settingsElement.label();}
+    virtual QString name() {return settingsElement.label();}
     virtual QString value();
-//    QList<QWidget*> extraWidgets() {return extraWidgetsList;}
+    virtual QString settingMethod();
     virtual void updateWidget(XMLelement xml);
 
 signals:
     void valueChanged();
     void resetRequest();
     void sizeChanged();
+    void levelsReady();
 
 
 protected slots:
@@ -59,10 +62,12 @@ protected slots:
     virtual void setRawEditModeOff();
     void emitValueChanged();
     void setValueSetTrue() {valueSet = true;}
+    void getLevels();
 
 protected:
 
-    virtual void createDisplay();
+    void createDisplay();
+    void createLevelsListModel();
     virtual void createEditWidget(){}
     virtual QVariant getWidgetValue() {return QString();}
     virtual QString getValue();
@@ -80,13 +85,13 @@ protected:
     XMLelement settingsElement;
     bool valueSet;
     QString currentValue;
+    QAbstractItemModel *levelsListModel;
+    ObjectCatalogueFilter *levelsCmdObjectWatcher;
 
     QVBoxLayout *vboxLayout;
     QGridLayout *gridLayout;
     QLabel *nameLabel;
     QLineEdit *rawEdit;
-    QStackedLayout *editStackedLayout;
-    QStackedWidget *editStackedWidget;
     QWidget *editDisplayWidget;
     QLabel *commentLabel;
     QGroupBox *editModeButtonBox;
@@ -95,9 +100,6 @@ protected:
     QRadioButton *rawEditModeButton;
     QRadioButton *widgetEditButton;
     QPushButton *defaultButton;
-
-//    QList<QWidget*> extraWidgetsList;
-
 };
 
 class PlotSettingsNumericWidget : public PlotSettingsBaseWidget
@@ -128,7 +130,7 @@ public:
     virtual void updateWidget(XMLelement xml) Q_DECL_OVERRIDE;
 
 protected slots:
-    void setupEditWidget();
+    void buildEditWidget();
 
 protected:
     void createEditWidget();
@@ -137,10 +139,7 @@ protected:
     virtual QVariant raw2widgetValue(QString val) Q_DECL_OVERRIDE;
     virtual QString widget2rawValue(QVariant val) Q_DECL_OVERRIDE;
 
-    void createListEdit();
-    void updateValueFromEdit();
 
-    LazyNutListWidget *factorList;
 };
 
 class PlotSettingsMultipleChoiceWidget : public PlotSettingsBaseWidget
@@ -153,25 +152,24 @@ public:
 
 
 protected slots:
-    void setupEditWidget();
     virtual void setRawEditModeOn() Q_DECL_OVERRIDE;
     virtual void setRawEditModeOff() Q_DECL_OVERRIDE;
     void updateEditDisplayWidget();
     virtual void resetDefault();
-
+    void buildEditWidget();
 
 protected:
     void createEditWidget();
+
     virtual QVariant getWidgetValue() Q_DECL_OVERRIDE;
     virtual void setWidgetValue(QVariant val) Q_DECL_OVERRIDE;
     virtual QVariant raw2widgetValue(QString val) Q_DECL_OVERRIDE;
     virtual QString widget2rawValue(QVariant val) Q_DECL_OVERRIDE;
 
-    void createListEdit();
-    void updateValueFromEdit();
+
 
     LazyNutListWidget *factorList;
-    LazyNutPairedListWidget *editExtraWidget;
+    QWidget *editExtraWidget;
 };
 
 

@@ -70,7 +70,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue, QO
     itemOffset = QPointF(0,150);
     arrowOffset = QPointF(50,0);
 
-    objectFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+    objectFilter = new ObjectCatalogueFilter(this);
     objectFilter->setTypeList(QStringList({"layer", "connection"}));
     descriptionUpdater = new DescriptionUpdater(this);
     descriptionUpdater->setProxyModel(objectFilter);
