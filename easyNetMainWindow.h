@@ -161,7 +161,6 @@ private:
     QStringList     trialList;
 
 //    TreeModel       *objTaxonomyModel;
-    ObjectCatalogue *objectCatalogue;
 //    LazyNutObjCatalogue  *objCatalogue;
     LazyNutConsole *lazyNutConsole;
     ObjExplorer      *objExplorer;

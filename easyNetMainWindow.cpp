@@ -36,7 +36,6 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
 
-    objectCatalogue = new ObjectCatalogue;
 
 //    checkScreens();
     initialiseToolBar();
@@ -220,13 +219,13 @@ void EasyNetMainWindow::initialiseToolBar()
 
 //    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
 
-      modelListFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+      modelListFilter = new ObjectCatalogueFilter(this);
       modelComboBox->setModel(modelListFilter);
       modelComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       modelListFilter->setType("grouping");
 
-      trialListFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+      trialListFilter = new ObjectCatalogueFilter(this);
       trialComboBox->setModel(trialListFilter);
       trialComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
