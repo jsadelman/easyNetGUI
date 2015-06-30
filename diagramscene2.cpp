@@ -54,12 +54,11 @@
 #include <QDebug>
 
 //! [0]
-DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
-                           QString _boxType, QString _arrowType, QObject *parent)
+DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue, QObject *parent)
     : objectCatalogue(objectCatalogue), QGraphicsScene(parent)
 {
-    boxType =  _boxType;
-    arrowType =  _arrowType;
+    boxType =  "representation"; // "layer";
+    arrowType =   "conversion"; // "connection";
     myItemMenu = itemMenu;
     myMode = MoveItem;
     myItemType = DiagramItem::Layer;
@@ -68,12 +67,13 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
     myItemColor = Qt::white;
     myTextColor = Qt::black;
     myLineColor = Qt::black;
-    defaultPosition = QPointF(300,125); //  150);
+    defaultPosition = QPointF(300,25); //  150);
     currentPosition = defaultPosition;
-    itemOffset = QPointF(0,50) ; // 150);
+    itemOffset = QPointF(0,25) ; // 150);
     arrowOffset = QPointF(50,0);
 
-    objectFilter = new ObjectCatalogueFilter(this);
+    objectFilter = new ObjectCatalogueFilter(objectCatalogue, this);
+//    objectFilter->setTypeList(QStringList({"layer", "connection"}));
     objectFilter->setTypeList(QStringList({boxType, arrowType}));
     descriptionUpdater = new DescriptionUpdater(this);
     descriptionUpdater->setProxyModel(objectFilter);
@@ -336,8 +336,8 @@ void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
 
 void DiagramScene::saveLayout()
 {
-    if (!objectFilter->isAllValid())        // temp fix!!!
-            return;
+    if (! objectFilter->isAllValid()) // temp fix
+        return;
 
     QFile savedLayoutFile(savedLayout);
     if (savedLayoutFile.open(QIODevice::WriteOnly))
@@ -510,24 +510,11 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
         render();
 }
 
-QString fixName (QString name);
-QString fixName (QString name)
-{
-    name = name.replace( " ", "_" );
-    name = name.replace( "(", "" );
-    name = name.replace( ")", "" );
-    return (name);
-}
-
 void DiagramScene::render()
 {
     // layers don't need any rendering and they are already in itemHash
     // connections need rendering since they need their source and dest layers, if present,
     // and are not in itemHash
-    QFile file(boxType+QString("connections.txt"));
-    file.open(QIODevice::Append | QIODevice::Text);
-    QTextStream out( &file );
-
     foreach(QDomDocument* domDoc, renderList)
     {
 //        if (AsLazyNutObject(*domDoc).type() == "connection")
@@ -549,8 +536,6 @@ void DiagramScene::render()
             }
             arrow->setStartItem(startItem);
             arrow->setEndItem(endItem);
-            out << fixName(startItem->name()) << "-->"
-                     << fixName(endItem->name()) << ";\n";
             if (!startItem && !endItem)
             {
                 currentPosition += arrowOffset;
@@ -573,7 +558,6 @@ void DiagramScene::render()
         }
     }
     renderList.clear();
-    file.close();
 }
 
 //! [13]

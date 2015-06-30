@@ -221,6 +221,8 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(commandsInJob(int)));
     connect(commandSequencer, SIGNAL(commandSent(QString)),
             this, SIGNAL(commandSent(QString)));
+    connect(commandSequencer, SIGNAL(logCommand(QString)),
+            this, SIGNAL(logCommand(QString)));
 
 
 
@@ -311,6 +313,15 @@ void SessionManager::runCmd(QString cmd)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = QStringList({cmd});
+    param->logMode |= ECHO_INTERPRETER;
+    param->setNextJobReceiver(this, SLOT(updateObjectCatalogue()));
+    setupJob(param);
+}
+
+void SessionManager::runCmd(QStringList cmd)
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->cmdList = cmd;
     param->logMode |= ECHO_INTERPRETER;
     param->setNextJobReceiver(this, SLOT(updateObjectCatalogue()));
     setupJob(param);
