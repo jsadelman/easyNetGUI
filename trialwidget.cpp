@@ -15,9 +15,9 @@ TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
     setLayout(layout);
 
     trialFilter = new ObjectCatalogueFilter(this);
+//    trialFilter->setName("");
     trialDescriptionUpdater = new DescriptionUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
-
 
 
 }

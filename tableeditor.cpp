@@ -115,7 +115,11 @@ TableEditor::init(const QString &tableName, QWidget *parent)
 void TableEditor::setFilter(QString type)
 {
     objectListFilter = new ObjectCatalogueFilter(this);
+    qDebug () << "TableEditor objectListFilter ptr = " << objectListFilter;
     objectListFilter->setType(type);
+    connect(objectListFilter, &ObjectCatalogueFilter::objectDestroyed,[=](QString name) {
+        qDebug () << objectListFilter <<   "TableEditor objectListFilter destroyed" << name;
+    });
 
     objectListView->setModel(objectListFilter);
     objectListView->setModelColumn(0);

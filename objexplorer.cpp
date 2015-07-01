@@ -40,7 +40,15 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     //---------- Object list ---------//
 
     objectListFilter = new ObjectCatalogueFilter(this);
+    qDebug () << "Explorer objectListFilter ptr = " << objectListFilter;
+
     connect(typeList, SIGNAL(currentTextChanged(QString)), this, SLOT(selectType(QString)));
+
+    connect(objectListFilter, &ObjectCatalogueFilter::objectDestroyed,[=](QString name) {
+        qDebug () << objectListFilter << "Explorer objectListFilter destroyed" << name;
+    });
+
+
 
     objectListView = new QListView(this);
     objectListView->setModel(objectListFilter);
@@ -51,9 +59,14 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     //--------- Description ----------//
 
     descriptionFilter = new ObjectCatalogueFilter(this);
+    qDebug () << "Explorer descriptionFilter ptr = " << descriptionFilter;
+
     connect(objectListView, &QListView::clicked, [=](const QModelIndex & index)
     {
         descriptionFilter->setName(objectListFilter->data(index).toString());
+    });
+    connect(descriptionFilter, &ObjectCatalogueFilter::objectDestroyed,[=](QString name) {
+        qDebug () << descriptionFilter << "Explorer descriptionFilter destroyed" << name;
     });
     descriptionFilter->setName("<no name>");
     descriptionUpdater = new DescriptionUpdater(this);

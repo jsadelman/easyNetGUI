@@ -67,9 +67,11 @@ void DescriptionUpdater::requestDescription(QString name)
 {
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
+        qDebug() << this << "DescriptionUpdater requestDescription" << name;
         objectCatalogue->setPending(name, false);
+        qDebug() << this << "DescriptionUpdater setPending" << name;
         LazyNutJobParam *param = new LazyNutJobParam;
-//        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(name)});
         param->answerFormatterType = AnswerFormatterType::XML;
         param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*)));
@@ -77,7 +79,6 @@ void DescriptionUpdater::requestDescription(QString name)
     }
     else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
     {
-//        qDebug() << "DescriptionUpdater::requestDescription notify description ready";
         emit descriptionUpdated(objectCatalogue->description(name));
     }
 }

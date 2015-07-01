@@ -35,7 +35,7 @@ int ObjectCatalogue::rowCount(const QModelIndex &parent) const
 int ObjectCatalogue::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 5;
+    return COLUMN_COUNT;
 }
 
 QVariant ObjectCatalogue::data(const QModelIndex &index, int role) const
@@ -49,18 +49,17 @@ QVariant ObjectCatalogue::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole)
     {
         LazyNutObjectCacheElem* obj = catalogue.at(index.row());
+        if (!obj)
+            return QVariant();
         switch(index.column())
         {
-        case 0:
+        case NameCol:
             return obj->name;
-        case 1:
+        case TypeCol:
             return obj->type;
-        case 2:
+        case InvalidCol:
             return obj->invalid;
-        case 3:
-            return obj->pending;
-        case 4:
-//            return obj->domDoc == nullptr ? "" : QString().sprintf("%08p", obj->domDoc);
+        case DescriptionCol:
             return QVariant::fromValue(obj->domDoc);
         default:
             return QVariant();
@@ -76,15 +75,13 @@ QVariant ObjectCatalogue::headerData(int section, Qt::Orientation orientation, i
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case 0:
+        case NameCol:
             return "Name";
-        case 1:
+        case TypeCol:
             return "Type";
-        case 2:
+        case InvalidCol:
             return "Invalid";
-        case 3:
-            return "Pending";
-        case 4:
+        case DescriptionCol:
             return "QDomDocument*";
         default:
             return QVariant();
@@ -98,27 +95,27 @@ bool ObjectCatalogue::setData(const QModelIndex &index, const QVariant &value, i
      if (index.isValid() && role == Qt::EditRole &&
         index.row() >= 0 && index.row() < catalogue.count())
      {
+         qDebug() << "setData row col val " << index.row() << index.column() << value;
          switch(index.column())
          {
-         case 0:
+         case NameCol:
              catalogue.at(index.row())->name = value.toString();
              break;
-         case 1:
+         case TypeCol:
              catalogue.at(index.row())->type = value.toString();
              break;
-         case 2:
+         case InvalidCol:
              catalogue.at(index.row())->invalid = value.toBool();
              break;
-         case 3:
-             catalogue.at(index.row())->pending = value.toBool();
-             break;
-         case 4:
+         case DescriptionCol:
              catalogue.at(index.row())->domDoc = value.value<QDomDocument*>();
              break;
          default:
              return false;
          }
          emit(dataChanged(index, index));
+         qDebug () << "set Data emitted data changed row col val"<< index.row() << index.column() << value;
+
          return true;
      }
      return false;
@@ -131,21 +128,6 @@ Qt::ItemFlags ObjectCatalogue::flags(const QModelIndex &index) const
 
     return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 }
-
-//bool ObjectCatalogue::insertRows(int row, int count, const QModelIndex &parent)
-//{
-//    Q_UNUSED(parent);
-//    if (row < 0 || row > catalogue.count())
-//        return false;
-
-//    beginInsertRows(QModelIndex(), row, row+count-1);
-
-//    for (int i=0; i < count; ++i)
-//        catalogue.insert(row, new LazyNutObjectCacheElem);
-
-//    endInsertRows();
-//    return true;
-//}
 
 bool ObjectCatalogue::removeRows(int row, int count, const QModelIndex &parent)
 {
@@ -174,6 +156,9 @@ bool ObjectCatalogue::create(const QString &name, const QString &type)
     LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type);
     catalogue.insert(0, elem);
     endInsertRows();
+    emit dataChanged(index(0,0), index(0,columnCount()-1));
+    qDebug () << "create emitted data changed  name"  << name;
+
     return true;
 
 }
@@ -187,7 +172,7 @@ bool ObjectCatalogue::setDescription(QDomDocument *domDoc)
 {
     QString name = AsLazyNutObject(*domDoc).name();
     int row = rowFromName(name);
-    return setData(index(row, 4), QVariant::fromValue(domDoc));
+    return setData(index(row, DescriptionCol), QVariant::fromValue(domDoc));
 }
 
 bool ObjectCatalogue::setDescriptionAndValidCache(QDomDocument *domDoc)
@@ -196,13 +181,18 @@ bool ObjectCatalogue::setDescriptionAndValidCache(QDomDocument *domDoc)
 
 //    if (!setPending(name, false))
 //        return false;
+    qDebug () << "before setDescription";
+
     if  (!setDescription(domDoc))
         return false;
+    qDebug () << "after setDescription";
     return setInvalid(name, false);
 }
 
 bool ObjectCatalogue::invalidateCache(const QString &name)
 {
+    if (rowFromName(name) == -1)
+        return false;
     if (!setInvalid(name, true))
         return false;
     return setPending(name, true);
@@ -210,7 +200,7 @@ bool ObjectCatalogue::invalidateCache(const QString &name)
 
 QDomDocument *ObjectCatalogue::description(const QString &name)
 {
-    QVariant v = data(index(rowFromName(name), 4));
+    QVariant v = data(index(rowFromName(name), DescriptionCol));
     if (v.canConvert<QDomDocument *>())
         return v.value<QDomDocument *>();
     else
@@ -219,27 +209,34 @@ QDomDocument *ObjectCatalogue::description(const QString &name)
 
 bool ObjectCatalogue::setInvalid(const QString &name, bool invalid)
 {
-    return setBit(name, invalid, 2);
+    return setBit(name, invalid, InvalidCol);
 }
 
 bool ObjectCatalogue::isInvalid(const QString &name)
 {
-    return isBit(name, 2);
+    return isBit(name, InvalidCol);
 }
 
 bool ObjectCatalogue::setPending(const QString &name, bool pending)
 {
-    return setBit(name, pending, 3);
+    qDebug() << "setPending" << name;
+    int row = rowFromName(name);
+    if (row <0)
+        return false;
+
+    catalogue.at(row)->pending = pending;
+    return true;
 }
 
 bool ObjectCatalogue::isPending(const QString &name)
 {
-    return isBit(name, 3);
+    // should check existence and throw something in case
+    return catalogue.at(rowFromName(name))->pending;
 }
 
 QString ObjectCatalogue::type(const QString &name)
 {
-    return data(index(rowFromName(name), 1)).toString();
+    return data(index(rowFromName(name), TypeCol)).toString();
 }
 
 bool ObjectCatalogue::create(QDomDocument *domDoc)
@@ -272,10 +269,10 @@ bool ObjectCatalogue::invalidateCache(QStringList names)
     return success;
 }
 
-int ObjectCatalogue::rowFromName(QString name)
+int ObjectCatalogue::rowFromName(const QString& name)
 {
     // will include a cache
-    QModelIndexList list = match(index(0,0), Qt::DisplayRole, name, 1, Qt::MatchExactly);
+    QModelIndexList list = match(index(0,NameCol), Qt::DisplayRole, name, 1, Qt::MatchExactly);
     if (!list.isEmpty())
         return list.at(0).row();
     else
@@ -284,8 +281,11 @@ int ObjectCatalogue::rowFromName(QString name)
 
 bool ObjectCatalogue::setBit(const QString &name, bool bit, int column)
 {
-    if (column == 2 || column == 3)
+    if (column == InvalidCol)
+    {
+        qDebug () << "setBit " << name;
         return setData(index(rowFromName(name), column), bit);
+    }
     else
         return false;
 }
@@ -296,6 +296,6 @@ bool ObjectCatalogue::isBit(const QString &name, int column)
     if (!v.isNull() && v.canConvert(QMetaType::Bool))
         return v.toBool();
     else
-        return true; // default to invalid and pending
+        return true; // default to invalid
 }
 

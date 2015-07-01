@@ -74,9 +74,16 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
     arrowOffset = QPointF(50,0);
 
     objectFilter = new ObjectCatalogueFilter(this);
+    qDebug () << "DiagramScene objectFilter ptr = " << objectFilter << boxType << arrowType;
+
     objectFilter->setTypeList(QStringList({boxType, arrowType}));
+    connect(objectFilter, &ObjectCatalogueFilter::objectDestroyed,[=](QString name) {
+        qDebug () << objectFilter << "DiagramScene objectFilter" << boxType << arrowType << " destroyed" << name;
+    });
     descriptionUpdater = new DescriptionUpdater(this);
     descriptionUpdater->setProxyModel(objectFilter);
+
+
     connect(objectFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
             this, SLOT(positionObject(QString, QString, QDomDocument*)));
     connect(objectFilter, SIGNAL(objectDestroyed(QString)),
@@ -287,8 +294,8 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
 void DiagramScene::prepareToLoadLayout(QString fileName)
 {
     savedLayout = fileName;
-    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
-            this, SLOT(loadLayout()));
+//    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+//            this, SLOT(loadLayout()));
 }
 
 void DiagramScene::loadLayout()
@@ -308,8 +315,8 @@ void DiagramScene::loadLayout()
         //layoutLoaded = true;
     }
 
-    disconnect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
-                   this, SLOT(loadLayout()));
+//    disconnect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+//                   this, SLOT(loadLayout()));
 }
 
 void DiagramScene::setSelected(QString name)

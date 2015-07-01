@@ -161,29 +161,29 @@ void SessionManager::getDescriptions()
 void SessionManager::queryRecentlyCreated()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-//    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)));
-    param->setNextJobReceiver(this, SLOT(queryRecentlyModified()));
+    param->setNextJobReceiver(this, SLOT(queryRecentlyDestroyed()));
     setupJob(param, sender());
 }
 
 void SessionManager::queryRecentlyModified()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-//    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)));
-    param->setNextJobReceiver(this, SLOT(queryRecentlyDestroyed()));
+    param->setNextJobReceiver(this, SLOT(queryRecentlyCreated()));
     setupJob(param, sender());
 }
 
 void SessionManager::queryRecentlyDestroyed()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-//    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)));
@@ -242,7 +242,7 @@ void SessionManager::killLazyNut()
 
 void SessionManager::updateObjectCatalogue()
 {
-    queryRecentlyCreated();
+    queryRecentlyModified();
 }
 
 
