@@ -172,10 +172,6 @@ void EasyNetMainWindow::constructForms()
     lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
-    QTableView *ObjectCatalogueView = new QTableView;
-    ObjectCatalogueView->setModel(ObjectCatalogue::instance());
-    lazynutPanel->addTab(ObjectCatalogueView, "Object Catalogue");
-
     paramTabIdx = explorerPanel->addTab(paramEdit, tr("Parameters"));
     stimSetTabIdx = outputPanel->addTab(stimSetForm, tr("Stimuli"));
 //    upperRightPanel->addTab(textViewer, tr("Help"));
@@ -233,21 +229,20 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
     addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
-//    dock->hide(); // initially, don't show explorer dock
+    dock->hide(); // initially, don't show explorer dock
 
     dock = new QDockWidget(tr("Output"), this);
     dock->setWidget(outputPanel);
     addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
     dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
-    dock->hide();
 
     codePanelDock = new MaxMinPanel(tr("lazyNut Code"),this);
     codePanelDock->setWidget(lazynutPanel);
     addDockWidget(Qt::LeftDockWidgetArea, codePanelDock);
     viewMenu->addAction(codePanelDock->toggleViewAction());
     codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
-//    codePanelDock->hide(); // initially, don't show codePanelDock
+    codePanelDock->hide(); // initially, don't show codePanelDock
 
     QDockWidget *dock2 = new QDockWidget(tr("Visualiser"), this);
     dock2->setWidget(visualiserPanel);
@@ -321,9 +316,6 @@ void EasyNetMainWindow::initialiseToolBar()
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       modelListFilter->setType("grouping");
 
-      connect(modelListFilter, &ObjectCatalogueFilter::objectDestroyed,[=](QString name) {
-          qDebug () << "easyNetMainWindow modelListFilter destroyed" << name;
-      });
 
       trialListFilter = new ObjectCatalogueFilter(this);
       trialComboBox->setModel(trialListFilter);
@@ -331,9 +323,6 @@ void EasyNetMainWindow::initialiseToolBar()
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       trialListFilter->setType("steps");
 
-      connect(trialListFilter, &ObjectCatalogueFilter::objectDestroyed,[=](QString name) {
-          qDebug () << "easyNetMainWindow trialListFilter destroyed" << name;
-      });
 
 
     spacer = new QWidget();
@@ -354,9 +343,9 @@ void EasyNetMainWindow::initialiseToolBar()
     toolbar->addWidget(trialComboBox);
     toolbar->addSeparator();
 
-//    trialWidget = new TrialWidget(this);
-//    toolbar->addWidget(trialWidget);
-//    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
+    trialWidget = new TrialWidget(this);
+    toolbar->addWidget(trialWidget);
+    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
 
 
 

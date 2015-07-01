@@ -15,9 +15,7 @@ ObjectCatalogueFilter::ObjectCatalogueFilter(QObject *parent)
             this, SLOT(sendObjectDestroyed(QModelIndex,int,int)));
     connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(sendObjectModified(QModelIndex,QModelIndex,QVector<int>)));
-    connect(this, &QSortFilterProxyModel::rowsRemoved, [=](QModelIndex parent,int first ,int last){
-        qDebug() << this << "ObjectCatalogueFilter rowsRemoved between" << first << last;
-    });
+    setName(""); // initialise with a no-pass filter
 
 }
 
@@ -64,7 +62,6 @@ void ObjectCatalogueFilter::sendObjectCreated(QModelIndex parent, int first, int
         QString name = data(index(row,ObjectCatalogue::NameCol)).toString();
         QString type = data(index(row,ObjectCatalogue::TypeCol)).toString();
         QDomDocument* domDoc = ObjectCatalogue::instance()->description(name);
-        qDebug() << this << "ObjectCatalogueFilter objectCreated" << name <<  "rowCount"<< rowCount();
         emit objectCreated(name, type, domDoc);
     }
 }
@@ -75,7 +72,6 @@ void ObjectCatalogueFilter::sendObjectDestroyed(QModelIndex parent, int first, i
     for (int row = first; row <= last; ++row)
     {
         QString name = data(index(row,ObjectCatalogue::NameCol)).toString();
-        qDebug() << this << "ObjectCatalogueFilter objectDestroyed" << name<<  "rowCount"<< rowCount();
         emit objectDestroyed(name);
     }
 }
@@ -86,7 +82,6 @@ void ObjectCatalogueFilter::sendObjectModified(QModelIndex topLeft, QModelIndex 
     for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
     {
         QString name = data(index(row,ObjectCatalogue::NameCol)).toString();
-        qDebug() << this << "ObjectCatalogueFilter objectModified" << name<<  "rowCount"<< rowCount();
         emit objectModified(name);
     }
 }

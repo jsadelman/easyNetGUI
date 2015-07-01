@@ -74,12 +74,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
     arrowOffset = QPointF(50,0);
 
     objectFilter = new ObjectCatalogueFilter(this);
-    qDebug () << "DiagramScene objectFilter ptr = " << objectFilter << boxType << arrowType;
-
     objectFilter->setTypeList(QStringList({boxType, arrowType}));
-    connect(objectFilter, &ObjectCatalogueFilter::objectDestroyed,[=](QString name) {
-        qDebug () << objectFilter << "DiagramScene objectFilter" << boxType << arrowType << " destroyed" << name;
-    });
     descriptionUpdater = new DescriptionUpdater(this);
     descriptionUpdater->setProxyModel(objectFilter);
 

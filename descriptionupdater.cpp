@@ -67,9 +67,7 @@ void DescriptionUpdater::requestDescription(QString name)
 {
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
-        qDebug() << this << "DescriptionUpdater requestDescription" << name;
         objectCatalogue->setPending(name, false);
-        qDebug() << this << "DescriptionUpdater setPending" << name;
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(name)});

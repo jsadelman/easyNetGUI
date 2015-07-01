@@ -95,7 +95,6 @@ bool ObjectCatalogue::setData(const QModelIndex &index, const QVariant &value, i
      if (index.isValid() && role == Qt::EditRole &&
         index.row() >= 0 && index.row() < catalogue.count())
      {
-         qDebug() << "setData row col val " << index.row() << index.column() << value;
          switch(index.column())
          {
          case NameCol:
@@ -114,8 +113,6 @@ bool ObjectCatalogue::setData(const QModelIndex &index, const QVariant &value, i
              return false;
          }
          emit(dataChanged(index, index));
-         qDebug () << "set Data emitted data changed row col val"<< index.row() << index.column() << value;
-
          return true;
      }
      return false;
@@ -157,8 +154,6 @@ bool ObjectCatalogue::create(const QString &name, const QString &type)
     catalogue.insert(0, elem);
     endInsertRows();
     emit dataChanged(index(0,0), index(0,columnCount()-1));
-    qDebug () << "create emitted data changed  name"  << name;
-
     return true;
 
 }
@@ -181,11 +176,9 @@ bool ObjectCatalogue::setDescriptionAndValidCache(QDomDocument *domDoc)
 
 //    if (!setPending(name, false))
 //        return false;
-    qDebug () << "before setDescription";
 
     if  (!setDescription(domDoc))
         return false;
-    qDebug () << "after setDescription";
     return setInvalid(name, false);
 }
 
@@ -219,7 +212,6 @@ bool ObjectCatalogue::isInvalid(const QString &name)
 
 bool ObjectCatalogue::setPending(const QString &name, bool pending)
 {
-    qDebug() << "setPending" << name;
     int row = rowFromName(name);
     if (row <0)
         return false;
@@ -282,10 +274,7 @@ int ObjectCatalogue::rowFromName(const QString& name)
 bool ObjectCatalogue::setBit(const QString &name, bool bit, int column)
 {
     if (column == InvalidCol)
-    {
-        qDebug () << "setBit " << name;
         return setData(index(rowFromName(name), column), bit);
-    }
     else
         return false;
 }
