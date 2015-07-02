@@ -48,7 +48,7 @@ void PlotSettingsBaseWidget::createDisplay()
         rawEdit->setText(settingsElement["value"]());
 
 
-    connect(rawEdit, SIGNAL(editingFinished()), this, SLOT(emitValueChanged()));
+    connect(rawEdit, SIGNAL(textChanged(QString)), this, SLOT(emitValueChanged()));
     commentLabel = new QLabel;
     commentLabel->setText(settingsElement["comment"]());
     commentLabel->setWordWrap(true);
@@ -338,14 +338,14 @@ void PlotSettingsNumericWidget::createEditWidget()
     {
         editDisplayWidget = new QDoubleSpinBox;
         setWidgetValue(settingsElement["value"]());
-        connect(static_cast<QDoubleSpinBox*>(editDisplayWidget), SIGNAL(editingFinished()),
+        connect(static_cast<QDoubleSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(double)),
                 this, SLOT(emitValueChanged()));
     }
     else
     {
         editDisplayWidget = new QSpinBox;
         setWidgetValue(settingsElement["value"]());
-        connect(static_cast<QSpinBox*>(editDisplayWidget), SIGNAL(editingFinished()),
+        connect(static_cast<QSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(int)),
                 this, SLOT(emitValueChanged()));
     }
     currentValue = settingsElement["value"]();
@@ -401,7 +401,7 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
     setWidgetValue(raw2widgetValue(settingsElement["value"]()));
     currentValue = settingsElement["value"]();
     valueSet = !settingsElement["value"]().isEmpty();
-    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(activated(int)),
+    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
             this, SLOT(emitValueChanged()));
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);

@@ -118,7 +118,6 @@ bool StringListModel::removeStrings(QStringList txtList)
 
 bool StringListModel::updateList(QStringList newList)
 {
-    qDebug() << "StringListModel::updateList";
     bool success = true;
     QSet<QString> setDiff;
     // append new items

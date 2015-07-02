@@ -12,7 +12,7 @@
 class QVBoxLayout;
 class PlotSettingsBaseWidget;
 
-class PlotSettingsForm : public QTabWidget //QWidget
+class PlotSettingsForm : public QTabWidget
 {
     Q_OBJECT
 public:
@@ -23,11 +23,6 @@ public:
     QString value(QString label);
     QStringList listLabels() {return rootElement.listLabels();}
 
-signals:
-    void updateRequest();
-
-//public slots:
-//    void setFactorList(QStringList list);
 
 private slots:
 //    void addWidget(QWidget *widget);
