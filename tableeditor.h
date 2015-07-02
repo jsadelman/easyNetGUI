@@ -78,7 +78,7 @@ private:
     void createToolBars();
     void createActions();
     void setView(QString name);
-    init(const QString &tableName, QWidget *parent);
+    void init(const QString &tableName, QWidget *parent);
     void setViewToStringList();
 };
 

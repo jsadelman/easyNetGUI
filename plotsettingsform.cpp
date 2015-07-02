@@ -14,7 +14,6 @@
 PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent)
     : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QTabWidget(parent)
 {
-    qDebug() << domDoc->toString();
 //    mainLayout = new QVBoxLayout;
 //    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 //    setTabPosition(QTabWidget::West);
