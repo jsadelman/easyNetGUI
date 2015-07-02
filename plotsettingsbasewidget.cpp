@@ -280,6 +280,8 @@ void PlotSettingsBaseWidget::emitValueChanged()
         currentValue = getValue();
         valueSet = true;
         emit valueChanged();
+        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
+
     }
 }
 
@@ -393,6 +395,8 @@ void PlotSettingsSingleChoiceWidget::createEditWidget()
         setRawEditModeOn();
     }
 }
+
+
 
 void PlotSettingsSingleChoiceWidget::buildEditWidget()
 {

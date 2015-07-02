@@ -187,6 +187,7 @@ void SessionManager::queryRecentlyDestroyed()
     param->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)));
+    param->setEndOfJobReceiver(this,SIGNAL(commandsCompleted()));
     setupJob(param, sender());
 }
 //! [getDescriptions]

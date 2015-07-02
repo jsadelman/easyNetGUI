@@ -47,6 +47,10 @@ public:
     virtual QString value();
     virtual QString settingMethod();
     virtual void updateWidget(XMLelement xml);
+    virtual void setValue(QString val);
+
+public slots:
+    void setValueSetTrue() {valueSet = true;}
 
 signals:
     void valueChanged();
@@ -61,7 +65,6 @@ protected slots:
     virtual void setRawEditModeOn();
     virtual void setRawEditModeOff();
     void emitValueChanged();
-    void setValueSetTrue() {valueSet = true;}
     void getLevels();
 
 protected:
@@ -71,7 +74,6 @@ protected:
     virtual void createEditWidget(){}
     virtual QVariant getWidgetValue() {return QString();}
     virtual QString getValue();
-    virtual void setValue(QString val);
     virtual void setWidgetValue(QVariant val){}
     bool isValueSet();
     bool hasDefault();

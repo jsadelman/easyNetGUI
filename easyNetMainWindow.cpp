@@ -162,7 +162,7 @@ void EasyNetMainWindow::constructForms()
         visualiserPanel->addTab(designWindow, tr("Model"));
         visualiserPanel->addTab(conversionWindow, tr("Conversions"));
         visualiserPanel->addTab(plotWindow, tr("Plot settings"));
-        outputPanel->addTab(plotViewer, tr("Plots"));
+        plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
         lazynutPanel->addTab(lazyNutConsole, tr("Console"));
         explorerPanel->addTab(objExplorer, tr("Objects"));
         explorerPanel->addTab(tablesWindow, tr("Tables"));
@@ -265,13 +265,8 @@ void EasyNetMainWindow::initialiseToolBar()
     QPushButton* trialButton = new QPushButton("Trial:");
     trialButton->setFlat(true);
 
-//    QLabel* setBoxLabel = new QLabel("Set:");
-    QPushButton* setButton = new QPushButton("Set:");
+    QPushButton* setButton = new QPushButton("Stimulus Set:");
     setButton->setFlat(true);
-
-//    QLabel* inputBoxLabel = new QLabel("Input:");
-    QPushButton* inputButton = new QPushButton("Input:");
-    inputButton->setFlat(true);
 
     modelComboBox = new QComboBox(this);
     modelComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
@@ -287,12 +282,6 @@ void EasyNetMainWindow::initialiseToolBar()
     connect(setComboBox,SIGNAL(currentIndexChanged(QString)),
             this, SLOT(updateStimuliView(QString)));
 
-    inputComboBox = new QComboBox;
-    inputComboBox->setEditable(true);
-    inputComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-//    inputComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-    inputComboBox->setMinimumSize(100, inputComboBox->minimumHeight());
-
     connect(modelButton, SIGNAL(clicked()),
               this, SLOT(loadModel()));
 //    connect(trialButton, SIGNAL(clicked()),
@@ -300,11 +289,6 @@ void EasyNetMainWindow::initialiseToolBar()
 
     connect(setButton, SIGNAL(clicked()), this, SLOT(loadStimulusSet()));
 
-
-
-// want to catch Enter key press
-//    connect(inputComboBox, SIGNAL(activated()),
-//          this, SLOT(runTrial()));
 
 
 //    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
@@ -337,33 +321,24 @@ void EasyNetMainWindow::initialiseToolBar()
     toolbar->addWidget(trialButton);
     // Add values in the combo box
     toolbar->addWidget(trialComboBox);
-    toolbar->addSeparator();
 
     trialWidget = new TrialWidget(this);
     toolbar->addWidget(trialWidget);
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
 
-
-
-//    toolbar->addWidget(setBoxLabel);
-    toolbar->addWidget(setButton);
-    // Add values in the combo box
-    toolbar->addWidget(setComboBox);
-    setComboBox->insertItem(0, "Untitled");
-    toolbar->addSeparator();
-
-//    toolbar->addWidget(inputBoxLabel);
-    toolbar->addWidget(inputButton);
-    // Add values in the combo box
-    toolbar->addWidget(inputComboBox);
-//    inputComboBox->insertItem(0, "");
     toolbar->addSeparator();
 
     // toolBar is a pointer to an existing toolbar
     toolbar->addWidget(spacer);
-    toolbar->addAction("Run",this, SLOT(runTrial()));
     toolbar->addSeparator();
-    toolbar->addAction("Run all",this, SLOT(runAllTrial()));
+    toolbar->addWidget(setButton);
+    // Add values in the combo box
+    toolbar->addWidget(setComboBox);
+    setComboBox->insertItem(0, "Untitled");
+    toolbar->addAction(QIcon(":/images/run_all_disabled.png"),
+                       "Run all",this, SLOT(runAllTrial()));
+
+    toolbar->addSeparator();
 
 }
 
@@ -469,9 +444,8 @@ void EasyNetMainWindow::about()
 
 void EasyNetMainWindow::runTrial()
 {
-    QString currentTrial = trialComboBox->currentText(); // "brief_masked";
-    QString currentModel = modelComboBox->currentText(); // "iam";
-    QString currentStimulus = inputComboBox->currentText(); // "mave";
+    QString currentTrial = trialComboBox->currentText();
+    QString currentModel = modelComboBox->currentText();
 
     // check that above strings are in order
     if (currentTrial.isEmpty())
@@ -484,18 +458,13 @@ void EasyNetMainWindow::runTrial()
         msgBox("Choose which model to run");
         return;
     }
-    if (currentStimulus.isEmpty())
-    {
-        msgBox("Specify the stimulus to run");
-        return;
-    }
 
     QString quietMode = "quietly ";
-    QString stepCmd  = " step";
+    QString stepCmd  = " step ";
     QString modelArg = QString(" model=") + currentModel;
-    QString stimArg = QString(" stimulus=") + currentStimulus;
 
-    QString cmd = quietMode + currentTrial + stepCmd + modelArg + stimArg;
+    QString cmd = quietMode + currentTrial + stepCmd + trialWidget->getTrialCmd(); // modelArg + stimArg;
+//    msgBox(cmd);
 
 //    after running cmd, call draw on plotForm
 //     this seems like far too much code to achieve this !!
@@ -504,6 +473,8 @@ void EasyNetMainWindow::runTrial()
     param->cmdList = QStringList({cmd});
     param->setNextJobReceiver(plotWindow, SLOT(draw()));
     SessionManager::instance()->setupJob(param);
+    outputPanel->setCurrentIndex(plotTabIdx); // show Plot viewer tab
+
 }
 
 
@@ -576,11 +547,22 @@ void EasyNetMainWindow::loadModel()
             infoWindow->showInfo(page);
 
 //        showViewMode(Model);
+        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
         runScript();
         // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
         // should then call getList() and choose the appropriate model
 
     }
+}
+
+void EasyNetMainWindow::afterModelLoaded()
+{
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
+    // default plot type and plot name
+    QMap<QString,QString> settings;
+    settings["df"]="((word_level default_observer) default_dataframe)";
+    plotWindow->createNewPlotOfType("plo", "activity.R",settings);
+
 }
 
 void EasyNetMainWindow::loadStimulusSet()
@@ -618,9 +600,9 @@ void EasyNetMainWindow::loadStimulusSet()
 
 void EasyNetMainWindow::currentStimulusChanged(QString stim)
 {
-    if (inputComboBox->findText(stim) == -1)
-        inputComboBox->addItem(stim);
-    inputComboBox->setCurrentIndex(inputComboBox->findText(stim));
+//    if (inputComboBox->findText(stim) == -1)
+//        inputComboBox->addItem(stim);
+//    inputComboBox->setCurrentIndex(inputComboBox->findText(stim));
 
 
 }
@@ -1135,7 +1117,6 @@ void EasyNetMainWindow::createToolBars()
 //    vbox->addWidget(spacing);
 //    vbox->addWidget(modelLabel);
 //    vbox->addWidget(trialLabel);
-//    vbox->addWidget(inputLabel);
 
     viewModeButtonsWidget->setLayout(viewModeLayout);
     infoToolBar->addWidget(viewModeButtonsWidget);

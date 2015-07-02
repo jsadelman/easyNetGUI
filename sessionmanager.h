@@ -63,6 +63,7 @@ signals:
     void recentlyCreated(QDomDocument*);
     void recentlyModified(QStringList);
     void recentlyDestroyed(QStringList);
+    void commandsCompleted();
 
     void macroQueueStopped(bool);
 

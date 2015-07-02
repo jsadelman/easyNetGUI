@@ -16,15 +16,18 @@ class PlotSettingsForm : public QTabWidget //QWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent = 0);
+    explicit PlotSettingsForm(QDomDocument *domDoc, QString plotName,
+                              QMap<QString,QString>, QWidget *parent = 0);
     ~PlotSettingsForm();
 //    QMap<QString,QString> getSettings();
     QStringList getSettingsCmdList();
     QString value(QString label);
     QStringList listLabels() {return rootElement.listLabels();}
 
+    void setDefaultModelSetting(QString setting, QString value);
 signals:
     void updateRequest();
+    void plotSettingFormCreated();
 
 //public slots:
 //    void setFactorList(QStringList list);

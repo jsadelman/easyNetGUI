@@ -9,16 +9,18 @@
 #include <QMetaObject>
 #include <QDebug>
 #include <QVBoxLayout>
+#include <QComboBox>
 
 
-PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent)
+PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName,
+                                   QMap<QString, QString> defaultSettings, QWidget *parent)
     : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QTabWidget(parent)
 {
     qDebug() << domDoc->toString();
 //    mainLayout = new QVBoxLayout;
 //    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 //    setTabPosition(QTabWidget::West);
-    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+//    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
 
     XMLelement settingsElement = rootElement.firstChild();
     while (!settingsElement.isNull())
@@ -53,6 +55,14 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidg
 //    setLayout(mainLayout);
     initDependersSet();
 //    updateSize();
+    QMap<QString, QString>::const_iterator i = defaultSettings.constBegin();
+    qDebug() << "defaultSettings = " << defaultSettings;
+    while (i != defaultSettings.constEnd())
+    {
+        setDefaultModelSetting(i.key(), i.value());
+        ++i;
+    }
+
 }
 
 PlotSettingsForm::~PlotSettingsForm()
@@ -173,3 +183,11 @@ QString PlotSettingsForm::getSettingCmdLine(QString setting)
             .arg(widgetMap[setting]->value());
 }
 
+void PlotSettingsForm::setDefaultModelSetting(QString setting, QString value)
+{
+    widgetMap[setting]->setValue(value);
+    widgetMap[setting]->setValueSetTrue();
+    qDebug() << "Set" << widgetMap[setting]->name() << "to" << widgetMap[setting]->value();
+    emit widgetMap[setting]->valueChanged();
+//    updateDependees();
+}

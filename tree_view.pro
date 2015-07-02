@@ -150,7 +150,8 @@ DISTFILES += \
     images/test.svg \
     images/image001.jpg \
     documentation/easyNetHelp.qch \
-    documentation/easyNetHelp.qhc
+    documentation/easyNetHelp.qhc \
+    documentation (1)/easyNethelp.qhc
 
 
 CONFIG += c++11

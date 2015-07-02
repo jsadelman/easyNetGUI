@@ -27,9 +27,12 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     // but can edit parameter sets
     if (tableName=="Parameters")
+    {
         view->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    }
+    else if (tableName=="Debug_log")
+        setViewToStringList(); // temp!!!
 
-    setViewToStringList(); // temp!!!
 }
 
 TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &tableName, QWidget *parent)

@@ -112,6 +112,7 @@ private slots:
     void setParamDataFrame(QString name);
     void setParam(QString newParamValue);
     void setLargerFont();
+    void afterModelLoaded();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -215,7 +216,6 @@ private:
     QComboBox       *trialComboBox;
     TrialWidget     *trialWidget;
     QComboBox       *setComboBox;
-    QComboBox       *inputComboBox;
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;
@@ -225,6 +225,7 @@ private:
     int             stimSetTabIdx;
     int             infoTabIdx;
     int             paramTabIdx;
+    int             plotTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
@@ -263,7 +264,6 @@ private:
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
-//    QAction         *runAction;
     QAction         *runScriptAct;
     QAction         *runSelectionAct;
     QAction         *stopAct;

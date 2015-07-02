@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QWizard>
+#include <QMap>
 
 
 class QSvgWidget;
@@ -60,8 +61,12 @@ public:
     PlotWindow(QWidget *parent = 0);
     int getValueFromByteArray(QByteArray ba, QString key);
 
+    void setDefaultModelSetting(QString setting, QString value);
 signals:
         void plot(QByteArray);
+public slots:
+        void createNewPlotOfType(QString name, QString type,
+                                 QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
 
 private slots:
     void sendDrawCmd();
@@ -70,7 +75,6 @@ private slots:
     void setPlot(QString name);
     void newPlot();
     void createNewPlot(QString name);
-    void createNewPlotOfType(QString name, QString type);
     void setType(QString rScript);
     void getSettingsXML();
     void buildSettingsForm(QDomDocument* settingsList);
@@ -100,7 +104,7 @@ private:
 
     QMainWindow *plotControlPanelWindow;
     QScrollArea *plotControlPanelScrollArea;
-    QVBoxLayout *plotControlPanelLayout;
+//    QVBoxLayout *plotControlPanelLayout;
 //    QSvgWidget *plot_svg;
 
     PlotSettingsForm *plotSettingsForm;
@@ -125,6 +129,7 @@ private:
     QString openPlotSettingsText;
     QString savePlotSettingsText;
     QString savePlotSettingsAsText;
+    QMap <QString,QString> defaultSettings;
 
     QString curFile;
     QMenu *fileMenu;

@@ -112,11 +112,11 @@ void PlotWindow::createPlotControlPanel()
     setCentralWidget(dummy);
 
     // dock plotControlPanel to the left of plot_svg
-    QDockWidget *dockPlotControlPanel = new QDockWidget("Plot Control Panel", this);
+    QDockWidget *dockPlotControlPanel = new QDockWidget(this);
     dockPlotControlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     dockPlotControlPanel->setWidget(plotControlPanelWindow);
     addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
-    dockPlotControlPanel->setMinimumWidth(800);
+//    dockPlotControlPanel->setMinimumWidth(800);
 
 }
 
@@ -240,6 +240,7 @@ void PlotWindow::dumpSVG(QString svg)
 
 void PlotWindow::setPlot(QString name)
 {
+    qDebug() << "In setPlot, name is" << name;
     if (name == createNewPlotText)
         newPlot();
 //    else if (name == openPlotSettingsText)
@@ -282,8 +283,10 @@ void PlotWindow::createNewPlot(QString name)
     SessionManager::instance()->setupJob(param, sender());
 }
 
-void PlotWindow::createNewPlotOfType(QString name, QString rScript)
+void PlotWindow::createNewPlotOfType(QString name, QString rScript,
+                                     QMap <QString,QString> _defaultSettings)
 {
+    defaultSettings = _defaultSettings;
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({
@@ -294,6 +297,7 @@ void PlotWindow::createNewPlotOfType(QString name, QString rScript)
     SessionManager::instance()->setupJob(param, sender());
     currentPlot = name;
     currentPlotType = rScript;
+
 }
 
 void PlotWindow::setType(QString rScript)
@@ -323,7 +327,7 @@ void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
 //    if (plotSettingsForm)
 //        importHomonyms(settingsList);
 
-    plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, this);
+    plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, defaultSettings, this);
     plotTitleLabel = new QLabel(QString("%1 (%2)").arg(currentPlot).arg(currentPlotType));
     plotTitleLabel->setStyleSheet("QLabel {"
                              "background-color: white;"
@@ -366,7 +370,6 @@ void PlotWindow::getPlotType(QObject *nextJobReceiver, const char *nextJobSlot)
 void PlotWindow::extractPlotType(QDomDocument *description)
 {
     currentPlotType = QFileInfo(XMLelement(*description)["Type"]()).fileName();
-    qDebug() << "currentPlotType" << currentPlotType;
 }
 
 //void PlotWindow::updateSettingsForm()
@@ -401,6 +404,7 @@ void PlotWindow::selectRecentRScript()
 
 void PlotWindow::setCurrentPlotType(QString rScript)
 {
+    qDebug() << "In setCurrentPlotType, rScript is" << rScript;
     currentPlotType = rScript;
     if (!currentPlotType.isEmpty())
     {
@@ -465,4 +469,9 @@ void NewPlotPage::selectRScript()
                                                    rScriptsHome,"*.R");
     if (!rScript.isEmpty())
         typeEdit->setText(QFileInfo(rScript).fileName());
+}
+
+void PlotWindow::setDefaultModelSetting(QString setting, QString value)
+{
+    plotSettingsForm->setDefaultModelSetting(setting, value);
 }
