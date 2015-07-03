@@ -53,7 +53,7 @@ signals:
     void isReady(bool);
     void isPaused(bool);
     void cmdError(QString,QStringList);
-    void commandExecuted(QString);
+    void commandExecuted(QString, QString);
     void commandSent(QString);
     void logCommand(QString);
     void commandsInJob(int);

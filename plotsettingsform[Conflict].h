@@ -12,7 +12,7 @@
 class QVBoxLayout;
 class PlotSettingsBaseWidget;
 
-class PlotSettingsForm : public QTabWidget //QWidget
+class PlotSettingsForm : public QTabWidget
 {
     Q_OBJECT
 public:
@@ -27,9 +27,7 @@ public:
     void setDefaultModelSetting(QString setting, QString value);
 signals:
     void updateRequest();
-
-//public slots:
-//    void setFactorList(QStringList list);
+    void plotSettingFormCreated();
 
 private slots:
 //    void addWidget(QWidget *widget);

@@ -113,6 +113,7 @@ private slots:
     void setParam(QString newParamValue);
     void setLargerFont();
     void afterModelLoaded();
+    void tabChanged(int idx);
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -226,6 +227,8 @@ private:
     int             infoTabIdx;
     int             paramTabIdx;
     int             plotTabIdx;
+    int             designTabIdx;
+    int             conversionTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;

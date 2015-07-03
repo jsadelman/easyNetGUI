@@ -71,7 +71,6 @@ public slots:
 private slots:
     void sendDrawCmd();
     void displaySVG(QByteArray plotByteArray);
-    void dumpSVG(QString svg);
     void setPlot(QString name);
     void newPlot();
     void createNewPlot(QString name);
@@ -102,11 +101,7 @@ private:
     void createToolBars();
     void importHomonyms(QDomDocument *settingsList);
 
-    QMainWindow *plotControlPanelWindow;
     QScrollArea *plotControlPanelScrollArea;
-//    QVBoxLayout *plotControlPanelLayout;
-//    QSvgWidget *plot_svg;
-
     PlotSettingsForm *plotSettingsForm;
     QLabel *plotTitleLabel;
     QWidget *plotSettingsWidget;

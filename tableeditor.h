@@ -43,7 +43,7 @@ signals:
 private slots:
 //    void submit();
     void addDataFrameToWidget(QDomDocument* domDoc);
-    void addRowToTable(QString text);
+    void addRowToTable(QString cmd, QString time);
     void rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected );
     void updateParamTable(QString model);
     void resizeColumns();
@@ -78,7 +78,7 @@ private:
     void createToolBars();
     void createActions();
     void setView(QString name);
-    init(const QString &tableName, QWidget *parent);
+    void init(const QString &tableName, QWidget *parent);
     void setViewToStringList();
 };
 

@@ -16,7 +16,6 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName,
                                    QMap<QString, QString> defaultSettings, QWidget *parent)
     : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QTabWidget(parent)
 {
-    qDebug() << domDoc->toString();
 //    mainLayout = new QVBoxLayout;
 //    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 //    setTabPosition(QTabWidget::West);
@@ -124,12 +123,9 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
 
 void PlotSettingsForm::checkDependencies()
 {
-    qDebug() << "valueChanged() emitted";
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
-    qDebug() << "current value:" << widget->name() << widget->value();
     if (widget && dependersSet.contains(widget->name()))
     {
-//        emit updateRequest();
         dependerOnUpdate = widget->name();
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose

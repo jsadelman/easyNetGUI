@@ -21,7 +21,7 @@ PairedListWidget::PairedListWidget(QAbstractItemModel *listModel, int relevantCo
 void PairedListWidget::setValue(QStringList selectedList)
 {
     selectedView->selectAll();
-    removeSelected();
+    moveSelected(selectedView, false);
     foreach (QString val, selectedList)
     {
         QModelIndexList matchList = selectFromListModel->match(
@@ -37,6 +37,7 @@ void PairedListWidget::setValue(QStringList selectedList)
             selectFromListModel->setData(idx,true);
         }
     }
+    emit valueChanged();
 }
 
 QStringList PairedListWidget::getValue()

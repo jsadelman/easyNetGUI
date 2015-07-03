@@ -76,17 +76,20 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
         return; // startup header or other spontaneous lazyNut output, or synch error
-    QString currentCmd, lineNumber;
+    QString currentCmd, lineNumber, timeString;
     int beginOffset, endOffset;
     while (true)
     {
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         lineNumber = beginRex.cap(1);
-        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
+//        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
+        QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(lineNumber)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
             return;
+//        timeString = "0";
+        timeString = endRex.cap(1);
 
         // extract ERROR lines
         int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
@@ -121,7 +124,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
                 emit answerReady(answer, currentCmd);
             }
         }
-        emit commandExecuted(commandList.first());
+//        qDebug() << "about to emit commandExecuted" << commandList.first() << timeString;
+        emit commandExecuted(commandList.first(),timeString);
         commandList.removeFirst();
         baseOffset = endOffset + endRex.matchedLength();
         if (commandList.isEmpty())

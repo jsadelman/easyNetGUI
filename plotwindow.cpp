@@ -26,16 +26,8 @@ PlotWindow::PlotWindow(QWidget *parent)
       plotSettingsForm(nullptr),
       QMainWindow(parent)
 {
-//    plot_svg = new QSvgWidget(this);
-
     createPlotControlPanel();
     setUnifiedTitleAndToolBarOnMac(true);
-    // debug
-//    QFile svgfile("C:/Users/mm14722/programs/easyNet/test2.svg");
-//    svgfile.open(QIODevice::ReadOnly);
-//    QByteArray ba = svgfile.readAll();
-//    svgfile.close();
-//    displaySVG(ba);
 }
 
 int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
@@ -98,25 +90,14 @@ void PlotWindow::createPlotControlPanel()
         typeMenu->addAction(recentRScriptsActs[i]);
     updateRecentRScriptsActs();
 
-
-    plotControlPanelWindow = new QMainWindow(this);
     drawAct = new QAction(tr("&Draw"), this);
     connect(drawAct, SIGNAL(triggered()), this, SLOT(draw()));
-    QToolBar *plotToolbar = plotControlPanelWindow->addToolBar("");
+    QToolBar *plotToolbar = addToolBar("");
     plotToolbar->addAction(drawAct);
     plotControlPanelScrollArea = new QScrollArea;
     plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     plotControlPanelScrollArea->setWidgetResizable(true);
-    plotControlPanelWindow->setCentralWidget(plotControlPanelScrollArea);
-    QWidget* dummy = new QWidget;
-    setCentralWidget(dummy);
-
-    // dock plotControlPanel to the left of plot_svg
-    QDockWidget *dockPlotControlPanel = new QDockWidget(this);
-    dockPlotControlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    dockPlotControlPanel->setWidget(plotControlPanelWindow);
-    addDockWidget(Qt::LeftDockWidgetArea, dockPlotControlPanel);
-//    dockPlotControlPanel->setMinimumWidth(800);
+    setCentralWidget(plotControlPanelScrollArea);
 
 }
 
@@ -231,11 +212,6 @@ void PlotWindow::displaySVG(QByteArray plotByteArray)
 //    send signal to load the byte array into the plot
     emit plot(plotByteArray);
 
-}
-
-void PlotWindow::dumpSVG(QString svg)
-{
-    qDebug() << svg;
 }
 
 void PlotWindow::setPlot(QString name)

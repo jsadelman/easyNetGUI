@@ -126,9 +126,9 @@
         <file>images/minimizeSelected.png</file>
         <file>images/maximize.png</file>
         <file>images/maximizeSelected.png</file>
-        <file>images/run_disabled.png</file>
         <file>images/run_enabled.png</file>
         <file>images/run_all_disabled.png</file>
         <file>images/run_all_enabled.png</file>
+        <file>images/run_disabled.png</file>
     </qresource>
 </RCC>

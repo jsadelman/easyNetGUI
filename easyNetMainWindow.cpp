@@ -81,8 +81,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
             ObjectCatalogue::instance(), SLOT(destroy(QStringList)));
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
-    connect(SessionManager::instance(), SIGNAL(commandSent(QString)),
-            debugLog, SLOT(addRowToTable(QString)));
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
+            debugLog, SLOT(addRowToTable(QString,QString)));
     }
 
     // debug: load and run qtest at startup
@@ -159,8 +159,8 @@ void EasyNetMainWindow::constructForms()
     infoTabIdx = outputPanel->addTab(infoWindow, tr("Info"));
     if (!test_gui)
     {
-        visualiserPanel->addTab(designWindow, tr("Model"));
-        visualiserPanel->addTab(conversionWindow, tr("Conversions"));
+        designTabIdx = visualiserPanel->addTab(designWindow, tr("Model"));
+        conversionTabIdx = visualiserPanel->addTab(conversionWindow, tr("Conversions"));
         visualiserPanel->addTab(plotWindow, tr("Plot settings"));
         plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
         lazynutPanel->addTab(lazyNutConsole, tr("Console"));
@@ -171,6 +171,7 @@ void EasyNetMainWindow::constructForms()
     lazynutPanel->addTab(commandLog, tr("History"));
     lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
+
     paramTabIdx = explorerPanel->addTab(paramEdit, tr("Parameters"));
     stimSetTabIdx = outputPanel->addTab(stimSetForm, tr("Stimuli"));
 //    upperRightPanel->addTab(textViewer, tr("Help"));
@@ -193,10 +194,24 @@ void EasyNetMainWindow::constructForms()
             this,SLOT(setParam(QString)));
     connect(plotWindow, SIGNAL(plot(QByteArray)),
             plotViewer,SLOT(load(QByteArray)));
+    connect(visualiserPanel, SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
+    visualiserPanel->setCurrentIndex(conversionTabIdx);
+    visualiserPanel->setCurrentIndex(designTabIdx); // start on Design window
 
 
 }
 
+void EasyNetMainWindow::tabChanged(int idx)
+{
+    emit designWindow->goToSleep();
+    emit conversionWindow->goToSleep();
+    if (idx == designTabIdx)
+
+        emit designWindow->wakeUp();
+    else if (idx == conversionTabIdx)
+        emit conversionWindow->wakeUp();
+
+}
 
 void EasyNetMainWindow::setParamDataFrame(QString name)
 {
@@ -299,11 +314,14 @@ void EasyNetMainWindow::initialiseToolBar()
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       modelListFilter->setType("grouping");
 
+
       trialListFilter = new ObjectCatalogueFilter(this);
       trialComboBox->setModel(trialListFilter);
       trialComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       trialListFilter->setType("steps");
+
+
 
     spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -527,6 +545,8 @@ void EasyNetMainWindow::loadModel()
                                                     tr("Script Files (*.eNs *.eNm)"));
     if (!fileName.isEmpty())
     {
+        emit designWindow->goToSleep();
+
         // load and run script
         loadFile(fileName);
 
@@ -557,6 +577,7 @@ void EasyNetMainWindow::loadModel()
 
 void EasyNetMainWindow::afterModelLoaded()
 {
+    emit designWindow->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
     // default plot type and plot name
     QMap<QString,QString> settings;
@@ -680,6 +701,7 @@ void EasyNetMainWindow::closeEvent(QCloseEvent *event)
 {
         writeSettings();
         SessionManager::instance()->killLazyNut();
+        qDebug() << "eNMainWindow emitting saveLayout";
         emit saveLayout();
         event->accept();
 }
@@ -967,7 +989,7 @@ void EasyNetMainWindow::createStatusBar()
     statusBar()->addPermanentWidget(lazyNutProgressBar, 1);
     connect(SessionManager::instance(), SIGNAL(commandsInJob(int)),
             lazyNutProgressBar, SLOT(setMaximum(int)));
-    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString)),
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             this, SLOT(addOneToLazyNutProgressBar()));
 
 
@@ -1014,7 +1036,7 @@ void EasyNetMainWindow::createStatusBar()
     lazyNutCmdLabel = new QLabel;
     lazyNutCmdLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusBar()->addWidget(lazyNutCmdLabel, 1);
-    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString)),
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             this, SLOT(showCmdOnStatusBar(QString)));
 
     lazyNutErrorLabel = new QLabel;

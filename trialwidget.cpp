@@ -25,11 +25,13 @@ TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
     connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
             this,SLOT(buildComboBoxes(QDomDocument*)));
 
+
     runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
     runAction->setStatusTip(tr("Run"));
     connect(runAction,SIGNAL(triggered()),parent,SLOT(runTrial()));
     runButton = new QToolButton(this);
     runButton->hide();
+
 
 }
 
@@ -39,12 +41,11 @@ TrialWidget::~TrialWidget()
 
 void TrialWidget::update(QString trialName)
 {
+    trialDescriptionUpdater->requestDescription(trialName); // 3/7/15 -> added cos currently no descriptions for trials
     qDebug() << "Entered trialwidget update";
     trialFilter->setName(trialName);
     qDebug() << "called setName";
 
-    // testing!!!
-//    buildComboBoxesTest({"Stimulus","Duration"});
 }
 
 void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
@@ -97,7 +98,7 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     runButton->setAutoRaise(true);
     runButton->setDefaultAction(runAction);
     runButton->setIcon(QIcon(":/images/run_disabled.png"));
-    runButton->setIconSize(QSize(32, 32));
+    runButton->setIconSize(QSize(28, 28)); // (QSize(32, 32));
     runButton->show();
     layout->addWidget(runButton);
 

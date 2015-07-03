@@ -54,8 +54,6 @@ public slots:
 
 signals:
     void valueChanged();
-    void resetRequest();
-    void sizeChanged();
     void levelsReady();
 
 

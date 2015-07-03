@@ -46,7 +46,7 @@ TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &table
 
 }
 
-TableEditor::init(const QString &tableName, QWidget *parent)
+void TableEditor::init(const QString &tableName, QWidget *parent)
 {
     createActions();
     createToolBars();
@@ -119,7 +119,6 @@ void TableEditor::setFilter(QString type)
 {
     objectListFilter = new ObjectCatalogueFilter(this);
     objectListFilter->setType(type);
-
     objectListView->setModel(objectListFilter);
     objectListView->setModelColumn(0);
     objectListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -269,21 +268,15 @@ void TableEditor::setViewToStringList()
     view->setSortingEnabled(true);
 }
 
-void TableEditor::addRowToTable(QString text)
+void TableEditor::addRowToTable(QString cmd, QString time)
 {
     QList<QStandardItem *> rowData;
-//    QStandardItem *idx;
-//    idx = new QStandardItem;
     int i = model->rowCount(); // + 1;
     QString number = QString("%1").arg(i, 4, 10, QChar('0'));
     rowData << new QStandardItem(number);
-//    idx->setData(i, Qt::DisplayRole);
-//    rowData << idx;
-    rowData << new QStandardItem(text);
-    double r = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
-    rowData << new QStandardItem(QString::number(r)); // this will contain the time
+    rowData << new QStandardItem(cmd);
+    rowData << new QStandardItem(time);
     model->appendRow(rowData);
-//    model->setItem(i,0,idx);
     view->resizeColumnsToContents();
 }
 
