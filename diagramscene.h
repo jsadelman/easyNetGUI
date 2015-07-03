@@ -139,6 +139,7 @@ private:
 
     QString savedLayout;
     bool layoutLoaded = false;
+    bool layoutChanged;
     DiagramItem::DiagramType myItemType;
     Arrow::ArrowTipType myArrowTipType;
     QMenu *myItemMenu;

@@ -312,6 +312,7 @@ void DiagramScene::loadLayout()
             QByteArray savedLayoutData = savedLayoutFile.readAll();
             QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
             read(savedLayoutDoc.object());
+            layoutChanged=false;
         }
         //layoutLoaded = true;
     }
@@ -346,6 +347,8 @@ void DiagramScene::saveLayout()
 {
 //    if (!objectFilter->isAllValid())        // temp fix!!!
 //            return;
+    if (!layoutChanged)
+        return;
 
     QFile savedLayoutFile(savedLayout);
     if (savedLayoutFile.open(QIODevice::WriteOnly))

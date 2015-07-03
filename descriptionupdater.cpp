@@ -10,7 +10,7 @@
 DescriptionUpdater::DescriptionUpdater(QObject *parent)
     : QObject(parent)
 {
-    wakeUpUpdate();
+
 }
 
 void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
@@ -22,6 +22,7 @@ void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
         return;
     }
     proxyModel = proxy;
+    wakeUpUpdate();
 
 
 }
@@ -84,6 +85,7 @@ void DescriptionUpdater::requestDescription(QString name)
     qDebug() << "Requested description for " << name;
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
+        qDebug() << "going to set up Job for Requested description for " << name;
         objectCatalogue->setPending(name, false);
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose
