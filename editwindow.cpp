@@ -154,6 +154,20 @@ void EditWindow::createActions()
     findAct->setEnabled(false);
 */
 
+    runAct = new QAction(QIcon(":/images/media-play-3x.png"), tr("&Run"), this);
+//    runAct->setShortcuts(QKeySequence::New);
+    runAct->setStatusTip(tr("Run script"));
+    connect(runAct, SIGNAL(triggered()), this, SLOT(runScript()));
+
+    runSelectionAct = new QAction(QIcon(":/images/reload-2x.png"),tr("Run se&lection"), this);
+    runSelectionAct->setStatusTip(tr("Run selected text"));
+    connect(runSelectionAct,SIGNAL(triggered()),this, SLOT(runSelection()));
+
+    stopAct = new QAction("STOP",this);
+//    connect(stopAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(stop()));
+    pauseAct = new QAction("PAUSE",this);
+//    connect(pauseAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(pause()));
+//    connect(SessionManager::instance(),SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 
 }
 
@@ -198,6 +212,12 @@ void EditWindow::createToolBars()
     editToolBar->addAction(copyAct);
     if (!isReadOnly)
         editToolBar->addAction(pasteAct);
+
+    runToolBar = addToolBar(tr("Run"));
+    runToolBar->addAction(runAct);
+    runToolBar->addAction(runSelectionAct);
+//    runToolBar->addAction(pasteAct);
+
 }
 
 /*
@@ -314,4 +334,14 @@ void EditWindow::addText(QString txt)
     textEdit->moveCursor(QTextCursor::End);
     textEdit->appendPlainText(txt);
     textEdit->moveCursor(QTextCursor::End);
+}
+
+void EditWindow::runScript()
+{
+    emit runCmdAndUpdate(textEdit->getAllText());
+}
+
+void EditWindow::runSelection()
+{
+    emit runCmdAndUpdate(textEdit->getSelectedText());
 }

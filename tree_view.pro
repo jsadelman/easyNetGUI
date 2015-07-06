@@ -75,7 +75,8 @@ SOURCES +=  \
     textedit.cpp \
     helpwindow.cpp \
     parameditor.cpp \
-    trialwidget.cpp
+    trialwidget.cpp \
+    mycombobox.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -137,7 +138,8 @@ HEADERS  += \
     textedit.h \
     helpwindow.h \
     parameditor.h \
-    trialwidget.h
+    trialwidget.h \
+    mycombobox.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

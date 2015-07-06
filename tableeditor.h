@@ -17,6 +17,8 @@ class QHBoxLayout;
 class QListView;
 class QModelIndex;
 class QStandardItemModel;
+class QMimeData;
+class QComboBox;
 
 class ObjectCatalogue;
 class DataFrameModel;
@@ -33,12 +35,19 @@ public:
     explicit TableEditor(ObjectCatalogue *objectCatalogue, const QString &tableName, QWidget *parent = 0);
     explicit TableEditor(const QString &tableName, QWidget *parent = 0);
     void setFilter(QString type);
+    QStringList mimeTypes() const;
+    QMimeData *mimeData; // (const QModelIndexList &indexes) const;
 
+public slots:
+    void setTableText(QString text);
 signals:
     void currentKeyChanged(QString key);
     void newTableSelection(QString name);
     void setParamDataFrameSignal(QString);
     void newParamValueSig(QString);
+    void columnDropped(QString set);
+    void newTableName(QString);
+    void openFileRequest();
 
 private slots:
 //    void submit();
@@ -47,8 +56,10 @@ private slots:
     void rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected );
     void updateParamTable(QString model);
     void resizeColumns();
+    void setView(QString name);
 
     void on_copy_clicked();
+    void updateTableView(QString text);
 private:
 
     QToolBar *fileToolBar;
@@ -71,15 +82,20 @@ private:
     QStandardItemModel *model;
     DataFrameModel *dfModel;
     QTableView     *view;
-    QLabel         *tableTitle;
+    QComboBox         *tableBox;
     QLabel         *listTitle;
     QStringList   list;
+    QWidget* widget;
 
     void createToolBars();
     void createActions();
-    void setView(QString name);
     void init(const QString &tableName, QWidget *parent);
     void setViewToStringList();
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 };
 
 

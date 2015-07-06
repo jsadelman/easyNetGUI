@@ -1,4 +1,5 @@
 #include <QtDebug>
+#include <QtGui>
 #include "dataframemodel.h"
 
 
@@ -81,5 +82,78 @@ bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, 
 
 Qt::ItemFlags DataFrameModel::flags (const QModelIndex &index) const
 {
-    return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+    Qt::ItemFlags defaultFlags = QAbstractTableModel::flags(index);
+
+    return Qt::ItemIsDragEnabled | Qt::ItemIsEditable  | defaultFlags;
+
+}
+
+QStringList DataFrameModel::mimeTypes() const
+{
+    QStringList types;
+    types << "application/vnd.text.list";
+    return types;
+}
+
+QMimeData* DataFrameModel::mimeData(const QModelIndexList &indexes) const
+{
+    QMimeData *mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    foreach (const QModelIndex &index, indexes) {
+        if (index.isValid()) {
+            QString text = data(index, Qt::DisplayRole).toString();
+            stream << text;
+        }
+    }
+
+    mimeData->setData("application/vnd.text.list", encodedData);
+    return mimeData;
+}
+
+
+DataFrameHeader::DataFrameHeader(QWidget *parent)
+    :QHeaderView(Qt::Horizontal, parent)
+{
+    setDragEnabled(true);
+    setDragDropMode(QAbstractItemView::DragOnly);
+}
+
+void DataFrameHeader::mousePressEvent(QMouseEvent *event)
+{
+    //QByteArray itemData;
+    //QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+    //dataStream << QPoint(event->pos() - child->pos());
+    int index;
+    QString text;
+
+    if (event->button() == Qt::LeftButton)
+//        && iconLabel->geometry().contains(event->pos()))
+    {
+        index = logicalIndexAt( event->pos() );
+        text = model()->headerData(index, Qt::Horizontal).toString();
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
+
+        mimeData->setText(text);
+        drag->setMimeData(mimeData);
+        Qt::DropAction dropAction = drag->exec();
+//        qDebug() << "Initiating drag from headerview" << text;
+//        qDebug() << "return from drag->exec is" << dropAction;
+        if (dropAction != Qt::IgnoreAction)
+        {
+            qDebug() << "Emitting column dropped, table name = " << tableName;
+            emit columnDropped(tableName);
+        }
+
+    }
+    else
+        QHeaderView::mousePressEvent(event );
+}
+
+void DataFrameHeader::setTableName(QString name)
+{
+    tableName = name;
 }

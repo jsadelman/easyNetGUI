@@ -62,6 +62,9 @@ public:
     EasyNetMainWindow(QWidget *parent = 0);
 //    SessionManager *sessionManager;
 
+public slots:
+    void setRunAllMode(bool mode);
+    void loadTrial();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -70,13 +73,13 @@ signals:
 
 private slots:
     void save();
-    void about();
+//    void about();
     void updateTableView(QString text);
 
 //    void showViewMode(int viewModeInt);
     void newScriptFile();
     void newLogFile();
-    void open();
+    void loadScript();
     void setLazyNutIsReady(bool isReady);
     //bool save();
     //bool saveAs();
@@ -93,12 +96,10 @@ private slots:
     void showCmdOnStatusBar(QString cmd);
     void addOneToLazyNutProgressBar();
 
-    void runScript();
-    void runSelection();
     void runCmdAndUpdate(QStringList cmdList);
     void setEasyNetHome();
     void setLazyNutBat();
-    void showPauseState(bool isPaused);
+//    void showPauseState(bool isPaused);
     void getVersion();
 //    void showDocumentation();
 
@@ -106,14 +107,17 @@ private slots:
 //    void requestVersion();
     void displayVersion(QString version);
 
-    void updateStimuliView(QString text);
     void showDocumentation();
     void explorerTabChanged(int idx);
     void setParamDataFrame(QString name);
     void setParam(QString newParamValue);
+
+    void setSmallFont();
+    void setMediumFont();
     void setLargerFont();
     void afterModelLoaded();
     void tabChanged(int idx);
+    void runScript();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -157,6 +161,7 @@ private:
     QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
     QString         curFile;
     QString         scriptsDir;
+    QString         trialsDir;
     QString         stimDir;
     QString         easyNetHome = "";
     QString         paramDataFrame;
@@ -175,6 +180,7 @@ private:
     QTabWidget *outputPanel;
     QTabWidget *explorerPanel;
     MaxMinPanel* codePanelDock;
+    QDockWidget *visualiserDock;
 
     QListWidget* customerList;
     QListWidget* paragraphsList;
@@ -216,7 +222,6 @@ private:
     QComboBox       *modelComboBox;
     QComboBox       *trialComboBox;
     TrialWidget     *trialWidget;
-    QComboBox       *setComboBox;
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;
@@ -229,13 +234,14 @@ private:
     int             plotTabIdx;
     int             designTabIdx;
     int             conversionTabIdx;
+    int             scriptTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
     QMenu           *fileMenu;
-    QMenu           *runMenu;
+    QMenu           *fileSubMenu;
     QMenu           *settingsMenu;
-    QMenu           *aboutMenu;
+    QMenu           *settingsSubMenu;
     QMenu           *editMenu;
     QMenu           *viewMenu;
     QMenu           *helpMenu;
@@ -261,19 +267,19 @@ private:
 
     QAction         *newScriptAct;
     QAction         *newLogAct;
-    QAction         *openAct;
+    QAction         *loadScriptAct;
     QAction         *loadModelAct;
+    QAction         *loadTrialAct;
     QAction         *loadStimulusSetAct;
+    QAction         *importDataFrameAct;
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
-    QAction         *runScriptAct;
-    QAction         *runSelectionAct;
-    QAction         *stopAct;
-    QAction         *pauseAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
-    QAction         *setLargerFontAct;
+    QAction         *setSmallFontAct;
+    QAction         *setMediumFontAct;
+    QAction         *setLargeFontAct;
     QAction         *versionAct;
     QAction         *assistantAct;
 
@@ -282,11 +288,12 @@ private:
     QAction *saveAct;
     QAction *printAct;
     QAction *aboutAct;
-    QAction *aboutQtAct;
     QAction *quitAct;
 
     bool trialComboEventSwitch = false;
     bool test_gui;
+    bool runAllMode;
+//    enum runMode {RunSingle, RunAll};
 
 };
 

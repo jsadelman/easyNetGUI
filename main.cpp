@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
     QFont largerFont("Georgia", 16);
     QFont globalFont("Georgia", 10);
     a.setFont(globalFont);
-    EasyNetMainWindow w;
-    w.showMaximized();
+    EasyNetMainWindow mainWindow;
+    mainWindow.showMaximized();
 
     return a.exec();
 }

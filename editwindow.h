@@ -21,6 +21,9 @@ public:
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
 
+signals:
+    void runCmdAndUpdate(QStringList);
+
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
@@ -32,6 +35,8 @@ private slots:
     void documentWasModified();
     void addText(QString txt);
 
+    void runScript();
+    void runSelection();
 private:
     void createActions();
     void createMenus();
@@ -51,6 +56,7 @@ private:
     QMenu *helpMenu;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
+    QToolBar *runToolBar;
     QAction *newAct;
     QAction *openAct;
     QAction *saveAct;
@@ -60,6 +66,10 @@ private:
     QAction *copyAct;
     QAction *pasteAct;
     QAction *findAct;
+    QAction *runAct;
+    QAction *runSelectionAct;
+    QAction *stopAct;
+    QAction *pauseAct;
 
     bool isReadOnly;
     //bool    cutAllowed, pasteAllowed;
