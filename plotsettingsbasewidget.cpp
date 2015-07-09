@@ -275,6 +275,8 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 
 void PlotSettingsBaseWidget::emitValueChanged()
 {
+    qDebug() << "currentIndexChanged, PlotSettingsBaseWidget" << this
+             << "new index is" << static_cast<QComboBox*>(editDisplayWidget)->currentIndex();
     if (currentValue != getValue())
     {
         currentValue = getValue();
@@ -289,7 +291,7 @@ void PlotSettingsBaseWidget::getLevels()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->cmdList = QStringList({settingsElement["levels"]().prepend("xml ")});
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(qobject_cast<StringListModel*>(levelsListModel), SLOT(updateList(QStringList)));
     param->setEndOfJobReceiver(this, SIGNAL(levelsReady()));
@@ -407,6 +409,8 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
     valueSet = !settingsElement["value"]().isEmpty();
     connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
             this, SLOT(emitValueChanged()));
+//    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentTextChanged(QString)),
+//            this, SLOT(emitValueChanged()));
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);
     rawEditModeButton->setChecked(false);

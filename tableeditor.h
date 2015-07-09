@@ -80,12 +80,13 @@ private:
     QDialogButtonBox *buttonBox;
 //    QSqlTableModel *model;
     QStandardItemModel *model;
-    DataFrameModel *dfModel;
-    QTableView     *view;
-    QComboBox         *tableBox;
-    QLabel         *listTitle;
-    QStringList   list;
-    QWidget* widget;
+    DataFrameModel  *dfModel;
+    QTableView      *view;
+    QComboBox       *tableBox;
+    QLabel          *listTitle;
+    QStringList     list;
+    QWidget         *widget;
+    QString         currentTable;
 
     void createToolBars();
     void createActions();

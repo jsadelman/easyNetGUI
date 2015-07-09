@@ -13,6 +13,12 @@ class LazyNutConsole: public QGroupBox
 public:
     LazyNutConsole(QWidget *parent = 0);
 
+signals:
+    void historyKey(int dir);
+
+private slots:
+    void showHistory(QString line);
+
 private:
     CmdOutput* cmdOutput;
     InputCmdLine* inputCmdLine;

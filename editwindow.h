@@ -21,6 +21,7 @@ public:
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
 
+    QString getHistory(int shift);
 signals:
     void runCmdAndUpdate(QStringList);
 
@@ -73,6 +74,7 @@ private:
 
     bool isReadOnly;
     //bool    cutAllowed, pasteAllowed;
+    int currentLine;
 };
 
 

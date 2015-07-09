@@ -70,6 +70,8 @@ signals:
     void saveLayout();
     void viewModeClicked(int);
     void paramTabEntered(QString);
+    void newTableSelection(QString name);
+    void showHistory(QString line);
 
 private slots:
     void save();
@@ -118,6 +120,7 @@ private slots:
     void afterModelLoaded();
     void tabChanged(int idx);
     void runScript();
+    void processHistoryKey(int dir);
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -214,6 +217,7 @@ private:
     PlotWindow      *plotWindow;
     QSvgWidget      *plotViewer;
     TableEditor     *stimSetForm;
+    TableEditor     *dataframesWindow;
     TableEditor     *tablesWindow;
     TableEditor     *paramEdit;
     TableEditor     *debugLog;
@@ -235,6 +239,7 @@ private:
     int             designTabIdx;
     int             conversionTabIdx;
     int             scriptTabIdx;
+    int             outputTablesTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;

@@ -131,18 +131,24 @@ void EasyNetMainWindow::constructForms()
         conversionWindow = new DesignWindow(ObjectCatalogue::instance(), "representation", "conversion", this);
         connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
         connect(this,SIGNAL(saveLayout()),conversionWindow,SIGNAL(saveLayout()));
+        connect(lazyNutConsole,SIGNAL(historyKey(int)),
+                this,SLOT(processHistoryKey(int)));
+        connect(this,SIGNAL(showHistory(QString)),
+                lazyNutConsole,SLOT(showHistory(QString)));
+
 
     }
 
     scriptEdit = new EditWindow(this, newScriptAct, loadScriptAct, false);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
-    commandLog = new EditWindow(this, newLogAct, NULL, true); // no cut, no paste
+    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
     highlighter2 = new Highlighter(commandLog->textEdit->document());
     debugLog = new TableEditor ("Debug_log",this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
     stimSetForm = new TableEditor ("Stimuli",this);
     tablesWindow = new TableEditor (ObjectCatalogue::instance(),"Tables",this);
+    dataframesWindow = new TableEditor (ObjectCatalogue::instance(),"Dataframes",this);
     paramEdit = new TableEditor ("Parameters",this);
     plotViewer = new QSvgWidget(this);
 
@@ -165,7 +171,7 @@ void EasyNetMainWindow::constructForms()
         plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
         lazynutPanel->addTab(lazyNutConsole, tr("Console"));
         explorerPanel->addTab(objExplorer, tr("Objects"));
-        explorerPanel->addTab(tablesWindow, tr("Tables"));
+        explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
     }
     visualiserPanel->addTab(textEdit1, tr("Trial"));
     lazynutPanel->addTab(commandLog, tr("History"));
@@ -174,8 +180,8 @@ void EasyNetMainWindow::constructForms()
 
     paramTabIdx = explorerPanel->addTab(paramEdit, tr("Parameters"));
     stimSetTabIdx = outputPanel->addTab(stimSetForm, tr("Stimuli"));
-//    upperRightPanel->addTab(textViewer, tr("Help"));
-//    upperRightPanel->addTab(assistant, tr("Help"));
+    outputTablesTabIdx = outputPanel->addTab(tablesWindow, tr("Tables"));
+
 
     lazynutPanel->setMovable(true);
     // perhaps use this code for detachable tabs?
@@ -187,7 +193,7 @@ void EasyNetMainWindow::constructForms()
     connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
     connect (this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
-//    connect(paramEdit,SIGNAL(newTableSelection(QString)),this,SLOT(updateTableView(QString)));
+    connect(this,SIGNAL(newTableSelection(QString)),tablesWindow,SLOT(updateTableView(QString)));
     connect (paramEdit,SIGNAL(setParamDataFrameSignal(QString)),
              this,SLOT(setParamDataFrame(QString)));
     connect(paramEdit, SIGNAL(newParamValueSig(QString)),
@@ -349,7 +355,7 @@ void EasyNetMainWindow::initialiseToolBar()
 
 void EasyNetMainWindow::updateTableView(QString text)
 {
-    qDebug() << "Entered updateTableView with " << text;
+    qDebug() << "Entered EasyNetMainWindow updateTableView with " << text;
     if (!text.size())
         return;
     if (text=="Untitled")
@@ -363,7 +369,7 @@ void EasyNetMainWindow::updateTableView(QString text)
     qDebug() << "table is " << table;
 
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
+    param->logMode &= ECHO_INTERPRETER;
     param->cmdList = QStringList({QString("xml " + text + " get")});
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)));
@@ -500,8 +506,23 @@ void EasyNetMainWindow::runAllTrial()
     // andrews run_trials iam ldt
 
     // new version doesn't specify model
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER;
+    QStringList cmds;
     QString cmd = quietMode + currentTrial + stepCmd  + stimArg;
-    SessionManager::instance()->runCmd(cmd);
+    cmds << cmd;
+
+    // display table of means after running set
+    QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
+    cmd = QString("xml " + tableName + " get");
+    cmds << cmd;
+    param->answerFormatterType = AnswerFormatterType::XML;
+    param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
+    param->cmdList = cmds;
+    SessionManager::instance()->setupJob(param);
+    outputPanel->setCurrentIndex(outputTablesTabIdx);
+    tablesWindow->setTableText(tableName);
+
 }
 
 void EasyNetMainWindow::msgBox(QString msg)
@@ -817,7 +838,7 @@ void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
 void EasyNetMainWindow::getVersion()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
+    param->logMode &= ECHO_INTERPRETER;
     param->cmdList = QStringList({"version"});
     param->answerFormatterType = AnswerFormatterType::Identity;
     param->setAnswerReceiver(this, SLOT(displayVersion(QString)));
@@ -1291,3 +1312,8 @@ void EasyNetMainWindow::showViewMode(int viewModeInt)
 */
 
 
+void EasyNetMainWindow::processHistoryKey(int dir)
+{
+    QString line = commandLog->getHistory(dir);
+    emit showHistory(line);
+}

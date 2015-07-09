@@ -185,7 +185,7 @@ void PlotWindow::importHomonyms(QDomDocument *settingsList)
 void PlotWindow::sendDrawCmd()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({QString("%1 get").arg(currentPlot)});
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
@@ -290,7 +290,7 @@ void PlotWindow::setType(QString rScript)
 void PlotWindow::getSettingsXML()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({QString("xml %1 list_settings").arg(currentPlot)});
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SLOT(buildSettingsForm(QDomDocument*)));
@@ -335,7 +335,7 @@ void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
 void PlotWindow::getPlotType(QObject *nextJobReceiver, const char *nextJobSlot)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({QString("xml %1 description").arg(currentPlot)});
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SLOT(extractPlotType(QDomDocument*)));

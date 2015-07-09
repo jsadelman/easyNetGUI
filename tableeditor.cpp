@@ -72,8 +72,14 @@ void TableEditor::init(const QString &tableName, QWidget *parent)
     setCentralWidget(widget);
     QVBoxLayout* layout = new QVBoxLayout(widget);
     tableBox = new QComboBox(widget);
-//    tableBox->addItem(tableName);
-    tableBox->show();
+
+/*
+ *     editDisplayWidget = new QComboBox;
+    static_cast<QComboBox*>(editDisplayWidget)->setModel(levelsListModel);
+    setWidgetValue(raw2widgetValue(settingsElement["value"]()));
+    currentValue = settingsElement["value"]();
+    valueSet = !settingsElement["value"]().isEmpty();
+*/
     layout->addWidget(tableBox);
     connect(tableBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTableView(QString)));
 
@@ -158,7 +164,7 @@ void TableEditor::setFilter(QString type)
     objectListFilter = new ObjectCatalogueFilter(this);
     objectListFilter->setType(type);
     tableBox->setModel(objectListFilter);
-    tableBox->setModelColumn(0);
+//    tableBox->setModelColumn(0);
 //    tableBox->setSelectionMode(QAbstractItemView::SingleSelection);
 
 
@@ -490,14 +496,18 @@ bool TableEditor::dropMimeData(const QMimeData * data, Qt::DropAction action, in
 
 void TableEditor::updateTableView(QString text)
 {
-    qDebug() << "Entered updateTableView with " << text;
+    qDebug() << this << "Entered updateTableView with " << text;
+    qDebug() << "currentIndex = " << view->currentIndex();
     if (!text.size())
         return;
     if (text=="Untitled")
         return;
+    if (text==currentTable)
+        return;
 
+    currentTable = text;
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
+    param->logMode &= ECHO_INTERPRETER;
     param->cmdList = QStringList({QString("xml " + text + " get")});
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*)));
