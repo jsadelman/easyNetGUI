@@ -605,14 +605,14 @@ void DiagramScene::syncToObjCatalogue()
     QString name;
     QStringList newConnections{};
     // display new layers, hold new connections in a list
-    for (int row=0;row<objectFilter->columnCount();row++)
+    for (int row=0;row<objectFilter->rowCount();row++)
     {
         name = objectFilter->data(objectFilter->index(row,0)).toString();
         if ((objectFilter->data(objectFilter->index(row,1)).toString() == boxType) &&
             (!itemHash.contains(name)))
             positionObject(name, boxType, nullptr);
-        else if ((objectFilter->data(objectFilter->index(row,1)).toString() == arrowType) &&
-                (!itemHash.contains(name)))
+        else if ((objectFilter->data(objectFilter->index(row,1)).toString() == arrowType))
+//            &&   (!itemHash.contains(name)))
             newConnections << name;
     }
 

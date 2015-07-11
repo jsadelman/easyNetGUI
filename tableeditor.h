@@ -46,6 +46,7 @@ signals:
     void setParamDataFrameSignal(QString);
     void newParamValueSig(QString);
     void columnDropped(QString set);
+    void restoreComboBoxText();
     void newTableName(QString);
     void openFileRequest();
 

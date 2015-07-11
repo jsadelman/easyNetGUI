@@ -76,9 +76,15 @@ public slots:
         void setTableName(QString name);
 signals:
         void columnDropped(QString set);
+        void restoreComboBoxText();
+protected:
+        void mouseMoveEvent(QMouseEvent *event);
 private:
         QString tableName;
+        QPoint startPos;
+        QString text;
 
+        void performDrag();
 };
 
 #endif // DATAFRAMEMODEL_H

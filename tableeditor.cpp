@@ -46,6 +46,7 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
         DataFrameHeader* myHeader = new DataFrameHeader(view);
         view->setHorizontalHeader(myHeader);
         connect(myHeader, SIGNAL(columnDropped(QString)), this, SIGNAL(columnDropped(QString)));
+        connect(myHeader, SIGNAL(restoreComboBoxText()), this, SIGNAL(restoreComboBoxText()));
         connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
 
     }

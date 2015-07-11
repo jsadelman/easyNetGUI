@@ -31,3 +31,8 @@ void LazyNutConsole::showHistory(QString line)
 
 }
 
+void LazyNutConsole::setConsoleFontSize(int size)
+{
+    cmdOutput->setFont(QFont("Courier",size));
+}
+

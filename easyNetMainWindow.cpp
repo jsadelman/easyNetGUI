@@ -41,6 +41,8 @@
 #include "textedit.h"
 #include "helpwindow.h"
 #include "trialwidget.h"
+#include "commandlog.h"
+#include "scripteditor.h"
 
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -135,13 +137,12 @@ void EasyNetMainWindow::constructForms()
                 this,SLOT(processHistoryKey(int)));
         connect(this,SIGNAL(showHistory(QString)),
                 lazyNutConsole,SLOT(showHistory(QString)));
-
-
     }
 
-    scriptEdit = new EditWindow(this, newScriptAct, loadScriptAct, false);
+    scriptEdit = new ScriptEditor(this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
-    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
+//    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
+    commandLog = new CommandLog(this);
     highlighter2 = new Highlighter(commandLog->textEdit->document());
     debugLog = new TableEditor ("Debug_log",this);
 //    welcomeScreen = new QWebView(this);
@@ -201,6 +202,7 @@ void EasyNetMainWindow::constructForms()
     connect(plotWindow, SIGNAL(plot(QByteArray)),
             plotViewer,SLOT(load(QByteArray)));
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
+    connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
     connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
     connect(visualiserPanel, SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
     connect(trialWidget,SIGNAL(runAllModeChanged(bool)),this,SLOT(setRunAllMode(bool)));
@@ -255,26 +257,26 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
  void EasyNetMainWindow::createDockWindows()
 {
 
-    QDockWidget *dock = new QDockWidget("Explorer",this);
-//    dock->setAllowedAreas(Qt::RightDockWidgetArea);
-    dock->setWidget(explorerPanel);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
-    viewMenu->addAction(dock->toggleViewAction());
-    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
-    dock->hide(); // initially, don't show explorer dock
+    explorerDock = new QDockWidget("Explorer",this);
+//    explorerDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    explorerDock->setWidget(explorerPanel);
+    addDockWidget(Qt::RightDockWidgetArea, explorerDock);
+    viewMenu->addAction(explorerDock->toggleViewAction());
+    explorerDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+//    explorerDock->hide(); // initially, don't show explorer dock
 
-    dock = new QDockWidget(tr("Output"), this);
-    dock->setWidget(outputPanel);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
-    viewMenu->addAction(dock->toggleViewAction());
-    dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+    outputDock = new QDockWidget(tr("Output"), this);
+    outputDock->setWidget(outputPanel);
+    addDockWidget(Qt::RightDockWidgetArea, outputDock);
+    viewMenu->addAction(outputDock->toggleViewAction());
+    outputDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
     codePanelDock = new MaxMinPanel(tr("lazyNut Code"),this);
     codePanelDock->setWidget(lazynutPanel);
     addDockWidget(Qt::LeftDockWidgetArea, codePanelDock);
     viewMenu->addAction(codePanelDock->toggleViewAction());
     codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
-    codePanelDock->hide(); // initially, don't show codePanelDock
+//    codePanelDock->hide(); // initially, don't show codePanelDock
 
     visualiserDock = new QDockWidget(tr("Visualiser"), this);
     visualiserDock->setWidget(visualiserPanel);
@@ -282,6 +284,8 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
     viewMenu->addAction(visualiserDock->toggleViewAction());
     visualiserDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
+    tabifyDockWidget(codePanelDock, visualiserDock);
+    tabifyDockWidget(explorerDock, outputDock);
 }
 
 
@@ -619,6 +623,38 @@ void EasyNetMainWindow::loadTrial()
     }
 }
 
+
+void EasyNetMainWindow::loadAddOn()
+{
+    // bring up file dialog
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Load add-on"),
+                                                    scriptsDir,
+                                                    tr("Add-ons (*.eNa)"));
+    if (!fileName.isEmpty())
+    {
+        // load and run script
+        loadFile(fileName);
+
+//        // load JSON file, if it exists
+//        QFileInfo fi(fileName);
+//        QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+
+//        // set up signal - slots so that loadLayout will be called
+//        // once all of the layers/connections have descriptions
+//        designWindow->prepareToLoadLayout(base);
+//        conversionWindow->prepareToLoadLayout(base);
+
+//        // show info page, if there is one
+//        QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+//        page.append(".html");
+//        qDebug() << "page = " << page;
+//        if (QFileInfo(page).exists())
+//            infoWindow->showInfo(page);
+
+        runScript();
+    }
+}
+
 void EasyNetMainWindow::loadStimulusSet()
 {
     // bring up file dialog
@@ -871,18 +907,22 @@ void EasyNetMainWindow::setSmallFont()
 {
     QFont smallFont("Georgia", 10);
     QApplication::setFont(smallFont);
+    lazyNutConsole->setConsoleFontSize(10);
+
 }
 
 void EasyNetMainWindow::setMediumFont()
 {
     QFont mediumFont("Georgia", 12);
     QApplication::setFont(mediumFont);
+    lazyNutConsole->setConsoleFontSize(12);
 }
 
 void EasyNetMainWindow::setLargerFont()
 {
     QFont largerFont("Georgia", 16);
     QApplication::setFont(largerFont);
+    lazyNutConsole->setConsoleFontSize(16);
 }
 
 //void EasyNetMainWindow::showPauseState(bool isPaused)
@@ -935,6 +975,11 @@ void EasyNetMainWindow::createActions()
 //    loadTrialAct->setShortcuts(QKeySequence::Open);
     loadTrialAct->setStatusTip(tr("Load a previously specified trial"));
     connect(loadTrialAct, SIGNAL(triggered()), this, SLOT(loadTrial()));
+
+    loadAddOnAct = new QAction(QIcon(":/images/add-on.png"), tr("&Load add-on"), this);
+//    loadAddOnAct->setShortcuts(QKeySequence::Open);
+    loadAddOnAct->setStatusTip(tr("Load an add-on to extend the model"));
+    connect(loadAddOnAct, SIGNAL(triggered()), this, SLOT(loadAddOn()));
 
     importDataFrameAct = new QAction(QIcon(":/images/list-2x.png"), tr("&Import dataframe"), this);
 //    importDataFrameAct->setShortcuts(QKeySequence::Open);
@@ -999,6 +1044,7 @@ void EasyNetMainWindow::createMenus()
     fileSubMenu = fileMenu->addMenu(tr("&Load"));
     fileSubMenu->addAction(loadModelAct);
     fileSubMenu->addAction(loadTrialAct);
+    fileSubMenu->addAction(loadAddOnAct);
     fileSubMenu->addAction(loadStimulusSetAct);
     fileSubMenu->addAction(loadScriptAct);
     fileSubMenu->addAction(importDataFrameAct);
@@ -1314,6 +1360,8 @@ void EasyNetMainWindow::showViewMode(int viewModeInt)
 
 void EasyNetMainWindow::processHistoryKey(int dir)
 {
+    qDebug() << "processHistoryKey" << dir;
     QString line = commandLog->getHistory(dir);
+    qDebug() << "processHistoryKey string = " << line;
     emit showHistory(line);
 }

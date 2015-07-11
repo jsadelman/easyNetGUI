@@ -96,11 +96,13 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     for (int i=0;i<args.count();i++)
     {
         argumentMap[args[i]] = new myComboBox(this); // new QComboBox(this);
+        argumentMap[args[i]]->setArg(args[i]);
         argumentMap[args[i]]->setEditable(true);
         argumentMap[args[i]]->setSizeAdjustPolicy(QComboBox::AdjustToContents);
         argumentMap[args[i]]->setMinimumSize(100, argumentMap[args[i]]->minimumHeight());
         argumentMap[args[i]]->acceptDrops();
         connect(argumentMap[args[i]], SIGNAL(editTextChanged(QString)),this,SLOT(setRunButtonIcon()));
+        connect(argumentMap[args[i]], SIGNAL(argWasChanged(QString)),this,SLOT(argWasChanged(QString)));
 
         labelList.push_back(new QLabel(args[i]+":"));
         layout2->addWidget(labelList[i]);
@@ -122,6 +124,11 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     setLayout(layout);
 
     hideSetComboBox();
+}
+
+void TrialWidget::argWasChanged(QString arg)
+{
+    argChanged = arg;
 }
 
 void TrialWidget::clearLayout(QLayout *layout)
@@ -152,13 +159,13 @@ void TrialWidget::clearLayout(QLayout *layout)
 QString TrialWidget::getTrialCmd()
 {
     QString cmd;
-    QMap<QString, QComboBox*>::const_iterator i = argumentMap.constBegin();
+    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
     while (i != argumentMap.constEnd())
     {
         cmd += " ";
         cmd += i.key();
         cmd += "=";
-        cmd += static_cast<QComboBox*>(argumentMap[i.key()])->currentText();
+        cmd += static_cast<myComboBox*>(argumentMap[i.key()])->currentText();
         ++i;
     }
     return (cmd);
@@ -168,10 +175,10 @@ QString TrialWidget::getTrialCmd()
 
 bool TrialWidget::checkIfReadyToRun()
 {
-    QMap<QString, QComboBox*>::const_iterator i = argumentMap.constBegin();
+    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
     while (i != argumentMap.constEnd())
     {
-        if (static_cast<QComboBox*>(argumentMap[i.key()])->currentText().isEmpty())
+        if (static_cast<myComboBox*>(argumentMap[i.key()])->currentText().isEmpty())
             return false;
         i++;
     }
@@ -214,6 +221,15 @@ void TrialWidget::showSetLabel(QString set)
     showSetComboBox();
     setComboBox->addItem(set);
     setComboBox->setCurrentIndex(setComboBox->findData(set,Qt::DisplayRole));
+
+}
+
+void TrialWidget::restoreComboBoxText()
+{
+    qDebug() << "Entered restoreComboBoxText";
+    qDebug() << "combobox is" << static_cast<myComboBox*>(argumentMap[argChanged]);
+    qDebug() << "combobox text should be" << static_cast<myComboBox*>(argumentMap[argChanged])->savedComboBoxText;
+    static_cast<myComboBox*>(argumentMap[argChanged])->restoreComboBoxText();
 
 }
 

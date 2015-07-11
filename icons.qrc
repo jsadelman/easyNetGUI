@@ -130,5 +130,6 @@
         <file>images/run_all_disabled.png</file>
         <file>images/run_all_enabled.png</file>
         <file>images/run_disabled.png</file>
+        <file>images/add-on.png</file>
     </qresource>
 </RCC>

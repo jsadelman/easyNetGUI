@@ -1,5 +1,6 @@
 #include <QtDebug>
 #include <QtGui>
+#include <QApplication>
 #include "dataframemodel.h"
 
 
@@ -123,6 +124,16 @@ DataFrameHeader::DataFrameHeader(QWidget *parent)
 
 void DataFrameHeader::mousePressEvent(QMouseEvent *event)
 {
+    if (event->button() == Qt::LeftButton)
+    {
+        startPos = event->pos();
+        int index = logicalIndexAt( event->pos() );
+        text = model()->headerData(index, Qt::Horizontal).toString();
+    }
+    QHeaderView::mousePressEvent(event );
+
+
+/*
     //QByteArray itemData;
     //QDataStream dataStream(&itemData, QIODevice::WriteOnly);
     //dataStream << QPoint(event->pos() - child->pos());
@@ -151,6 +162,33 @@ void DataFrameHeader::mousePressEvent(QMouseEvent *event)
     }
     else
         QHeaderView::mousePressEvent(event );
+*/
+}
+
+void DataFrameHeader::mouseMoveEvent(QMouseEvent *event)
+{
+    if (event->buttons() & Qt::LeftButton)
+    {
+        int distance = (event->pos() - startPos).manhattanLength();
+        if (distance >= QApplication::startDragDistance())
+            performDrag();
+    }
+    QHeaderView::mouseMoveEvent(event);
+}
+
+void DataFrameHeader::performDrag()
+{
+    QDrag *drag = new QDrag(this);
+    QMimeData *mimeData = new QMimeData;
+    mimeData->setText(text);
+    drag->setMimeData(mimeData);
+    if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
+    {
+        qDebug() << "moved header";
+        emit columnDropped(tableName);
+    }
+    else
+        emit restoreComboBoxText();
 }
 
 void DataFrameHeader::setTableName(QString name)

@@ -39,11 +39,13 @@ private slots:
     void hideSetComboBox();
     void showSetComboBox();
     void showSetLabel(QString set);
+    void restoreComboBoxText();
+    void argWasChanged(QString arg);
 private:
 
     ObjectCatalogueFilter* trialFilter;
     DescriptionUpdater* trialDescriptionUpdater;
-    QMap <QString, QComboBox*> argumentMap;
+    QMap <QString, myComboBox*> argumentMap;
     QVector <QLabel*> labelList;
 
     QComboBox*      setComboBox;
@@ -56,6 +58,7 @@ private:
     QAction*        runAction;
     QToolButton*    runButton;
     QAction*        hideSetComboBoxAction;
+    QString         argChanged;
 
 
 

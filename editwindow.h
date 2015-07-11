@@ -18,10 +18,27 @@ class EditWindow : public QMainWindow
 public:
     EditWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool isReadOnly = false);
     CodeEditor      *textEdit;
+    QMenu *fileMenu;
+    QToolBar *fileToolBar;
+    QToolBar *editToolBar;
+    QAction *newAct;
+    QAction *openAct;
+    QAction *saveAct;
+    QAction *saveAsAct;
+    QAction *exitAct;
+    QAction *cutAct;
+    QAction *copyAct;
+    QAction *pasteAct;
+    QAction *findAct;
+    QAction *stopAct;
+    QAction *pauseAct;
+
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
 
-    QString getHistory(int shift);
+public slots:
+    void addText(QString txt);
+
 signals:
     void runCmdAndUpdate(QStringList);
 
@@ -34,10 +51,7 @@ private slots:
     bool save();
     bool saveAs();
     void documentWasModified();
-    void addText(QString txt);
 
-    void runScript();
-    void runSelection();
 private:
     void createActions();
     void createMenus();
@@ -52,29 +66,11 @@ private:
 //    QPlainTextEdit *textEdit;
     QString curFile;
 
-    QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *helpMenu;
-    QToolBar *fileToolBar;
-    QToolBar *editToolBar;
-    QToolBar *runToolBar;
-    QAction *newAct;
-    QAction *openAct;
-    QAction *saveAct;
-    QAction *saveAsAct;
-    QAction *exitAct;
-    QAction *cutAct;
-    QAction *copyAct;
-    QAction *pasteAct;
-    QAction *findAct;
-    QAction *runAct;
-    QAction *runSelectionAct;
-    QAction *stopAct;
-    QAction *pauseAct;
 
     bool isReadOnly;
     //bool    cutAllowed, pasteAllowed;
-    int currentLine;
 };
 
 

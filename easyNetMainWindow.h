@@ -25,6 +25,8 @@ class AsLazyNutObject;
 typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
 class ObjectCatalogue;
 class EditWindow;
+class CommandLog;
+class ScriptEditor;
 class Highlighter;
 class PlotWindow;
 class ObjectCatalogueFilter;
@@ -65,6 +67,7 @@ public:
 public slots:
     void setRunAllMode(bool mode);
     void loadTrial();
+    void loadAddOn();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -184,6 +187,8 @@ private:
     QTabWidget *explorerPanel;
     MaxMinPanel* codePanelDock;
     QDockWidget *visualiserDock;
+    QDockWidget *explorerDock;
+    QDockWidget *outputDock;
 
     QListWidget* customerList;
     QListWidget* paragraphsList;
@@ -206,9 +211,10 @@ private:
     QWebView        *welcomeScreen;
     QWebView        *webWelcomeScreen;
 //    CodeEditor      *scriptEdit;
-    EditWindow       *scriptEdit;
+    ScriptEditor       *scriptEdit;
 //    CodeEditor      *commandLog;
-    EditWindow       *commandLog;
+//    EditWindow       *commandLog;
+    CommandLog       *commandLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
 //    LazyNutScriptEditor  *scriptEditor;
@@ -275,6 +281,7 @@ private:
     QAction         *loadScriptAct;
     QAction         *loadModelAct;
     QAction         *loadTrialAct;
+    QAction         *loadAddOnAct;
     QAction         *loadStimulusSetAct;
     QAction         *importDataFrameAct;
 //    QAction         *saveAct;

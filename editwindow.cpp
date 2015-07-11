@@ -4,7 +4,6 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#include <QTextCursor>
 
 
 #include "editwindow.h"
@@ -156,20 +155,6 @@ void EditWindow::createActions()
     findAct->setEnabled(false);
 */
 
-    runAct = new QAction(QIcon(":/images/media-play-3x.png"), tr("&Run"), this);
-//    runAct->setShortcuts(QKeySequence::New);
-    runAct->setStatusTip(tr("Run script"));
-    connect(runAct, SIGNAL(triggered()), this, SLOT(runScript()));
-
-    runSelectionAct = new QAction(QIcon(":/images/reload-2x.png"),tr("Run se&lection"), this);
-    runSelectionAct->setStatusTip(tr("Run selected text"));
-    connect(runSelectionAct,SIGNAL(triggered()),this, SLOT(runSelection()));
-
-    stopAct = new QAction("STOP",this);
-//    connect(stopAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(stop()));
-    pauseAct = new QAction("PAUSE",this);
-//    connect(pauseAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(pause()));
-//    connect(SessionManager::instance(),SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));
 
 }
 
@@ -215,10 +200,6 @@ void EditWindow::createToolBars()
     if (!isReadOnly)
         editToolBar->addAction(pasteAct);
 
-    runToolBar = addToolBar(tr("Run"));
-    runToolBar->addAction(runAct);
-    runToolBar->addAction(runSelectionAct);
-//    runToolBar->addAction(pasteAct);
 
 }
 
@@ -336,81 +317,5 @@ void EditWindow::addText(QString txt)
     textEdit->moveCursor(QTextCursor::End);
     textEdit->appendPlainText(txt);
     textEdit->moveCursor(QTextCursor::End);
-    currentLine = 1+textEdit->document()->blockCount();
 }
 
-void EditWindow::runScript()
-{
-    emit runCmdAndUpdate(textEdit->getAllText());
-}
-
-void EditWindow::runSelection()
-{
-    emit runCmdAndUpdate(textEdit->getSelectedText());
-}
-
-QString EditWindow::getHistory(int shift)
-{
-    QTextCursor *cursor = new QTextCursor(textEdit->document());
-    qDebug() << "Entered getHistory: line = " << currentLine << "pos = " << cursor->position();
-    QString line = "";
-    cursor->movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,currentLine-1);
-    cursor->movePosition(QTextCursor::StartOfLine);
-    qDebug() << "attempted move to start of current line: line = " << currentLine << "pos = " << cursor->position();
-    if (shift<0)
-    {
-        qDebug() << "Subtracting 1 from currentLine";
-        currentLine--;
-        if (currentLine==0)
-        {
-            qDebug() << "looping and returning to last line: line = " << currentLine;
-            currentLine = 1+textEdit->document()->blockCount();
-            return("");
-        }
-        else if (currentLine==textEdit->document()->blockCount())
-        {
-            qDebug() << "on last line; end, then up: line = " << currentLine << "pos = " << cursor->position();
-            cursor->movePosition(QTextCursor::EndOfLine);
-            cursor->movePosition(QTextCursor::Up, QTextCursor::KeepAnchor, abs(shift));
-        }
-        else
-        {
-            qDebug() << "attempting move up one line: line = " << currentLine << "pos = " << cursor->position();
-            cursor->movePosition(QTextCursor::Up, QTextCursor::KeepAnchor, abs(shift));
-            cursor->movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor, abs(shift));
-        }
-        line=cursor->selectedText();
-        cursor->movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-        qDebug() << "attempted move to start of line: line = " << currentLine << "pos = " << cursor->position();
-    }
-    if (shift>0) // cursor down
-    {
-        if (currentLine>0)
-            currentLine++;
-        if (currentLine==(1+textEdit->document()->blockCount()))
-        {
-//            qDebug() << "on last line, just capturing the end: line = " << currentLine;
-//            cursor->movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor, abs(shift));
-            qDebug() << "on last line, return blank: line = " << currentLine;
-            return("");
-
-        }
-        else if (currentLine>(textEdit->document()->blockCount()))
-        {
-            qDebug() << "looping round, grab first line: line = " << currentLine;
-            currentLine=1;
-            cursor->movePosition(QTextCursor::Start);
-            cursor->movePosition(QTextCursor::Down, QTextCursor::KeepAnchor, abs(shift));
-        }
-        else
-        {
-            if (currentLine>0)
-                cursor->movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, 1);
-            cursor->movePosition(QTextCursor::StartOfLine);
-            cursor->movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-        }
-        qDebug() << "attempted move down one line: line = " << currentLine;
-        line=cursor->selectedText();
-    }
-    return(line.trimmed());
-}
