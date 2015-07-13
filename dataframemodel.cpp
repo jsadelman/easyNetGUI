@@ -187,7 +187,7 @@ void DataFrameHeader::performDrag()
         qDebug() << "moved header";
         emit columnDropped(tableName);
     }
-    else
+    else // may need a condition here to check if there has been a drop already?
         emit restoreComboBoxText();
 }
 

@@ -126,6 +126,7 @@ private slots:
     void tabChanged(int idx);
     void runScript();
     void processHistoryKey(int dir);
+    void setQuietMode();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -173,6 +174,7 @@ private:
     QString         stimDir;
     QString         easyNetHome = "";
     QString         paramDataFrame;
+    QString         quietMode;
 
     QStringList     modelList;
     QStringList     trialList;
@@ -298,6 +300,7 @@ private:
     QAction         *setLargeFontAct;
     QAction         *versionAct;
     QAction         *assistantAct;
+    QAction         *setQuietModeAct;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

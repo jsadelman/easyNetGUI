@@ -471,7 +471,6 @@ void EasyNetMainWindow::runTrial()
         return;
     }
 
-    QString quietMode = "quietly ";
     QString stepCmd  = " step ";
     QString modelArg = QString(" model=") + currentModel;
 
@@ -508,7 +507,6 @@ void EasyNetMainWindow::runAllTrial()
         return;
     }
 
-    QString quietMode = "quietly ";
     QString stepCmd  = " run_set "; // " run_trials ";
 //    QString modelArg = currentModel + QString(" ");
     QString stimArg = trialWidget->getStimulusSet(); // stimulusSet;
@@ -534,6 +532,14 @@ void EasyNetMainWindow::runAllTrial()
     outputPanel->setCurrentIndex(outputTablesTabIdx);
     tablesWindow->setTableText(tableName);
 
+}
+
+void EasyNetMainWindow::setQuietMode()
+{
+    if (setQuietModeAct->isChecked())
+        quietMode = "quietly ";
+    else
+        quietMode = "";
 }
 
 void EasyNetMainWindow::msgBox(QString msg)
@@ -1036,6 +1042,11 @@ void EasyNetMainWindow::createActions()
     assistantAct->setShortcut(QKeySequence::HelpContents);
     connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
 
+    setQuietModeAct = new QAction(tr("Quiet mode"), this);
+    setQuietModeAct->setCheckable(true);
+    connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
+    setQuietModeAct->setChecked(true);
+
 
 }
 
@@ -1070,6 +1081,8 @@ void EasyNetMainWindow::createMenus()
     settingsSubMenu->addAction(setSmallFontAct);
     settingsSubMenu->addAction(setMediumFontAct);
     settingsSubMenu->addAction(setLargeFontAct);
+    settingsMenu->addSeparator();
+    settingsMenu->addAction(setQuietModeAct);
 
 //    settingsMenu->addAction(synchModeAct);
 

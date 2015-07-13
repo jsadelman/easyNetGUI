@@ -227,9 +227,14 @@ void TrialWidget::showSetLabel(QString set)
 void TrialWidget::restoreComboBoxText()
 {
     qDebug() << "Entered restoreComboBoxText";
-    qDebug() << "combobox is" << static_cast<myComboBox*>(argumentMap[argChanged]);
-    qDebug() << "combobox text should be" << static_cast<myComboBox*>(argumentMap[argChanged])->savedComboBoxText;
-    static_cast<myComboBox*>(argumentMap[argChanged])->restoreComboBoxText();
+    if (argChanged.isEmpty())
+        return;
+    if (argumentMap.isEmpty())
+        return;
+    myComboBox* box = static_cast<myComboBox*>(argumentMap[argChanged]);
+    qDebug() << "combobox is" << box;
+    qDebug() << "combobox text should be" << box->savedComboBoxText;
+    box->restoreComboBoxText();
 
 }
 
