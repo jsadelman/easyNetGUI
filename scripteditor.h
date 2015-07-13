@@ -17,7 +17,7 @@ class ScriptEditor : public EditWindow
     friend class EasyNetMainWindow;
 
 public:
-    ScriptEditor(QWidget *parent = 0);
+    ScriptEditor(QString _startDir, QWidget *parent = 0);
     ~ScriptEditor();
 
     QToolBar *runToolBar;

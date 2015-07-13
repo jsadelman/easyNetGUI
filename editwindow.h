@@ -2,6 +2,7 @@
 #define EDITWINDOW
 
 #include <QMainWindow>
+#include <QTextDocument>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -9,6 +10,9 @@ class QMenu;
 class QPlainTextEdit;
 class CodeEditor;
 class EasyNetMainWindow;
+class FindDialog;
+
+class QFlag;
 QT_END_NAMESPACE
 
 class EditWindow : public QMainWindow
@@ -18,6 +22,7 @@ class EditWindow : public QMainWindow
 public:
     EditWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool isReadOnly = false);
     CodeEditor      *textEdit;
+//    QPlainTextEdit      *textEdit;
     QMenu *fileMenu;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
@@ -32,6 +37,7 @@ public:
     QAction *findAct;
     QAction *stopAct;
     QAction *pauseAct;
+    QString startDir;
 
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
@@ -39,6 +45,8 @@ public:
 public slots:
     void addText(QString txt);
 
+    void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
+    void findBackward(const QString &str, QFlags<QTextDocument::FindFlag> flags );
 signals:
     void runCmdAndUpdate(QStringList);
 
@@ -51,6 +59,7 @@ private slots:
     bool save();
     bool saveAs();
     void documentWasModified();
+    void showFindDialog();
 
 private:
     void createActions();
@@ -68,6 +77,7 @@ private:
 
     QMenu *editMenu;
     QMenu *helpMenu;
+    FindDialog* findDialog;
 
     bool isReadOnly;
     //bool    cutAllowed, pasteAllowed;

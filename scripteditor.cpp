@@ -2,8 +2,10 @@
 #include "codeeditor.h"
 #include <QAction>
 #include <QToolBar>
+#include <QTextCursor>
+#include <QDebug>
 
-ScriptEditor::ScriptEditor(QWidget *parent)
+ScriptEditor::ScriptEditor(QString _startDir, QWidget *parent)
     : EditWindow(parent)
 {
     runAct = new QAction(QIcon(":/images/media-play-3x.png"), tr("&Run"), this);
@@ -26,6 +28,8 @@ ScriptEditor::ScriptEditor(QWidget *parent)
     runToolBar->addAction(runSelectionAct);
 //    runToolBar->addAction(pasteAct);
 
+    startDir = _startDir;
+
 }
 
 ScriptEditor::~ScriptEditor()
@@ -40,7 +44,20 @@ void ScriptEditor::runScript()
 
 void ScriptEditor::runSelection()
 {
-    emit runCmdAndUpdate(textEdit->getSelectedText());
+    QTextCursor *cursor = new QTextCursor(textEdit->document());
+    if (cursor->selectedText().trimmed().isEmpty())
+    {
+        qDebug() << "runSelection -- nothing selected";
+        qDebug() << "runSelection -- cursorPos" << cursor->position();
+        cursor->movePosition(QTextCursor::StartOfLine);
+        qDebug() << "runSelection -- cursorPos" << cursor->position();
+        cursor->movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+        qDebug() << "runSelection -- cursorPos" << cursor->position();
+        qDebug() << "runSelection -- selected:" << textEdit->getCurrentLine();
+        emit runCmdAndUpdate(QStringList(textEdit->getCurrentLine()));
+    }
+    else
+        emit runCmdAndUpdate(textEdit->getSelectedText());
 }
 
 

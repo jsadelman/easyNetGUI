@@ -43,6 +43,8 @@
 #include "trialwidget.h"
 #include "commandlog.h"
 #include "scripteditor.h"
+#include "console.h"
+#include "debuglog.h"
 
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -125,7 +127,8 @@ void EasyNetMainWindow::constructForms()
 
     if (!test_gui)
     {
-        lazyNutConsole = new LazyNutConsole(this);
+//        lazyNutConsole = new LazyNutConsole(this);
+        lazyNutConsole2 = new Console(this);
         plotWindow = new PlotWindow(this);
 
         objExplorer = new ObjExplorer(ObjectCatalogue::instance(),this);
@@ -133,18 +136,19 @@ void EasyNetMainWindow::constructForms()
         conversionWindow = new DesignWindow(ObjectCatalogue::instance(), "representation", "conversion", this);
         connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
         connect(this,SIGNAL(saveLayout()),conversionWindow,SIGNAL(saveLayout()));
-        connect(lazyNutConsole,SIGNAL(historyKey(int)),
+        connect(lazyNutConsole2,SIGNAL(historyKey(int)),
                 this,SLOT(processHistoryKey(int)));
         connect(this,SIGNAL(showHistory(QString)),
-                lazyNutConsole,SLOT(showHistory(QString)));
+                lazyNutConsole2,SLOT(showHistory(QString)));
     }
 
-    scriptEdit = new ScriptEditor(this);
+    scriptEdit = new ScriptEditor(scriptsDir, this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
     commandLog = new CommandLog(this);
     highlighter2 = new Highlighter(commandLog->textEdit->document());
-    debugLog = new TableEditor ("Debug_log",this);
+//    highlighter3 = new Highlighter(lazyNutConsole2->textEdit->document());
+    debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
     stimSetForm = new TableEditor ("Stimuli",this);
@@ -170,7 +174,8 @@ void EasyNetMainWindow::constructForms()
         conversionTabIdx = visualiserPanel->addTab(conversionWindow, tr("Conversions"));
         visualiserPanel->addTab(plotWindow, tr("Plot settings"));
         plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
-        lazynutPanel->addTab(lazyNutConsole, tr("Console"));
+//        lazynutPanel->addTab(lazyNutConsole, tr("Console"));
+        lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
         explorerPanel->addTab(objExplorer, tr("Objects"));
         explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
     }
@@ -207,6 +212,8 @@ void EasyNetMainWindow::constructForms()
     connect(visualiserPanel, SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
     connect(trialWidget,SIGNAL(runAllModeChanged(bool)),this,SLOT(setRunAllMode(bool)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
+    connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
+            lazyNutConsole2,SLOT(addText(QString)));
 
 
     visualiserPanel->setCurrentIndex(conversionTabIdx);
@@ -271,7 +278,7 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
     viewMenu->addAction(outputDock->toggleViewAction());
     outputDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-    codePanelDock = new MaxMinPanel(tr("lazyNut Code"),this);
+    codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
     codePanelDock->setWidget(lazynutPanel);
     addDockWidget(Qt::LeftDockWidgetArea, codePanelDock);
     viewMenu->addAction(codePanelDock->toggleViewAction());
@@ -907,7 +914,7 @@ void EasyNetMainWindow::setSmallFont()
 {
     QFont smallFont("Georgia", 10);
     QApplication::setFont(smallFont);
-    lazyNutConsole->setConsoleFontSize(10);
+    lazyNutConsole2->setConsoleFontSize(10);
 
 }
 
@@ -915,14 +922,14 @@ void EasyNetMainWindow::setMediumFont()
 {
     QFont mediumFont("Georgia", 12);
     QApplication::setFont(mediumFont);
-    lazyNutConsole->setConsoleFontSize(12);
+    lazyNutConsole2->setConsoleFontSize(12);
 }
 
 void EasyNetMainWindow::setLargerFont()
 {
     QFont largerFont("Georgia", 16);
     QApplication::setFont(largerFont);
-    lazyNutConsole->setConsoleFontSize(16);
+    lazyNutConsole2->setConsoleFontSize(16);
 }
 
 //void EasyNetMainWindow::showPauseState(bool isPaused)

@@ -4,10 +4,12 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#include <QPlainTextEdit>
 
 
 #include "editwindow.h"
 #include "codeeditor.h"
+#include "finddialog.h"
 
 EditWindow::EditWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, bool isReadOnly)
     : QMainWindow(parent), isReadOnly(isReadOnly)
@@ -18,6 +20,7 @@ EditWindow::EditWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, b
     setCentralWidget(textEdit);
     textEdit->setReadOnly(isReadOnly);
     setCurrentFile("Untitled");
+    startDir="";
 
 //    newAct = p_newAct;
 //    openAct = p_openAct;
@@ -36,6 +39,14 @@ EditWindow::EditWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, b
 
     setCurrentFile("");
     setUnifiedTitleAndToolBarOnMac(true);
+
+    findDialog = new FindDialog;
+    connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
+            this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
+    connect(findDialog, SIGNAL(findBackward(QString, QFlags<QTextDocument::FindFlag>)),
+            this, SLOT(findBackward(QString, QFlags<QTextDocument::FindFlag>)));
+
+
 }
 
 void EditWindow::closeEvent(QCloseEvent *event)
@@ -58,8 +69,10 @@ void EditWindow::newFile()
 
 void EditWindow::open()
 {
-    if (maybeSave()) {
-        QString fileName = QFileDialog::getOpenFileName(this);
+    if (maybeSave())
+    {
+        // bring up file dialog
+        QString fileName = QFileDialog::getOpenFileName(this,"",startDir);
         if (!fileName.isEmpty())
             loadFile(fileName);
     }
@@ -148,15 +161,17 @@ void EditWindow::createActions()
     connect(pasteAct, SIGNAL(triggered()), textEdit, SLOT(paste()));
     }
 
-/*    findAct = new QAction(QIcon(":/images/find.png"), tr("&Find"), this);
-    copyAct->setShortcuts(QKeySequence::Find);
-//    copyAct->setStatusTip(tr("Find text in this window"));
-    connect(findAct, SIGNAL(triggered()), textEdit, SLOT(find()));
-    findAct->setEnabled(false);
-*/
+    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    findAct->setToolTip(tr("Find text in this window"));
+    connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+    findAct->setEnabled(true);
+
 
 
 }
+
+
 
 /*
 void editWindow::createMenus()
@@ -199,6 +214,7 @@ void EditWindow::createToolBars()
     editToolBar->addAction(copyAct);
     if (!isReadOnly)
         editToolBar->addAction(pasteAct);
+    editToolBar->addAction(findAct);
 
 
 }
@@ -319,3 +335,42 @@ void EditWindow::addText(QString txt)
     textEdit->moveCursor(QTextCursor::End);
 }
 
+
+void EditWindow::showFindDialog()
+{
+    findDialog->show();
+    findDialog->raise();
+    findDialog->activateWindow();
+}
+
+void EditWindow::findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags)
+{
+    qDebug() << "findForward";
+    bool result = textEdit->find(str, flags);
+    if (!result)
+    {
+        textEdit->moveCursor(QTextCursor::Start);
+        result = textEdit->find(str, flags);
+        if (!result)
+        {
+            QMessageBox::warning(this, "Find",QString("The text was not found"));
+            findDialog->hide();
+        }
+    }
+}
+
+void EditWindow::findBackward(const QString &str, QFlags<QTextDocument::FindFlag> flags)
+{
+    qDebug() << "findBackward";
+    bool result = textEdit->find(str,flags);
+    if (!result)
+    {
+        textEdit->moveCursor(QTextCursor::End);
+        result = textEdit->find(str,flags);
+        if (!result)
+        {
+            QMessageBox::warning(this, "Find",QString("The text was not found"));
+            findDialog->hide();
+        }
+    }
+}

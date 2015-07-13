@@ -16,6 +16,7 @@
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
+#include "finddialog.h"
 
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
@@ -50,6 +51,7 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
         connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
 
     }
+
 
 }
 
@@ -233,13 +235,12 @@ void TableEditor::createActions()
 //    connect(pasteAct, SIGNAL(triggered()), textEdit, SLOT(paste()));
 //    }
 
-/*    findAct = new QAction(QIcon(":/images/find.png"), tr("&Find"), this);
-    copyAct->setShortcuts(QKeySequence::Find);
-//    copyAct->setStatusTip(tr("Find text in this window"));
-    connect(findAct, SIGNAL(triggered()), textEdit, SLOT(find()));
-    findAct->setEnabled(false);
-*/
 
+    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    findAct->setToolTip(tr("Find text in this table"));
+    connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+    findAct->setEnabled(true);
 
 }
 
@@ -258,6 +259,7 @@ void TableEditor::createToolBars()
     editToolBar->addAction(copyAct);
 //    if (!isReadOnly)
 //        editToolBar->addAction(pasteAct);
+    editToolBar->addAction(findAct);
 
     fileToolBar->setMovable(false);
     editToolBar->setMovable(false);
@@ -319,17 +321,7 @@ void TableEditor::setViewToStringList()
     view->setSortingEnabled(true);
 }
 
-void TableEditor::addRowToTable(QString cmd, QString time)
-{
-    QList<QStandardItem *> rowData;
-    int i = model->rowCount(); // + 1;
-    QString number = QString("%1").arg(i, 4, 10, QChar('0'));
-    rowData << new QStandardItem(number);
-    rowData << new QStandardItem(cmd);
-    rowData << new QStandardItem(time);
-    model->appendRow(rowData);
-    view->resizeColumnsToContents();
-}
+
 
 void TableEditor::rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected )
 {
@@ -514,3 +506,60 @@ void TableEditor::updateTableView(QString text)
     param->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*)));
     SessionManager::instance()->setupJob(param, sender());
 }
+
+
+void TableEditor::showFindDialog()
+{
+    findDialog = new FindDialog;
+    findDialog->hideExtendedOptions();
+    connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
+            this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
+
+    findDialog->show();
+    findDialog->raise();
+    findDialog->activateWindow();
+}
+
+void TableEditor::findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags)
+{
+    QFlags<Qt::MatchFlag> flag;
+//    if (flags |= QTextDocument::FindCaseSensitively)
+//        flag = Qt::MatchCaseSensitive;
+//    else
+        flag = Qt::MatchExactly;
+    QVariant qv(str);
+
+    // first try searching in the current column
+    int row = view->currentIndex().row();
+    int col = view->currentIndex().column();
+    if (row<0)
+        row=0;
+    if (col<0)
+        col=0;
+
+    QModelIndexList hits = dfModel->match(dfModel->index(row, col),
+                            Qt::DisplayRole,qv,1,flag);
+    if (hits.size() == 0)
+    {
+        //now try a more systematic approach
+        for (int i=0;i<dfModel->columnCount();i++)
+        {
+            hits = dfModel->match(dfModel->index(0, i),
+                                Qt::DisplayRole,qv);
+            if (hits.size() > 0)
+                break;
+        }
+    }
+
+    if (hits.size() > 0)
+    {
+        view->setCurrentIndex(hits.first());
+//        findDialog->hide();
+    }
+    else
+        QMessageBox::warning(this, "Find",QString("The text was not found"));
+//        findDialog->hide();
+
+}
+
+

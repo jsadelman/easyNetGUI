@@ -10,6 +10,7 @@ InputCmdLine::InputCmdLine(QWidget *parent)
             this,SLOT(sendCommand()));
     QFont qf("Courier");
     setFont(qf);
+    setStyleSheet( "border: 0px" ) ;
 
     installEventFilter(this);
 }

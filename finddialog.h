@@ -38,75 +38,49 @@
 **
 ****************************************************************************/
 
-#ifndef CODEEDITOR_H
-#define CODEEDITOR_H
+#ifndef FINDDIALOG_H
+#define FINDDIALOG_H
 
-#include <QPlainTextEdit>
-#include <QObject>
+#include <QDialog>
+#include <QTextDocument>
 
 QT_BEGIN_NAMESPACE
-class QPaintEvent;
-class QResizeEvent;
-class QSize;
-class QWidget;
+class QCheckBox;
+class QDialogButtonBox;
+class QGroupBox;
+class QLabel;
+class QLineEdit;
+class QPushButton;
 QT_END_NAMESPACE
 
-class LineNumberArea;
-
-//![codeeditordefinition]
-
-class CodeEditor : public QPlainTextEdit
+//! [0]
+class FindDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    CodeEditor(QWidget *parent = 0);
-
-    void lineNumberAreaPaintEvent(QPaintEvent *event);
-    int lineNumberAreaWidth();
-
-public slots:
-    QStringList getSelectedText(); // added
-    QStringList getAllText(); // added
-
-    QStringList getCurrentLine();
-protected:
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-
-
+    FindDialog(QWidget *parent = 0);
+    void hideExtendedOptions();
+signals:
+    void findForward(const QString &str, QFlags<QTextDocument::FindFlag>);
+    void findBackward(const QString &str, QFlags<QTextDocument::FindFlag>);
 private slots:
-    void updateLineNumberAreaWidth(int newBlockCount);
-    void highlightCurrentLine();
-    void updateLineNumberArea(const QRect &, int);
-
+void findClicked();
+void enableFindButton(const QString &text);
 
 private:
-    QWidget *lineNumberArea;
+    QLabel *label;
+    QLineEdit *lineEdit;
+    QCheckBox *caseCheckBox;
+    QCheckBox *fromStartCheckBox;
+    QCheckBox *wholeWordsCheckBox;
+    QCheckBox *searchSelectionCheckBox;
+    QCheckBox *backwardCheckBox;
+    QDialogButtonBox *buttonBox;
+    QPushButton *findButton;
+    QPushButton *moreButton;
+    QWidget *extension;
 };
-
-//![codeeditordefinition]
-//![extraarea]
-
-class LineNumberArea : public QWidget
-{
-public:
-    LineNumberArea(CodeEditor *editor) : QWidget(editor) {
-        codeEditor = editor;
-    }
-
-    QSize sizeHint() const Q_DECL_OVERRIDE {
-        return QSize(codeEditor->lineNumberAreaWidth(), 0);
-    }
-
-protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE {
-        codeEditor->lineNumberAreaPaintEvent(event);
-    }
-
-private:
-    CodeEditor *codeEditor;
-};
-
-//![extraarea]
+//! [0]
 
 #endif

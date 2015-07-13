@@ -40,6 +40,8 @@ class TextEdit;
 class HelpWindow;
 class QSvgWidget;
 class TrialWidget;
+class Console;
+class DebugLog;
 
 QT_END_NAMESPACE
 
@@ -185,7 +187,7 @@ private:
     QTabWidget *lazynutPanel;
     QTabWidget *outputPanel;
     QTabWidget *explorerPanel;
-    MaxMinPanel* codePanelDock;
+    QDockWidget* codePanelDock;
     QDockWidget *visualiserDock;
     QDockWidget *explorerDock;
     QDockWidget *outputDock;
@@ -195,7 +197,8 @@ private:
 
 //    TreeModel       *objTaxonomyModel;
 //    LazyNutObjCatalogue  *objCatalogue;
-    LazyNutConsole *lazyNutConsole;
+//    LazyNutConsole *lazyNutConsole;
+    Console        *lazyNutConsole2;
     ObjExplorer      *objExplorer;
 
     QDockWidget     *dockWelcome;
@@ -217,6 +220,7 @@ private:
     CommandLog       *commandLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
+    Highlighter     *highlighter3;
 //    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
@@ -226,7 +230,7 @@ private:
     TableEditor     *dataframesWindow;
     TableEditor     *tablesWindow;
     TableEditor     *paramEdit;
-    TableEditor     *debugLog;
+    DebugLog        *debugLog;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
     QComboBox       *modelComboBox;

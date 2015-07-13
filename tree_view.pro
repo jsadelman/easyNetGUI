@@ -78,7 +78,10 @@ SOURCES +=  \
     trialwidget.cpp \
     mycombobox.cpp \
     commandlog.cpp \
-    scripteditor.cpp
+    scripteditor.cpp \
+    console.cpp \
+    finddialog.cpp \
+    debuglog.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -143,7 +146,10 @@ HEADERS  += \
     trialwidget.h \
     mycombobox.h \
     commandlog.h \
-    scripteditor.h
+    scripteditor.h \
+    console.h \
+    finddialog.h \
+    debuglog.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
