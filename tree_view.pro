@@ -81,7 +81,8 @@ SOURCES +=  \
     scripteditor.cpp \
     console.cpp \
     finddialog.cpp \
-    debuglog.cpp
+    debuglog.cpp \
+    plotviewer.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -149,7 +150,8 @@ HEADERS  += \
     scripteditor.h \
     console.h \
     finddialog.h \
-    debuglog.h
+    debuglog.h \
+    plotviewer.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
@@ -163,7 +165,6 @@ DISTFILES += \
     images/image001.jpg \
     documentation/easyNetHelp.qch \
     documentation/easyNetHelp.qhc \
-    documentation (1)/easyNethelp.qhc
 
 
 CONFIG += c++11

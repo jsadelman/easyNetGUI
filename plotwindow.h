@@ -63,7 +63,7 @@ public:
 
     void setDefaultModelSetting(QString setting, QString value);
 signals:
-        void plot(QByteArray);
+        void plot(QString, QByteArray);
 public slots:
         void createNewPlotOfType(QString name, QString type,
                                  QMap<QString, QString> _defaultSettings=QMap<QString,QString>());

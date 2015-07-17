@@ -28,7 +28,17 @@ PlotWindow::PlotWindow(QWidget *parent)
 {
     createPlotControlPanel();
     setUnifiedTitleAndToolBarOnMac(true);
+    createActions();
+    createToolBars();
+
 }
+
+void PlotWindow::createToolBars()
+{
+    fileToolBar = addToolBar(tr("File"));
+    fileToolBar->addAction(refreshAct);
+}
+
 
 int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
 {
@@ -159,11 +169,7 @@ void PlotWindow::updateRecentRScriptsActs()
 }
 
 
-void PlotWindow::createToolBars()
-{
-    fileToolBar = addToolBar(tr("File"));
-    fileToolBar->addAction(refreshAct);
-}
+
 
 void PlotWindow::importHomonyms(QDomDocument *settingsList)
 {
@@ -210,7 +216,7 @@ void PlotWindow::displaySVG(QByteArray plotByteArray)
 //    plot_svg->setMinimumSize(size);
 
 //    send signal to load the byte array into the plot
-    emit plot(plotByteArray);
+    emit plot(currentPlot, plotByteArray);
 
 }
 

@@ -45,6 +45,7 @@
 #include "scripteditor.h"
 #include "console.h"
 #include "debuglog.h"
+#include "plotviewer.h"
 
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -155,7 +156,7 @@ void EasyNetMainWindow::constructForms()
     tablesWindow = new TableEditor (ObjectCatalogue::instance(),"Tables",this);
     dataframesWindow = new TableEditor (ObjectCatalogue::instance(),"Dataframes",this);
     paramEdit = new TableEditor ("Parameters",this);
-    plotViewer = new QSvgWidget(this);
+    plotViewer = new PlotViewer(easyNetHome, this);
 
     infoWindow = new HelpWindow;
     assistant = new Assistant;
@@ -204,8 +205,9 @@ void EasyNetMainWindow::constructForms()
              this,SLOT(setParamDataFrame(QString)));
     connect(paramEdit, SIGNAL(newParamValueSig(QString)),
             this,SLOT(setParam(QString)));
-    connect(plotWindow, SIGNAL(plot(QByteArray)),
-            plotViewer,SLOT(load(QByteArray)));
+    connect(plotWindow, SIGNAL(plot(QString,QByteArray)),
+            plotViewer,SLOT(load(QString,QByteArray)));
+    connect(plotViewer,SIGNAL(sendDrawCmd()),plotWindow,SLOT(sendDrawCmd()));
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
     connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
     connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
@@ -674,6 +676,7 @@ void EasyNetMainWindow::loadStimulusSet()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
                                                     stimDir,
                                                     tr("Database Files (*.eNd)"));
+    fileName = QDir(easyNetHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
         // create db

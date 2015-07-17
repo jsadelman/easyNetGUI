@@ -16,8 +16,8 @@ class QStackedWidget;
 class QProgressBar;
 class QDomDocument;
 
+class PlotViewer;
 class ObjExplorer;
-
 class DesignWindow;
 class LazyNut;
 class SessionManager;
@@ -38,7 +38,6 @@ class LazyNutConsole;
 class Assistant;
 class TextEdit;
 class HelpWindow;
-class QSvgWidget;
 class TrialWidget;
 class Console;
 class DebugLog;
@@ -227,7 +226,7 @@ private:
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
     PlotWindow      *plotWindow;
-    QSvgWidget      *plotViewer;
+    PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
     TableEditor     *dataframesWindow;
     TableEditor     *tablesWindow;

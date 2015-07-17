@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QToolButton>
 #include <QAction>
+#include <QLineEdit>
 
 
 TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
@@ -108,6 +109,9 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
         layout2->addWidget(labelList[i]);
         layout2->addWidget(argumentMap[args[i]]);
     }
+
+    QLineEdit *ed = argumentMap[args[args.count()-1]]->lineEdit();
+    connect(ed, SIGNAL(returnPressed()),runAction,SIGNAL(triggered()));
 
     runButton = new QToolButton(this);
     runButton->setAutoRaise(true);
