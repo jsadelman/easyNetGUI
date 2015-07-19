@@ -33,6 +33,7 @@ signals:
 
 private slots:
 //    void addWidget(QWidget *widget);
+    void recordValueChange();
     void checkDependencies();
     void updateDependees(QDomDocument *newDomDoc);
     void updateSize();
@@ -47,6 +48,7 @@ private:
     QMap<QString, QVBoxLayout*> layoutMap;
     QMap<QString, QWidget*> twidgetMap;
     QMap<QString, PlotSettingsBaseWidget*> widgetMap;
+    QMap<QString, bool> hasChanged;
     QVBoxLayout *mainLayout;
     QDomDocument *domDoc;
     XMLelement rootElement;

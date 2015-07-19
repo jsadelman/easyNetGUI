@@ -26,6 +26,7 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName,
     {
         PlotSettingsBaseWidget *widget = createWidget(settingsElement);
         widgetMap.insert(widget->name(), widget);
+        hasChanged.insert(widget->name(), false);
         QString tabname = settingsElement["pretty name"]();
         QWidget* tab = 0;
         QVBoxLayout* lay = 0;
@@ -87,8 +88,11 @@ QStringList PlotSettingsForm::getSettingsCmdList()
 {
     QStringList cmdList;
     foreach (QString setting, rootElement.listLabels())
-        cmdList.append(getSettingCmdLine(setting));
-
+        if (hasChanged[setting])
+        {
+            cmdList.append(getSettingCmdLine(setting));
+            hasChanged[setting] = false;
+        }
     return cmdList;
 }
 
@@ -116,9 +120,17 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
     else
         widget = new PlotSettingsBaseWidget(settingsElement);
 
+
+    connect(widget, SIGNAL(valueChanged()), this, SLOT(recordValueChange()));
     connect(widget, SIGNAL(valueChanged()), this, SLOT(checkDependencies()));
 //    connect(widget, SIGNAL(sizeChanged()), this, SLOT(updateSize()));
     return widget;
+}
+
+void PlotSettingsForm::recordValueChange()
+{
+    PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
+    hasChanged[widget->name()] = true;
 }
 
 void PlotSettingsForm::checkDependencies()

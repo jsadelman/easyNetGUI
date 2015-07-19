@@ -275,8 +275,6 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 
 void PlotSettingsBaseWidget::emitValueChanged()
 {
-    qDebug() << "currentIndexChanged, PlotSettingsBaseWidget" << this
-             << "new index is" << static_cast<QComboBox*>(editDisplayWidget)->currentIndex();
     if (currentValue != getValue())
     {
         currentValue = getValue();
