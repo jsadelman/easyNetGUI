@@ -27,7 +27,7 @@ void LazyNutListMenu::setGetListCmd(QString cmd)
 void LazyNutListMenu::getList()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({getListCmd});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SLOT(buildMenu(QStringList)));

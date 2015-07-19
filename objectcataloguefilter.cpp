@@ -15,6 +15,8 @@ ObjectCatalogueFilter::ObjectCatalogueFilter(QObject *parent)
             this, SLOT(sendObjectDestroyed(QModelIndex,int,int)));
     connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(sendObjectModified(QModelIndex,QModelIndex,QVector<int>)));
+    setName(""); // initialise with a no-pass filter
+
 }
 
 bool ObjectCatalogueFilter::isAllValid()
@@ -22,7 +24,7 @@ bool ObjectCatalogueFilter::isAllValid()
     bool invalid(false);
     for (int row = 0; row < rowCount(); ++row)
     {
-        invalid |= data(index(row,2)).toBool();
+        invalid |= data(index(row,ObjectCatalogue::InvalidCol)).toBool();
     }
     return !invalid;
 }
@@ -30,25 +32,25 @@ bool ObjectCatalogueFilter::isAllValid()
 void ObjectCatalogueFilter::setName(QString txt)
 {
     setList(QStringList({txt}));
-    setFilterKeyColumn(0);
+    setFilterKeyColumn(ObjectCatalogue::NameCol);
 }
 
 void ObjectCatalogueFilter::setNameList(QStringList list)
 {
     setList(list);
-    setFilterKeyColumn(0);
+    setFilterKeyColumn(ObjectCatalogue::NameCol);
 }
 
 void ObjectCatalogueFilter::setType(QString txt)
 {
     setList(QStringList({txt}));
-    setFilterKeyColumn(1);
+    setFilterKeyColumn(ObjectCatalogue::TypeCol);
 }
 
 void ObjectCatalogueFilter::setTypeList(QStringList list)
 {
     setList(list);
-    setFilterKeyColumn(1);
+    setFilterKeyColumn(ObjectCatalogue::TypeCol);
 }
 
 void ObjectCatalogueFilter::sendObjectCreated(QModelIndex parent, int first, int last)
@@ -57,8 +59,8 @@ void ObjectCatalogueFilter::sendObjectCreated(QModelIndex parent, int first, int
 
     for (int row = first; row <= last; ++row)
     {
-        QString name = data(index(row,0)).toString();
-        QString type = data(index(row,1)).toString();
+        QString name = data(index(row,ObjectCatalogue::NameCol)).toString();
+        QString type = data(index(row,ObjectCatalogue::TypeCol)).toString();
         QDomDocument* domDoc = ObjectCatalogue::instance()->description(name);
         emit objectCreated(name, type, domDoc);
     }
@@ -69,8 +71,7 @@ void ObjectCatalogueFilter::sendObjectDestroyed(QModelIndex parent, int first, i
     Q_UNUSED(parent)
     for (int row = first; row <= last; ++row)
     {
-        QString name = data(index(row,0)).toString();
-//        qDebug () << "objectDestroyed" << name;
+        QString name = data(index(row,ObjectCatalogue::NameCol)).toString();
         emit objectDestroyed(name);
     }
 }
@@ -80,14 +81,15 @@ void ObjectCatalogueFilter::sendObjectModified(QModelIndex topLeft, QModelIndex 
     Q_UNUSED(roles)
     for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
     {
-        QString name = data(index(row,0)).toString();
-//        qDebug () << "objectModified" << name;
+        QString name = data(index(row,ObjectCatalogue::NameCol)).toString();
         emit objectModified(name);
     }
 }
 
 void ObjectCatalogueFilter::setList(QStringList list)
 {
+    // e.g. list = {"a" , "(b c)"}
+    // rex = '^(a|\(b c\))$'
     QRegExp rex = QRegExp(QString("^(%1)$").arg(list.replaceInStrings(QRegExp("([()])"), "\\\\1").join('|')));
     setFilterRegExp(rex);
 }

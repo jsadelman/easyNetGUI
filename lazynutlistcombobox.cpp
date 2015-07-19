@@ -45,7 +45,7 @@ void LazyNutListComboBox::getList(QString cmd)
         if (!getListCmd.isEmpty())
         {
             LazyNutJobParam *param = new LazyNutJobParam;
-            param->logMode |= ECHO_INTERPRETER; // debug purpose
+            param->logMode &= ECHO_INTERPRETER; // debug purpose
             param->cmdList = QStringList({QString("xml %1").arg(getListCmd)});
             param->answerFormatterType = AnswerFormatterType::ListOfValues;
             param->setAnswerReceiver(this, SLOT(buildList(QStringList)));
@@ -203,7 +203,7 @@ void LazyNutListComboBox::__debug_getList(QString /*cmd*/)
         savedCurrentText = currentText();
         QStringList list;
         list.append(QString("create layer %1").arg(QChar('A' + __debug_getList_counter++)));
-        list.append("xml list layer");
+//        list.append("xml list layer");
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode |= ECHO_INTERPRETER; // debug purpose
         param->cmdList = list;

@@ -69,6 +69,7 @@ public slots:
     QStringList getSelectedText(); // added
     QStringList getAllText(); // added
 
+    QStringList getCurrentLine();
 protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 

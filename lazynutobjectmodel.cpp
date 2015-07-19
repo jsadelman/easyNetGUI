@@ -208,7 +208,7 @@ void LazyNutObjectModel::removeDescription(QString descName)
         clearDescription();
 
     else
-        qDebug() << QString("LazyNutObjectModel::removedDescription name %1 does not match QDomDocument description").arg(descName);
+        qDebug() << QString("LazyNutObjectModel::removeDescription name %1 does not match QDomDocument description").arg(descName);
 }
 
 void LazyNutObjectModel::updateDescription(QDomDocument *domDoc)

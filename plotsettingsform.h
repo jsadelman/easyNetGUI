@@ -16,13 +16,15 @@ class PlotSettingsForm : public QTabWidget //QWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent = 0);
+    explicit PlotSettingsForm(QDomDocument *domDoc, QString plotName,
+                              QMap<QString,QString>, QWidget *parent = 0);
     ~PlotSettingsForm();
 //    QMap<QString,QString> getSettings();
     QStringList getSettingsCmdList();
     QString value(QString label);
     QStringList listLabels() {return rootElement.listLabels();}
 
+    void setDefaultModelSetting(QString setting, QString value);
 signals:
     void updateRequest();
 
@@ -31,6 +33,7 @@ signals:
 
 private slots:
 //    void addWidget(QWidget *widget);
+    void recordValueChange();
     void checkDependencies();
     void updateDependees(QDomDocument *newDomDoc);
     void updateSize();
@@ -45,6 +48,7 @@ private:
     QMap<QString, QVBoxLayout*> layoutMap;
     QMap<QString, QWidget*> twidgetMap;
     QMap<QString, PlotSettingsBaseWidget*> widgetMap;
+    QMap<QString, bool> hasChanged;
     QVBoxLayout *mainLayout;
     QDomDocument *domDoc;
     XMLelement rootElement;

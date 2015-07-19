@@ -14,10 +14,14 @@ class DescriptionUpdater : public QObject
 public:
     explicit DescriptionUpdater(QObject *parent = 0);
     void setProxyModel(QSortFilterProxyModel *proxy);
+    void requestDescription(QString name);
 
 signals:
     void descriptionUpdated(QDomDocument*);
 
+protected slots:
+    void goToSleep();
+    void wakeUpUpdate();
 private slots:
     void requestDescriptions(QModelIndex top, QModelIndex bottom);
     void requestDescriptions(QModelIndex parent, int first, int last);
@@ -25,7 +29,6 @@ private slots:
 private:
     void requestDescriptions(int first, int last);
     QStringList getObjectNames(int first, int last);
-    void requestDescription(QString name);
 
     QSortFilterProxyModel *proxyModel;
     ObjectCatalogue *objectCatalogue;

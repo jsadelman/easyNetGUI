@@ -10,6 +10,7 @@
 DescriptionUpdater::DescriptionUpdater(QObject *parent)
     : QObject(parent)
 {
+
 }
 
 void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
@@ -21,11 +22,27 @@ void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
         return;
     }
     proxyModel = proxy;
+    wakeUpUpdate();
+
+
+}
+
+void DescriptionUpdater::wakeUpUpdate()
+{
+    qDebug() << this << "wakeUpUpdate";
     connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(requestDescriptions(QModelIndex,QModelIndex)));
     connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(requestDescriptions(QModelIndex,int,int)));
+}
 
+void DescriptionUpdater::goToSleep()
+{
+    qDebug() << this << "go to sleep ";
+    disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+            this, SLOT(requestDescriptions(QModelIndex,QModelIndex)));
+    disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(requestDescriptions(QModelIndex,int,int)));
 }
 
 void DescriptionUpdater::requestDescriptions(QModelIndex top, QModelIndex bottom)
@@ -65,12 +82,13 @@ QStringList DescriptionUpdater::getObjectNames(int first, int last)
 
 void DescriptionUpdater::requestDescription(QString name)
 {
+    qDebug() << "Requested description for " << name;
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
-        qDebug() << "requestDescription" << name;
+        qDebug() << "going to set up Job for Requested description for " << name;
         objectCatalogue->setPending(name, false);
         LazyNutJobParam *param = new LazyNutJobParam;
-//        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->logMode &= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(name)});
         param->answerFormatterType = AnswerFormatterType::XML;
         param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*)));
@@ -78,7 +96,7 @@ void DescriptionUpdater::requestDescription(QString name)
     }
     else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
     {
-//        qDebug() << "DescriptionUpdater::requestDescription notify description ready";
         emit descriptionUpdated(objectCatalogue->description(name));
+        qDebug() << "description updated for " << name;
     }
 }

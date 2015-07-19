@@ -12,6 +12,7 @@ class ObjectCatalogue : public QAbstractTableModel
 {
     Q_OBJECT
 public:
+    enum {NameCol = 0, TypeCol, InvalidCol, DescriptionCol, COLUMN_COUNT};
     static ObjectCatalogue* instance(); // singleton
     ~ObjectCatalogue();
     int rowCount(const QModelIndex & parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -47,7 +48,7 @@ private:
     ObjectCatalogue& operator=(ObjectCatalogue const&){}
     static ObjectCatalogue* objectCatalogue;
 
-    int rowFromName(QString name);
+    int rowFromName(const QString &name);
     bool setBit(const QString& name, bool bit, int column);
     bool isBit(const QString& name, int column);
     QList <LazyNutObjectCacheElem*> catalogue;

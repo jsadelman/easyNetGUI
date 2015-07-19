@@ -73,6 +73,8 @@ DesignWindow::DesignWindow(ObjectCatalogue *objectCatalogue,
     connect(this,SIGNAL(saveLayout()),scene,SLOT(saveLayout()));
     connect(scene,SIGNAL(layoutSaveAttempted()),
             this,SIGNAL(layoutSaveAttempted()));
+    connect(this,SIGNAL(wakeUp()),scene,SIGNAL(wakeUp()));
+    connect(this,SIGNAL(goToSleep()),scene,SIGNAL(goToSleep()));
 
 
 //    connect(scene, SIGNAL(itemInserted(DiagramItem*)),
@@ -772,3 +774,5 @@ void DesignWindow::createToolbars()
 //    return QIcon(pixmap);
 //}
 ////! [32]
+
+

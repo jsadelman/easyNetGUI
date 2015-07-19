@@ -2,6 +2,7 @@
 #define INPUTCMDLINE_H
 
 #include <QLineEdit>
+class Event;
 
 class InputCmdLine : public QLineEdit
 {
@@ -15,7 +16,12 @@ public slots:
 
 signals:
     void commandReady(const QString & command);
+    void historyKey(int dir);
 
+protected:
+//    void changeEvent(QEvent *e);
+
+    bool eventFilter(QObject *obj, QEvent *event);
 };
 
 #endif // INPUTCMDLINE_H

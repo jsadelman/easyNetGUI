@@ -15,10 +15,24 @@ LazyNutConsole::LazyNutConsole(QWidget  *parent)
     inputCmdLine = new InputCmdLine(this);
     connect(inputCmdLine,SIGNAL(commandReady(QString)),
             SessionManager::instance(),SLOT(runCmd(QString)));
+    connect(inputCmdLine,SIGNAL(historyKey(int)),
+            this,SIGNAL(historyKey(int)));
+
 
     QVBoxLayout *interpreterLayout = new QVBoxLayout;
     interpreterLayout->addWidget(cmdOutput);
     interpreterLayout->addWidget(inputCmdLine);
     this->setLayout(interpreterLayout);
+}
+
+void LazyNutConsole::showHistory(QString line)
+{
+    inputCmdLine->setText(line);
+
+}
+
+void LazyNutConsole::setConsoleFontSize(int size)
+{
+    cmdOutput->setFont(QFont("Courier",size));
 }
 

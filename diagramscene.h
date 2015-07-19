@@ -107,6 +107,8 @@ signals:
     void objectSelected(QString);
 //    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objectCatalogue);
     void layoutSaveAttempted();
+    void wakeUp();
+    void goToSleep();
 
 
 protected:
@@ -121,6 +123,7 @@ private slots:
     void renderObject(QDomDocument* domDoc);
     void loadLayout();
 
+    void syncToObjCatalogue();
 private:
     void render();
     bool isItemChange(int type);
@@ -136,6 +139,7 @@ private:
 
     QString savedLayout;
     bool layoutLoaded = false;
+    bool layoutChanged;
     DiagramItem::DiagramType myItemType;
     Arrow::ArrowTipType myArrowTipType;
     QMenu *myItemMenu;

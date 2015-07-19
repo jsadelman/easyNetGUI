@@ -16,8 +16,8 @@ class QStackedWidget;
 class QProgressBar;
 class QDomDocument;
 
+class PlotViewer;
 class ObjExplorer;
-
 class DesignWindow;
 class LazyNut;
 class SessionManager;
@@ -25,6 +25,8 @@ class AsLazyNutObject;
 typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
 class ObjectCatalogue;
 class EditWindow;
+class CommandLog;
+class ScriptEditor;
 class Highlighter;
 class PlotWindow;
 class ObjectCatalogueFilter;
@@ -36,6 +38,9 @@ class LazyNutConsole;
 class Assistant;
 class TextEdit;
 class HelpWindow;
+class TrialWidget;
+class Console;
+class DebugLog;
 
 QT_END_NAMESPACE
 
@@ -60,21 +65,27 @@ public:
     EasyNetMainWindow(QWidget *parent = 0);
 //    SessionManager *sessionManager;
 
+public slots:
+    void setRunAllMode(bool mode);
+    void loadTrial();
+    void loadAddOn();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
     void viewModeClicked(int);
     void paramTabEntered(QString);
+    void newTableSelection(QString name);
+    void showHistory(QString line);
 
 private slots:
     void save();
-    void about();
+//    void about();
     void updateTableView(QString text);
 
 //    void showViewMode(int viewModeInt);
     void newScriptFile();
     void newLogFile();
-    void open();
+    void loadScript();
     void setLazyNutIsReady(bool isReady);
     //bool save();
     //bool saveAs();
@@ -91,12 +102,10 @@ private slots:
     void showCmdOnStatusBar(QString cmd);
     void addOneToLazyNutProgressBar();
 
-    void runScript();
-    void runSelection();
     void runCmdAndUpdate(QStringList cmdList);
     void setEasyNetHome();
     void setLazyNutBat();
-    void showPauseState(bool isPaused);
+//    void showPauseState(bool isPaused);
     void getVersion();
 //    void showDocumentation();
 
@@ -104,12 +113,19 @@ private slots:
 //    void requestVersion();
     void displayVersion(QString version);
 
-    void updateStimuliView(QString text);
     void showDocumentation();
     void explorerTabChanged(int idx);
     void setParamDataFrame(QString name);
     void setParam(QString newParamValue);
+
+    void setSmallFont();
+    void setMediumFont();
     void setLargerFont();
+    void afterModelLoaded();
+    void tabChanged(int idx);
+    void runScript();
+    void processHistoryKey(int dir);
+    void setQuietMode();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -153,9 +169,11 @@ private:
     QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
     QString         curFile;
     QString         scriptsDir;
+    QString         trialsDir;
     QString         stimDir;
     QString         easyNetHome = "";
     QString         paramDataFrame;
+    QString         quietMode;
 
     QStringList     modelList;
     QStringList     trialList;
@@ -170,14 +188,18 @@ private:
     QTabWidget *lazynutPanel;
     QTabWidget *outputPanel;
     QTabWidget *explorerPanel;
-    MaxMinPanel* codePanelDock;
+    QDockWidget* codePanelDock;
+    QDockWidget *visualiserDock;
+    QDockWidget *explorerDock;
+    QDockWidget *outputDock;
 
     QListWidget* customerList;
     QListWidget* paragraphsList;
 
 //    TreeModel       *objTaxonomyModel;
 //    LazyNutObjCatalogue  *objCatalogue;
-    LazyNutConsole *lazyNutConsole;
+//    LazyNutConsole *lazyNutConsole;
+    Console        *lazyNutConsole2;
     ObjExplorer      *objExplorer;
 
     QDockWidget     *dockWelcome;
@@ -193,25 +215,28 @@ private:
     QWebView        *welcomeScreen;
     QWebView        *webWelcomeScreen;
 //    CodeEditor      *scriptEdit;
-    EditWindow       *scriptEdit;
+    ScriptEditor       *scriptEdit;
 //    CodeEditor      *commandLog;
-    EditWindow       *commandLog;
+//    EditWindow       *commandLog;
+    CommandLog       *commandLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
+    Highlighter     *highlighter3;
 //    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
     PlotWindow      *plotWindow;
+    PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
+    TableEditor     *dataframesWindow;
     TableEditor     *tablesWindow;
     TableEditor     *paramEdit;
-    TableEditor     *debugLog;
+    DebugLog        *debugLog;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
     QComboBox       *modelComboBox;
     QComboBox       *trialComboBox;
-    QComboBox       *setComboBox;
-    QComboBox       *inputComboBox;
+    TrialWidget     *trialWidget;
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;
@@ -221,13 +246,18 @@ private:
     int             stimSetTabIdx;
     int             infoTabIdx;
     int             paramTabIdx;
+    int             plotTabIdx;
+    int             designTabIdx;
+    int             conversionTabIdx;
+    int             scriptTabIdx;
+    int             outputTablesTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
     QMenu           *fileMenu;
-    QMenu           *runMenu;
+    QMenu           *fileSubMenu;
     QMenu           *settingsMenu;
-    QMenu           *aboutMenu;
+    QMenu           *settingsSubMenu;
     QMenu           *editMenu;
     QMenu           *viewMenu;
     QMenu           *helpMenu;
@@ -253,33 +283,35 @@ private:
 
     QAction         *newScriptAct;
     QAction         *newLogAct;
-    QAction         *openAct;
+    QAction         *loadScriptAct;
     QAction         *loadModelAct;
+    QAction         *loadTrialAct;
+    QAction         *loadAddOnAct;
     QAction         *loadStimulusSetAct;
+    QAction         *importDataFrameAct;
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
-//    QAction         *runAction;
-    QAction         *runScriptAct;
-    QAction         *runSelectionAct;
-    QAction         *stopAct;
-    QAction         *pauseAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
-    QAction         *setLargerFontAct;
+    QAction         *setSmallFontAct;
+    QAction         *setMediumFontAct;
+    QAction         *setLargeFontAct;
     QAction         *versionAct;
     QAction         *assistantAct;
+    QAction         *setQuietModeAct;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QAction *saveAct;
     QAction *printAct;
     QAction *aboutAct;
-    QAction *aboutQtAct;
     QAction *quitAct;
 
     bool trialComboEventSwitch = false;
     bool test_gui;
+    bool runAllMode;
+//    enum runMode {RunSingle, RunAll};
 
 };
 
