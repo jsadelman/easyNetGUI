@@ -91,10 +91,11 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     });
     connect(objectView, SIGNAL(clicked(QModelIndex)), objectModel, SLOT(sendObjectRequested(QModelIndex)));
     connect(objectModel, SIGNAL(objectRequested(QString)), descriptionFilter, SLOT(setName(QString)));
+    connect(this, SIGNAL(objectSelected(QString)), descriptionFilter, SLOT(setName(QString)));
 
     //------- splitter ----------//
 
-    QSplitter *splitter = new QSplitter;
+    splitter = new QSplitter;
     splitter->setOrientation(Qt::Horizontal);
     splitter->addWidget(typeList);
     splitter->addWidget(objectListView);
@@ -102,6 +103,27 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
     setWindowTitle(tr("Object Explorer"));
     setCentralWidget(splitter);
+    QList<int> list;
+    list = splitter->sizes();
+    qDebug() << "***old sizes = " << list;
+    list.clear();
+    list.append(1);
+    list.append(1);
+    list.append(2);
+    splitter->setSizes(list);
+    list = splitter->sizes();
+    qDebug() << "***new sizes = " << list;
+    list.clear();
+    list.append(100);
+    list.append(200);
+    list.append(350);
+    qDebug() << "***attempted sizes = " << list;
+    splitter->setSizes(list);
+    list = splitter->sizes();
+    qDebug() << "***new sizes = " << list;
+//    splitter->setStretchFactor(0, 1);
+//    splitter->setStretchFactor(1, 1);
+//    splitter->setStretchFactor(2, 2);
 
 }
 
@@ -312,6 +334,8 @@ void ObjExplorer::showList(QString cmd)
     LazyNutListWidget *listWidget = new LazyNutListWidget(cmd);
     listWidget->setAttribute(Qt::WA_DeleteOnClose, true);
     listWidget->show();
+
+
 }
 
 //void ObjExplorer::setObjFromProxyTableIndex(QModelIndex index)

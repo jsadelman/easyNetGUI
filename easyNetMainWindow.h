@@ -126,6 +126,8 @@ private slots:
     void runScript();
     void processHistoryKey(int dir);
     void setQuietMode();
+    void showExplorer();
+    void restart();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -292,6 +294,7 @@ private:
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
+    QAction         *restartInterpreterAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
     QAction         *setSmallFontAct;

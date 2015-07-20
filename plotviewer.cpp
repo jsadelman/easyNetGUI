@@ -32,7 +32,6 @@ void PlotViewer::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(refreshAct);
-    fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
     titleLabel = new QLabel("");
@@ -51,11 +50,6 @@ void PlotViewer::createActions()
     refreshAct->setStatusTip(tr("Refresh plot"));
     connect(refreshAct, SIGNAL(triggered()), this, SIGNAL(sendDrawCmd()));
 
-
-    newAct = new QAction(QIcon(":/images/new.png"), tr("&Clear"), this);
-    newAct->setShortcuts(QKeySequence::New);
-    newAct->setStatusTip(tr("Clear plot"));
-    connect(newAct, SIGNAL(triggered()), this, SLOT(sendClearCmd()));
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
     openAct->setStatusTip(tr("Load plot"));

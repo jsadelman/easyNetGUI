@@ -8,6 +8,7 @@
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
 #include "macroqueue.h"
+#include "objectcatalogue.h"
 
 
 #include <QtGlobal>
@@ -17,6 +18,7 @@
 #include <QDebug>
 #include <QDomDocument>
 #include <QAbstractTransition>
+#include <QThread>
 
 SessionManager* SessionManager::sessionManager = nullptr;
 
@@ -46,6 +48,16 @@ void SessionManager::startLazyNut(QString lazyNutBat)
         delete lazyNut;
         emit lazyNutNotRunning();
     }
+}
+
+void SessionManager::restartLazyNut(QString lazyNutBat)
+{
+    killLazyNut();
+//    QThread::msleep(100);
+    lazyNut->waitForFinished();
+    startLazyNut(lazyNutBat);
+    delete ObjectCatalogue::instance();
+    ObjectCatalogue::instance();
 }
 
 void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)

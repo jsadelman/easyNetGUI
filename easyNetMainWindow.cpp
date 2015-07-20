@@ -141,6 +141,11 @@ void EasyNetMainWindow::constructForms()
                 this,SLOT(processHistoryKey(int)));
         connect(this,SIGNAL(showHistory(QString)),
                 lazyNutConsole2,SLOT(showHistory(QString)));
+        connect(designWindow,SIGNAL(objectSelected(QString)),
+                    objExplorer,SIGNAL(objectSelected(QString)));
+        connect(designWindow,SIGNAL(objectSelected(QString)),
+                    this,SLOT(showExplorer()));
+
     }
 
     scriptEdit = new ScriptEditor(scriptsDir, this);
@@ -222,6 +227,13 @@ void EasyNetMainWindow::constructForms()
     visualiserPanel->setCurrentIndex(designTabIdx); // start on Design window
 
 
+}
+
+void EasyNetMainWindow::showExplorer()
+{
+    explorerDock->show();
+    explorerDock->setFocus();
+    explorerDock->raise();
 }
 
 void EasyNetMainWindow::setRunAllMode(bool mode)
@@ -867,7 +879,7 @@ void EasyNetMainWindow::loadScript()
             loadFile(fileName);
             lazynutPanel->setCurrentIndex(scriptTabIdx); // show scripts tab
             codePanelDock->show();
-            visualiserDock->hide();
+//            visualiserDock->hide();
         }
  //   }
 }
@@ -1017,6 +1029,11 @@ void EasyNetMainWindow::createActions()
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
+    restartInterpreterAct = new QAction(tr("Restart Interpreter"), this);
+    restartInterpreterAct->setStatusTip(tr("Restart the lazyNut interpreter, to start a new session"));
+    connect(restartInterpreterAct, SIGNAL(triggered()), this, SLOT(restart()));
+    restartInterpreterAct->setDisabled(true);
+
     setEasyNetHomeAct = new QAction(tr("Set easyNet home directory"), this);
     setEasyNetHomeAct->setStatusTip(tr("Set easyNet home directory"));
     connect(setEasyNetHomeAct,SIGNAL(triggered()),this, SLOT(setEasyNetHome()));
@@ -1049,8 +1066,21 @@ void EasyNetMainWindow::createActions()
     setQuietModeAct->setCheckable(true);
     connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
     setQuietModeAct->setChecked(true);
+}
 
-
+void EasyNetMainWindow::restart()
+{
+    QMessageBox::StandardButton reply;
+      reply = QMessageBox::question(this,
+                           "Warning",
+                           tr("This will start a new session, "
+                           "overwiting all data associated with the "
+                           "current session. Continue?"),
+                           QMessageBox::Yes|QMessageBox::No);
+      if (reply == QMessageBox::Yes)
+        SessionManager::instance()->restartLazyNut(lazyNutBat);
+      else
+        return;
 }
 
 void EasyNetMainWindow::showDocumentation()
@@ -1075,6 +1105,7 @@ void EasyNetMainWindow::createMenus()
     //fileMenu->addAction(saveAct);
     //fileMenu->addAction(saveAsAct);
     fileMenu->addSeparator();
+    fileMenu->addAction(restartInterpreterAct);
     fileMenu->addAction(exitAct);
 
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
