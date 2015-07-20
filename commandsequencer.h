@@ -34,7 +34,7 @@ signals:
     // send output to editor
     void commandsInJob(int);
     void commandsExecuted();
-    void commandExecuted(QString);
+    void commandExecuted(QString,QString);
     void logCommand(QString);
     void commandSent(QString);
     void answerReady(QString, QString);

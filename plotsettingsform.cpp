@@ -9,21 +9,24 @@
 #include <QMetaObject>
 #include <QDebug>
 #include <QVBoxLayout>
+#include <QComboBox>
 
 
-PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidget *parent)
+PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName,
+                                   QMap<QString, QString> defaultSettings, QWidget *parent)
     : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QTabWidget(parent)
 {
 //    mainLayout = new QVBoxLayout;
 //    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
 //    setTabPosition(QTabWidget::West);
-    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+//    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
 
     XMLelement settingsElement = rootElement.firstChild();
     while (!settingsElement.isNull())
     {
         PlotSettingsBaseWidget *widget = createWidget(settingsElement);
         widgetMap.insert(widget->name(), widget);
+        hasChanged.insert(widget->name(), false);
         QString tabname = settingsElement["pretty name"]();
         QWidget* tab = 0;
         QVBoxLayout* lay = 0;
@@ -52,6 +55,14 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName, QWidg
 //    setLayout(mainLayout);
     initDependersSet();
 //    updateSize();
+    QMap<QString, QString>::const_iterator i = defaultSettings.constBegin();
+    qDebug() << "defaultSettings = " << defaultSettings;
+    while (i != defaultSettings.constEnd())
+    {
+        setDefaultModelSetting(i.key(), i.value());
+        ++i;
+    }
+
 }
 
 PlotSettingsForm::~PlotSettingsForm()
@@ -77,8 +88,11 @@ QStringList PlotSettingsForm::getSettingsCmdList()
 {
     QStringList cmdList;
     foreach (QString setting, rootElement.listLabels())
-        cmdList.append(getSettingCmdLine(setting));
-
+        if (hasChanged[setting])
+        {
+            cmdList.append(getSettingCmdLine(setting));
+            hasChanged[setting] = false;
+        }
     return cmdList;
 }
 
@@ -106,9 +120,17 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
     else
         widget = new PlotSettingsBaseWidget(settingsElement);
 
+
+    connect(widget, SIGNAL(valueChanged()), this, SLOT(recordValueChange()));
     connect(widget, SIGNAL(valueChanged()), this, SLOT(checkDependencies()));
 //    connect(widget, SIGNAL(sizeChanged()), this, SLOT(updateSize()));
     return widget;
+}
+
+void PlotSettingsForm::recordValueChange()
+{
+    PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
+    hasChanged[widget->name()] = true;
 }
 
 void PlotSettingsForm::checkDependencies()
@@ -118,7 +140,7 @@ void PlotSettingsForm::checkDependencies()
     {
         dependerOnUpdate = widget->name();
         LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->logMode &= ECHO_INTERPRETER; // debug purpose
         param->cmdList = getSettingsCmdList();
         param->cmdList.append(QString("xml %1 list_settings").arg(plotName));
         param->answerFormatterType = AnswerFormatterType::XML;
@@ -169,3 +191,11 @@ QString PlotSettingsForm::getSettingCmdLine(QString setting)
             .arg(widgetMap[setting]->value());
 }
 
+void PlotSettingsForm::setDefaultModelSetting(QString setting, QString value)
+{
+    widgetMap[setting]->setValue(value);
+    widgetMap[setting]->setValueSetTrue();
+    qDebug() << "Set" << widgetMap[setting]->name() << "to" << widgetMap[setting]->value();
+    emit widgetMap[setting]->valueChanged();
+//    updateDependees();
+}

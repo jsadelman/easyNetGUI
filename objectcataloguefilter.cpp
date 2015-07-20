@@ -72,7 +72,8 @@ void ObjectCatalogueFilter::sendObjectDestroyed(QModelIndex parent, int first, i
     for (int row = first; row <= last; ++row)
     {
         QString name = data(index(row,ObjectCatalogue::NameCol)).toString();
-        emit objectDestroyed(name);
+        if (!name.isEmpty())
+            emit objectDestroyed(name);
     }
 }
 

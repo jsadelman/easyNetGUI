@@ -35,6 +35,7 @@ class QGroupBox;
 class QVBoxLayout;
 class ComboBoxDelegate;
 class QStackedWidget;
+class QSplitter;
 
 
 class ObjExplorer: public QMainWindow
@@ -90,7 +91,7 @@ private:
     LazyNutObjectModel *objectModel;
     ExpandToFillButton *expandToFillButton;
     QTreeView *objectView;
-
+    QSplitter *splitter;
 
 
 

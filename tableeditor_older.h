@@ -3,7 +3,6 @@
 
 #include <QDialog>
 #include <QMainWindow>
-#include <QTextDocument>
 
 QT_BEGIN_NAMESPACE
 class QToolBar;
@@ -24,7 +23,6 @@ class QComboBox;
 class ObjectCatalogue;
 class DataFrameModel;
 class ObjectCatalogueFilter;
-class FindDialog;
 
 QT_END_NAMESPACE
 
@@ -55,6 +53,7 @@ signals:
 private slots:
 //    void submit();
     void addDataFrameToWidget(QDomDocument* domDoc);
+    void addRowToTable(QString cmd, QString time);
     void rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected );
     void updateParamTable(QString model);
     void resizeColumns();
@@ -62,8 +61,6 @@ private slots:
 
     void on_copy_clicked();
     void updateTableView(QString text);
-    void showFindDialog();
-    void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
 private:
 
     QToolBar *fileToolBar;
@@ -91,7 +88,6 @@ private:
     QStringList     list;
     QWidget         *widget;
     QString         currentTable;
-    FindDialog*     findDialog;
 
     void createToolBars();
     void createActions();

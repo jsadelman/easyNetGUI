@@ -53,7 +53,7 @@ signals:
     void isReady(bool);
     void isPaused(bool);
     void cmdError(QString,QStringList);
-    void commandExecuted(QString);
+    void commandExecuted(QString, QString);
     void commandSent(QString);
     void logCommand(QString);
     void commandsInJob(int);
@@ -63,6 +63,7 @@ signals:
     void recentlyCreated(QDomDocument*);
     void recentlyModified(QStringList);
     void recentlyDestroyed(QStringList);
+    void commandsCompleted();
 
     void macroQueueStopped(bool);
 
@@ -91,6 +92,7 @@ public slots:
     void runCmd(QString cmd);
     void runCmd(QStringList cmd);
 
+    void restartLazyNut(QString lazyNutBat);
 private slots:
 
     void getOOB(const QString &lazyNutOutput);

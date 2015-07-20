@@ -75,6 +75,18 @@ QStringList CodeEditor::getSelectedText()
     return textCursor().selectedText().split("\u2029");
 }
 
+QStringList CodeEditor::getCurrentLine()
+{
+    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
+    textCursor().movePosition(QTextCursor::StartOfBlock);
+    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
+    textCursor().movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
+    qDebug() << "getCurrentLine -- selected:" << textCursor().selectedText();
+
+    return getSelectedText();
+}
+
 QStringList CodeEditor::getAllText()
 {
     return toPlainText().split("\n");

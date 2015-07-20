@@ -8,6 +8,7 @@
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
 #include "macroqueue.h"
+#include "objectcatalogue.h"
 
 
 #include <QtGlobal>
@@ -17,6 +18,7 @@
 #include <QDebug>
 #include <QDomDocument>
 #include <QAbstractTransition>
+#include <QThread>
 
 SessionManager* SessionManager::sessionManager = nullptr;
 
@@ -46,6 +48,14 @@ void SessionManager::startLazyNut(QString lazyNutBat)
         delete lazyNut;
         emit lazyNutNotRunning();
     }
+}
+
+void SessionManager::restartLazyNut(QString lazyNutBat)
+{
+    ObjectCatalogue::instance()->removeRows(0, ObjectCatalogue::instance()->rowCount());
+    killLazyNut();
+    lazyNut->waitForFinished();
+    startLazyNut(lazyNutBat);
 }
 
 void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
@@ -161,7 +171,7 @@ void SessionManager::getDescriptions()
 void SessionManager::queryRecentlyCreated()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)));
@@ -172,7 +182,7 @@ void SessionManager::queryRecentlyCreated()
 void SessionManager::queryRecentlyModified()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)));
@@ -183,10 +193,11 @@ void SessionManager::queryRecentlyModified()
 void SessionManager::queryRecentlyDestroyed()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)));
+    param->setEndOfJobReceiver(this,SIGNAL(commandsCompleted()));
     setupJob(param, sender());
 }
 //! [getDescriptions]
@@ -215,8 +226,8 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(isReady(bool)));
     connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
             this, SIGNAL(cmdError(QString,QStringList)));
-    connect(commandSequencer, SIGNAL(commandExecuted(QString)),
-            this, SIGNAL(commandExecuted(QString)));
+    connect(commandSequencer, SIGNAL(commandExecuted(QString,QString)),
+            this, SIGNAL(commandExecuted(QString,QString)));
     connect(commandSequencer, SIGNAL(commandsInJob(int)),
             this, SIGNAL(commandsInJob(int)));
     connect(commandSequencer, SIGNAL(commandSent(QString)),

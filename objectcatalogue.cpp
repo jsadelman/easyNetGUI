@@ -128,19 +128,25 @@ Qt::ItemFlags ObjectCatalogue::flags(const QModelIndex &index) const
 
 bool ObjectCatalogue::removeRows(int row, int count, const QModelIndex &parent)
 {
+    qDebug() << "Entered removeRows " << row << count << catalogue.count();
     Q_UNUSED(parent);
-    if (row < 0 || row >= catalogue.count())
+    if (row < 0 || row >= catalogue.count() || row+count > catalogue.count())
         return false;
 
+    qDebug() << "got past count condition ";
     beginRemoveRows(QModelIndex(), row, row+count-1);
+    qDebug() << "called beginRemoveRows " << row << row+count-1;
 
-    for (int i=0; i < count; ++i)
+    for (int i=row+count-1; i >= row; --i)
     {
+        qDebug() << "About to remove row" << i << data(index(i,0)).toString();
         delete catalogue.at(row);
         catalogue.removeAt(row);
     }
 
+    qDebug() << "About to send removeRows signal";
     endRemoveRows();
+    qDebug() << "sent removeRows signal";
     return true;
 }
 

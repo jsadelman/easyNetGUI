@@ -88,6 +88,8 @@ signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
     void layoutSaveAttempted();
+    void wakeUp();
+    void goToSleep();
 
 private slots:
     void dispatchObjectSelected(QString name);

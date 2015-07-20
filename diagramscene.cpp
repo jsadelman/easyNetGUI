@@ -43,15 +43,22 @@
 #include "lazynutobject.h"
 #include "objectcataloguefilter.h"
 #include "descriptionupdater.h"
+#include "sessionmanager.h"
 
 
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsSceneContextMenuEvent>
+#include <QMenu>
+#include <QAction>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QFileInfo>
-
+#include <QMetaObject>
+#include <QDomDocument>
 #include <QDebug>
+
+Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
 DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
@@ -60,6 +67,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
 {
     boxType =  _boxType;
     arrowType =  _arrowType;
+    selectedObject = "";
     myItemMenu = itemMenu;
     myMode = MoveItem;
     myItemType = DiagramItem::Layer;
@@ -85,6 +93,9 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
             this, SLOT(removeObject(QString)));
     connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
             this, SLOT(renderObject(QDomDocument*)));
+    connect(this, SIGNAL(wakeUp()), descriptionUpdater,SLOT(wakeUpUpdate()));
+    connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
+    connect(this, SIGNAL(goToSleep()), descriptionUpdater,SLOT(goToSleep()));
 
 
 }
@@ -306,6 +317,7 @@ void DiagramScene::loadLayout()
             QByteArray savedLayoutData = savedLayoutFile.readAll();
             QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
             read(savedLayoutDoc.object());
+            layoutChanged=false;
         }
         //layoutLoaded = true;
     }
@@ -316,6 +328,7 @@ void DiagramScene::loadLayout()
 
 void DiagramScene::setSelected(QString name)
 {
+    qDebug() << "setSelected" << name;
     if (itemHash.contains(name))
     {
         clearSelection();
@@ -338,8 +351,10 @@ void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
 
 void DiagramScene::saveLayout()
 {
-    if (!objectFilter->isAllValid())        // temp fix!!!
-            return;
+//    if (!objectFilter->isAllValid())        // temp fix!!!
+//            return;
+    if (!layoutChanged)
+        return;
 
     QFile savedLayoutFile(savedLayout);
     if (savedLayoutFile.open(QIODevice::WriteOnly))
@@ -456,12 +471,69 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         if (items(mouseEvent->scenePos()).size()> 0)
         {
             QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
-            QString name = itemHash.key(item);
-//            if (!name.isEmpty())
-                emit objectSelected(name);
+            selectedObject = itemHash.key(item);
+//            if (!selectedObject.isEmpty())
+                emit objectSelected(selectedObject);
         }
     }
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+}
+
+void DiagramScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent)
+{
+    selectedObject="";
+    if (items(mouseEvent->scenePos()).size()> 0)
+    {
+        QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
+        selectedObject = itemHash.key(item);
+    }
+    if (selectedObject.isEmpty())
+        return;
+
+    QMenu menu;
+    enableObserverAction = menu.addAction("Enable default observer");
+    connect(enableObserverAction,SIGNAL(triggered()),this,SLOT(enableObserverClicked()));
+    disableObserverAction = menu.addAction("Disable default observer");
+    connect(disableObserverAction,SIGNAL(triggered()),this,SLOT(disableObserverClicked()));
+    if (connections.contains(selectedObject))
+    {
+        lesionAction = menu.addAction("Lesion");
+        connect(lesionAction,SIGNAL(triggered()),this,SLOT(lesionClicked()));
+    }
+    menu.exec(mouseEvent->screenPos());
+
+    //    if (menu.exec(mouseEvent->screenPos())==enableObserverAction)
+//        enableObserver(name);
+//    else if (menu.exec(mouseEvent->screenPos())==disableObserverAction)
+//        disableObserver(name);
+//    else if (menu.exec(mouseEvent->screenPos())==lesionAction)
+//        lesion(name);
+
+}
+
+void DiagramScene::enableObserverClicked()
+{
+    if(selectedObject.isEmpty())
+        return;
+    QString cmd = "(" + selectedObject + " default_observer) enable ";
+    SessionManager::instance()->runCmd(cmd);
+
+}
+
+void DiagramScene::disableObserverClicked()
+{
+    if(selectedObject.isEmpty())
+        return;
+    QString cmd = "(" + selectedObject + " default_observer) disable ";
+    SessionManager::instance()->runCmd(cmd);
+}
+
+void DiagramScene::lesionClicked()
+{
+    if(selectedObject.isEmpty())
+        return;
+    QString cmd = selectedObject + " lesion";
+    SessionManager::instance()->runCmd(cmd);
 }
 
 void DiagramScene::positionObject(QString name, QString type, QDomDocument *domDoc)
@@ -590,3 +662,95 @@ bool DiagramScene::isItemChange(int type)
     return false;
 }
 //! [14]
+
+void DiagramScene::syncToObjCatalogue()
+{
+    qDebug() << "Entered syncToObjCatalogue()";
+    QString name;
+    QStringList newConnections{};
+    // display new layers, hold new connections in a list
+    for (int row=0;row<objectFilter->rowCount();row++)
+    {
+        name = objectFilter->data(objectFilter->index(row,0)).toString();
+        if ((objectFilter->data(objectFilter->index(row,1)).toString() == boxType) &&
+            (!itemHash.contains(name)))
+            positionObject(name, boxType, nullptr);
+        else if ((objectFilter->data(objectFilter->index(row,1)).toString() == arrowType))
+//            &&   (!itemHash.contains(name)))
+            newConnections << name;
+    }
+
+    //    display new connections
+    QModelIndexList tmp;
+    QDomDocument* domDoc;
+    foreach(QString name, newConnections)
+    {
+        connections.append(name);
+        tmp.clear();
+        qDebug() << "looking for" << name;
+        tmp << objectFilter->match(objectFilter->index(0,0),Qt::DisplayRole,name);
+        qDebug() << "matching row" << objectFilter->data(tmp.at(0));
+        QVariant v = objectFilter->data(objectFilter->index((tmp.at(0)).row(),2));
+        if (v.canConvert<QDomDocument *>())
+            renderList.append(v.value<QDomDocument *>());
+        descriptionUpdater->requestDescription(name);
+
+//        qDebug() << "domDoc" << domDoc;
+//        renderList.append(domDoc);
+    }
+//        DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
+//                        (itemHash->value(objectCatalogue->value(name)->getValue("Source")));
+//            DiagramItem *endItem   = qgraphicsitem_cast<DiagramItem *>
+//                        (itemHash->value(objectCatalogue->value(name)->getValue("Target")));
+//            // arrows without start and end are not plotted in this version
+//            if (!(startItem && endItem))
+//                continue;
+//            Arrow *arrow = new Arrow(name, startItem, endItem, Arrow::Excitatory);
+//            arrow->setColor(myLineColor);
+    //        startItem->addArrow(arrow);
+    //        if (startItem != endItem)
+    //            endItem->addArrow(arrow);
+    //        arrow->setZValue(-1000.0);
+    //        addItem(arrow);
+    //        itemHash->insert(name,arrow);
+    //    }
+    //    // remove deleted objects
+    //    // (see DesignWindow::deleteItem)
+    //    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
+    //    {
+    //        QGraphicsItem* item = itemHash->value(name);
+    //        if (item->type() == Arrow::Type)
+    //        {
+    //            removeItem(item);
+    //            Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+    //            arrow->getStartItem()->removeArrow(arrow);
+    //            arrow->getEndItem()->removeArrow(arrow);
+    //            delete item;
+    //            itemHash->remove(name);
+    //        }
+    //    }
+    //    foreach (QString name, itemHash->keys().toSet() - objectCatalogue->keys().toSet())
+    //    {
+    //        QGraphicsItem* item = itemHash->value(name);
+    //        if (item->type() == DiagramItem::Type)
+    //        {
+    //            qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
+    //            removeItem(item);
+    //            delete item;
+    //            itemHash->remove(name);
+    //        }
+    //    }
+    if (!layoutLoaded)
+    {
+        QFile savedLayoutFile(savedLayout);
+        if (savedLayoutFile.open(QIODevice::ReadOnly))
+        {
+            QByteArray savedLayoutData = savedLayoutFile.readAll();
+            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
+            read(savedLayoutDoc.object());
+        }
+        //layoutLoaded = true;
+    }
+
+    render();
+}

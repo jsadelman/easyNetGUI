@@ -51,7 +51,9 @@
 
 QT_BEGIN_NAMESPACE
 class QGraphicsSceneMouseEvent;
+class QGraphicsSceneContextMenuEvent;
 class QMenu;
+class QAction;
 class QPointF;
 class QGraphicsLineItem;
 class QFont;
@@ -107,6 +109,8 @@ signals:
     void objectSelected(QString);
 //    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objectCatalogue);
     void layoutSaveAttempted();
+    void wakeUp();
+    void goToSleep();
 
 
 protected:
@@ -114,6 +118,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent);
 
 private slots:
     void positionObject(QString name, QString type, QDomDocument* domDoc);
@@ -121,6 +126,10 @@ private slots:
     void renderObject(QDomDocument* domDoc);
     void loadLayout();
 
+    void syncToObjCatalogue();
+    void enableObserverClicked();
+    void disableObserverClicked();
+    void lesionClicked();
 private:
     void render();
     bool isItemChange(int type);
@@ -131,11 +140,20 @@ private:
     DescriptionUpdater *descriptionUpdater;
     QList<QDomDocument*> renderList;
 
+    QAction* enableObserverAction;
+    QAction* disableObserverAction;
+    QAction* lesionAction;
+
+
+
+
     QString boxType;
     QString arrowType;
+    QStringList connections;
 
     QString savedLayout;
     bool layoutLoaded = false;
+    bool layoutChanged;
     DiagramItem::DiagramType myItemType;
     Arrow::ArrowTipType myArrowTipType;
     QMenu *myItemMenu;
@@ -152,6 +170,7 @@ private:
     QColor myTextColor;
     QColor myItemColor;
     QColor myLineColor;
+    QString selectedObject;
 };
 //! [0]
 

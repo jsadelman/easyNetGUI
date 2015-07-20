@@ -75,7 +75,14 @@ SOURCES +=  \
     textedit.cpp \
     helpwindow.cpp \
     parameditor.cpp \
-    trialwidget.cpp
+    trialwidget.cpp \
+    mycombobox.cpp \
+    commandlog.cpp \
+    scripteditor.cpp \
+    console.cpp \
+    finddialog.cpp \
+    debuglog.cpp \
+    plotviewer.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -137,7 +144,14 @@ HEADERS  += \
     textedit.h \
     helpwindow.h \
     parameditor.h \
-    trialwidget.h
+    trialwidget.h \
+    mycombobox.h \
+    commandlog.h \
+    scripteditor.h \
+    console.h \
+    finddialog.h \
+    debuglog.h \
+    plotviewer.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
@@ -150,7 +164,7 @@ DISTFILES += \
     images/test.svg \
     images/image001.jpg \
     documentation/easyNetHelp.qch \
-    documentation/easyNetHelp.qhc
+    documentation/easyNetHelp.qhc \
 
 
 CONFIG += c++11
