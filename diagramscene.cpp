@@ -555,6 +555,8 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
 void DiagramScene::removeObject(QString name)
 {
     QGraphicsItem* item = itemHash.value(name);
+    if (!item)
+        return;
     if (item->type() == Arrow::Type)
     {
         removeItem(item);

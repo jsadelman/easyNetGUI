@@ -52,7 +52,9 @@ void SessionManager::startLazyNut(QString lazyNutBat)
 
 void SessionManager::restartLazyNut(QString lazyNutBat)
 {
-    ObjectCatalogue::instance()->removeRows(0, ObjectCatalogue::instance()->rowCount());
+//    ObjectCatalogue::instance()->removeRows(0, ObjectCatalogue::instance()->rowCount());
+    ObjectCatalogue::instance()->clear();
+
     killLazyNut();
     lazyNut->waitForFinished();
     startLazyNut(lazyNutBat);

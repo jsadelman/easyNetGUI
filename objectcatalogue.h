@@ -23,6 +23,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex & index) const Q_DECL_OVERRIDE;
 //    bool insertRows(int row, int count, const QModelIndex & parent = QModelIndex()) Q_DECL_OVERRIDE;
     bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex()) Q_DECL_OVERRIDE;
+    void clear();
 
     QDomDocument *description(const QString& name);
     bool isInvalid(const QString& name);
