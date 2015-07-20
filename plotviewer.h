@@ -22,7 +22,6 @@ public:
     QToolBar*       editToolBar;
     QToolBar*       navigationToolBar;
     QAction *       refreshAct;
-    QAction *       newAct;
     QAction *       openAct;
     QAction *       saveAct;
     QAction *       copyAct;

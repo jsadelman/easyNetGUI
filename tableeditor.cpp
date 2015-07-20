@@ -333,6 +333,8 @@ void TableEditor::rowChangedSlot( const QModelIndex& selected, const QModelIndex
 
 void TableEditor::updateParamTable(QString model)
 {
+    if (model.isEmpty())
+        return;
     qDebug() << "Entered updateParamTable():" << model;
     QString name = QString("(") + model + QString(" parameters)");
     emit setParamDataFrameSignal(name);

@@ -43,10 +43,14 @@
 #include "lazynutobject.h"
 #include "objectcataloguefilter.h"
 #include "descriptionupdater.h"
+#include "sessionmanager.h"
 
 
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsSceneContextMenuEvent>
+#include <QMenu>
+#include <QAction>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QFileInfo>
@@ -63,6 +67,7 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
 {
     boxType =  _boxType;
     arrowType =  _arrowType;
+    selectedObject = "";
     myItemMenu = itemMenu;
     myMode = MoveItem;
     myItemType = DiagramItem::Layer;
@@ -323,6 +328,7 @@ void DiagramScene::loadLayout()
 
 void DiagramScene::setSelected(QString name)
 {
+    qDebug() << "setSelected" << name;
     if (itemHash.contains(name))
     {
         clearSelection();
@@ -465,12 +471,69 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         if (items(mouseEvent->scenePos()).size()> 0)
         {
             QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
-            QString name = itemHash.key(item);
-//            if (!name.isEmpty())
-                emit objectSelected(name);
+            selectedObject = itemHash.key(item);
+//            if (!selectedObject.isEmpty())
+                emit objectSelected(selectedObject);
         }
     }
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+}
+
+void DiagramScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent)
+{
+    selectedObject="";
+    if (items(mouseEvent->scenePos()).size()> 0)
+    {
+        QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
+        selectedObject = itemHash.key(item);
+    }
+    if (selectedObject.isEmpty())
+        return;
+
+    QMenu menu;
+    enableObserverAction = menu.addAction("Enable default observer");
+    connect(enableObserverAction,SIGNAL(triggered()),this,SLOT(enableObserverClicked()));
+    disableObserverAction = menu.addAction("Disable default observer");
+    connect(disableObserverAction,SIGNAL(triggered()),this,SLOT(disableObserverClicked()));
+    if (connections.contains(selectedObject))
+    {
+        lesionAction = menu.addAction("Lesion");
+        connect(lesionAction,SIGNAL(triggered()),this,SLOT(lesionClicked()));
+    }
+    menu.exec(mouseEvent->screenPos());
+
+    //    if (menu.exec(mouseEvent->screenPos())==enableObserverAction)
+//        enableObserver(name);
+//    else if (menu.exec(mouseEvent->screenPos())==disableObserverAction)
+//        disableObserver(name);
+//    else if (menu.exec(mouseEvent->screenPos())==lesionAction)
+//        lesion(name);
+
+}
+
+void DiagramScene::enableObserverClicked()
+{
+    if(selectedObject.isEmpty())
+        return;
+    QString cmd = "(" + selectedObject + " default_observer) enable ";
+    SessionManager::instance()->runCmd(cmd);
+
+}
+
+void DiagramScene::disableObserverClicked()
+{
+    if(selectedObject.isEmpty())
+        return;
+    QString cmd = "(" + selectedObject + " default_observer) disable ";
+    SessionManager::instance()->runCmd(cmd);
+}
+
+void DiagramScene::lesionClicked()
+{
+    if(selectedObject.isEmpty())
+        return;
+    QString cmd = selectedObject + " lesion";
+    SessionManager::instance()->runCmd(cmd);
 }
 
 void DiagramScene::positionObject(QString name, QString type, QDomDocument *domDoc)
@@ -602,6 +665,7 @@ bool DiagramScene::isItemChange(int type)
 
 void DiagramScene::syncToObjCatalogue()
 {
+    qDebug() << "Entered syncToObjCatalogue()";
     QString name;
     QStringList newConnections{};
     // display new layers, hold new connections in a list
@@ -621,6 +685,7 @@ void DiagramScene::syncToObjCatalogue()
     QDomDocument* domDoc;
     foreach(QString name, newConnections)
     {
+        connections.append(name);
         tmp.clear();
         qDebug() << "looking for" << name;
         tmp << objectFilter->match(objectFilter->index(0,0),Qt::DisplayRole,name);

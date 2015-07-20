@@ -83,6 +83,8 @@ QStringList DescriptionUpdater::getObjectNames(int first, int last)
 void DescriptionUpdater::requestDescription(QString name)
 {
     qDebug() << "Requested description for " << name;
+    if (name.isEmpty())
+        return;
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
         qDebug() << "going to set up Job for Requested description for " << name;

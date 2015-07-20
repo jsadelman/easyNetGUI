@@ -25,7 +25,7 @@ TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
 
 
     trialFilter = new ObjectCatalogueFilter(this);
-    trialFilter->setName(""); // ADD THIS LINE TO AVOID SEGFAULT ERROR
+//    trialFilter->setName(""); // ADD THIS LINE TO AVOID SEGFAULT ERROR
     trialDescriptionUpdater = new DescriptionUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
@@ -49,8 +49,10 @@ TrialWidget::~TrialWidget()
 
 void TrialWidget::update(QString trialName)
 {
-    trialDescriptionUpdater->requestDescription(trialName); // 3/7/15 -> added cos currently no descriptions for trials
-    qDebug() << "Entered trialwidget update";
+//    trialDescriptionUpdater->requestDescription(trialName); // 3/7/15 -> added cos currently no descriptions for trials
+    qDebug() << "Entered trialwidget update" << trialName;
+    if (trialName.isEmpty())
+        return;
     trialFilter->setName(trialName);
     qDebug() << "called setName";
 

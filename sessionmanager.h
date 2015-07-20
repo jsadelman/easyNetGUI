@@ -92,6 +92,7 @@ public slots:
     void runCmd(QString cmd);
     void runCmd(QStringList cmd);
 
+    void restartLazyNut(QString lazyNutBat);
 private slots:
 
     void getOOB(const QString &lazyNutOutput);

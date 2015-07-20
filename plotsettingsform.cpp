@@ -140,7 +140,7 @@ void PlotSettingsForm::checkDependencies()
     {
         dependerOnUpdate = widget->name();
         LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->logMode &= ECHO_INTERPRETER; // debug purpose
         param->cmdList = getSettingsCmdList();
         param->cmdList.append(QString("xml %1 list_settings").arg(plotName));
         param->answerFormatterType = AnswerFormatterType::XML;
