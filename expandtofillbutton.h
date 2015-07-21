@@ -2,7 +2,7 @@
 #define EXPANDTOFILLBUTTON_H
 
 #include <QStyledItemDelegate>
-
+struct DomItem;
 
 class ExpandToFillButton : public QStyledItemDelegate
 {
@@ -15,7 +15,7 @@ public:
                const QModelIndex & index) const Q_DECL_OVERRIDE;
 
 signals:
-    void expandToFill(QString);
+    void expandToFill(QAbstractItemModel*,const QModelIndex&,QString);
 
 protected:
     bool editorEvent(QEvent * event, QAbstractItemModel * model,

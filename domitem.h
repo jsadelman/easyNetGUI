@@ -20,6 +20,7 @@ public:
     DomItem *parent();
     QDomNode node() const;
     int row();
+    void assign(QDomNode*node);
 
 private:
     QDomNode domNode;

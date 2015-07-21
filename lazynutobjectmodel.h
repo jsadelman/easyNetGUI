@@ -34,7 +34,7 @@ public slots:
     void removeDescription(QString descName);
     void updateDescription(QDomDocument* domDoc);
     void clearDescription();
-
+    void pokeAdditionalDescription(const QModelIndex&,QDomDocument*);
 
 signals:
     void objectRequested(QString);
