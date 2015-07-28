@@ -952,8 +952,6 @@ void EasyNetMainWindow::setLargerFont()
 
 void EasyNetMainWindow::lazyNutNotRunning()
 {
-    lazyNutStatusWidget->setCurrentWidget(offLabel);
-    lazyNutProgressBar->reset();
     QMessageBox::critical(this, "critical",
     QString("%1 script not running or not found.\n"
             "Please select a valid %1 file from the menu Settings -> Set %1\n"
@@ -1171,6 +1169,9 @@ void EasyNetMainWindow::createStatusBar()
     lazyNutStatusWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusBar()->addPermanentWidget(lazyNutStatusWidget, 1);
     connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));
+    connect(SessionManager::instance(), &SessionManager::lazyNutNotRunning,[=](){
+        lazyNutStatusWidget->setCurrentWidget(offLabel);
+    });
 
 
 
