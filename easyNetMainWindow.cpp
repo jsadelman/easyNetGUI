@@ -88,6 +88,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 void EasyNetMainWindow::checkLazyNut()
 {
+    connect(SessionManager::instance(), SIGNAL(lazyNutNotRunning()),
+            this, SLOT(lazyNutNotRunning()));
     if (lazyNutBat.isEmpty())
     {
         if (easyNetHome.isEmpty())
@@ -902,15 +904,19 @@ void EasyNetMainWindow::getVersion()
 void EasyNetMainWindow::setEasyNetHome()
 {
     easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
+    if (easyNetHome.isEmpty())
+        return;
     lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
-    SessionManager::instance()->startLazyNut(lazyNutBat);
+    SessionManager::instance()->restartLazyNut(lazyNutBat);
 }
 
 void EasyNetMainWindow::setLazyNutBat()
 {
     lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
                                               easyNetHome,QString("*.%1").arg(lazyNutExt));
-    SessionManager::instance()->startLazyNut(lazyNutBat);
+    if (lazyNutBat.isEmpty())
+        return;
+    SessionManager::instance()->restartLazyNut(lazyNutBat);
 }
 
 void EasyNetMainWindow::setSmallFont()
@@ -946,6 +952,8 @@ void EasyNetMainWindow::setLargerFont()
 
 void EasyNetMainWindow::lazyNutNotRunning()
 {
+    lazyNutStatusWidget->setCurrentWidget(offLabel);
+    lazyNutProgressBar->reset();
     QMessageBox::critical(this, "critical",
     QString("%1 script not running or not found.\n"
             "Please select a valid %1 file from the menu Settings -> Set %1\n"
@@ -1163,7 +1171,6 @@ void EasyNetMainWindow::createStatusBar()
     lazyNutStatusWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusBar()->addPermanentWidget(lazyNutStatusWidget, 1);
     connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));
-
 
 
 

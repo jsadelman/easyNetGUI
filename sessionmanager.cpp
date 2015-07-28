@@ -19,6 +19,7 @@
 #include <QDomDocument>
 #include <QAbstractTransition>
 #include <QThread>
+#include <QMessageBox>
 
 SessionManager* SessionManager::sessionManager = nullptr;
 
@@ -32,21 +33,19 @@ SessionManager::SessionManager()
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
-//    connect(lazyNut, SIGNAL(started()), this, SIGNAL(lazyNutStarted()));
-//    connect(lazyNut, SIGNAL(error(int)), this, SLOT(lazyNutProcessError(int)));
+    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     macroQueue = new MacroQueue;
 }
 
 
 void SessionManager::startLazyNut(QString lazyNutBat)
 {
-    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
     lazyNut->start(lazyNutBat);
     if (lazyNut->state() == QProcess::NotRunning)
     {
-        delete lazyNut;
         emit lazyNutNotRunning();
+        qDebug("lazyNut not running");
     }
 }
 
