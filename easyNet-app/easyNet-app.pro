@@ -10,11 +10,23 @@ QT      += webkit webkitwidgets
 QT      += svg
 QT      += sql
 
+DUNNARTHEADERS = $${PWD}/../dunnart-libs
+INCLUDEPATH = .. \
+$$DUNNARTHEADERS \
+$$DUNNARTHEADERS/libvpsc \
+$$DUNNARTHEADERS/libcola \
+$$DUNNARTHEADERS/libtopology \
+$$DUNNARTHEADERS/libdunnartcanvas \
+
+DEPENDPATH =  .. .
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = easyNet
 TEMPLATE = app
 
+
+LIBS += -L$${PWD}/../dll -ldunnartcanvas -lavoid
 
 SOURCES +=  \
     main.cpp \
@@ -22,11 +34,11 @@ SOURCES +=  \
     treemodel.cpp \
     querycontext.cpp \
     objexplorer.cpp \
-    arrow.cpp \
-   diagramitem.cpp \
+ #   arrow.cpp \
+ #  diagramitem.cpp \
    diagramscene.cpp \
     diagramtextitem.cpp \
-    designwindow.cpp \
+#    designwindow.cpp \
     highlighter.cpp \
     codeeditor.cpp \
     editwindow.cpp \
@@ -82,18 +94,20 @@ SOURCES +=  \
     console.cpp \
     finddialog.cpp \
     debuglog.cpp \
-    plotviewer.cpp
+    plotviewer.cpp \
+    diagramscenetabwidget.cpp \
+    diagramwindow.cpp
 
 HEADERS  += \
     treeitem.h \
     treemodel.h \
     querycontext.h \
     objexplorer.h \
-   arrow.h \
-    diagramitem.h \
+ #  arrow.h \
+ #   diagramitem.h \
     diagramscene.h \
     diagramtextitem.h \
-    designwindow.h \
+ #   designwindow.h \
     highlighter.h \
     codeeditor.h \
     editwindow.h \
@@ -151,7 +165,9 @@ HEADERS  += \
     console.h \
     finddialog.h \
     debuglog.h \
-    plotviewer.h
+    plotviewer.h \
+    diagramscenetabwidget.h \
+    diagramwindow.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

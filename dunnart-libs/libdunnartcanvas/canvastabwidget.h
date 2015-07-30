@@ -79,7 +79,7 @@ private slots:
     void clipboardContentsChanged(void);
     void documentCleanChanged(bool);
 
-private:
+protected: // MG: was private
     QMainWindow *m_window;
     Canvas *m_canvas;
     QUndoGroup *m_undo_group;

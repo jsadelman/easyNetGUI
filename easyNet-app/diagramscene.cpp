@@ -45,6 +45,11 @@
 #include "descriptionupdater.h"
 #include "sessionmanager.h"
 
+#include "libdunnartcanvas/shape.h"
+#include "libdunnartcanvas/dunnart_connector.h"
+#include "libdunnartcanvas/canvasitem.h"
+#include "libdunnartcanvas/graphlayout.h"
+
 
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
@@ -58,24 +63,25 @@
 #include <QDomDocument>
 #include <QDebug>
 
+using dunnart::CanvasItem;
+using dunnart::RectangleShape;
+using dunnart::Connector;
+
 Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
-DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
-                           QString _boxType, QString _arrowType, QObject *parent)
-    : objectCatalogue(objectCatalogue), QGraphicsScene(parent)
+DiagramScene::DiagramScene(QString boxType, QString arrowType)
+    : boxType(boxType), arrowType(arrowType), Canvas()
 {
-    boxType =  _boxType;
-    arrowType =  _arrowType;
     selectedObject = "";
-    myItemMenu = itemMenu;
-    myMode = MoveItem;
-    myItemType = DiagramItem::Layer;
-    line = 0;
-    textItem = 0;
-    myItemColor = Qt::white;
-    myTextColor = Qt::black;
-    myLineColor = Qt::black;
+//    myItemMenu = itemMenu;
+//    myMode = MoveItem;
+//    myItemType = DiagramItem::Layer;
+//    line = 0;
+//    textItem = 0;
+//    myItemColor = Qt::white;
+//    myTextColor = Qt::black;
+//    myLineColor = Qt::black;
     defaultPosition = QPointF(300,125); //  150);
     currentPosition = defaultPosition;
     itemOffset = QPointF(0,50) ; // 150);
@@ -99,6 +105,8 @@ DiagramScene::DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
 
 
 }
+
+#if 0
 
 void DiagramScene::setObjCatalogue(ObjectCatalogue *catalogue)
 {
@@ -217,6 +225,7 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
     }
 }
 
+#endif
 //void DiagramScene::syncToObjCatalogue()
 //{
 //    if (objectCatalogue == nullptr)
@@ -297,6 +306,7 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
 //    }
 //}
 
+#if 0
 void DiagramScene::prepareToLoadLayout(QString fileName)
 {
     savedLayout = fileName;
@@ -325,24 +335,16 @@ void DiagramScene::loadLayout()
 //    disconnect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
 //                   this, SLOT(loadLayout()));
 }
-
+#endif
 void DiagramScene::setSelected(QString name)
 {
     qDebug() << "setSelected" << name;
     if (itemHash.contains(name))
-    {
-        clearSelection();
-        foreach (QGraphicsItem *item, items())
-        {
-            if (item == itemHash.value(name))
-            {
-                item->setSelected(true);
-                return;
-            }
-        }
-    }
+        setSelection(QList<CanvasItem*>{itemHash.value(name)});
 }
 
+
+#if 0
 void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
 {
     savedLayout = _savedLayout;
@@ -461,30 +463,30 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     line = 0;
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
-
+#endif
 void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (mouseEvent->button() != Qt::LeftButton)
         return;
-    if (myMode == MoveItem)
+    foreach (QGraphicsItem *item, QGraphicsScene::items(mouseEvent->scenePos()))
     {
-        if (items(mouseEvent->scenePos()).size()> 0)
+        CanvasItem *canvasItem = qgraphicsitem_cast<CanvasItem*>(item);
+        if (canvasItem)
         {
-            QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
-            selectedObject = itemHash.key(item);
-//            if (!selectedObject.isEmpty())
-                emit objectSelected(selectedObject);
+            selectedObject = itemHash.key(canvasItem);
+            emit objectSelected(selectedObject);
+            break;
         }
     }
-    QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+    Canvas::mouseDoubleClickEvent(mouseEvent);
 }
 
 void DiagramScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent)
 {
     selectedObject="";
-    if (items(mouseEvent->scenePos()).size()> 0)
+    if (QGraphicsScene::items(mouseEvent->scenePos()).size()> 0)
     {
-        QGraphicsItem *item = items(mouseEvent->scenePos()).at(0);
+        CanvasItem *item = qgraphicsitem_cast<CanvasItem*>(QGraphicsScene::items(mouseEvent->scenePos()).at(0));
         selectedObject = itemHash.key(item);
     }
     if (selectedObject.isEmpty())
@@ -543,39 +545,52 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
 //    if (type == "layer")
       if (type == boxType)
     {
-        DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
-        diagramItem->setBrush(myItemColor);
-        addItem(diagramItem);
-        currentPosition += itemOffset;
-        diagramItem->setPos(currentPosition);
-        itemHash.insert(name,diagramItem);
+//        DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
+//        diagramItem->setBrush(myItemColor);
+        RectangleShape *box = new RectangleShape();
+        // temporarily define dimensions here
+        int boxWidth = 150;
+        int boxHeight = 50;
+        box->setPosAndSize(defaultPosition, QSizeF(boxWidth,boxHeight));
+        box->setLabel(name);
+        addItem(box);
+//        currentPosition += itemOffset;
+//        diagramItem->setPos(currentPosition);
+        itemHash.insert(name,box);
     }
 }
 
 void DiagramScene::removeObject(QString name)
 {
-    QGraphicsItem* item = itemHash.value(name);
+    CanvasItem* item = itemHash.value(name);
     if (!item)
         return;
-    if (item->type() == Arrow::Type)
-    {
-        removeItem(item);
-        Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
-        if (arrow->getStartItem())
-            arrow->getStartItem()->removeArrow(arrow);
-        if (arrow->getEndItem())
-            arrow->getEndItem()->removeArrow(arrow);
-        delete arrow;
-        itemHash.remove(name);
-    }
-    else if (item->type() == DiagramItem::Type)
-    {
-        DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
-//        qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
-        removeItem(item);
-        delete diagramItem;
-        itemHash.remove(name);
-    }
+
+    setSelection(QList<CanvasItem*>{item});
+    deleteSelection();
+    delete item;
+    itemHash.remove(name);
+
+
+//    if (item->type() == Arrow::Type)
+//    {
+//        removeItem(item);
+//        Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+//        if (arrow->getStartItem())
+//            arrow->getStartItem()->removeArrow(arrow);
+//        if (arrow->getEndItem())
+//            arrow->getEndItem()->removeArrow(arrow);
+//        delete arrow;
+//        itemHash.remove(name);
+//    }
+//    else if (item->type() == DiagramItem::Type)
+//    {
+//        DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
+////        qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
+//        removeItem(item);
+//        delete diagramItem;
+//        itemHash.remove(name);
+//    }
 }
 
 void DiagramScene::renderObject(QDomDocument *domDoc)
@@ -586,75 +601,103 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
         render();
 }
 
-QString fixName (QString name);
-QString fixName (QString name)
-{
-    name = name.replace( " ", "_" );
-    name = name.replace( "(", "" );
-    name = name.replace( ")", "" );
-    return (name);
-}
+//QString fixName (QString name);
+//QString fixName (QString name)
+//{
+//    name = name.replace( " ", "_" );
+//    name = name.replace( "(", "" );
+//    name = name.replace( ")", "" );
+//    return (name);
+//}
 
 void DiagramScene::render()
 {
     // layers don't need any rendering and they are already in itemHash
     // connections need rendering since they need their source and dest layers, if present,
     // and are not in itemHash
-    QFile file(boxType+QString("connections.txt"));
-    file.open(QIODevice::Append | QIODevice::Text);
-    QTextStream out( &file );
+//    QFile file(boxType+QString("connections.txt"));
+//    file.open(QIODevice::Append | QIODevice::Text);
+//    QTextStream out( &file );
 
     foreach(QDomDocument* domDoc, renderList)
     {
+        if (!domDoc)
+            continue;
 //        if (AsLazyNutObject(*domDoc).type() == "connection")
             if (AsLazyNutObject(*domDoc).type() == arrowType)
         {
             QString name = AsLazyNutObject(*domDoc).name();
-            DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
+            RectangleShape *startItem = qgraphicsitem_cast<RectangleShape *>
                     (itemHash.value(AsLazyNutObject(*domDoc)["Source"]()));
-            DiagramItem *endItem = qgraphicsitem_cast<DiagramItem *>
+            RectangleShape *endItem = qgraphicsitem_cast<RectangleShape *>
                     (itemHash.value(AsLazyNutObject(*domDoc)["Target"]()));
-            Arrow *arrow;
+            Connector *arrow;
             if (itemHash.contains(name))
-                arrow = qgraphicsitem_cast<Arrow*>(itemHash.value(name));
+                arrow = qgraphicsitem_cast<Connector*>(itemHash.value(name));
             else
+//            {
+                arrow = new Connector();
+//                addItem(arrow);
+//                itemHash.insert(name,arrow);
+//            }
+//            arrow->setStartItem(startItem);
+//            arrow->setEndItem(endItem);
+//            out << fixName(startItem->name()) << "-->"
+//                     << fixName(endItem->name()) << ";\n";
+            if (!startItem && !endItem)
             {
-                arrow = new Arrow(name);
+                arrow->setNewEndpoint(dunnart::SRCPT, defaultPosition, nullptr);
+                arrow->setNewEndpoint(dunnart::DSTPT, defaultPosition - QPointF(0, 50), nullptr);
+//                currentPosition += arrowOffset;
+//                arrow->setArrowStart(currentPosition);
+            }
+            else if (!startItem)
+            {
+                arrow->setNewEndpoint(dunnart::DSTPT, endItem->centrePos(), endItem, dunnart::CENTRE_CONNECTION_PIN);
+                arrow->setNewEndpoint(dunnart::SRCPT, endItem->centrePos() + QPointF(0,endItem->height()/2 + 50), nullptr);
+            }
+            else if (!endItem)
+            {
+                arrow->setNewEndpoint(dunnart::SRCPT, startItem->centrePos(), startItem, dunnart::CENTRE_CONNECTION_PIN);
+                arrow->setNewEndpoint(dunnart::DSTPT, startItem->centrePos() - QPointF(0,endItem->height()/2 + 50), nullptr);
+            }
+            else
+                arrow->initWithConnection(startItem, endItem);
+
+            arrow->setDirected(true);
+
+            if (!itemHash.contains(name))
+            {
                 addItem(arrow);
                 itemHash.insert(name,arrow);
             }
-            arrow->setStartItem(startItem);
-            arrow->setEndItem(endItem);
-            out << fixName(startItem->name()) << "-->"
-                     << fixName(endItem->name()) << ";\n";
-            if (!startItem && !endItem)
-            {
-                currentPosition += arrowOffset;
-                arrow->setArrowStart(currentPosition);
-            }
-            if (startItem && startItem == endItem)
-                arrow->setArrowType(Arrow::SelfLoop);
-            else
-                arrow->setArrowType(Arrow::Line);
-            arrow->setColor(myLineColor);
-            if (startItem && !startItem->arrowList().contains(arrow))
-                startItem->addArrow(arrow);
-            if (endItem && !endItem->arrowList().contains(arrow))
-                endItem->addArrow(arrow);
-            if (startItem && endItem)
-                arrow->setZValue(-1000.0);
-            else
-                arrow->setZValue(1000.0);
-            arrow->updatePosition();
+//            if (startItem && startItem == endItem)
+//                arrow->setArrowType(Arrow::SelfLoop);
+//            else
+//                arrow->setArrowType(Arrow::Line);
+//            arrow->setColor(myLineColor);
+//            if (startItem && !startItem->arrowList().contains(arrow))
+//                startItem->addArrow(arrow);
+//            if (endItem && !endItem->arrowList().contains(arrow))
+//                endItem->addArrow(arrow);
+//            if (startItem && endItem)
+//                arrow->setZValue(-1000.0);
+//            else
+//                arrow->setZValue(1000.0);
+//            arrow->updatePosition();
         }
     }
     renderList.clear();
-    file.close();
+    layout()->initialise();
+    updateConnectorsForLayout();
+
+//    file.close();
 }
 
 //! [13]
 
 //! [14]
+#if 0
 bool DiagramScene::isItemChange(int type)
 {
     foreach (QGraphicsItem *item, selectedItems()) {
@@ -663,6 +706,7 @@ bool DiagramScene::isItemChange(int type)
     }
     return false;
 }
+#endif
 //! [14]
 
 void DiagramScene::syncToObjCatalogue()
@@ -683,23 +727,25 @@ void DiagramScene::syncToObjCatalogue()
     }
 
     //    display new connections
-    QModelIndexList tmp;
-    QDomDocument* domDoc;
     foreach(QString name, newConnections)
     {
         connections.append(name);
-        tmp.clear();
-        qDebug() << "looking for" << name;
-        tmp << objectFilter->match(objectFilter->index(0,0),Qt::DisplayRole,name);
-        qDebug() << "matching row" << objectFilter->data(tmp.at(0));
-        QVariant v = objectFilter->data(objectFilter->index((tmp.at(0)).row(),2));
+//        qDebug() << "looking for" << name;
+        QModelIndexList matchedIndexList = objectFilter->match(objectFilter->index(0,0),Qt::DisplayRole,name);
+//        qDebug() << "matching row" << objectFilter->data(matchedIndexList.at(0));
+        QVariant v = objectFilter->data(objectFilter->index(matchedIndexList.at(0).row(),3));
         if (v.canConvert<QDomDocument *>())
             renderList.append(v.value<QDomDocument *>());
         descriptionUpdater->requestDescription(name);
-
-//        qDebug() << "domDoc" << domDoc;
-//        renderList.append(domDoc);
     }
+    // remove destroyed objects
+    foreach (QString name, itemHash.keys())
+    {
+        QModelIndexList matchedIndexList = objectFilter->match(objectFilter->index(0,0),Qt::DisplayRole,name);
+        if (matchedIndexList.isEmpty())
+            removeObject(name);
+    }
+
 //        DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>
 //                        (itemHash->value(objectCatalogue->value(name)->getValue("Source")));
 //            DiagramItem *endItem   = qgraphicsitem_cast<DiagramItem *>
@@ -742,17 +788,17 @@ void DiagramScene::syncToObjCatalogue()
     //            itemHash->remove(name);
     //        }
     //    }
-    if (!layoutLoaded)
-    {
-        QFile savedLayoutFile(savedLayout);
-        if (savedLayoutFile.open(QIODevice::ReadOnly))
-        {
-            QByteArray savedLayoutData = savedLayoutFile.readAll();
-            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
-            read(savedLayoutDoc.object());
-        }
-        //layoutLoaded = true;
-    }
+//    if (!layoutLoaded)
+//    {
+//        QFile savedLayoutFile(savedLayout);
+//        if (savedLayoutFile.open(QIODevice::ReadOnly))
+//        {
+//            QByteArray savedLayoutData = savedLayoutFile.readAll();
+//            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
+//            read(savedLayoutDoc.object());
+//        }
+//        //layoutLoaded = true;
+//    }
 
-    render();
+//    render();
 }

@@ -330,7 +330,7 @@ class Canvas : public QGraphicsScene
         void optChangedShapeNonoverlapPadding(int padding);
         void optChangedLayeredAlignmentPosition(LayeredAlignment pos);
 
-    private slots:
+    protected slots: // MG: were private
         void processLayoutUpdateEvent(void);
         void processLayoutFinishedEvent(void);
         void selectionChangeTriggers(void);
@@ -339,6 +339,7 @@ class Canvas : public QGraphicsScene
         virtual void drawForeground(QPainter *painter, const QRectF& rect);
         virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
         virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
+        void updateConnectorsForLayout(void); // MG: was private
 private:
         bool loadDiagram(const QString& filename);
         bool idIsUnique(QString id) const;
@@ -356,7 +357,7 @@ private:
         void clearIndicatorHighlights(const bool clearCache = false);
         void glueObjectsToIndicators(void);
         bool hasVisibleOverlays(void) const;
-        void updateConnectorsForLayout(void);
+
 
         double m_visual_page_buffer;
         QString m_filename;

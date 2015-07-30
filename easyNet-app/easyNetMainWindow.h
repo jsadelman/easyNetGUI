@@ -41,6 +41,9 @@ class HelpWindow;
 class TrialWidget;
 class Console;
 class DebugLog;
+class DiagramSceneTabWidget;
+class DiagramScene;
+class DiagramWindow;
 
 QT_END_NAMESPACE
 
@@ -122,7 +125,7 @@ private slots:
     void setMediumFont();
     void setLargerFont();
     void afterModelLoaded();
-    void tabChanged(int idx);
+    void diagramSceneTabChanged(int index);
     void runScript();
     void processHistoryKey(int dir);
     void setQuietMode();
@@ -190,8 +193,11 @@ private:
     QTabWidget *lazynutPanel;
     QTabWidget *outputPanel;
     QTabWidget *explorerPanel;
+    DiagramSceneTabWidget *diagramPanel;
+    DiagramWindow *diagramWindow;
     QDockWidget* codePanelDock;
     QDockWidget *visualiserDock;
+    QDockWidget *diagramDock;
     QDockWidget *explorerDock;
     QDockWidget *outputDock;
 
@@ -227,6 +233,8 @@ private:
 //    LazyNutScriptEditor  *scriptEditor;
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
+    DiagramScene    *modelScene;
+    DiagramScene    *conversionScene;
     PlotWindow      *plotWindow;
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
@@ -249,7 +257,7 @@ private:
     int             infoTabIdx;
     int             paramTabIdx;
     int             plotTabIdx;
-    int             designTabIdx;
+    int             modelTabIdx;
     int             conversionTabIdx;
     int             scriptTabIdx;
     int             outputTablesTabIdx;

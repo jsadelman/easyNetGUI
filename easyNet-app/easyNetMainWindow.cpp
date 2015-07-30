@@ -46,6 +46,9 @@
 #include "console.h"
 #include "debuglog.h"
 #include "plotviewer.h"
+#include "diagramscenetabwidget.h"
+#include "diagramscene.h"
+#include "diagramwindow.h"
 
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -121,18 +124,18 @@ void EasyNetMainWindow::constructForms()
     plotWindow = new PlotWindow(this);
 
     objExplorer = new ObjExplorer(ObjectCatalogue::instance(),this);
-    designWindow = new DesignWindow(ObjectCatalogue::instance(), "layer", "connection", this);
-    conversionWindow = new DesignWindow(ObjectCatalogue::instance(), "representation", "conversion", this);
-    connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
-    connect(this,SIGNAL(saveLayout()),conversionWindow,SIGNAL(saveLayout()));
+//    designWindow = new DesignWindow(ObjectCatalogue::instance(), "layer", "connection", this);
+//    conversionWindow = new DesignWindow(ObjectCatalogue::instance(), "representation", "conversion", this);
+//    connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
+//    connect(this,SIGNAL(saveLayout()),conversionWindow,SIGNAL(saveLayout()));
     connect(lazyNutConsole2,SIGNAL(historyKey(int)),
             this,SLOT(processHistoryKey(int)));
     connect(this,SIGNAL(showHistory(QString)),
             lazyNutConsole2,SLOT(showHistory(QString)));
-    connect(designWindow,SIGNAL(objectSelected(QString)),
-            objExplorer,SIGNAL(objectSelected(QString)));
-    connect(designWindow,SIGNAL(objectSelected(QString)),
-            this,SLOT(showExplorer()));
+//    connect(designWindow,SIGNAL(objectSelected(QString)),
+//            objExplorer,SIGNAL(objectSelected(QString)));
+//    connect(designWindow,SIGNAL(objectSelected(QString)),
+//            this,SLOT(showExplorer()));
 
     scriptEdit = new ScriptEditor(scriptsDir, this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
@@ -160,8 +163,27 @@ void EasyNetMainWindow::constructForms()
     outputPanel = new QTabWidget;
 
     infoTabIdx = outputPanel->addTab(infoWindow, tr("Info"));
-    designTabIdx = visualiserPanel->addTab(designWindow, tr("Model"));
-    conversionTabIdx = visualiserPanel->addTab(conversionWindow, tr("Conversions"));
+
+
+    diagramPanel = new DiagramSceneTabWidget(this);
+    modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
+    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+    modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
+    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+    connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+    connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+    modelScene->setOptIdealEdgeLengthModifier(2);
+    conversionScene->setOptIdealEdgeLengthModifier(2);
+
+    diagramWindow = new DiagramWindow(diagramPanel, this);
+
+
+
+
+//    modelTabIdx = visualiserPanel->addTab(designWindow, tr("Model"));
+//    conversionTabIdx = visualiserPanel->addTab(conversionWindow, tr("Conversions"));
     visualiserPanel->addTab(plotWindow, tr("Plot settings"));
     plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
     //        lazynutPanel->addTab(lazyNutConsole, tr("Console"));
@@ -199,15 +221,18 @@ void EasyNetMainWindow::constructForms()
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
     connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
     connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
-    connect(visualiserPanel, SIGNAL(currentChanged(int)),this,SLOT(tabChanged(int)));
+//    connect(diagramPanel, SIGNAL(currentDiagramSceneChanged(DiagramScene*)),
+//            this, SLOT(diagramSceneTabChanged(DiagramScene*)));
+    connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(trialWidget,SIGNAL(runAllModeChanged(bool)),this,SLOT(setRunAllMode(bool)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole2,SLOT(addText(QString)));
 
 
-    visualiserPanel->setCurrentIndex(conversionTabIdx);
-    visualiserPanel->setCurrentIndex(designTabIdx); // start on Design window
+//    visualiserPanel->setCurrentIndex(conversionTabIdx);
+//    visualiserPanel->setCurrentIndex(modelTabIdx); // start on Design window
+    diagramPanel->setCurrentIndex(modelTabIdx);
 
 
 }
@@ -224,16 +249,15 @@ void EasyNetMainWindow::setRunAllMode(bool mode)
     runAllMode = mode;
 }
 
-void EasyNetMainWindow::tabChanged(int idx)
+void EasyNetMainWindow::diagramSceneTabChanged(int index)
 {
-    emit designWindow->goToSleep();
-    emit conversionWindow->goToSleep();
-    if (idx == designTabIdx)
-
-        emit designWindow->wakeUp();
-    else if (idx == conversionTabIdx)
-        emit conversionWindow->wakeUp();
-
+    emit modelScene->goToSleep();
+    emit conversionScene->goToSleep();
+//    if (idx == modelTabIdx)
+//        emit modelScene->wakeUp();
+//    else if (idx == conversionTabIdx)
+//        emit conversionScene->wakeUp();
+    emit diagramPanel->diagramSceneAt(index)->wakeUp();
 }
 
 void EasyNetMainWindow::setParamDataFrame(QString name)
@@ -289,7 +313,14 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
     viewMenu->addAction(visualiserDock->toggleViewAction());
     visualiserDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
+    diagramDock = new QDockWidget(tr("Diagrams"), this);
+    diagramDock->setWidget(diagramWindow);
+    addDockWidget(Qt::LeftDockWidgetArea, diagramDock);
+    viewMenu->addAction(diagramDock->toggleViewAction());
+    diagramDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+
     tabifyDockWidget(codePanelDock, visualiserDock);
+    tabifyDockWidget(visualiserDock, diagramDock);
     tabifyDockWidget(explorerDock, outputDock);
 }
 
@@ -561,7 +592,7 @@ void EasyNetMainWindow::loadModel()
                                                     tr("Script Files (*.eNs *.eNm)"));
     if (!fileName.isEmpty())
     {
-        emit designWindow->goToSleep();
+        emit modelScene->goToSleep();
 
         // load and run script
         loadFile(fileName);
@@ -572,8 +603,8 @@ void EasyNetMainWindow::loadModel()
 
         // set up signal - slots so that loadLayout will be called
         // once all of the layers/connections have descriptions
-        designWindow->prepareToLoadLayout(base);
-        conversionWindow->prepareToLoadLayout(base);
+//        designWindow->prepareToLoadLayout(base);
+//        conversionWindow->prepareToLoadLayout(base);
 
         // show info page, if there is one
         QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
@@ -593,7 +624,7 @@ void EasyNetMainWindow::loadModel()
 
 void EasyNetMainWindow::afterModelLoaded()
 {
-    emit designWindow->wakeUp();
+    emit modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
     // default plot type and plot name
     QMap<QString,QString> settings;

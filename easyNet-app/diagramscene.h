@@ -45,9 +45,12 @@
 #include "diagramtextitem.h"
 #include "arrow.h"
 
-#include <QGraphicsScene>
+#include "libdunnartcanvas/canvas.h"
+//#include <QGraphicsScene>
 
-
+namespace dunnart {
+    class CanvasItem;
+}
 
 QT_BEGIN_NAMESPACE
 class QGraphicsSceneMouseEvent;
@@ -69,37 +72,36 @@ class QDomDocument;
 QT_END_NAMESPACE
 
 //! [0]
-class DiagramScene : public QGraphicsScene
+class DiagramScene : public dunnart::Canvas
 {
     Q_OBJECT
 
 public:
-    enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
+//    enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
-    explicit DiagramScene(QMenu *itemMenu, ObjectCatalogue *objectCatalogue,
-                          QString boxType, QString arrowType, QObject *parent = 0);
-    void setObjCatalogue(ObjectCatalogue *catalogue);
-    QFont font() const { return myFont; }
-    QColor textColor() const { return myTextColor; }
-    QColor itemColor() const { return myItemColor; }
-    QColor lineColor() const { return myLineColor; }
-    void setLineColor(const QColor &color);
-    void setTextColor(const QColor &color);
-    void setItemColor(const QColor &color);
-    void setFont(const QFont &font);
-    void read(const QJsonObject &json);
-    void write(QJsonObject &json) const;
+    explicit DiagramScene(QString boxType, QString arrowType);
+//    void setObjCatalogue(ObjectCatalogue *catalogue);
+//    QFont font() const { return myFont; }
+//    QColor textColor() const { return myTextColor; }
+//    QColor itemColor() const { return myItemColor; }
+//    QColor lineColor() const { return myLineColor; }
+//    void setLineColor(const QColor &color);
+//    void setTextColor(const QColor &color);
+//    void setItemColor(const QColor &color);
+//    void setFont(const QFont &font);
+//    void read(const QJsonObject &json);
+//    void write(QJsonObject &json) const;
 
 public slots:
-    void setMode(Mode mode);
-    void setItemType(DiagramItem::DiagramType type);
-    void setArrowTipType(Arrow::ArrowTipType type);
-    void editorLostFocus(DiagramTextItem *item);
+//    void setMode(Mode mode);
+//    void setItemType(DiagramItem::DiagramType type);
+//    void setArrowTipType(Arrow::ArrowTipType type);
+//    void editorLostFocus(DiagramTextItem *item);
 //    void syncToObjCatalogue();
     void setSelected(QString name);
-    void savedLayoutToBeLoaded(QString _savedLayout);
-    void saveLayout();
-    void prepareToLoadLayout(QString fileName);
+//    void savedLayoutToBeLoaded(QString _savedLayout);
+//    void saveLayout();
+//    void prepareToLoadLayout(QString fileName);
 
 
 signals:
@@ -108,15 +110,15 @@ signals:
     void itemSelected(QGraphicsItem*);
     void objectSelected(QString);
 //    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objectCatalogue);
-    void layoutSaveAttempted();
+//    void layoutSaveAttempted();
     void wakeUp();
     void goToSleep();
 
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
+//    void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
+//    void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
+//    void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent);
 
@@ -124,7 +126,7 @@ private slots:
     void positionObject(QString name, QString type, QDomDocument* domDoc);
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
-    void loadLayout();
+//    void loadLayout();
 
     void syncToObjCatalogue();
     void enableObserverClicked();
@@ -132,10 +134,10 @@ private slots:
     void lesionClicked();
 private:
     void render();
-    bool isItemChange(int type);
+//    bool isItemChange(int type);
 
     ObjectCatalogue *objectCatalogue;
-    QHash<QString,QGraphicsItem*> itemHash;
+    QHash<QString, dunnart::CanvasItem*> itemHash;
     ObjectCatalogueFilter *objectFilter;
     DescriptionUpdater *descriptionUpdater;
     QList<QDomDocument*> renderList;
@@ -151,26 +153,28 @@ private:
     QString arrowType;
     QStringList connections;
 
-    QString savedLayout;
-    bool layoutLoaded = false;
-    bool layoutChanged;
-    DiagramItem::DiagramType myItemType;
-    Arrow::ArrowTipType myArrowTipType;
-    QMenu *myItemMenu;
-    Mode myMode;
-    bool leftButtonDown;
+//    QString savedLayout;
+//    bool layoutLoaded = false;
+//    bool layoutChanged;
+//    DiagramItem::DiagramType myItemType;
+//    Arrow::ArrowTipType myArrowTipType;
+//    QMenu *myItemMenu;
+//    Mode myMode;
+//    bool leftButtonDown;
     //QPointF startPoint;
     QPointF defaultPosition;
     QPointF currentPosition;
     QPointF itemOffset;
     QPointF arrowOffset;
-    QGraphicsLineItem *line;
-    QFont myFont;
-    DiagramTextItem *textItem;
-    QColor myTextColor;
-    QColor myItemColor;
-    QColor myLineColor;
+//    QGraphicsLineItem *line;
+//    QFont myFont;
+//    DiagramTextItem *textItem;
+//    QColor myTextColor;
+//    QColor myItemColor;
+//    QColor myLineColor;
     QString selectedObject;
+
+    friend class DiagramWindow; // dunnart::Canvas has lots of friends, this is the same idea.
 };
 //! [0]
 
