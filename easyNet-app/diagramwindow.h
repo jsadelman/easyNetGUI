@@ -4,6 +4,9 @@
 #include <QMainWindow>
 
 class DiagramSceneTabWidget;
+class QComboBox;
+class QSpinBox;
+class QDoubleSpinBox;
 
 class DiagramWindow
         : public QMainWindow
@@ -16,9 +19,19 @@ public slots:
     void arrange();
     void rearrange();
 
+private slots:
+    void sceneScaleChanged(const QString &scale);
+
+    void recoverZoom();
+    void recoverProperties();
+    void deleteSelection();
 private:
     void createMenus();
     DiagramSceneTabWidget *diagramSceneTabWidget;
+    QComboBox *sceneScaleCombo;
+    QDoubleSpinBox *idealEdgeLengthModifierSpinBox;
+    QSpinBox *shapeNonOverlapPaddingSpinBox;
+    QDoubleSpinBox *flowSeparationModifierSpinBox;
 
 };
 
