@@ -25,6 +25,7 @@ private slots:
     void recoverZoom();
     void recoverProperties();
     void deleteSelection();
+    void alignSelection(int alignType);
 private:
     void createMenus();
     DiagramSceneTabWidget *diagramSceneTabWidget;

@@ -65,6 +65,12 @@ void DiagramWindow::deleteSelection()
     diagramSceneTabWidget->currentCanvas()->deleteSelection();
 }
 
+void DiagramWindow::alignSelection(int alignType)
+{
+    if (!diagramSceneTabWidget->currentCanvas()->selectedItems().isEmpty())
+        diagramSceneTabWidget->currentCanvas()->alignSelection(alignType);
+}
+
 
 
 void DiagramWindow::createMenus()
@@ -147,7 +153,7 @@ void DiagramWindow::createMenus()
     connect(horiBottomButton, SIGNAL(clicked()), alignSignalMapper, SLOT(map()));
 
     connect(alignSignalMapper, SIGNAL(mapped(int)),
-            diagramSceneTabWidget->currentCanvas(), SLOT(alignSelection(int)));
+            this, SLOT(alignSelection(int)));
 
 //    QDockWidget *alignDock = new QDockWidget("Alignment");
 //    //     layoutDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
