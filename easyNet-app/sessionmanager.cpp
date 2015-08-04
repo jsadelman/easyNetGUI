@@ -41,9 +41,12 @@ SessionManager::SessionManager()
 void SessionManager::startLazyNut(QString lazyNutBat)
 {
     lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
-    lazyNut->start(lazyNutBat);
-    if (lazyNut->state() == QProcess::NotRunning)
+    lazyNut->setProgram(lazyNutBat);
+    lazyNut->start();
+
+    if (!lazyNut->waitForStarted())
     {
+        qDebug() << lazyNut->program() << lazyNut->nativeArguments()<<  lazyNut->arguments() << lazyNut->error() << lazyNut->errorString();
         emit lazyNutNotRunning();
         qDebug("lazyNut not running");
     }
