@@ -12,7 +12,8 @@
 
 #include "treemodel.h"
 #include "enumclasses.h"
-
+#include "lazynutjobparam.h"
+#include "sessionmanager.h"
 class ObjectCatalogue;
 class AsLazyNutObject;
 class QDomDocument;
@@ -37,6 +38,7 @@ class ComboBoxDelegate;
 class QStackedWidget;
 class QSplitter;
 
+struct DomItem;
 
 class ObjExplorer: public QMainWindow
 {
@@ -74,6 +76,9 @@ private slots:
 //    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
 //    void connectTaxonomyModel();
     void showList(QString cmd);
+    void triggerFillList(QAbstractItemModel*,const QModelIndex&at,QString cmd);
+public slots:
+    void doFillList(QAbstractItemModel*,QDomDocument*dom,const QModelIndex&at);
 //    void setObjFromProxyTableIndex(QModelIndex index);
 
 
@@ -96,6 +101,32 @@ private:
 
 
 
+};
+struct localListFiller:QObject
+{
+   Q_OBJECT
+public:
+   localListFiller(QAbstractItemModel*qaim,ObjExplorer* oe,const QModelIndex&at,QString cmd):qaim_(qaim),oe_(oe),at_(at)
+   {
+       LazyNutJobParam *param = new LazyNutJobParam;
+       param->logMode &= ECHO_INTERPRETER; // debug purpose
+       param->cmdList = QStringList({QString("xml %1").arg(cmd)});
+       param->answerFormatterType = AnswerFormatterType::XML;
+       param->setAnswerReceiver(this, SLOT(doFillList(QDomDocument*)));
+       SessionManager::instance()->setupJob(param, sender());
+
+   }
+   virtual ~localListFiller();
+private slots:
+   doFillList(QDomDocument*dom)
+   {
+       oe_->doFillList(qaim_,dom,at_);
+   }
+
+private:
+   ObjExplorer* oe_;
+   QModelIndex at_;
+   QAbstractItemModel* qaim_;
 };
 
 #endif // TOYVIEW_H

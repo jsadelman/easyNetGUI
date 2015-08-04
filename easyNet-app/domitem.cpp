@@ -1,4 +1,5 @@
 #include "domitem.h"
+#include <QDebug>
 
 DomItem::DomItem(QDomNode *node, int row, DomItem *parent)
 {
@@ -7,6 +8,12 @@ DomItem::DomItem(QDomNode *node, int row, DomItem *parent)
     // Record the item's location within its parent.
     rowNumber = row;
     parentItem = parent;
+}
+
+void DomItem::assign(QDomNode*node)
+{
+   childItems.clear();
+   domNode=*node;
 }
 
 DomItem::~DomItem()

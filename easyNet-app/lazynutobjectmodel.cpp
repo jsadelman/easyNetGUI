@@ -1,7 +1,7 @@
 #include <QFont>
 #include <QBrush>
 #include <QDebug>
-
+#include <QDomNode>
 #include "lazynutobjectmodel.h"
 #include "xmlelement.h"
 #include "domitem.h"
@@ -248,4 +248,20 @@ void LazyNutObjectModel::sendObjectRequested(const QModelIndex &index)
     DomItem * item = static_cast<DomItem*>(index.internalPointer());
     if (XMLelement(item->node().toElement()).isObject() && index.column() == 1)
         emit objectRequested(data(index,Qt::DisplayRole).toString());
+}
+
+void LazyNutObjectModel::pokeAdditionalDescription(const QModelIndex &index, QDomDocument *dom)
+{
+    beginResetModel();
+    QModelIndex x=index.sibling(index.row(),index.column()-1);
+    DomItem* target=static_cast<DomItem*>(x.internalPointer());
+    QDomNode boo=target->node();
+    QDomElement* foo=new QDomElement(dom->firstChild().toElement());
+    auto z=boo.toElement();
+    if(foo)
+    {
+        foo->setAttribute("label",z.attribute("label"));
+    }
+    target->assign(foo);
+    endResetModel();
 }

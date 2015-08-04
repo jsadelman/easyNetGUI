@@ -23,7 +23,7 @@
 #include "objectcatalogue.h"
 #include "objectcataloguefilter.h"
 #include "descriptionupdater.h"
-
+#include "domitem.h"
 
 ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     : objectCatalogue(objectCatalogue), QMainWindow(parent)
@@ -81,7 +81,8 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
     objectView->setSelectionMode(QAbstractItemView::SingleSelection);
     expandToFillButton = new ExpandToFillButton(objectView);
     objectView->setItemDelegateForColumn(1, expandToFillButton);
-    connect(expandToFillButton, SIGNAL(expandToFill(QString)), this, SLOT(showList(QString)));
+    connect(expandToFillButton, SIGNAL(expandToFill(QAbstractItemModel*,const QModelIndex&,QString)),
+              this, SLOT(triggerFillList(QAbstractItemModel*,const QModelIndex&,QString)));
     connect(objectModel, &QAbstractItemModel::modelReset, [=]()
     {
         objectView->expandAll();
@@ -336,6 +337,21 @@ void ObjExplorer::showList(QString cmd)
     listWidget->show();
 
 
+}
+localListFiller::~localListFiller()
+{
+}
+
+void ObjExplorer::triggerFillList(QAbstractItemModel*qaim,const QModelIndex&at,QString cmd)
+{
+    auto llf=new localListFiller(qaim,this,at,cmd);
+}
+
+void ObjExplorer::doFillList(QAbstractItemModel*qaim,QDomDocument* dom,const QModelIndex&at)
+{
+    auto lno=dynamic_cast<LazyNutObjectModel*>(qaim);
+    if(!lno) qDebug()<<"failed to find a LazyNutObjectModel";
+    else lno->pokeAdditionalDescription(at,dom);
 }
 
 //void ObjExplorer::setObjFromProxyTableIndex(QModelIndex index)

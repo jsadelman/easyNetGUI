@@ -24,8 +24,9 @@ void ExpandToFillButton::paint(QPainter *painter, const QStyleOptionViewItem &op
 bool ExpandToFillButton::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     if (index.data(ExpandToFillRole).toBool() == true && event->type() == QEvent::MouseButtonRelease)
-        emit expandToFill(index.data(Qt::DisplayRole).toString());
-
+    {
+         emit expandToFill(model,index,index.data(Qt::DisplayRole).toString());
+    }
     return false;
 }
 
