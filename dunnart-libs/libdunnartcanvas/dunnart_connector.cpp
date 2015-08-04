@@ -1298,13 +1298,14 @@ static QPainterPath cutPainterPathEnd(const QPainterPath& path,
 void Connector::applyNewRoute(const Avoid::PolyLine& route,
         bool updateLibavoid)
 {
+    // here is where selfloops end up.
+    if (m_src_pt.shape == m_dst_pt.shape)
+    {
+        applySelfLoop();
+        return;
+    }
     if (route.size() < 2)
     {
-        // here is where selfloops end up.
-        if (m_src_pt.shape == m_dst_pt.shape)
-        {
-            applySelfLoop();
-        }
         // XXX Fix this case properly.
         return;
         qFatal("Conn with too few points in Connector::applyNewRoute()");

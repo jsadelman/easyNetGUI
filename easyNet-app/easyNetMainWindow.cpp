@@ -178,12 +178,12 @@ void EasyNetMainWindow::constructForms()
     conversionScene->setProperty("structuralEditingDisabled", true);
     modelScene->setProperty("idealEdgeLengthModifier", 2.0);
     conversionScene->setProperty("idealEdgeLengthModifier", 2.0);
-    modelScene->setProperty("preventOverlaps", true);
-    conversionScene->setProperty("preventOverlaps", true);
-    modelScene->setProperty("shapeNonOverlapPadding", 10);
-    conversionScene->setProperty("shapeNonOverlapPadding", 10);
-    modelScene->setProperty("flowSeparationModifier", 2.0);
-    conversionScene->setProperty("flowSeparationModifier", 2.0);
+//    modelScene->setProperty("preventOverlaps", true);
+//    conversionScene->setProperty("preventOverlaps", true);
+//    modelScene->setProperty("shapeNonOverlapPadding", 10);
+//    conversionScene->setProperty("shapeNonOverlapPadding", 10);
+//    modelScene->setProperty("flowSeparationModifier", 2.0);
+//    conversionScene->setProperty("flowSeparationModifier", 2.0);
     diagramWindow = new DiagramWindow(diagramPanel, this);
 
 
