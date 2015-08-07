@@ -108,7 +108,6 @@ private slots:
     void runCmdAndUpdate(QStringList cmdList);
     void viewSettings();
     void setEasyNetHome();
-    void setLazyNutBat();
 //    void showPauseState(bool isPaused);
     void getVersion();
 //    void showDocumentation();
@@ -308,7 +307,6 @@ private:
     QAction         *restartInterpreterAct;
     QAction         *viewSettingsAct;
     QAction         *setEasyNetHomeAct;
-    QAction         *setLazyNutBatAct;
     QAction         *setSmallFontAct;
     QAction         *setMediumFontAct;
     QAction         *setLargeFontAct;

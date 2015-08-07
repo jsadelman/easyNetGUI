@@ -57,6 +57,11 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
     checkLazyNut();
 
+    scriptsDir = easyNetHome + "/Models";
+    trialsDir = easyNetHome + "/Trials";
+    stimDir = easyNetHome + "/Databases/Stimulus_files";
+
+
     setWindowTitle(tr("easyNet"));
     setWindowIcon(QIcon(":/images/zebra.png"));
     setUnifiedTitleAndToolBarOnMac(true);
@@ -93,17 +98,15 @@ void EasyNetMainWindow::checkLazyNut()
 {
     connect(SessionManager::instance(), SIGNAL(lazyNutNotRunning()),
             this, SLOT(lazyNutNotRunning()));
-    if (lazyNutBat.isEmpty())
+    if (easyNetHome.isEmpty())
     {
-        if (easyNetHome.isEmpty())
-        {
-            QMessageBox::warning(this, "warning",QString("Please select a valid %1 file from the menu Settings -> Set %1\n"
-                                 "or a valid easyNet home directory using the menu Settings -> Set easyNet home directory").arg(lazyNutBasename));
-        }
-        else
-        {
-            lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
-        }
+        QMessageBox::warning(this, "warning",QString("Please select "
+                                                     "a valid easyNet home directory using"
+                                                     "the menu Settings -> Set easyNet home directory"));
+    }
+    else
+    {
+        lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
     }
     if (!lazyNutBat.isEmpty())
         SessionManager::instance()->startLazyNut(lazyNutBat);
@@ -177,7 +180,8 @@ void EasyNetMainWindow::constructForms()
     modelScene->setProperty("structuralEditingDisabled", true);
     conversionScene->setProperty("structuralEditingDisabled", true);
     modelScene->setProperty("idealEdgeLengthModifier", 2.0);
-    conversionScene->setProperty("idealEdgeLengthModifier", 2.0);
+
+//    conversionScene->setProperty("idealEdgeLengthModifier", 2.0);
 //    modelScene->setProperty("preventOverlaps", true);
 //    conversionScene->setProperty("preventOverlaps", true);
 //    modelScene->setProperty("shapeNonOverlapPadding", 10);
@@ -783,21 +787,8 @@ void EasyNetMainWindow::readSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     easyNetHome = settings.value("easyNetHome","").toString();
-    lazyNutBat = settings.value("lazyNutBat","").toString();
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
-
-    scriptsDir = settings.value("scriptsDir").toString();
-    if (scriptsDir.isEmpty())
-        scriptsDir = easyNetHome + "/Models";
-
-    trialsDir = settings.value("trialsDir").toString();
-    if (trialsDir.isEmpty())
-        trialsDir = easyNetHome + "/Trials";
-
-    stimDir = settings.value("stimDir").toString();
-    if (stimDir.isEmpty())
-        stimDir = easyNetHome + "/Databases/Stimulus_files";
 
 //    resize(size);
     move(pos);
@@ -812,12 +803,8 @@ void EasyNetMainWindow::writeSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     settings.setValue("easyNetHome", easyNetHome);
-    settings.setValue("lazyNutBat",lazyNutBat);
     settings.setValue("pos", pos());
     settings.setValue("size", size());
-    settings.setValue("scriptsDir",scriptsDir);
-    settings.setValue("trialsDir",trialsDir);
-    settings.setValue("stimDir",stimDir);
 
     settings.beginGroup("mainWindow");
     settings.setValue("geometry", saveGeometry());
@@ -964,15 +951,6 @@ void EasyNetMainWindow::setEasyNetHome()
     SessionManager::instance()->restartLazyNut(lazyNutBat);
 }
 
-void EasyNetMainWindow::setLazyNutBat()
-{
-    lazyNutBat = QFileDialog::getOpenFileName(this,QString(tr("Please select your %1 file.")).arg(lazyNutBasename),
-                                              easyNetHome,QString("*.%1").arg(lazyNutExt));
-    if (lazyNutBat.isEmpty())
-        return;
-    SessionManager::instance()->restartLazyNut(lazyNutBat);
-}
-
 void EasyNetMainWindow::setSmallFont()
 {
     QFont smallFont("Georgia", 10);
@@ -1098,10 +1076,6 @@ void EasyNetMainWindow::createActions()
     setLargeFontAct->setStatusTip(QString(tr("Switch to a larger font")));
     connect(setLargeFontAct,SIGNAL(triggered()),this, SLOT(setLargerFont()));
 
-    setLazyNutBatAct = new QAction(QString(tr("Set %1").arg(lazyNutBasename)), this);
-    setLazyNutBatAct->setStatusTip(QString(tr("Set %1").arg(lazyNutBasename)));
-    connect(setLazyNutBatAct,SIGNAL(triggered()),this, SLOT(setLazyNutBat()));
-
     versionAct = new QAction("Version",this);
     connect(versionAct,SIGNAL(triggered()),this,SLOT(getVersion()));
 
@@ -1158,7 +1132,6 @@ void EasyNetMainWindow::createMenus()
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
     settingsMenu->addAction(viewSettingsAct);
     settingsMenu->addAction(setEasyNetHomeAct);
-    settingsMenu->addAction(setLazyNutBatAct);
     settingsSubMenu = settingsMenu->addMenu(tr("&Font size"));
     settingsSubMenu->addAction(setSmallFontAct);
     settingsSubMenu->addAction(setMediumFontAct);

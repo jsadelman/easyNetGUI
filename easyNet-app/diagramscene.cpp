@@ -708,6 +708,8 @@ void DiagramScene::render()
             if (AsLazyNutObject(*domDoc).type() == arrowType)
         {
             QString name = AsLazyNutObject(*domDoc).name();
+            qDebug() << "cycling through render:" << name;
+
             RectangleShape *startItem = qgraphicsitem_cast<RectangleShape *>
                     (itemHash.value(AsLazyNutObject(*domDoc)["Source"]()));
             RectangleShape *endItem = qgraphicsitem_cast<RectangleShape *>
