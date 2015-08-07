@@ -1,6 +1,7 @@
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
 #include "libdunnartcanvas/canvasview.h"
+#include "diagramview.h"
 
 #include <QUndoGroup>
 #include <QDebug>
@@ -23,16 +24,21 @@ DiagramSceneTabWidget::DiagramSceneTabWidget(QMainWindow *window)
 int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QString arrowType)
 {
     DiagramScene *scene = new DiagramScene(boxType, arrowType);
-    CanvasView *canvasview = new CanvasView(scene);
+    DiagramView *view = new DiagramView(scene);
     m_undo_group->addStack(scene->undoStack());
 
-    return insertTab(INT_MAX, canvasview, title);
+    return insertTab(INT_MAX, view, title);
 //    setCurrentWidget(canvasview);
 }
 
 DiagramScene *DiagramSceneTabWidget::currentDiagramScene()
 {
     return qobject_cast<DiagramScene*>(currentCanvas());
+}
+
+DiagramView *DiagramSceneTabWidget::currentDiagramView()
+{
+    return qobject_cast<DiagramView*>(currentCanvasView());
 }
 
 DiagramScene *DiagramSceneTabWidget::diagramSceneAt(int index)
@@ -42,6 +48,7 @@ DiagramScene *DiagramSceneTabWidget::diagramSceneAt(int index)
 
 void DiagramSceneTabWidget::emitCurrentDiagramSceneChanged(Canvas *canvas)
 {
-    qDebug() << "emit currentDiagramSceneChanged";
-    emit currentDiagramSceneChanged(qobject_cast<DiagramScene*>(canvas));
+    DiagramScene* scene = qobject_cast<DiagramScene*>(canvas);
+    if (scene)
+        emit currentDiagramSceneChanged(scene);
 }

@@ -530,6 +530,13 @@ bool CanvasView::handleContextMenuEvent(QMouseEvent *event)
 }
 
 
+void CanvasView::resizeEvent(QResizeEvent *event)
+{
+     QGraphicsView::resizeEvent(event);
+     emit canvasViewResized();
+}
+
+
 /**
  * Do tasks that need to happen after the diagram has been loaded.
  */

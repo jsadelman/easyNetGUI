@@ -3,6 +3,7 @@
 #include "diagramscene.h"
 #include "libdunnartcanvas/graphlayout.h"
 #include "libdunnartcanvas/canvasview.h"
+#include "diagramview.h"
 
 
 #include <QtWidgets>
@@ -14,7 +15,8 @@ using dunnart::Canvas;
 using dunnart::CanvasItem;
 
 DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent)
-    : diagramSceneTabWidget(diagramSceneTabWidget), QMainWindow(parent)
+    : diagramSceneTabWidget(diagramSceneTabWidget), disconnectCanvasChanged(false),
+      QMainWindow(parent)
 {
     setCentralWidget(diagramSceneTabWidget);
     createMenus();
@@ -22,6 +24,8 @@ DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidg
 
 void DiagramWindow::arrange()
 {
+
+    diagramSceneTabWidget->currentCanvas()->setProperty("preventOverlaps", false);
     diagramSceneTabWidget->currentCanvas()->layout()->clearFixedList();
     rearrange();
 }
@@ -31,6 +35,33 @@ void DiagramWindow::rearrange()
 {
     diagramSceneTabWidget->currentCanvas()->layout()->runDirect(true);
     diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
+//    disconnectCanvasChanged = true;
+//    diagramSceneTabWidget->currentDiagramView()->fitVisible();
+    disconnect(diagramSceneTabWidget->currentCanvas(), SIGNAL(changed(QList<QRectF>)),
+            diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
+    emit diagramSceneTabWidget->currentDiagramView()->canvasViewResized();
+
+}
+
+void DiagramWindow::arrangeNonOverlap()
+{
+
+    diagramSceneTabWidget->currentCanvas()->setProperty("preventOverlaps", true);
+    diagramSceneTabWidget->currentCanvas()->setProperty("shapeNonOverlapPadding", 20);
+    diagramSceneTabWidget->currentCanvas()->layout()->clearFixedList();
+    rearrange();
+}
+
+void DiagramWindow::initArrangement()
+{
+    connect(diagramSceneTabWidget->currentCanvas(), SIGNAL(changed(QList<QRectF>)),
+            diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
+//            this, SLOT(toFitVisible()));
+//            this, SLOT(connectOnceToFitVisible()));
+    fitVisibleButton->setChecked(true);
+    diagramSceneTabWidget->currentDiagramScene()->initShapePlacement();
+//    arrange();
+    arrangeNonOverlap();
 }
 
 void DiagramWindow::sceneScaleChanged(const QString &scale)
@@ -43,7 +74,20 @@ void DiagramWindow::sceneScaleChanged(const QString &scale)
     view->scale(newScale, newScale);
 }
 
-void DiagramWindow::recoverZoom()
+void DiagramWindow::fitVisible(bool on)
+{
+    if (on)
+    {
+        connect(diagramSceneTabWidget->currentDiagramView(), SIGNAL(canvasViewResized()),
+                diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
+        diagramSceneTabWidget->currentDiagramView()->fitVisible();
+    }
+    else
+        disconnect(diagramSceneTabWidget->currentDiagramView(), SIGNAL(canvasViewResized()),
+                diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
+}
+
+void DiagramWindow::restoreZoom()
 {
     QGraphicsView *view = diagramSceneTabWidget->currentCanvasView();
     double m11 = view->transform().m11();
@@ -52,11 +96,17 @@ void DiagramWindow::recoverZoom()
     sceneScaleCombo->setCurrentIndex(sceneScaleCombo->findText(zoomText));
 }
 
-void DiagramWindow::recoverProperties()
+void DiagramWindow::restoreProperties()
 {
     idealEdgeLengthModifierSpinBox->setValue(diagramSceneTabWidget->currentCanvas()->property("idealEdgeLengthModifier").toDouble());
     shapeNonOverlapPaddingSpinBox->setValue(diagramSceneTabWidget->currentCanvas()->property("shapeNonOverlapPadding").toInt());
     flowSeparationModifierSpinBox->setValue(diagramSceneTabWidget->currentCanvas()->property("flowSeparationModifier").toDouble());
+}
+
+void DiagramWindow::restore()
+{
+    fitVisibleButton->setChecked(false);
+    restoreZoom();
 }
 
 void DiagramWindow::deleteSelection()
@@ -68,22 +118,57 @@ void DiagramWindow::deleteSelection()
 void DiagramWindow::alignSelection(int alignType)
 {
     if (!diagramSceneTabWidget->currentCanvas()->selectedItems().isEmpty())
+    {
         diagramSceneTabWidget->currentCanvas()->alignSelection(alignType);
+        arrangeNonOverlap();
+    }
+}
+
+void DiagramWindow::connectOnceToFitVisible()
+{
+
+}
+
+void DiagramWindow::toFitVisible()
+{
+    diagramSceneTabWidget->currentDiagramView()->fitVisible();
+    if (disconnectCanvasChanged)
+    {
+        disconnect(diagramSceneTabWidget->currentCanvas(), SIGNAL(changed(QList<QRectF>)),
+                   this, SLOT(toFitVisible()));
+        disconnectCanvasChanged = false;
+    }
 }
 
 
 
 void DiagramWindow::createMenus()
 {
-    QAction *arrangeAct = new QAction(tr("&Arrange"), this);
-    connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
     QToolBar *layoutToolBar = addToolBar("Auto layout");
-    layoutToolBar->addAction(arrangeAct);
 
-    QAction *rearrangeAct = new QAction(tr("&Rearrange"), this);
-    connect(rearrangeAct, SIGNAL(triggered()), this, SLOT(rearrange()));
-    layoutToolBar->addAction(rearrangeAct);
+//    QAction *arrangeAct = new QAction(tr("&Arrange"), this);
+//    connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
+//    layoutToolBar->addAction(arrangeAct);
 
+//    QAction *rearrangeAct = new QAction(tr("&Rearrange"), this);
+//    connect(rearrangeAct, SIGNAL(triggered()), this, SLOT(rearrange()));
+//    layoutToolBar->addAction(rearrangeAct);
+
+    QAction *arrangeNonOverlapAct = new QAction(tr("Arrange No Overlap"), this);
+    connect(arrangeNonOverlapAct, SIGNAL(triggered()), this, SLOT(arrangeNonOverlap()));
+    layoutToolBar->addAction(arrangeNonOverlapAct);
+
+    QAction *initArrangementAct = new QAction(tr("Init"), this);
+    connect(initArrangementAct, SIGNAL(triggered()), this, SLOT(initArrangement()));
+    layoutToolBar->addAction(initArrangementAct);
+
+    fitVisibleButton = new QRadioButton(tr("Fit Visible"));
+    layoutToolBar->addWidget(fitVisibleButton);
+    connect(fitVisibleButton, SIGNAL(toggled(bool)), this, SLOT(fitVisible(bool)));
+    fitVisibleButton->setChecked(false);
+
+
+#if 0
     QGroupBox * layoutModeBox = new QGroupBox("Layout modes");
     QRadioButton *organicButton = new QRadioButton(tr("Organic"));
     QRadioButton *flowButton = new QRadioButton(tr("Flow"));
@@ -107,9 +192,8 @@ void DiagramWindow::createMenus()
         diagramSceneTabWidget->currentCanvas()->setProperty("layoutMode", Canvas::LayeredLayout);
     });
 
-
-
     organicButton->setChecked(true);
+#endif
 
 //    QDockWidget *layoutDock = new QDockWidget("Layouts");
 //    //     layoutDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -129,11 +213,11 @@ void DiagramWindow::createMenus()
 
     QGridLayout *alignmentLayout = new QGridLayout;
     alignmentLayout->addWidget(vertLeftButton, 0, 0);
-    alignmentLayout->addWidget(vertCentreButton, 0, 1);
-    alignmentLayout->addWidget(vertRightButton, 0, 2);
-    alignmentLayout->addWidget(horiTopButton, 1, 0);
-    alignmentLayout->addWidget(horiCentreButton, 1, 1);
-    alignmentLayout->addWidget(horiBottomButton, 1, 2);
+    alignmentLayout->addWidget(vertCentreButton, 1, 0);
+    alignmentLayout->addWidget(vertRightButton, 2, 0);
+    alignmentLayout->addWidget(horiTopButton, 3, 0);
+    alignmentLayout->addWidget(horiCentreButton, 4, 0);
+    alignmentLayout->addWidget(horiBottomButton, 5, 0);
 //    alignmentLayout->addStretch();
     alignmentBox->setLayout(alignmentLayout);
 
@@ -164,20 +248,23 @@ void DiagramWindow::createMenus()
     // ZOOM
     sceneScaleCombo = new QComboBox;
     QStringList scales;
-    scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
+    scales <<  tr("25%") << tr("33%") <<  tr("50%") << tr("75%") << tr("100%");
     sceneScaleCombo->addItems(scales);
-    sceneScaleCombo->setCurrentIndex(2);
+    sceneScaleCombo->setCurrentIndex(4);
     connect(sceneScaleCombo, SIGNAL(currentIndexChanged(QString)),
             this, SLOT(sceneScaleChanged(QString)));
 //    connect(diagramSceneTabWidget, &QTabWidget::currentChanged, [=](){
 //        sceneScaleChanged(sceneScaleCombo->currentText());
 //    });
-    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(recoverZoom()));
+//    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restoreZoom()));
 
     QToolBar *pointerToolbar = addToolBar("Zoom");
     pointerToolbar->addWidget(sceneScaleCombo);
 
 
+
+
+#if 0
     // PROPERTIES
     QLabel *idealEdgeLengthModifierLabel = new QLabel("idealEdgeLengthModifier");
     idealEdgeLengthModifierSpinBox = new QDoubleSpinBox();
@@ -208,14 +295,16 @@ void DiagramWindow::createMenus()
     connect(flowSeparationModifierSpinBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=](double value){
         diagramSceneTabWidget->currentCanvas()->setProperty("flowSeparationModifier", value);
     });
-    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(recoverProperties()));
+    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restoreProperties()));
 
-    recoverProperties();
+    restoreProperties();
+#endif
+
 
     QVBoxLayout *controlsLayout = new QVBoxLayout;
-    controlsLayout->addWidget(layoutModeBox);
+//    controlsLayout->addWidget(layoutModeBox);
     controlsLayout->addWidget(alignmentBox);
-    controlsLayout->addWidget(propertiesBox);
+//    controlsLayout->addWidget(propertiesBox);
     controlsLayout->addStretch();
     QWidget *controlsWidget = new QWidget;
     controlsWidget->setLayout(controlsLayout);
@@ -231,6 +320,9 @@ void DiagramWindow::createMenus()
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteSelection()));
     QToolBar *editToolBar = addToolBar("Edit");
     editToolBar->addAction(deleteAct);
+
+
+    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restore()));
 
 }
 

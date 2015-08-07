@@ -96,7 +96,8 @@ SOURCES +=  \
     debuglog.cpp \
     plotviewer.cpp \
     diagramscenetabwidget.cpp \
-    diagramwindow.cpp
+    diagramwindow.cpp \
+    diagramview.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -167,7 +168,8 @@ HEADERS  += \
     debuglog.h \
     plotviewer.h \
     diagramscenetabwidget.h \
-    diagramwindow.h
+    diagramwindow.h \
+    diagramview.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

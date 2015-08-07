@@ -51,6 +51,9 @@
 #include "libdunnartcanvas/graphlayout.h"
 
 
+#include <algorithm>
+
+
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSceneContextMenuEvent>
@@ -65,6 +68,7 @@
 
 using dunnart::CanvasItem;
 using dunnart::RectangleShape;
+using dunnart::ShapeObj;
 using dunnart::Connector;
 
 Q_DECLARE_METATYPE(QDomDocument*)
@@ -104,6 +108,45 @@ DiagramScene::DiagramScene(QString boxType, QString arrowType)
     connect(this, SIGNAL(goToSleep()), descriptionUpdater,SLOT(goToSleep()));
 
 
+}
+
+
+// This implementation of the connected component algorithm is adapted from:
+// https://breakingcode.wordpress.com/2013/04/08/finding-connected-components-in-a-graph/
+QList<QSet<ShapeObj *> > DiagramScene::connectedComponents()
+{
+    QList<QSet<ShapeObj *> > cc;
+    QSet<ShapeObj *> shapeSet = shapes().toSet();
+    while (!shapeSet.isEmpty())
+    {
+        ShapeObj * shape = shapeSet.toList().first();
+        shapeSet.remove(shape);
+        QSet<ShapeObj *> group({shape});
+        QList<ShapeObj *> queue({shape});
+        while (!queue.isEmpty())
+        {
+            QSet<ShapeObj *> neighbourSet = queue.takeFirst()->neighbours();
+            neighbourSet.subtract(group);
+            shapeSet.subtract(neighbourSet);
+            group.unite(neighbourSet);
+            queue.append(neighbourSet.toList());
+        }
+        cc.append(group);
+    }
+    return cc;
+}
+
+QList<ShapeObj *> DiagramScene::shapes()
+{
+    QList<ShapeObj *> result;
+    QListIterator<CanvasItem*> it(items());
+    while(it.hasNext())
+    {
+        ShapeObj *shape = qobject_cast<ShapeObj*>(it.next());
+        if (shape)
+            result.append(shape);
+    }
+    return result;
 }
 
 #if 0
@@ -343,6 +386,43 @@ void DiagramScene::setSelected(QString name)
         setSelection(QList<CanvasItem*>{itemHash.value(name)});
 }
 
+void DiagramScene::initShapePlacement()
+{
+    // Connected component (CC) centres will be placed on a square grid of S points,
+    // where S is the square number closest to the number of CCs.
+    // The distance between CCs is estimated by supposing that the nodes in a CC will be
+    // displayed in a square grid of S points, where S is defined as above.
+    // The distance between nodes is taken as the ideal distance parameter.
+    // The distance between CCs is computed based on the CC that contains the largest
+    // number of nodes.
+
+    QList<QSet<ShapeObj *> > cc = connectedComponents();
+    int maxCCsize = (*std::max_element(cc.begin(), cc.end(),
+                                      [=](QSet<ShapeObj *> s1, QSet<ShapeObj *> s2){
+        return s1.size() < s2.size();
+    })).size();
+    int ccGridSize = qCeil(qSqrt(maxCCsize));
+    int sceneGridSize = qCeil(qSqrt(cc.length()));
+    qreal length = property("idealEdgeLengthModifier").toDouble() * idealConnectorLength();
+    qreal ccGridLength = ccGridSize * length;
+
+    QList<QPointF> gridPoints;
+    for (int i = 0; i < sceneGridSize; ++i)
+        for (int j = 0; j < sceneGridSize; ++j)
+            gridPoints.append(QPointF(j * ccGridLength, i * ccGridLength));
+
+    foreach(QSet<ShapeObj *> c, cc)
+    {
+        QPointF point = gridPoints.takeFirst();
+        foreach (ShapeObj * box, c)
+            box->setCentrePos(point +
+                              QPointF((double)(qrand() % 10 - 5)*30, (double)(qrand() % 10 - 5)*30));
+    }
+    layout()->initialise();
+    updateConnectorsForLayout();
+
+}
+
 
 #if 0
 void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
@@ -538,6 +618,7 @@ void DiagramScene::lesionClicked()
     SessionManager::instance()->runCmd(cmd);
 }
 
+
 void DiagramScene::positionObject(QString name, QString type, QDomDocument *domDoc)
 {
     // layers are placed on the scene before arrows
@@ -691,8 +772,9 @@ void DiagramScene::render()
     layout()->initialise();
     updateConnectorsForLayout();
 
-//    file.close();
+    //    file.close();
 }
+
 
 //! [13]
 

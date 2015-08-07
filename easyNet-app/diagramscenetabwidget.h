@@ -4,6 +4,7 @@
 #include "libdunnartcanvas/canvastabwidget.h"
 
 class DiagramScene;
+class DiagramView;
 
 
 class DiagramSceneTabWidget : public dunnart::CanvasTabWidget
@@ -13,6 +14,7 @@ public:
     explicit DiagramSceneTabWidget(QMainWindow *window);
     int newDiagramScene(QString title, QString boxType, QString arrowType);
     DiagramScene *currentDiagramScene();
+    DiagramView *currentDiagramView();
     DiagramScene *diagramSceneAt(int index);
 
 signals:

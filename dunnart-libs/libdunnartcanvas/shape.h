@@ -213,6 +213,8 @@ class ShapeObj: public CanvasItem
         double multiEdgeOffset_nx() {return multi_edge_offset_nx;}
         double multiEdgeOffset_ny() {return multi_edge_offset_ny;}
 
+        QSet<ShapeObj *> neighbours();
+
         Relationship *rels[6];
         Avoid::ShapeRef *avoidRef;
     protected:

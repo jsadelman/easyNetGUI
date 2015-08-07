@@ -144,30 +144,37 @@ GraphData::GraphData(Canvas *canvas, bool ignoreEdges,
         }
     }
 
-    if (!ignoreEdges)
+    if (0) // !ignoreEdges
     {
+//        qDebug() << "jiggle";
         // If the nodes are all clumped at one position, then the layout
         // won't be able to separate them, thus we distribute them a small
         // amount.
-        if (xMax == xMin)
-        {
+        // MG: use this feature always
+//        if (xMax == xMin)
+//        {
             for (size_t i = 0; i < rs.size(); ++i)
             {
+                rs[i]->offset((double)(qrand() % 10 - 5)*30, (double)(qrand() % 10 - 5)*30);
                 // MG: jiggle depends on the rectangle sizes ( /4 is arbitrary)
-                double jiggle = (((double) i) - (rs.size() / 2)) * rs[i]->width() / 4;
+//                double jiggle = (((double) i) - (rs.size() / 2)) * rs[i]->width() / 4;
+//                double jiggle = (((double) i) - (rs.size() / 2)) * (qrand() % 10 - 5);
+
+//                qDebug() << jiggle;
                 //qDebug("Clumped: offset X: %g", jiggle);
-                rs[i]->offset(jiggle, 0.0);
+//                rs[i]->offset(jiggle, 0.0);
             }
-        }
-        if (yMax == yMin)
-        {
-            for (size_t i = 0; i < rs.size(); ++i)
-            {
-                double jiggle = (((double) i) - (rs.size() / 2)) * rs[i]->height() / 4;;
+//        }
+//        if (yMax == yMin)
+//        {
+//            for (size_t i = 0; i < rs.size(); ++i)
+//            {
+//                double jiggle = (((double) i) - (rs.size() / 2)) * rs[i]->height() / 4;;
+//                double jiggle = (((double) i) - (rs.size() / 2)) * (qrand() % 10 - 5);
                 //qDebug("Clumped: offset Y: %g", jiggle);
-                rs[i]->offset(0.0, jiggle);
-            }
-        }
+//                rs[i]->offset(0.0, jiggle);
+//            }
+//        }
     }
 
     // Determine cluster heirarchy for shape-based clusters.
