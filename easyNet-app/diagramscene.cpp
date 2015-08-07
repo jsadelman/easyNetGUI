@@ -106,8 +106,6 @@ DiagramScene::DiagramScene(QString boxType, QString arrowType)
     connect(this, SIGNAL(wakeUp()), descriptionUpdater,SLOT(wakeUpUpdate()));
     connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
     connect(this, SIGNAL(goToSleep()), descriptionUpdater,SLOT(goToSleep()));
-
-
 }
 
 
@@ -708,7 +706,8 @@ void DiagramScene::render()
             if (AsLazyNutObject(*domDoc).type() == arrowType)
         {
             QString name = AsLazyNutObject(*domDoc).name();
-            qDebug() << "cycling through render:" << name;
+            if (name.startsWith("csalpc"))
+                qDebug() << "cycling through render:" << name;
 
             RectangleShape *startItem = qgraphicsitem_cast<RectangleShape *>
                     (itemHash.value(AsLazyNutObject(*domDoc)["Source"]()));
@@ -742,7 +741,7 @@ void DiagramScene::render()
             else if (!endItem)
             {
                 arrow->setNewEndpoint(dunnart::SRCPT, startItem->centrePos(), startItem, dunnart::CENTRE_CONNECTION_PIN);
-                arrow->setNewEndpoint(dunnart::DSTPT, startItem->centrePos() - QPointF(0,endItem->height()/2 + 50), nullptr);
+                arrow->setNewEndpoint(dunnart::DSTPT, startItem->centrePos() - QPointF(0,startItem->height()/2 + 50), nullptr);
             }
             else
                 arrow->initWithConnection(startItem, endItem);

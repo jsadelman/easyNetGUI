@@ -264,11 +264,10 @@ void EasyNetMainWindow::diagramSceneTabChanged(int index)
 {
     emit modelScene->goToSleep();
     emit conversionScene->goToSleep();
-//    if (idx == modelTabIdx)
-//        emit modelScene->wakeUp();
-//    else if (idx == conversionTabIdx)
-//        emit conversionScene->wakeUp();
-    emit diagramPanel->diagramSceneAt(index)->wakeUp();
+    if (index == modelTabIdx)
+        emit modelScene->wakeUp();
+    else if (index == conversionTabIdx)
+        emit conversionScene->wakeUp();
 }
 
 void EasyNetMainWindow::setParamDataFrame(QString name)
@@ -604,6 +603,7 @@ void EasyNetMainWindow::loadModel()
     if (!fileName.isEmpty())
     {
         emit modelScene->goToSleep();
+        emit conversionScene->goToSleep();
 
         // load and run script
         loadFile(fileName);

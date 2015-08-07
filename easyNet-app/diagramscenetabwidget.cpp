@@ -27,7 +27,9 @@ int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QStri
     DiagramView *view = new DiagramView(scene);
     m_undo_group->addStack(scene->undoStack());
 
-    return insertTab(INT_MAX, view, title);
+    qDebug() << "Adding tab for diagram scene" << title;
+    return addTab(view, title);
+//    return insertTab(INT_MAX, view, title);
 //    setCurrentWidget(canvasview);
 }
 
