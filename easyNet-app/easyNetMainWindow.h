@@ -106,6 +106,7 @@ private slots:
     void addOneToLazyNutProgressBar();
 
     void runCmdAndUpdate(QStringList cmdList);
+    void viewSettings();
     void setEasyNetHome();
     void setLazyNutBat();
 //    void showPauseState(bool isPaused);
@@ -131,6 +132,7 @@ private slots:
     void setQuietMode();
     void showExplorer();
     void restart();
+    void showMostRecentError();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -281,6 +283,7 @@ private:
     QProgressBar    *lazyNutProgressBar;
     QLabel          *lazyNutCmdLabel;
     QLabel          *lazyNutErrorLabel;
+    QComboBox       *lazyNutErrorBox;
 
 
 //    QToolBar        *fileToolBar;
@@ -303,6 +306,7 @@ private:
 //    QAction         *saveAsAct;
     QAction         *exitAct;
     QAction         *restartInterpreterAct;
+    QAction         *viewSettingsAct;
     QAction         *setEasyNetHomeAct;
     QAction         *setLazyNutBatAct;
     QAction         *setSmallFontAct;

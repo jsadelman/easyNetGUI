@@ -197,7 +197,7 @@ void TableEditor::createActions()
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
-//    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
 //     saveAsAct = new QAction(tr("Save &As..."), this);
 //    saveAsAct->setShortcuts(QKeySequence::SaveAs);
@@ -218,13 +218,17 @@ void TableEditor::createActions()
 
 //    }
 
-    copyAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy"), this);
+    copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
     connect(copyAct, SIGNAL(triggered()), this, SLOT(on_copy_clicked()));
     copyAct->setEnabled(true);
 
+    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
+    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe "));
+    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(on_copy_DF_clicked()));
+    copyDFAct->setEnabled(true);
 
 //    if (!isReadOnly)
 //    {
@@ -244,6 +248,22 @@ void TableEditor::createActions()
 
 }
 
+void TableEditor::save()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString workingDir = settings.value("easyNetHome").toString();
+    QString currFilename = workingDir + "/Output_files/.";
+    qDebug() << "df currFilename" << currFilename;
+    QString fileName = QFileDialog::getSaveFileName(this,
+                        tr("Choose a file name"), currFilename,
+                        tr("CSV (*.csv)"));
+    if (fileName.isEmpty())
+        return;
+
+    QString cmd = currentTable + " save_csv " + fileName;
+    SessionManager::instance()->runCmd(cmd);
+
+}
 
 void TableEditor::createToolBars()
 {
@@ -259,6 +279,7 @@ void TableEditor::createToolBars()
     editToolBar->addAction(copyAct);
 //    if (!isReadOnly)
 //        editToolBar->addAction(pasteAct);
+    editToolBar->addAction(copyDFAct);
     editToolBar->addAction(findAct);
 
     fileToolBar->setMovable(false);
@@ -397,6 +418,13 @@ void TableEditor::on_copy_clicked()
 
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(copy_table);
+
+}
+
+void TableEditor::on_copy_DF_clicked()
+{
+    QString cmd = currentTable + " copy " + "new_df";
+    SessionManager::instance()->runCmd(cmd);
 
 }
 

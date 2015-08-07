@@ -64,6 +64,8 @@ private slots:
     void updateTableView(QString text);
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
+    void save();
+    void on_copy_DF_clicked();
 private:
 
     QToolBar *fileToolBar;
@@ -72,6 +74,7 @@ private:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *copyAct;
+    QAction *copyDFAct;
     QAction *findAct;
 
     ObjectCatalogue  *objectCatalogue;

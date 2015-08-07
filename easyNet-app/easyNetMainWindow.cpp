@@ -936,8 +936,24 @@ void EasyNetMainWindow::getVersion()
 //    assistant->showDocumentation("index.html");
 //}
 
+void EasyNetMainWindow::viewSettings()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QStringList keys = settings.allKeys();
+    QString details = keys.join("\n");
 
+    QVector <QLineEdit*> editList;
 
+    QGroupBox *groupBox = new QGroupBox(tr("Settings"));
+    QFormLayout *formLayout = new QFormLayout;
+    foreach (QString key, keys)
+    {
+        editList.push_back(new QLineEdit(settings.value(key).toString()));
+        formLayout->addRow(key, editList.back());
+    }
+    groupBox->setLayout(formLayout);
+    groupBox->show();
+}
 
 void EasyNetMainWindow::setEasyNetHome()
 {
@@ -1060,6 +1076,11 @@ void EasyNetMainWindow::createActions()
     connect(restartInterpreterAct, SIGNAL(triggered()), this, SLOT(restart()));
 //    restartInterpreterAct->setDisabled(true);
 
+
+    viewSettingsAct = new QAction(tr("View easyNet settings"), this);
+    viewSettingsAct->setStatusTip(tr("View easyNet settings"));
+    connect(viewSettingsAct,SIGNAL(triggered()),this, SLOT(viewSettings()));
+
     setEasyNetHomeAct = new QAction(tr("Set easyNet home directory"), this);
     setEasyNetHomeAct->setStatusTip(tr("Set easyNet home directory"));
     connect(setEasyNetHomeAct,SIGNAL(triggered()),this, SLOT(setEasyNetHome()));
@@ -1135,6 +1156,7 @@ void EasyNetMainWindow::createMenus()
     fileMenu->addAction(exitAct);
 
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
+    settingsMenu->addAction(viewSettingsAct);
     settingsMenu->addAction(setEasyNetHomeAct);
     settingsMenu->addAction(setLazyNutBatAct);
     settingsSubMenu = settingsMenu->addMenu(tr("&Font size"));
@@ -1220,19 +1242,34 @@ void EasyNetMainWindow::createStatusBar()
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             this, SLOT(showCmdOnStatusBar(QString)));
 
-    lazyNutErrorLabel = new QLabel;
-    lazyNutErrorLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    lazyNutErrorLabel->setStyleSheet("QLabel {"
+//    lazyNutErrorLabel = new QLabel;
+//    lazyNutErrorLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+//    lazyNutErrorLabel->setStyleSheet("QLabel {"
+//                                 "font-weight: bold;"
+//                                 "color: red"
+//                                 "}");
+//    statusBar()->addWidget(lazyNutErrorLabel, 1);
+
+    lazyNutErrorBox = new QComboBox;
+    lazyNutErrorBox->addItem("");
+    lazyNutErrorBox->setStyleSheet("QComboBox {"
                                  "font-weight: bold;"
                                  "color: red"
                                  "}");
-    statusBar()->addWidget(lazyNutErrorLabel, 1);
+    lazyNutErrorBox->setEditable(false);
+    statusBar()->addWidget(lazyNutErrorBox, 1);
+    connect(lazyNutErrorBox,SIGNAL(activated(int)),this,SLOT(showMostRecentError()));
+
     connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
             this, SLOT(showErrorOnStatusBar(QString,QStringList)));
     connect(SessionManager::instance(), SIGNAL(lazyNutMacroStarted()),
             this, SLOT(clearErrorOnStatusBar()));
 }
 
+void EasyNetMainWindow::showMostRecentError()
+{
+    lazyNutErrorBox->setCurrentIndex(lazyNutErrorBox->count()-1);
+}
 
 void EasyNetMainWindow::setLazyNutIsReady(bool isReady)
 {
@@ -1250,12 +1287,15 @@ void EasyNetMainWindow::setLazyNutIsReady(bool isReady)
 
 void EasyNetMainWindow::showErrorOnStatusBar(QString /*cmd*/, QStringList errorList)
 {
-    lazyNutErrorLabel->setText(QString("LAST ERROR: %1").arg(errorList.last()));
+//    lazyNutErrorLabel->setText(QString("LAST ERROR: %1").arg(errorList.last()));
+    lazyNutErrorBox->addItem(QString("LAST ERROR: %1").arg(errorList.last()));
+    lazyNutErrorBox->setCurrentText(QString("LAST ERROR: %1").arg(errorList.last()));
 }
 
 void EasyNetMainWindow::clearErrorOnStatusBar()
 {
-    lazyNutErrorLabel->clear();
+//    lazyNutErrorLabel->clear();
+    lazyNutErrorBox->setCurrentText("");
 }
 
 void EasyNetMainWindow::showCmdOnStatusBar(QString cmd)
