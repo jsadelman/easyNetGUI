@@ -50,6 +50,7 @@
 
 namespace dunnart {
     class CanvasItem;
+    class ShapeObj;
 }
 
 QT_BEGIN_NAMESPACE
@@ -92,6 +93,9 @@ public:
 //    void read(const QJsonObject &json);
 //    void write(QJsonObject &json) const;
 
+    QList<QSet<dunnart::ShapeObj *> > connectedComponents();
+    QList<dunnart::ShapeObj *> shapes();
+
 public slots:
 //    void setMode(Mode mode);
 //    void setItemType(DiagramItem::DiagramType type);
@@ -103,6 +107,7 @@ public slots:
 //    void saveLayout();
 //    void prepareToLoadLayout(QString fileName);
 
+    void initShapePlacement();
 
 signals:
     void itemInserted(DiagramItem*);

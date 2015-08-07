@@ -69,17 +69,18 @@ Router::Router(const unsigned int flags)
       m_in_crossing_rerouting_stage(false),
       m_settings_changes(false)
 {
+    // MG: override both routings, only straight lines allowed.
     // At least one of the Routing modes must be set.
-    COLA_ASSERT(flags & (PolyLineRouting | OrthogonalRouting));
+//    COLA_ASSERT(flags & (PolyLineRouting | OrthogonalRouting));
 
-    if (flags & PolyLineRouting)
-    {
-        m_allows_polyline_routing = true;
-    }
-    if (flags & OrthogonalRouting)
-    {
-        m_allows_orthogonal_routing = true;
-    }
+//    if (flags & PolyLineRouting)
+//    {
+//        m_allows_polyline_routing = true;
+//    }
+//    if (flags & OrthogonalRouting)
+//    {
+//        m_allows_orthogonal_routing = true;
+//    }
 
     for (size_t p = 0; p < lastRoutingParameterMarker; ++p)
     {

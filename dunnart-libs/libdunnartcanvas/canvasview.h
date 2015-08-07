@@ -55,9 +55,12 @@ class CanvasView : public QGraphicsView
         Canvas *canvas(void);
         void setScene(QGraphicsScene *scene);
         QRectF viewportRect(void) const;
+
     signals:
         void canvasTransformChanged(const QTransform& transform);
         void viewportChanged(QRectF viewRect);
+        void canvasViewResized();// MG: added
+
     protected:
         virtual void mousePressEvent(QMouseEvent *event);
         virtual void mouseDoubleClickEvent(QMouseEvent *event);
@@ -72,6 +75,8 @@ class CanvasView : public QGraphicsView
                 QMenu& menu);
         virtual void scrollContentsBy(int dx, int dy);
         bool handleContextMenuEvent(QMouseEvent * event);
+        virtual void resizeEvent(QResizeEvent * event); // MG: added
+
     private slots:
         void adjustSceneRect(QRectF rect);
         void repaintCanvasViewport(void);

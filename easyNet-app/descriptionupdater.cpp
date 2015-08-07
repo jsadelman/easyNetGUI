@@ -82,12 +82,12 @@ QStringList DescriptionUpdater::getObjectNames(int first, int last)
 
 void DescriptionUpdater::requestDescription(QString name)
 {
-    qDebug() << "Requested description for " << name;
+//    qDebug() << "Requested description for " << name;
     if (name.isEmpty())
         return;
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
-        qDebug() << "going to set up Job for Requested description for " << name;
+//        qDebug() << "going to set up Job for Requested description for " << name;
         objectCatalogue->setPending(name, false);
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode &= ECHO_INTERPRETER; // debug purpose
@@ -99,6 +99,6 @@ void DescriptionUpdater::requestDescription(QString name)
     else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
     {
         emit descriptionUpdated(objectCatalogue->description(name));
-        qDebug() << "description updated for " << name;
+//        qDebug() << "description updated for " << name;
     }
 }
