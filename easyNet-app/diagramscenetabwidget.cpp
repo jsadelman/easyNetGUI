@@ -48,6 +48,11 @@ DiagramScene *DiagramSceneTabWidget::diagramSceneAt(int index)
     return qobject_cast<DiagramScene*>(canvasViewAt(index)->canvas());
 }
 
+DiagramView *DiagramSceneTabWidget::diagramViewAt(int index)
+{
+    return qobject_cast<DiagramView*>(canvasViewAt(index));
+}
+
 void DiagramSceneTabWidget::emitCurrentDiagramSceneChanged(Canvas *canvas)
 {
     DiagramScene* scene = qobject_cast<DiagramScene*>(canvas);

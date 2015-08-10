@@ -16,6 +16,7 @@ public:
     DiagramScene *currentDiagramScene();
     DiagramView *currentDiagramView();
     DiagramScene *diagramSceneAt(int index);
+    DiagramView *diagramViewAt(int index);
 
 signals:
     void currentDiagramSceneChanged(DiagramScene *scene);

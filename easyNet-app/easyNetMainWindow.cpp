@@ -177,9 +177,9 @@ void EasyNetMainWindow::constructForms()
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    modelScene->setProperty("structuralEditingDisabled", true);
-    conversionScene->setProperty("structuralEditingDisabled", true);
-    modelScene->setProperty("idealEdgeLengthModifier", 2.0);
+//    modelScene->setProperty("structuralEditingDisabled", true);
+//    conversionScene->setProperty("structuralEditingDisabled", true);
+//    modelScene->setProperty("idealEdgeLengthModifier", 2.0);
 
 //    conversionScene->setProperty("idealEdgeLengthModifier", 2.0);
 //    modelScene->setProperty("preventOverlaps", true);

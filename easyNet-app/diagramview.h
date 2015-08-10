@@ -15,6 +15,9 @@ public:
 public slots:
     void fitVisible();
 
+signals:
+    void zoomChanged();
+
 private:
     void fitVisible(bool computeBoundingRect);
 };

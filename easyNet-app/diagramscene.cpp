@@ -86,7 +86,13 @@ DiagramScene::DiagramScene(QString boxType, QString arrowType)
 //    myItemColor = Qt::white;
 //    myTextColor = Qt::black;
 //    myLineColor = Qt::black;
-    defaultPosition = QPointF(300,125); //  150);
+
+    setProperty("structuralEditingDisabled", true);
+    setProperty("idealEdgeLengthModifier", 2.0);
+    setProperty("preventOverlaps", true);
+    setProperty("shapeNonOverlapPadding", 20);
+
+    defaultPosition = QPointF(0,0); //  150);
     currentPosition = defaultPosition;
     itemOffset = QPointF(0,50) ; // 150);
     arrowOffset = QPointF(50,0);
@@ -106,6 +112,7 @@ DiagramScene::DiagramScene(QString boxType, QString arrowType)
     connect(this, SIGNAL(wakeUp()), descriptionUpdater,SLOT(wakeUpUpdate()));
     connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
     connect(this, SIGNAL(goToSleep()), descriptionUpdater,SLOT(goToSleep()));
+    connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 }
 
 
@@ -379,7 +386,6 @@ void DiagramScene::loadLayout()
 #endif
 void DiagramScene::setSelected(QString name)
 {
-    qDebug() << "setSelected" << name;
     if (itemHash.contains(name))
         setSelection(QList<CanvasItem*>{itemHash.value(name)});
 }
@@ -706,9 +712,6 @@ void DiagramScene::render()
             if (AsLazyNutObject(*domDoc).type() == arrowType)
         {
             QString name = AsLazyNutObject(*domDoc).name();
-            if (name.startsWith("csalpc"))
-                qDebug() << "cycling through render:" << name;
-
             RectangleShape *startItem = qgraphicsitem_cast<RectangleShape *>
                     (itemHash.value(AsLazyNutObject(*domDoc)["Source"]()));
             RectangleShape *endItem = qgraphicsitem_cast<RectangleShape *>

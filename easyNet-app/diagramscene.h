@@ -118,6 +118,7 @@ signals:
 //    void layoutSaveAttempted();
     void wakeUp();
     void goToSleep();
+    void animationFinished();
 
 
 protected:

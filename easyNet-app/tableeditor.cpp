@@ -519,8 +519,8 @@ bool TableEditor::dropMimeData(const QMimeData * data, Qt::DropAction action, in
 
 void TableEditor::updateTableView(QString text)
 {
-    qDebug() << this << "Entered updateTableView with " << text;
-    qDebug() << "currentIndex = " << view->currentIndex();
+//    qDebug() << this << "Entered updateTableView with " << text;
+//    qDebug() << "currentIndex = " << view->currentIndex();
     if (!text.size())
         return;
     if (text=="Untitled")

@@ -340,7 +340,7 @@ class Canvas : public QGraphicsScene
         virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
         virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
         void updateConnectorsForLayout(void); // MG: was private
-private:
+//private: MG: was private
         bool loadDiagram(const QString& filename);
         bool idIsUnique(QString id) const;
         void recursiveMapIDs(QDomNode start, const QString& ns, int pass);

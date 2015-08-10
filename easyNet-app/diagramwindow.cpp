@@ -11,67 +11,62 @@
 #include <QTransform>
 #include <QDebug>
 
+
 using dunnart::Canvas;
 using dunnart::CanvasItem;
 
 DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent)
-    : diagramSceneTabWidget(diagramSceneTabWidget), disconnectCanvasChanged(false),
-      QMainWindow(parent)
+    : diagramSceneTabWidget(diagramSceneTabWidget), QMainWindow(parent)
 {
     setCentralWidget(diagramSceneTabWidget);
     createMenus();
 }
 
-void DiagramWindow::arrange()
-{
-
-    diagramSceneTabWidget->currentCanvas()->setProperty("preventOverlaps", false);
-    diagramSceneTabWidget->currentCanvas()->layout()->clearFixedList();
-    rearrange();
-}
-
 
 void DiagramWindow::rearrange()
 {
+    if (fitVisibleButton->isChecked())
+        connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
+                this, SLOT(toFitVisible()));
+
     diagramSceneTabWidget->currentCanvas()->layout()->runDirect(true);
     diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
-//    disconnectCanvasChanged = true;
-//    diagramSceneTabWidget->currentDiagramView()->fitVisible();
-    disconnect(diagramSceneTabWidget->currentCanvas(), SIGNAL(changed(QList<QRectF>)),
-            diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
-    emit diagramSceneTabWidget->currentDiagramView()->canvasViewResized();
-
 }
 
-void DiagramWindow::arrangeNonOverlap()
+void DiagramWindow::arrange()
 {
 
-    diagramSceneTabWidget->currentCanvas()->setProperty("preventOverlaps", true);
-    diagramSceneTabWidget->currentCanvas()->setProperty("shapeNonOverlapPadding", 20);
+//    diagramSceneTabWidget->currentCanvas()->setProperty("preventOverlaps", true);
+//    diagramSceneTabWidget->currentCanvas()->setProperty("shapeNonOverlapPadding", 20);
     diagramSceneTabWidget->currentCanvas()->layout()->clearFixedList();
     rearrange();
 }
 
 void DiagramWindow::initArrangement()
 {
-    connect(diagramSceneTabWidget->currentCanvas(), SIGNAL(changed(QList<QRectF>)),
-            diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
-//            this, SLOT(toFitVisible()));
-//            this, SLOT(connectOnceToFitVisible()));
+
     fitVisibleButton->setChecked(true);
     diagramSceneTabWidget->currentDiagramScene()->initShapePlacement();
-//    arrange();
-    arrangeNonOverlap();
+    arrange();
 }
 
 void DiagramWindow::sceneScaleChanged(const QString &scale)
 {
-    double newScale = scale.left(scale.indexOf(tr("%"))).toDouble() / 100.0;
-    QGraphicsView *view = diagramSceneTabWidget->currentCanvasView();
-    QMatrix oldMatrix = view->matrix();
-    view->resetMatrix();
-    view->translate(oldMatrix.dx(), oldMatrix.dy());
-    view->scale(newScale, newScale);
+    QRegExp getScaleRex("^(\\d+)%?");
+    if (getScaleRex.indexIn(scale) != -1)
+    {
+        double newScale = getScaleRex.cap(1).toDouble() / 100.0;
+        double oldScale = diagramSceneTabWidget->currentCanvasView()->transform().m11();
+        if (qAbs(newScale - oldScale) >= 0.01)
+        {
+            DiagramView *view = diagramSceneTabWidget->currentDiagramView();
+            QMatrix oldMatrix = view->matrix();
+            view->resetMatrix();
+            view->translate(oldMatrix.dx(), oldMatrix.dy());
+            view->scale(newScale, newScale);
+            emit view->zoomChanged();
+        }
+    }
 }
 
 void DiagramWindow::fitVisible(bool on)
@@ -93,7 +88,8 @@ void DiagramWindow::restoreZoom()
     double m11 = view->transform().m11();
     QString zoomText;
     zoomText.setNum((int)(100 * m11)).append("\%");
-    sceneScaleCombo->setCurrentIndex(sceneScaleCombo->findText(zoomText));
+    sceneScaleCombo->setCurrentText(zoomText);
+//    sceneScaleCombo->setCurrentIndex(sceneScaleCombo->findText(zoomText));
 }
 
 void DiagramWindow::restoreProperties()
@@ -111,7 +107,6 @@ void DiagramWindow::restore()
 
 void DiagramWindow::deleteSelection()
 {
-    qDebug() << "delete selection";
     diagramSceneTabWidget->currentCanvas()->deleteSelection();
 }
 
@@ -120,24 +115,22 @@ void DiagramWindow::alignSelection(int alignType)
     if (!diagramSceneTabWidget->currentCanvas()->selectedItems().isEmpty())
     {
         diagramSceneTabWidget->currentCanvas()->alignSelection(alignType);
-        arrangeNonOverlap();
+        arrange();
     }
 }
 
-void DiagramWindow::connectOnceToFitVisible()
-{
-
-}
 
 void DiagramWindow::toFitVisible()
 {
     diagramSceneTabWidget->currentDiagramView()->fitVisible();
-    if (disconnectCanvasChanged)
-    {
-        disconnect(diagramSceneTabWidget->currentCanvas(), SIGNAL(changed(QList<QRectF>)),
+        disconnect(diagramSceneTabWidget->currentCanvas(), SIGNAL(animationFinished()),
                    this, SLOT(toFitVisible()));
-        disconnectCanvasChanged = false;
-    }
+}
+
+void DiagramWindow::setZoom()
+{
+    fitVisibleButton->setChecked(false);
+    sceneScaleChanged(sceneScaleCombo->currentText());
 }
 
 
@@ -146,17 +139,9 @@ void DiagramWindow::createMenus()
 {
     QToolBar *layoutToolBar = addToolBar("Auto layout");
 
-//    QAction *arrangeAct = new QAction(tr("&Arrange"), this);
-//    connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
-//    layoutToolBar->addAction(arrangeAct);
-
-//    QAction *rearrangeAct = new QAction(tr("&Rearrange"), this);
-//    connect(rearrangeAct, SIGNAL(triggered()), this, SLOT(rearrange()));
-//    layoutToolBar->addAction(rearrangeAct);
-
-    QAction *arrangeNonOverlapAct = new QAction(tr("Arrange No Overlap"), this);
-    connect(arrangeNonOverlapAct, SIGNAL(triggered()), this, SLOT(arrangeNonOverlap()));
-    layoutToolBar->addAction(arrangeNonOverlapAct);
+    QAction *arrangeAct = new QAction(tr("Arrange"), this);
+    connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
+    layoutToolBar->addAction(arrangeAct);
 
     QAction *initArrangementAct = new QAction(tr("Init"), this);
     connect(initArrangementAct, SIGNAL(triggered()), this, SLOT(initArrangement()));
@@ -239,24 +224,29 @@ void DiagramWindow::createMenus()
     connect(alignSignalMapper, SIGNAL(mapped(int)),
             this, SLOT(alignSelection(int)));
 
-//    QDockWidget *alignDock = new QDockWidget("Alignment");
-//    //     layoutDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-//    alignDock->setWidget(alignmentBox);
-
-//    addDockWidget(Qt::LeftDockWidgetArea, alignDock);
-
     // ZOOM
     sceneScaleCombo = new QComboBox;
     QStringList scales;
     scales <<  tr("25%") << tr("33%") <<  tr("50%") << tr("75%") << tr("100%");
     sceneScaleCombo->addItems(scales);
     sceneScaleCombo->setCurrentIndex(4);
-    connect(sceneScaleCombo, SIGNAL(currentIndexChanged(QString)),
-            this, SLOT(sceneScaleChanged(QString)));
-//    connect(diagramSceneTabWidget, &QTabWidget::currentChanged, [=](){
-//        sceneScaleChanged(sceneScaleCombo->currentText());
-//    });
-//    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restoreZoom()));
+
+    // input validator
+    QRegExp zoomRex("\\d{1,3}%?");
+    QValidator *zoomValidator = new QRegExpValidator(zoomRex, sceneScaleCombo);
+    QLineEdit *zoomEdit = new QLineEdit(sceneScaleCombo);
+    zoomEdit->setValidator(zoomValidator);
+    sceneScaleCombo->setLineEdit(zoomEdit);
+    sceneScaleCombo->setInsertPolicy(QComboBox::NoInsert);
+
+     connect(sceneScaleCombo, SIGNAL(currentIndexChanged(int)),
+             this, SLOT(setZoom()));
+     connect(sceneScaleCombo->lineEdit(), SIGNAL(returnPressed()),
+             this, SLOT(setZoom()));
+
+     for (int i = 0; i < diagramSceneTabWidget->count(); ++i)
+         connect(diagramSceneTabWidget->diagramViewAt(i), SIGNAL(zoomChanged()),
+                 this, SLOT(restoreZoom()));
 
     QToolBar *pointerToolbar = addToolBar("Zoom");
     pointerToolbar->addWidget(sceneScaleCombo);

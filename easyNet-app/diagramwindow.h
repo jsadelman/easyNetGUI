@@ -17,21 +17,22 @@ public:
     DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent = 0);
 
 public slots:
-    void arrange();
     void rearrange();
-    void arrangeNonOverlap();
+    void arrange();
     void initArrangement();
 
 private slots:
     void sceneScaleChanged(const QString &scale);
     void fitVisible(bool on);
+    void disableFitVisible() {fitVisible(false);}
+    void enableFitVisible()  {fitVisible(true);}
     void restoreZoom();
     void restoreProperties();
     void restore();
     void deleteSelection();
     void alignSelection(int alignType);
-    void connectOnceToFitVisible();
     void toFitVisible();
+    void setZoom();
 private:
     void createMenus();
     DiagramSceneTabWidget *diagramSceneTabWidget;
@@ -40,7 +41,6 @@ private:
     QSpinBox *shapeNonOverlapPaddingSpinBox;
     QDoubleSpinBox *flowSeparationModifierSpinBox;
     QRadioButton *fitVisibleButton;
-    bool disconnectCanvasChanged;
 
 };
 

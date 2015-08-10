@@ -98,11 +98,14 @@ QPainterPath &ShapeObj::getLoopBasePath()
 QSet<ShapeObj *> ShapeObj::neighbours()
 {
     QSet<ShapeObj *> result;
+
     ConnMultiset connectors = getConnMultiset();
     for (ConnMultiset::iterator conn = connectors.begin(); conn != connectors.end(); ++conn)
     {
-        result.insert((*conn)->getAttachedShapes().first);
-        result.insert((*conn)->getAttachedShapes().second);
+        if ((*conn)->getAttachedShapes().first)
+            result.insert((*conn)->getAttachedShapes().first);
+        if ((*conn)->getAttachedShapes().second)
+            result.insert((*conn)->getAttachedShapes().second);
     }
     result.remove(this);
     return result;
@@ -666,7 +669,6 @@ void ShapeObj::findAttachedSet(CanvasItemSet& objSet)
 ConnMultiset ShapeObj::getConnMultiset(void)
 {
     ConnMultiset connMs;
-
     Avoid::ConnRefList attachedConns = avoidRef->attachedConnectors();
     for (Avoid::ConnRefList::iterator conn = attachedConns.begin();
             conn != attachedConns.end(); ++conn)
