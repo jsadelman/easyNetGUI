@@ -130,7 +130,8 @@ HEADERS += \
     canvasapplication.h \
     pluginapplicationmanager.h \
 #    ui/canvasoverview.h
-    dunnart_connector.h
+    dunnart_connector.h \
+    limitstring.h
 
 
 

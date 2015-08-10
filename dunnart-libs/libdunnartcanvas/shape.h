@@ -94,6 +94,7 @@ class ShapeObj: public CanvasItem
     Q_OBJECT
     Q_PROPERTY (QPointF position READ centrePos WRITE cmd_setCentrePos)
     Q_PROPERTY (QString label READ label WRITE setLabel)
+    Q_PROPERTY (int maxLabelLength READ maxLabelLength WRITE setMaxLabelLength)
     Q_PROPERTY (QSizeF size READ size WRITE cmd_setSize)
     Q_PROPERTY (QColor fillColour READ fillColour WRITE setFillColour)
     Q_PROPERTY (QColor strokeColour READ strokeColour WRITE setStrokeColour)
@@ -137,6 +138,9 @@ class ShapeObj: public CanvasItem
         //! @param label  A QString with the new label.
         //!
         virtual void setLabel(const QString& label);
+
+        virtual int maxLabelLength() {return m_maxLabelLength;}
+        virtual void setMaxLabelLength(int length) {m_maxLabelLength = length;}
 
         QColor strokeColour(void) const;
         void setStrokeColour(const QColor& colour);
@@ -275,6 +279,7 @@ class ShapeObj: public CanvasItem
         virtual void userMoveBy(qreal dx, qreal dy);
 
         QString m_label;
+        int m_maxLabelLength;
         QColor m_fill_colour;
         QColor m_stroke_colour;
         QSet<ShapeObj *> m_parent_shapes;

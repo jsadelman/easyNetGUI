@@ -59,6 +59,7 @@
 #include "libdunnartcanvas/placement.h"
 #include "libdunnartcanvas/connectorhandles.h"
 #include "libdunnartcanvas/connectionpininfo.h"
+#include "libdunnartcanvas/limitstring.h"
 
 #include <QDebug>
 
@@ -753,10 +754,10 @@ void ShapeObj::setStrokeColour(const QColor& colour)
 
 QColor ShapeObj::fillColour(void) const
 {
-    if ((this == queryObj) || m_connection_cascade_glow || constraintConflict())
-    {
-        return HAZARD_COLOUR;
-    }
+//    if ((this == queryObj) || m_connection_cascade_glow || constraintConflict())
+//    {
+//        return HAZARD_COLOUR;
+//    }
     return m_fill_colour;
 }
 
@@ -1061,7 +1062,8 @@ ShapeObj::ShapeObj(const QString& itemType)
       m_stroke_colour(shLineCol),
       m_size_locked(false),
       m_detail_level(1),
-      m_being_resized(false)
+      m_being_resized(false),
+      m_maxLabelLength(20)
 {
     setItemType(itemType);
     setCanvasItemFlag(CanvasItem::ItemIsAlignable, true);
@@ -1344,14 +1346,14 @@ QString ShapeObj::label(void) const
 
 void ShapeObj::setLabel(const QString& label)
 {
-    m_label = label;
+    m_label = limitString(label, m_maxLabelLength);
     update();
 }
 
 
 QRectF ShapeObj::labelBoundingRect(void) const
 {
-    return boundingRect();
+    return boundingRect().adjusted(width()*0.15, 0, -width()*0.15, 0);
 }
 
 
@@ -1364,12 +1366,30 @@ void ShapeObj::paintLabel(QPainter *painter)
         painter->setFont(canvas()->canvasFont());
     }
     painter->setRenderHint(QPainter::TextAntialiasing, true);
-    QRectF * minBoundingRect = new QRectF;
-    painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, //Qt::TextWordWrap
-            m_label,minBoundingRect);
+//    QRectF * minBoundingRect = new QRectF(boundingRect());
+    int removedChars = -1;
+    QFontMetrics fm(canvas()->canvasFont());
+    int labelWidth = labelBoundingRect().width() + 100; // so that it's > labelBoundingRect().width()
+    QString displayLabel;
+    while (labelWidth > labelBoundingRect().width())
+    {
+        ++removedChars;
+        displayLabel = limitString(m_label, m_maxLabelLength - removedChars);
+        labelWidth = fm.width(displayLabel);
+    }
 
-    setSize(boundingRectNoExpand().size().expandedTo(expandRect(*minBoundingRect,BOUNDINGRECTPADDING).size()));
-    delete minBoundingRect;
+    painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, displayLabel);
+
+
+
+//    while(minBoundingRect->width() > labelBoundingRect())
+//    {
+//        painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, //Qt::TextWordWrap
+//            limitString(m_label, m_maxLabelLength - removedChars),minBoundingRect);
+//    }
+
+//    setSize(boundingRectNoExpand().size().expandedTo(expandRect(*minBoundingRect,BOUNDINGRECTPADDING).size()));
+//    delete minBoundingRect;
 }
 
 

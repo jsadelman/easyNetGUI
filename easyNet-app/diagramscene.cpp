@@ -634,10 +634,14 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
 //        diagramItem->setBrush(myItemColor);
         RectangleShape *box = new RectangleShape();
         // temporarily define dimensions here
-        int boxWidth = 150;
-        int boxHeight = 50;
+
+        int boxHeight = 80;
+        int boxWidth = qCeil((qreal)boxHeight * 1.618);
         box->setPosAndSize(defaultPosition, QSizeF(boxWidth,boxHeight));
         box->setLabel(name);
+        box->setToolTip(name);
+        if (boxType == "representation")
+            box->setFillColour(QColor("azure"));
         addItem(box);
 //        currentPosition += itemOffset;
 //        diagramItem->setPos(currentPosition);
@@ -722,6 +726,7 @@ void DiagramScene::render()
             else
 //            {
                 arrow = new Connector();
+                arrow->setToolTip(name);
 //                addItem(arrow);
 //                itemHash.insert(name,arrow);
 //            }
