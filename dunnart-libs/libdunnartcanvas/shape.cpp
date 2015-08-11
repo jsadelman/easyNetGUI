@@ -28,6 +28,7 @@
 
 #include <QtWidgets>
 #include <QGraphicsSceneMouseEvent>
+#include <QJsonObject>
 
 #include <algorithm>
 #include <climits>
@@ -110,6 +111,22 @@ QSet<ShapeObj *> ShapeObj::neighbours()
     }
     result.remove(this);
     return result;
+}
+
+void ShapeObj::read(const QJsonObject &json)
+{
+    m_name = json["name"].toString();
+    QPointF position(json["x"].toDouble(),json["y"].toDouble());
+    if (!position.isNull())
+        setCentrePos(position);
+}
+
+void ShapeObj::write(QJsonObject &json) const
+{
+    json["name"] = m_name;
+    QPointF position = centrePos();
+    json["x"] = position.x();
+    json["y"] = position.y();
 }
 
 

@@ -74,8 +74,8 @@ using dunnart::Connector;
 Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
-DiagramScene::DiagramScene(QString boxType, QString arrowType)
-    : boxType(boxType), arrowType(arrowType), Canvas()
+DiagramScene::DiagramScene(QString box_type, QString arrow_type)
+    : m_boxType(box_type), m_arrowType(arrow_type), Canvas()
 {
     selectedObject = "";
 //    myItemMenu = itemMenu;
@@ -98,7 +98,7 @@ DiagramScene::DiagramScene(QString boxType, QString arrowType)
     arrowOffset = QPointF(50,0);
 
     objectFilter = new ObjectCatalogueFilter(this);
-    objectFilter->setTypeList(QStringList({boxType, arrowType}));
+    objectFilter->setTypeList(QStringList({m_boxType, m_arrowType}));
     descriptionUpdater = new DescriptionUpdater(this);
     descriptionUpdater->setProxyModel(objectFilter);
 
@@ -209,6 +209,8 @@ void DiagramScene::setFont(const QFont &font)
     }
 }
 
+#endif
+
 void DiagramScene::read(const QJsonObject &json)
 {
     QJsonArray itemArray = json["diagramItems"].toArray();
@@ -218,32 +220,33 @@ void DiagramScene::read(const QJsonObject &json)
         QString name = itemObject["name"].toString();
         if (itemHash.contains(name))
         {
-            QGraphicsItem * item = itemHash.value(name);
-            if (item->type() == DiagramItem::Type) // it should always be true
-            {
-                DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
-                diagramItem->read(itemObject);
-            }
+            ShapeObj * shape = qobject_cast<ShapeObj*>(itemHash.value(name));
+            if (shape)
+                shape->read(itemObject);
         }
     }
 }
 
-void DiagramScene::write(QJsonObject &json) const
+void DiagramScene::write(QJsonObject &json)
 {
     QJsonArray itemArray;
-    foreach (QGraphicsItem * item, items())
+    foreach (ShapeObj * shape, shapes())
     {
-        if (item->type() == DiagramItem::Type)
-        {
-            DiagramItem *diagramItem = qgraphicsitem_cast<DiagramItem *>(item);
             QJsonObject itemObject;
-            diagramItem->write(itemObject);
+            shape->write(itemObject);
             itemArray.append(itemObject);
-        }
     }
     json["diagramItems"] = itemArray;
 }
+
+void DiagramScene::setBaseName(QString baseName)
+{
+    m_baseName = baseName;
+    m_layoutFile = m_baseName.append(QString(".%1.json").arg(m_boxType));
+}
 //! [4]
+
+#if 0
 
 void DiagramScene::setMode(Mode mode)
 {
@@ -361,29 +364,9 @@ void DiagramScene::prepareToLoadLayout(QString fileName)
 //    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
 //            this, SLOT(loadLayout()));
 }
-
-void DiagramScene::loadLayout()
-{
-    if (!objectFilter->isAllValid())
-        return;
-
-//    if (!layoutLoaded)
-    {
-        QFile savedLayoutFile(savedLayout);
-        if (savedLayoutFile.open(QIODevice::ReadOnly))
-        {
-            QByteArray savedLayoutData = savedLayoutFile.readAll();
-            QJsonDocument savedLayoutDoc(QJsonDocument::fromJson(savedLayoutData));
-            read(savedLayoutDoc.object());
-            layoutChanged=false;
-        }
-        //layoutLoaded = true;
-    }
-
-//    disconnect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
-//                   this, SLOT(loadLayout()));
-}
 #endif
+
+
 void DiagramScene::setSelected(QString name)
 {
     if (itemHash.contains(name))
@@ -435,26 +418,11 @@ void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
     layoutLoaded = !(QFileInfo(savedLayout).exists());
 }
 
-void DiagramScene::saveLayout()
-{
-//    if (!objectFilter->isAllValid())        // temp fix!!!
-//            return;
-    if (!layoutChanged)
-        return;
+#endif
 
-    QFile savedLayoutFile(savedLayout);
-    if (savedLayoutFile.open(QIODevice::WriteOnly))
-    {
-        QJsonObject layoutObject;
-        write(layoutObject);
-        QJsonDocument savedLayoutDoc(layoutObject);
-        savedLayoutFile.write(savedLayoutDoc.toJson());
-    }
-    emit layoutSaveAttempted();
-    qDebug() << "emit layoutSaveAttempted";
-}
+
 //! [5]
-
+#if 0
 //! [6]
 void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
@@ -628,7 +596,7 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
     // layers are placed on the scene before arrows
     Q_UNUSED(domDoc)
 //    if (type == "layer")
-      if (type == boxType)
+      if (type == m_boxType)
     {
 //        DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
 //        diagramItem->setBrush(myItemColor);
@@ -638,9 +606,10 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
         int boxHeight = 80;
         int boxWidth = qCeil((qreal)boxHeight * 1.618);
         box->setPosAndSize(defaultPosition, QSizeF(boxWidth,boxHeight));
+        box->setName(name);
         box->setLabel(name);
         box->setToolTip(name);
-        if (boxType == "representation")
+        if (m_boxType == "representation")
             box->setFillColour(QColor("azure"));
         addItem(box);
 //        currentPosition += itemOffset;
@@ -713,7 +682,7 @@ void DiagramScene::render()
         if (!domDoc)
             continue;
 //        if (AsLazyNutObject(*domDoc).type() == "connection")
-            if (AsLazyNutObject(*domDoc).type() == arrowType)
+            if (AsLazyNutObject(*domDoc).type() == m_arrowType)
         {
             QString name = AsLazyNutObject(*domDoc).name();
             RectangleShape *startItem = qgraphicsitem_cast<RectangleShape *>
@@ -726,6 +695,7 @@ void DiagramScene::render()
             else
 //            {
                 arrow = new Connector();
+                arrow->setName(name);
                 arrow->setToolTip(name);
 //                addItem(arrow);
 //                itemHash.insert(name,arrow);
@@ -809,10 +779,10 @@ void DiagramScene::syncToObjCatalogue()
     for (int row=0;row<objectFilter->rowCount();row++)
     {
         name = objectFilter->data(objectFilter->index(row,0)).toString();
-        if ((objectFilter->data(objectFilter->index(row,1)).toString() == boxType) &&
+        if ((objectFilter->data(objectFilter->index(row,1)).toString() == m_boxType) &&
             (!itemHash.contains(name)))
-            positionObject(name, boxType, nullptr);
-        else if ((objectFilter->data(objectFilter->index(row,1)).toString() == arrowType))
+            positionObject(name, m_boxType, nullptr);
+        else if ((objectFilter->data(objectFilter->index(row,1)).toString() == m_arrowType))
 //            &&   (!itemHash.contains(name)))
             newConnections << name;
     }

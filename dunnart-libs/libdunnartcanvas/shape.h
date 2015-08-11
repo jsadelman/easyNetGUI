@@ -139,6 +139,7 @@ class ShapeObj: public CanvasItem
         //!
         virtual void setLabel(const QString& label);
 
+
         virtual int maxLabelLength() {return m_maxLabelLength;}
         virtual void setMaxLabelLength(int length) {m_maxLabelLength = length;}
 
@@ -218,6 +219,9 @@ class ShapeObj: public CanvasItem
         double multiEdgeOffset_ny() {return multi_edge_offset_ny;}
 
         QSet<ShapeObj *> neighbours();
+        void read(const QJsonObject &json);
+        void write(QJsonObject &json) const;
+
 
         Relationship *rels[6];
         Avoid::ShapeRef *avoidRef;
@@ -277,6 +281,7 @@ class ShapeObj: public CanvasItem
 
     private:
         virtual void userMoveBy(qreal dx, qreal dy);
+
 
         QString m_label;
         int m_maxLabelLength;

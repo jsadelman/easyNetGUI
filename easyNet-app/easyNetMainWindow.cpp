@@ -605,12 +605,17 @@ void EasyNetMainWindow::loadModel()
         emit modelScene->goToSleep();
         emit conversionScene->goToSleep();
 
+
+
+
         // load and run script
         loadFile(fileName);
 
-        // load JSON file, if it exists
-        QFileInfo fi(fileName);
+        // the /path/basename is used by DiagramScene objects to load JSON files
         QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+        modelScene->setBaseName(base);
+        conversionScene->setBaseName(base);
+
 
         // set up signal - slots so that loadLayout will be called
         // once all of the layers/connections have descriptions

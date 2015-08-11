@@ -307,6 +307,7 @@ class Canvas : public QGraphicsScene
         void setRenderingForPrinting(const bool printingMode);
         bool inSelectionMode(void) const;
         void postRoutingRequiredEvent(void);
+        void updateConnectorsForLayout(void); // MG: was private
 
     signals:
         void diagramFilenameChanged(const QFileInfo& title);
@@ -339,7 +340,7 @@ class Canvas : public QGraphicsScene
         virtual void drawForeground(QPainter *painter, const QRectF& rect);
         virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
         virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
-        void updateConnectorsForLayout(void); // MG: was private
+
 //private: MG: was private
         bool loadDiagram(const QString& filename);
         bool idIsUnique(QString id) const;

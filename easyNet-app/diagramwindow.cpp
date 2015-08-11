@@ -133,7 +133,15 @@ void DiagramWindow::setZoom()
     sceneScaleChanged(sceneScaleCombo->currentText());
 }
 
+void DiagramWindow::loadLayout()
+{
+    diagramSceneTabWidget->currentDiagramView()->loadLayout();
+}
 
+void DiagramWindow::saveLayout()
+{
+    diagramSceneTabWidget->currentDiagramView()->saveLayout();
+}
 
 void DiagramWindow::createMenus()
 {
@@ -151,6 +159,14 @@ void DiagramWindow::createMenus()
     layoutToolBar->addWidget(fitVisibleButton);
     connect(fitVisibleButton, SIGNAL(toggled(bool)), this, SLOT(fitVisible(bool)));
     fitVisibleButton->setChecked(false);
+
+    QAction *loadLayoutAct = new QAction(tr("Load"), this);
+    connect(loadLayoutAct, SIGNAL(triggered()), this, SLOT(loadLayout()));
+    layoutToolBar->addAction(loadLayoutAct);
+
+    QAction *saveLayoutAct = new QAction(tr("Save"), this);
+    connect(saveLayoutAct, SIGNAL(triggered()), this, SLOT(saveLayout()));
+    layoutToolBar->addAction(saveLayoutAct);
 
 
 #if 0

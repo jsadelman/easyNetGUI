@@ -46,7 +46,6 @@
 #include "arrow.h"
 
 #include "libdunnartcanvas/canvas.h"
-//#include <QGraphicsScene>
 
 namespace dunnart {
     class CanvasItem;
@@ -76,11 +75,17 @@ QT_END_NAMESPACE
 class DiagramScene : public dunnart::Canvas
 {
     Q_OBJECT
+    Q_PROPERTY(QString boxType READ boxType)
+    Q_PROPERTY(QString arrowType READ arrowType)
+    Q_PROPERTY(QString baseName READ baseName WRITE setBaseName)
+    Q_PROPERTY(QString layoutFile READ layoutFile WRITE setLayoutFile)
 
 public:
 //    enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
-    explicit DiagramScene(QString boxType, QString arrowType);
+    explicit DiagramScene(QString box_type, QString arrow_type);
+    QString boxType() {return m_boxType;}
+    QString arrowType() {return m_arrowType;}
 //    void setObjCatalogue(ObjectCatalogue *catalogue);
 //    QFont font() const { return myFont; }
 //    QColor textColor() const { return myTextColor; }
@@ -90,8 +95,12 @@ public:
 //    void setTextColor(const QColor &color);
 //    void setItemColor(const QColor &color);
 //    void setFont(const QFont &font);
-//    void read(const QJsonObject &json);
-//    void write(QJsonObject &json) const;
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json);
+    QString baseName() {return m_baseName;}
+    void setBaseName(QString baseName);
+    QString layoutFile() {return m_layoutFile;}
+    void setLayoutFile(QString layoutFile) {m_layoutFile = layoutFile;}
 
     QList<QSet<dunnart::ShapeObj *> > connectedComponents();
     QList<dunnart::ShapeObj *> shapes();
@@ -104,7 +113,6 @@ public slots:
 //    void syncToObjCatalogue();
     void setSelected(QString name);
 //    void savedLayoutToBeLoaded(QString _savedLayout);
-//    void saveLayout();
 //    void prepareToLoadLayout(QString fileName);
 
     void initShapePlacement();
@@ -132,7 +140,8 @@ private slots:
     void positionObject(QString name, QString type, QDomDocument* domDoc);
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
-//    void loadLayout();
+
+
 
     void syncToObjCatalogue();
     void enableObserverClicked();
@@ -155,9 +164,11 @@ private:
 
 
 
-    QString boxType;
-    QString arrowType;
+    QString m_boxType;
+    QString m_arrowType;
     QStringList connections;
+    QString m_baseName;
+    QString m_layoutFile;
 
 //    QString savedLayout;
 //    bool layoutLoaded = false;

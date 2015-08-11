@@ -33,6 +33,8 @@ private slots:
     void alignSelection(int alignType);
     void toFitVisible();
     void setZoom();
+    void loadLayout();
+    void saveLayout();
 private:
     void createMenus();
     DiagramSceneTabWidget *diagramSceneTabWidget;
