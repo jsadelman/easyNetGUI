@@ -13,15 +13,13 @@ public:
     explicit DiagramView(DiagramScene *scene);
 
 public slots:
-    void fitVisible();
+//    void fitVisible();
     void loadLayout();
     void saveLayout();
 
-signals:
-    void zoomChanged();
 
 private:
-    void fitVisible(bool computeBoundingRect);
+//    void fitVisible(bool computeBoundingRect);
     void read(const QJsonObject &json);
     void write(QJsonObject &json);
 };

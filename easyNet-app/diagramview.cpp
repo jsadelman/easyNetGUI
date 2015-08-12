@@ -13,6 +13,7 @@ DiagramView::DiagramView(DiagramScene *scene) : CanvasView(scene)
 {
 }
 
+#if 0
 void DiagramView::fitVisible()
 {
 //    DiagramScene *scene = qobject_cast<DiagramScene*>(sender());
@@ -37,7 +38,7 @@ void DiagramView::fitVisible(bool computeBoundingRect)
     centerOn(sceneRect.center());
     emit zoomChanged();
 }
-
+#endif
 void DiagramView::read(const QJsonObject &json)
 {
     qobject_cast<DiagramScene*>(canvas())->read(json);

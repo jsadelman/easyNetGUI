@@ -420,6 +420,11 @@ QAction *CanvasView::buildAndExecContextMenu(QMouseEvent *event,
             menu.addAction(tr("Zoom to fit entire diagram"));
     QAction *zoomToFitSelection =
             menu.addAction(tr("Zoom to fit current selection"));
+    connect(zoomToFitDiagram, SIGNAL(triggered()), this, SLOT(fitVisible()));
+    connect(zoomToFitSelection, SIGNAL(triggered()), this, SLOT(fitSelection()));
+
+
+#if 0
     QAction *zoomToFitPage =
             menu.addAction(tr("Zoom to fit page"));
     menu.addSeparator();
@@ -429,20 +434,20 @@ QAction *CanvasView::buildAndExecContextMenu(QMouseEvent *event,
             tr("Fit page to current selection"));
     QAction* fitToViewport = menu.addAction(
             tr("Fit page to current viewport"));
-
+#endif
     if (canvas()->selectedItems().empty())
     {
         zoomToFitSelection->setDisabled(true);
-        fitToSelection->setDisabled(true);
+//        fitToSelection->setDisabled(true);
     }
 
-    if (canvas()->pageRect().isEmpty())
-    {
-        zoomToFitPage->setDisabled(true);
-    }
+//    if (canvas()->pageRect().isEmpty())
+//    {
+//        zoomToFitPage->setDisabled(true);
+//    }
 
     QAction *action = menu.exec(event->globalPos());
-
+#if 0
     double padding = 10;
     if (action == zoomToFitDiagram)
     {
@@ -474,6 +479,7 @@ QAction *CanvasView::buildAndExecContextMenu(QMouseEvent *event,
         canvas()->setPageRect(expandRect(diagramBoundingRect(
                 canvas()->selectedItems()), padding));
     }
+#endif
     event->accept();
 
     return action;
@@ -485,6 +491,20 @@ QRectF CanvasView::viewportRect(void) const
     QRectF visibleRect(mapToScene(0,0),
             mapToScene(viewport()->width(), viewport()->height()));
     return visibleRect;
+}
+
+void CanvasView::fitVisible()
+{
+    double padding = 50;
+    zoomToShowRect(expandRect(diagramBoundingRect(canvas()->items()), padding));
+    emit zoomChanged();
+}
+
+void CanvasView::fitSelection()
+{
+    double padding = 20;
+    zoomToShowRect(expandRect(diagramBoundingRect(canvas()->selectedItems()), padding));
+    emit zoomChanged();
 }
 
 

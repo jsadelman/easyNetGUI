@@ -56,10 +56,18 @@ class CanvasView : public QGraphicsView
         void setScene(QGraphicsScene *scene);
         QRectF viewportRect(void) const;
 
+public slots:
+        void fitVisible();// MG: added
+
     signals:
         void canvasTransformChanged(const QTransform& transform);
         void viewportChanged(QRectF viewRect);
         void canvasViewResized();// MG: added
+        void zoomChanged();// MG: added
+
+
+protected slots:
+        void fitSelection();// MG: added
 
     protected:
         virtual void mousePressEvent(QMouseEvent *event);
