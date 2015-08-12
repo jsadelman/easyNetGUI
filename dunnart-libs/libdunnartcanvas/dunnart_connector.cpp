@@ -1630,6 +1630,7 @@ void Connector::paint(QPainter *painter,
 QAction *Connector::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event,
         QMenu& menu)
 {
+#if 0
     // These actions affect all connectors in the current selection.
     QList<CanvasItem *> selectedItems = canvas()->selectedItems();
 
@@ -1733,9 +1734,9 @@ QAction *Connector::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event,
     {
         fixedRouting->setVisible(false);
     }
-
+#endif
     QAction *action = CanvasItem::buildAndExecContextMenu(event, menu);
-
+#if 0
     if (action == addCheckpoint)
     {
         // Checkpoint will only be added to connector under the cursor.
@@ -1791,7 +1792,7 @@ QAction *Connector::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event,
     }
 
     canvas()->setSelection(selectedItems);
-
+#endif
     return action;
 }
 

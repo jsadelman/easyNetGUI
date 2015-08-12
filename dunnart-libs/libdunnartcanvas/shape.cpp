@@ -113,21 +113,6 @@ QSet<ShapeObj *> ShapeObj::neighbours()
     return result;
 }
 
-void ShapeObj::read(const QJsonObject &json)
-{
-    m_name = json["name"].toString();
-    QPointF position(json["x"].toDouble(),json["y"].toDouble());
-    if (!position.isNull())
-        setCentrePos(position);
-}
-
-void ShapeObj::write(QJsonObject &json) const
-{
-    json["name"] = m_name;
-    QPointF position = centrePos();
-    json["x"] = position.x();
-    json["y"] = position.y();
-}
 
 
 void ShapeObj::addConnectionPin(ConnectionPinInfo pinInfo)
@@ -607,20 +592,19 @@ QAction *ShapeObj::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event,
         menu.addSeparator();
     }
 
-    QAction* frontAction = menu.addAction(tr("Bring to Front"));
-    QAction* backAction = menu.addAction(tr("Send to Back"));
+//    QAction* frontAction = menu.addAction(tr("Bring to Front"));
+//    QAction* backAction = menu.addAction(tr("Send to Back"));
 
     QAction *action = CanvasItem::buildAndExecContextMenu(event, menu);
 
-    if (action == frontAction)
-    {
-        bringToFront();
-    }
-    else if (action == backAction)
-    {
-        sendToBack();
-    }
-
+//    if (action == frontAction)
+//    {
+//        bringToFront();
+//    }
+//    else if (action == backAction)
+//    {
+//        sendToBack();
+//    }
     for (int i = 0; i < 6; ++i)
     {
         if (action == dettachActions[i])

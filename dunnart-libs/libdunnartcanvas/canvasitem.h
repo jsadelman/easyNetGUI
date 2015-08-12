@@ -149,7 +149,7 @@ class CanvasItem: public QGraphicsSvgItem
     Q_OBJECT
     Q_PROPERTY (QString type READ itemType)
     Q_PROPERTY (QString id READ idString WRITE setIdString)
-    Q_PROPERTY (QString name READ name WRITE setName)
+
 
 
     public:
@@ -171,8 +171,6 @@ class CanvasItem: public QGraphicsSvgItem
         QString idString(void) const;
 
         uint internalId(void) const;
-        virtual QString name(void) const {return m_name;}
-        virtual void setName(const QString& name) {m_name = name;}
 
 
         QString itemType(void) const;
@@ -267,7 +265,7 @@ class CanvasItem: public QGraphicsSvgItem
         int m_connection_distance;
         int m_connection_cascade_glow;
         CanvasItem *m_connected_objects[2];
-        QString m_name;
+
 
     private:
         friend class AlterCanvasItemProperty;

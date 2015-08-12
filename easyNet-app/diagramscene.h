@@ -69,6 +69,8 @@ class ObjectCatalogueFilter;
 class DescriptionUpdater;
 class QDomDocument;
 
+class Box;
+
 QT_END_NAMESPACE
 
 //! [0]
@@ -104,6 +106,7 @@ public:
 
     QList<QSet<dunnart::ShapeObj *> > connectedComponents();
     QList<dunnart::ShapeObj *> shapes();
+    QList<Box *> boxes();
 
 public slots:
 //    void setMode(Mode mode);
@@ -134,7 +137,7 @@ protected:
 //    void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
 //    void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
-    void contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent);
+//    void contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent);
 
 private slots:
     void positionObject(QString name, QString type, QDomDocument* domDoc);
@@ -144,9 +147,9 @@ private slots:
 
 
     void syncToObjCatalogue();
-    void enableObserverClicked();
-    void disableObserverClicked();
-    void lesionClicked();
+//    void enableObserverClicked();
+//    void disableObserverClicked();
+//    void lesionClicked();
 private:
     void render();
 //    bool isItemChange(int type);

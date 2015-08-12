@@ -1,31 +1,34 @@
-#ifndef ARROW_H
-#define ARROW_H
+#ifndef BOX_H
+#define BOX_H
 
-#include "libdunnartcanvas/dunnart_connector.h"
+#include "libdunnartcanvas/shape.h"
 
-class Arrow: public dunnart::Connector
+
+class Box: public dunnart::ShapeObj
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
     Q_PROPERTY (QString lazyNutType READ lazyNutType WRITE setLazyNutType)
 
 public:
-    Arrow();
+    Box();
     virtual QString name(void) const {return m_name;}
     virtual void setName(const QString& name) {m_name = name;}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType) {m_lazyNutType = lazyNutType;}
+    void read(const QJsonObject &json);
+    void write(QJsonObject &json) const;
 
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
 
 private:
-    void lesion();
-    void unlesion();
+    void enableObserver();
+    void disableObserver();
 
     QString m_name;
     QString m_lazyNutType;
 };
 
-#endif // ARROW_H
+#endif // BOX_H

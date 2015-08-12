@@ -219,8 +219,7 @@ class ShapeObj: public CanvasItem
         double multiEdgeOffset_ny() {return multi_edge_offset_ny;}
 
         QSet<ShapeObj *> neighbours();
-        void read(const QJsonObject &json);
-        void write(QJsonObject &json) const;
+
 
 
         Relationship *rels[6];
