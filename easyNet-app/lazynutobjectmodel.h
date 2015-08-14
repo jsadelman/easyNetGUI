@@ -9,8 +9,8 @@ class DomItem;
 class QDomDocument;
 
 
-// this class is based on the following example:
-// http://doc.qt.digia.com/4.6/itemviews-simpledommodel.html
+// this class is based on the Qt simple DOM model example:
+// http://doc.qt.io/qt-5/qtwidgets-itemviews-simpledommodel-example.html
 class LazyNutObjectModel : public QAbstractItemModel
 {
     Q_OBJECT

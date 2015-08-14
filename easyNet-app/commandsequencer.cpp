@@ -17,11 +17,13 @@ void CommandSequencer::initProcessLazyNutOutput()
     beginRex = QRegExp("BEGIN: ([^\\r\\n]+)");
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\r\\n]*)"); //(?=\\n)
-    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
+//    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
+    answerRex = QRegExp("(ANSWER: [^\\n]*\\n)+");
+
     eNelementsRex = QRegExp("<eNelements>");
     xmlStartRex = QRegExp("<(\\w+)");
-    svgRex = QRegExp("SVG file of (\\d+) bytes:");
-    answerDoneRex = QRegExp("ANSWER: Done\\.");//(?=\\n)
+    svgRex = QRegExp("SVG file of (\\d+) bytes:[ \\r\\n]*");
+    answerDoneRex = QRegExp("ANSWER: Done");
     lazyNutBuffer.clear();
     baseOffset = 0;
 }
@@ -76,19 +78,18 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
         return; // startup header or other spontaneous lazyNut output, or synch error
-    QString currentCmd, lineNumber, timeString;
+    QString currentCmd, beginContent, timeString;
     int beginOffset, endOffset;
     while (true)
     {
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
-        lineNumber = beginRex.cap(1);
+        beginContent = beginRex.cap(1);
 //        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
-        QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(lineNumber)));
+        QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(beginContent)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
             return;
-//        timeString = "0";
         timeString = endRex.cap(1);
 
         // extract ERROR lines
@@ -102,29 +103,31 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         if (!errorList.isEmpty())
             emit cmdError(currentCmd,errorList);
 
-        // grab ANSWER (assume there's only one)
         if (getAnswer)
         {
             int answerOffset = answerRex.indexIn(lazyNutBuffer,beginOffset);
             if (beginOffset < answerOffset && answerOffset < endOffset)
             {
-                QString answer = answerRex.cap(1);
-                if (svgRex.exactMatch(answer))
+                QString answer = answerRex.cap(0);
+                if (svgRex.indexIn(answer) > -1)
                 {
                     int svgStart = answerOffset + answerRex.matchedLength();
-                    int svgEnd = lazyNutBuffer.indexOf("</svg>", svgStart) + QString("</svg>").length();
-                    answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart).remove(QRegExp("^[\\r\\n]*"));
+                    int svgEnd = lazyNutBuffer.indexOf("ANSWER: Done.");
+                    answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
                 }
+#if 0
                 else if (xmlStartRex.indexIn(answer) > -1)
                 {
                     QRegExp xmlEndRex(QString("</%1\\s*>").arg(QRegExp::escape(xmlStartRex.cap(1))));
                     int xmlEnd = xmlEndRex.indexIn(lazyNutBuffer, answerOffset) + xmlEndRex.matchedLength();
                     answer = lazyNutBuffer.mid(answerOffset, xmlEnd - answerOffset).remove("ANSWER:");
                 }
+#endif
+
+                answer = answer.remove("ANSWER: ");
                 emit answerReady(answer, currentCmd);
             }
         }
-//        qDebug() << "about to emit commandExecuted" << commandList.first() << timeString;
         emit commandExecuted(commandList.first(),timeString);
         commandList.removeFirst();
         baseOffset = endOffset + endRex.matchedLength();
@@ -134,7 +137,6 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             lazyNutBuffer.clear();
             ready = true;
             emit isReady(ready);
-//            qDebug() << "READY";
             emit commandsExecuted();
             return;
         }
