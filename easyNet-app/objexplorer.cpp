@@ -9,6 +9,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QItemSelectionModel>
 
 
 #include "objexplorer.h"
@@ -55,7 +56,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
     descriptionFilter = new ObjectCatalogueFilter(this);
 
-    connect(objectListView, &QListView::clicked, [=](const QModelIndex & index)
+    connect(objectListView->selectionModel(), &QItemSelectionModel::currentChanged, [=](const QModelIndex & index)
     {
         descriptionFilter->setName(objectListFilter->data(index).toString());
     });

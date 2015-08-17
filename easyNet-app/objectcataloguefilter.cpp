@@ -91,7 +91,10 @@ void ObjectCatalogueFilter::setList(QStringList list)
 {
     // e.g. list = {"a" , "(b c)"}
     // rex = '^(a|\(b c\))$'
-    QRegExp rex = QRegExp(QString("^(%1)$").arg(list.replaceInStrings(QRegExp("([()])"), "\\\\1").join('|')));
+    for (int i = 0; i < list.length(); ++i)
+        list[i] = QRegExp::escape(list[i]);
+
+    QRegExp rex = QRegExp(QString("^(%1)$").arg(list.join('|')));
     setFilterRegExp(rex);
 }
 
