@@ -56,6 +56,15 @@ void DescriptionUpdater::requestDescriptions(QModelIndex parent, int first, int 
     requestDescriptions(first, last);
 }
 
+void DescriptionUpdater::errorHandler(QString cmd, QStringList errorList)
+{
+    QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
+    if (errorList.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
+    {
+        objectCatalogue->destroy(nameInCmd);
+    }
+}
+
 void DescriptionUpdater::requestDescriptions(int first, int last)
 {
     foreach (QString name, getObjectNames(first, last))
@@ -82,23 +91,21 @@ QStringList DescriptionUpdater::getObjectNames(int first, int last)
 
 void DescriptionUpdater::requestDescription(QString name)
 {
-//    qDebug() << "Requested description for " << name;
     if (name.isEmpty())
         return;
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
-//        qDebug() << "going to set up Job for Requested description for " << name;
         objectCatalogue->setPending(name, false);
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode &= ECHO_INTERPRETER; // debug purpose
         param->cmdList = QStringList({QString("xml %1").arg(name)});
         param->answerFormatterType = AnswerFormatterType::XML;
-        param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*)));
+        param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*, QString)));
+        param->setErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
         SessionManager::instance()->setupJob(param, sender());
     }
     else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
     {
         emit descriptionUpdated(objectCatalogue->description(name));
-//        qDebug() << "description updated for " << name;
     }
 }

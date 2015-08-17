@@ -36,7 +36,7 @@ public slots:
     bool destroy(QStringList names);
     bool destroy(const QString& name);
     bool setDescription(QDomDocument* domDoc);
-    bool setDescriptionAndValidCache(QDomDocument* domDoc);
+    bool setDescriptionAndValidCache(QDomDocument* domDoc, QString cmd);
     bool setInvalid(const QString& name, bool invalid);
     bool setPending(const QString& name, bool pending);
     bool invalidateCache(const QString& name);

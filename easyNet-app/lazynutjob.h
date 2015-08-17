@@ -32,6 +32,7 @@ public:
 
 signals:
     void runCommands(QStringList, bool, unsigned int);
+    void cmdError(QString, QStringList);
 
 
 public slots:

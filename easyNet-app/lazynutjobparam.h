@@ -20,6 +20,9 @@ struct LazyNutJobParam
     void setAnswerReceiver(QObject *receiver, char const *slot)
         {answerReceiver = receiver; answerSlot = slot;}
 
+    void setErrorReceiver(QObject *receiver, char const *slot)
+        {errorReceiver = receiver; errorSlot = slot;}
+
     void setEndOfJobReceiver(QObject *receiver, char const *slot)
         {endOfJobReceiver = receiver; endOfJobSlot = slot;}
 
@@ -28,6 +31,8 @@ struct LazyNutJobParam
 
     QObject *answerReceiver;
     char const *answerSlot;
+    QObject *errorReceiver;
+    char const *errorSlot;
     QObject *endOfJobReceiver;
     char const *endOfJobSlot;
     QObject *nextJobReceiver;

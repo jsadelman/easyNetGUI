@@ -98,8 +98,17 @@ void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
 
     connect(job,SIGNAL(runCommands(QStringList,bool,unsigned int)),
             commandSequencer,SLOT(runCommands(QStringList,bool,unsigned int)));
+
+    if (param->errorReceiver && param->errorSlot)
+    {
+        connect(commandSequencer,SIGNAL(cmdError(QString, QStringList)),
+                job, SIGNAL(cmdError(QString, QStringList)));
+        connect(job, SIGNAL(cmdError(QString, QStringList)),
+            param->errorReceiver, param->errorSlot);
+    }
+
     if (param->endOfJobReceiver && param->endOfJobSlot)
-        connect(job,SIGNAL(exited()),param->endOfJobReceiver,param->endOfJobSlot);
+        connect(job,SIGNAL(exited()),param->endOfJobReceiver, param->endOfJobSlot);
     if (param->nextJobReceiver && param->nextJobSlot)
     {
         LazyNutJob* nextJob = new LazyNutJob(job->macro); // nextJob --> endOfMacro

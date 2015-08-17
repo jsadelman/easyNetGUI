@@ -25,6 +25,7 @@ protected slots:
 private slots:
     void requestDescriptions(QModelIndex top, QModelIndex bottom);
     void requestDescriptions(QModelIndex parent, int first, int last);
+    void errorHandler(QString cmd, QStringList errorList);
 
 private:
     void requestDescriptions(int first, int last);

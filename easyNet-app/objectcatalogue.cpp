@@ -180,9 +180,15 @@ bool ObjectCatalogue::setDescription(QDomDocument *domDoc)
     return setData(index(row, DescriptionCol), QVariant::fromValue(domDoc));
 }
 
-bool ObjectCatalogue::setDescriptionAndValidCache(QDomDocument *domDoc)
+bool ObjectCatalogue::setDescriptionAndValidCache(QDomDocument *domDoc, QString cmd)
 {
     QString name = AsLazyNutObject(*domDoc).name();
+    QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
+    if (name != nameInCmd)
+    {
+        qDebug() <<"ObjectCatalogue::setDescriptionAndValidCache names differ:"  <<   name << nameInCmd;
+        destroy(nameInCmd);
+    }
 
 //    if (!setPending(name, false))
 //        return false;
