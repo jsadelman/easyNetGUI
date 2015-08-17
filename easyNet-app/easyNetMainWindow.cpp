@@ -1229,6 +1229,7 @@ void EasyNetMainWindow::createStatusBar()
 //    statusBar()->addWidget(lazyNutErrorLabel, 1);
 
     lazyNutErrorBox = new QComboBox;
+    lazyNutErrorBox->setToolTip("list of lazyNut ERRORs");
     lazyNutErrorBox->addItem("");
     lazyNutErrorBox->setStyleSheet("QComboBox {"
                                  "font-weight: bold;"
@@ -1265,9 +1266,9 @@ void EasyNetMainWindow::setLazyNutIsReady(bool isReady)
 
 void EasyNetMainWindow::showErrorOnStatusBar(QString /*cmd*/, QStringList errorList)
 {
-//    lazyNutErrorLabel->setText(QString("LAST ERROR: %1").arg(errorList.last()));
-    lazyNutErrorBox->addItem(QString("LAST ERROR: %1").arg(errorList.last()));
-    lazyNutErrorBox->setCurrentText(QString("LAST ERROR: %1").arg(errorList.last()));
+//    lazyNutErrorBox->addItems(errorList.replaceInStrings(QRegExp("^(.*)$"), "LAST ERROR: \\1"));
+    lazyNutErrorBox->addItems(errorList);
+    lazyNutErrorBox->setCurrentIndex(lazyNutErrorBox->count() - 1);
 }
 
 void EasyNetMainWindow::clearErrorOnStatusBar()

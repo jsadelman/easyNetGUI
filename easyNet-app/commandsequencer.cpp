@@ -97,7 +97,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         QStringList errorList = QStringList();
         while (beginOffset < errorOffset && errorOffset < endOffset)
         {
-            errorList << errorRex.cap(1);
+            errorList << errorRex.cap(0);
             errorOffset = errorRex.indexIn(lazyNutBuffer,errorOffset+1);
         }
         if (!errorList.isEmpty())
