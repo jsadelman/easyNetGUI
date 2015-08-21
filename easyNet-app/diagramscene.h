@@ -194,6 +194,12 @@ private:
 //    QColor myLineColor;
     QString selectedObject;
 
+    QString boxLongNameToDisplayIntact;
+    qreal boxWidthMarginProportionToLongestLabel;
+    qreal boxWidthOverHeight;
+
+    qreal jitter;
+
     friend class DiagramWindow; // dunnart::Canvas has lots of friends, this is the same idea.
 };
 //! [0]

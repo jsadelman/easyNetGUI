@@ -9,6 +9,9 @@ class Box: public dunnart::ShapeObj
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
     Q_PROPERTY (QString lazyNutType READ lazyNutType WRITE setLazyNutType)
+    Q_PROPERTY (qreal widthMarginProportionToLongestLabel READ widthMarginProportionToLongestLabel WRITE setWidthMarginProportionToLongestLabel)
+    Q_PROPERTY (QString longNameToDisplayIntact READ longNameToDisplayIntact WRITE setLongNameToDisplayIntact)
+    Q_PROPERTY (qreal widthOverHeight READ widthOverHeight WRITE setWidthOverHeight)
 
 public:
     Box();
@@ -16,8 +19,18 @@ public:
     virtual void setName(const QString& name) {m_name = name;}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType) {m_lazyNutType = lazyNutType;}
+    virtual qreal widthMarginProportionToLongestLabel() {return m_widthMarginProportionToLongestLabel;}
+    virtual void setWidthMarginProportionToLongestLabel(qreal w) {m_widthMarginProportionToLongestLabel = w;}
+    virtual QString longNameToDisplayIntact() {return m_longNameToDisplayIntact;}
+    virtual void setLongNameToDisplayIntact(QString s) {m_longNameToDisplayIntact = s;}
+    virtual qreal widthOverHeight() {return m_widthOverHeight;}
+    virtual void setWidthOverHeight(qreal r) {m_widthOverHeight = r;}
+
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
+    void autoSize();
+    virtual void paintLabel(QPainter *painter);
+    virtual QRectF labelBoundingRect(void) const;
 
 protected:
     virtual QAction *buildAndExecContextMenu(
@@ -29,6 +42,9 @@ private:
 
     QString m_name;
     QString m_lazyNutType;
+    QString m_longNameToDisplayIntact;
+    qreal m_widthMarginProportionToLongestLabel;
+    qreal m_widthOverHeight;
 };
 
 #endif // BOX_H

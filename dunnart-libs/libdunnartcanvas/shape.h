@@ -185,7 +185,7 @@ class ShapeObj: public CanvasItem
         void setPosAndSize(const QPointF& newCentrePos, const QSizeF& newSize);
         virtual void setCentrePos(const QPointF & pos);
         virtual Avoid::Polygon polygon(void) const;
-        void paintLabel(QPainter *painter);
+        virtual void paintLabel(QPainter *painter);
         virtual QRectF labelBoundingRect(void) const;
         void drawLabelAndImage(QPixmap *target, const int x, const int y);
         virtual void changeLabel(void);
@@ -278,7 +278,7 @@ class ShapeObj: public CanvasItem
         double multi_edge_offset_ny;
 
 
-    private:
+    protected: // MG: was private
         virtual void userMoveBy(qreal dx, qreal dy);
 
 

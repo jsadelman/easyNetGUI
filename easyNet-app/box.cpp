@@ -1,9 +1,17 @@
 #include "box.h"
 #include "sessionmanager.h"
+#include "libdunnartcanvas/limitstring.h"
 
+#include <QPainter>
 #include <QDebug>
 
-Box::Box() : ShapeObj("rect")
+using dunnart::limitString;
+
+Box::Box()
+    : ShapeObj("rect"),
+      m_longNameToDisplayIntact("longnameof_level"),
+      m_widthMarginProportionToLongestLabel(0.1),
+      m_widthOverHeight(1.618)
 {
 }
 
@@ -25,6 +33,33 @@ void Box::write(QJsonObject &json) const
     json["x"] = position.x();
     json["y"] = position.y();
 }
+
+void Box::autoSize()
+{
+   QFontMetrics fm(canvas()->canvasFont());
+   qreal autoWidth = (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
+   qreal autoHeigth = autoWidth / m_widthOverHeight;
+   cmd_setSize(QSizeF(autoWidth, autoHeigth));
+}
+
+void Box::paintLabel(QPainter *painter)
+{
+    painter->setPen(Qt::black);
+    if (canvas())
+    {
+        painter->setFont(canvas()->canvasFont());
+    }
+    painter->setRenderHint(QPainter::TextAntialiasing, true);
+    QString displayLabel = limitString(m_label, m_longNameToDisplayIntact.length());
+    painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, displayLabel);
+}
+
+QRectF Box::labelBoundingRect() const
+{
+    return boundingRect().adjusted(width()*m_widthMarginProportionToLongestLabel, 0,
+                                   -width()*m_widthMarginProportionToLongestLabel, 0);
+}
+
 
 QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
 {

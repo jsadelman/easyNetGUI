@@ -118,6 +118,7 @@ class Canvas : public QGraphicsScene
     Q_PROPERTY (bool rubberBandRouting READ optRubberBandRouting WRITE setOptRubberBandRouting)
     Q_PROPERTY (bool fitDiagramWithinPage READ optFitWithinPage WRITE setOptFitWithinPage)
     //Q_PROPERTY (bool colourInterferingConnectors READ optColourInterferingConnectors)
+    Q_PROPERTY(double idealConnectorLength READ idealConnectorLength WRITE setIdealConnectorLength)
     Q_PROPERTY (double idealEdgeLengthModifier READ optIdealEdgeLengthModifier WRITE setOptIdealEdgeLengthModifier)
     Q_PROPERTY (int routingShapePadding READ optRoutingShapePadding WRITE setOptRoutingShapePadding)
     Q_PROPERTY (int connectorRoundingDistance READ optConnectorRoundingDistance WRITE setOptConnRoundingDist)

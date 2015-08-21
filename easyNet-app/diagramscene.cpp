@@ -88,9 +88,22 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 //    myLineColor = Qt::black;
 
     setProperty("structuralEditingDisabled", true);
-    setProperty("idealEdgeLengthModifier", 2.0);
+    setProperty("idealEdgeLengthModifier", 1.0);
     setProperty("preventOverlaps", true);
-    setProperty("shapeNonOverlapPadding", 20);
+
+    // box parameters
+    boxLongNameToDisplayIntact = "longnameof_level";
+    boxWidthMarginProportionToLongestLabel = 0.1;
+    boxWidthOverHeight = 1.618;
+    // compute box width and use it to set shapeNonOverlapPadding
+    QFontMetrics fm(canvasFont());
+    qreal boxWidth = (1.0 + 2.0 * boxWidthMarginProportionToLongestLabel) * fm.width(boxLongNameToDisplayIntact);
+    int shapeNonOverlapPadding = boxWidth * 0.4; // just an estimate
+    qreal idealConnectorLength = boxWidth * 2.0;
+    jitter = boxWidth * 0.3; // just an estimate
+
+    setProperty("idealConnectorLength", idealConnectorLength);
+    setProperty("shapeNonOverlapPadding", shapeNonOverlapPadding);
 
     defaultPosition = QPointF(0,0); //  150);
     currentPosition = defaultPosition;
@@ -262,7 +275,7 @@ void DiagramScene::initShapePlacement()
         QPointF point = gridPoints.takeFirst();
         foreach (ShapeObj * box, c)
             box->setCentrePos(point +
-                              QPointF((double)(qrand() % 10 - 5)*30, (double)(qrand() % 10 - 5)*30));
+                              QPointF((double)(qrand() % 10 - 5)*jitter, (double)(qrand() % 10 - 5)*jitter));
     }
     layout()->initialise();
     updateConnectorsForLayout();
@@ -307,19 +320,25 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
 //        DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
 //        diagramItem->setBrush(myItemColor);
         Box *box = new Box();
+        addItem(box);
         box->setName(name);
         box->setLazyNutType(m_boxType);
         // temporarily define dimensions here
 
-        int boxHeight = 80;
-        int boxWidth = qCeil((qreal)boxHeight * 1.618);
-        box->setPosAndSize(defaultPosition, QSizeF(boxWidth,boxHeight));
+//        int boxHeight = 80;
+//        int boxWidth = qCeil((qreal)boxHeight * 1.618);
+        box->setProperty("position", defaultPosition);
+        box->setProperty("longNameToDisplayIntact", boxLongNameToDisplayIntact);
+        box->setProperty("widthMarginProportionToLongestLabel", boxWidthMarginProportionToLongestLabel);
+        box->setProperty("widthOverHeight", boxWidthOverHeight);
+        box->autoSize();
+//        box->setPosAndSize(defaultPosition, QSizeF(boxWidth,boxHeight));
 
         box->setLabel(name);
         box->setToolTip(name);
         if (m_boxType == "representation")
             box->setFillColour(QColor("azure"));
-        addItem(box);
+
 //        currentPosition += itemOffset;
 //        diagramItem->setPos(currentPosition);
         itemHash.insert(name,box);
