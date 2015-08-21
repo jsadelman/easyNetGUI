@@ -30,6 +30,8 @@ TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
             this,SLOT(buildComboBoxes(QDomDocument*)));
+    connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
+            this,SIGNAL(trialDescriptionUpdated(QDomDocument*)));
 
 
     runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);

@@ -29,6 +29,7 @@ public:
     QString getStimulusSet();
 signals:
     runAllModeChanged(bool);
+    trialDescriptionUpdated(QDomDocument*);
 
 private slots:
     void update(QString trialName);

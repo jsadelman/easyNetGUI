@@ -41,6 +41,7 @@
 #include "textedit.h"
 #include "helpwindow.h"
 #include "trialwidget.h"
+#include "trialeditor.h"
 #include "commandlog.h"
 #include "scripteditor.h"
 #include "console.h"
@@ -201,7 +202,10 @@ void EasyNetMainWindow::constructForms()
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     explorerPanel->addTab(objExplorer, tr("Objects"));
     explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
-    visualiserPanel->addTab(textEdit1, tr("Trial"));
+    trialEditor = new TrialEditor(this);
+    trialFormTabIdx = visualiserPanel->addTab(trialEditor, tr("Trial")); //textEdit1
+
+
     lazynutPanel->addTab(commandLog, tr("History"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
@@ -239,6 +243,8 @@ void EasyNetMainWindow::constructForms()
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole2,SLOT(addText(QString)));
+    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
+            trialEditor,SLOT(setTrialName(QString)));
 
 
 //    visualiserPanel->setCurrentIndex(conversionTabIdx);

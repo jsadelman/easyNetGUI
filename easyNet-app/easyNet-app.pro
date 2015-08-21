@@ -99,7 +99,11 @@ SOURCES +=  \
     diagramwindow.cpp \
     diagramview.cpp \
     box.cpp \
-    arrow.cpp
+    arrow.cpp \
+    xmlform.cpp \
+    objectxml.cpp \
+    trialxml.cpp \
+    trialeditor.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -173,7 +177,11 @@ HEADERS  += \
     diagramwindow.h \
     diagramview.h \
     box.h \
-    arrow.h
+    arrow.h \
+    xmlform.h \
+    objectxml.h \
+    trialxml.h \
+    trialeditor.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

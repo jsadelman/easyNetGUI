@@ -39,6 +39,7 @@ class Assistant;
 class TextEdit;
 class HelpWindow;
 class TrialWidget;
+class TrialEditor;
 class Console;
 class DebugLog;
 class DiagramSceneTabWidget;
@@ -248,6 +249,7 @@ private:
     QComboBox       *modelComboBox;
     QComboBox       *trialComboBox;
     TrialWidget     *trialWidget;
+    TrialEditor     *trialEditor;
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;
@@ -262,6 +264,7 @@ private:
     int             conversionTabIdx;
     int             scriptTabIdx;
     int             outputTablesTabIdx;
+    int             trialFormTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;
