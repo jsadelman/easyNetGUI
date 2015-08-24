@@ -195,7 +195,4 @@ void PlotSettingsForm::setDefaultModelSetting(QString setting, QString value)
 {
     widgetMap[setting]->setValue(value);
     widgetMap[setting]->setValueSetTrue();
-    qDebug() << "Set" << widgetMap[setting]->name() << "to" << widgetMap[setting]->value();
-    emit widgetMap[setting]->valueChanged();
-//    updateDependees();
 }

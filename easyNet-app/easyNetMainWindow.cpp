@@ -176,6 +176,8 @@ void EasyNetMainWindow::constructForms()
     conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
+            plotWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
 //    modelScene->setProperty("structuralEditingDisabled", true);
@@ -225,6 +227,8 @@ void EasyNetMainWindow::constructForms()
     connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
     connect (this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
+    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
+            SessionManager::instance(), SLOT(setCurrentModel(QString)));
     connect(this,SIGNAL(newTableSelection(QString)),tablesWindow,SLOT(updateTableView(QString)));
     connect (paramEdit,SIGNAL(setParamDataFrameSignal(QString)),
              this,SLOT(setParamDataFrame(QString)));
@@ -245,6 +249,8 @@ void EasyNetMainWindow::constructForms()
             lazyNutConsole2,SLOT(addText(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             trialEditor,SLOT(setTrialName(QString)));
+    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
+            SessionManager::instance(), SLOT(setCurrentTrial(QString)));
 
 
 //    visualiserPanel->setCurrentIndex(conversionTabIdx);
@@ -635,9 +641,11 @@ void EasyNetMainWindow::loadModel()
         if (QFileInfo(page).exists())
             infoWindow->showInfo(page);
 
-//        showViewMode(Model);
+        // note: this synch is wrong, yet it works fine if one loads just one model while
+        // no other jobs run. In general commandsCompleted() might be sent from a previous job.
         connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
         runScript();
+//        SessionManager::instance()->setCurrentModel(currentModel);
         // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
         // should then call getList() and choose the appropriate model
 
@@ -648,11 +656,6 @@ void EasyNetMainWindow::afterModelLoaded()
 {
     emit modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
-    // default plot type and plot name
-    QMap<QString,QString> settings;
-    settings["df"]="((word_level default_observer) default_dataframe)";
-    plotWindow->createNewPlotOfType("plo", "activity.R",settings);
-
 }
 
 

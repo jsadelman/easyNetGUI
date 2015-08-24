@@ -36,6 +36,11 @@ class CommandSequencer;
 class SessionManager: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString currentModel READ currentModel WRITE setCurrentModel)
+    Q_PROPERTY(QString currentTrial READ currentTrial WRITE setCurrentTrial)
+    Q_PROPERTY(QString currentPlot READ currentPlot WRITE setCurrentPlot)
+
+
 
 public:
     static SessionManager* instance(); // singleton
@@ -43,6 +48,10 @@ public:
     void setupJob (LazyNutJobParam* param, QObject* sender = nullptr);
     LazyNutJob *currentJob(QObject* sender);
     LazyNutJob* nextJob(QObject* sender);
+    QString currentModel() {return m_currentModel;}
+    QString currentTrial() {return m_currentTrial;}
+    QString currentPlot() {return m_currentPlot;}
+
 
 signals:
 
@@ -93,6 +102,10 @@ public slots:
     void runCmd(QStringList cmd);
 
     void restartLazyNut(QString lazyNutBat);
+
+    void setCurrentModel(QString s) {m_currentModel = s;}
+    void setCurrentTrial(QString s) {m_currentTrial = s;}
+    void setCurrentPlot(QString s) {m_currentPlot = s;}
 private slots:
 
     void getOOB(const QString &lazyNutOutput);
@@ -113,6 +126,11 @@ private:
     SessionManager(SessionManager const&){}
     SessionManager& operator=(SessionManager const&){}
     static SessionManager* sessionManager;
+
+    // state
+    QString m_currentModel;
+    QString m_currentTrial;
+    QString m_currentPlot; // not used
 
     MacroQueue *macroQueue;
     CommandSequencer *commandSequencer;

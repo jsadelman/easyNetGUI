@@ -269,6 +269,7 @@ void PlotWindow::createNewPlotOfType(QString name, QString rScript,
                                      QMap <QString,QString> _defaultSettings)
 {
     defaultSettings = _defaultSettings;
+    qDebug() << "PlotWindow defaultSettings" << defaultSettings;
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({

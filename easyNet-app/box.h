@@ -9,6 +9,7 @@ class Box: public dunnart::ShapeObj
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
     Q_PROPERTY (QString lazyNutType READ lazyNutType WRITE setLazyNutType)
+    // graphical parameters
     Q_PROPERTY (qreal widthMarginProportionToLongestLabel READ widthMarginProportionToLongestLabel WRITE setWidthMarginProportionToLongestLabel)
     Q_PROPERTY (QString longNameToDisplayIntact READ longNameToDisplayIntact WRITE setLongNameToDisplayIntact)
     Q_PROPERTY (qreal widthOverHeight READ widthOverHeight WRITE setWidthOverHeight)
@@ -32,11 +33,21 @@ public:
     virtual void paintLabel(QPainter *painter);
     virtual QRectF labelBoundingRect(void) const;
 
+    QString defaultPlotType();
+
+signals:
+    void createNewPlotOfType(QString, QString, QMap<QString, QString>);
+
+
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
 
+private slots:
+    void sendCreateNewPlotOfType();
+
 private:
+    void defaultPlot();
     void enableObserver();
     void disableObserver();
 
@@ -45,6 +56,8 @@ private:
     QString m_longNameToDisplayIntact;
     qreal m_widthMarginProportionToLongestLabel;
     qreal m_widthOverHeight;
+
+
 };
 
 #endif // BOX_H

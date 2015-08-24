@@ -130,6 +130,9 @@ signals:
     void wakeUp();
     void goToSleep();
     void animationFinished();
+    void createNewPlotOfType(QString name, QString type,
+                             QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
+
 
 
 protected:

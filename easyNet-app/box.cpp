@@ -1,5 +1,6 @@
 #include "box.h"
 #include "sessionmanager.h"
+#include "lazynutjobparam.h"
 #include "libdunnartcanvas/limitstring.h"
 
 #include <QPainter>
@@ -60,6 +61,14 @@ QRectF Box::labelBoundingRect() const
                                    -width()*m_widthMarginProportionToLongestLabel, 0);
 }
 
+QString Box::defaultPlotType()
+{
+    if (m_lazyNutType == "layer")
+        return "activity";
+    else
+        return "";
+}
+
 
 QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
 {
@@ -67,6 +76,8 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
     {
         menu.addSeparator();
     }
+    QAction *defaultPlotAct = menu.addAction(tr("Set up default plot"));
+    defaultPlotAct->setVisible(m_lazyNutType == "layer");
     QAction *enableObserverAct = menu.addAction(tr("Enable default observer"));
     enableObserverAct->setVisible(m_lazyNutType == "layer");
     QAction *disableObserverAct = menu.addAction(tr("Disable default observer"));
@@ -74,13 +85,36 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
 
     QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
 
-    if (action == enableObserverAct)
+    if (action == defaultPlotAct)
+        defaultPlot();
+
+    else if (action == enableObserverAct)
         enableObserver();
 
     else if (action == disableObserverAct)
         disableObserver();
 
     return action;
+}
+
+
+
+void Box::defaultPlot()
+{
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER; // debug purpose
+    param->cmdList = QStringList({QString("(%1 default_observer) enable").arg(m_name)});
+    param->setEndOfJobReceiver(this,SLOT(sendCreateNewPlotOfType()));
+    SessionManager::instance()->setupJob(param, sender());
+}
+
+void Box::sendCreateNewPlotOfType()
+{
+    QMap<QString,QString> settings;
+    settings["df"]=QString("((%1 default_observer) default_dataframe)").arg(m_name);
+    QString plotName = QString("%1.%2.default.%3").arg(
+                SessionManager::instance()->currentModel(), m_name, defaultPlotType());
+    emit createNewPlotOfType(plotName, QString("%1.R").arg(defaultPlotType()), settings);
 }
 
 void Box::enableObserver()

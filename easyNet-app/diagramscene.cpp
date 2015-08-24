@@ -320,6 +320,9 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
 //        DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
 //        diagramItem->setBrush(myItemColor);
         Box *box = new Box();
+        connect(box, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString, QString>)),
+                this, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
+
         addItem(box);
         box->setName(name);
         box->setLazyNutType(m_boxType);
