@@ -81,6 +81,7 @@ class DiagramScene : public dunnart::Canvas
     Q_PROPERTY(QString arrowType READ arrowType)
     Q_PROPERTY(QString baseName READ baseName WRITE setBaseName)
     Q_PROPERTY(QString layoutFile READ layoutFile WRITE setLayoutFile)
+    Q_PROPERTY(bool newModelLoaded READ newModelLoaded WRITE setNewModelLoaded)
 
 public:
 //    enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
@@ -103,6 +104,9 @@ public:
     void setBaseName(QString baseName);
     QString layoutFile() {return m_layoutFile;}
     void setLayoutFile(QString layoutFile) {m_layoutFile = layoutFile;}
+    bool newModelLoaded() {return m_newModelLoaded;}
+    void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
+
 
     QList<QSet<dunnart::ShapeObj *> > connectedComponents();
     QList<dunnart::ShapeObj *> shapes();
@@ -125,6 +129,7 @@ signals:
     void textInserted(QGraphicsTextItem*);
     void itemSelected(QGraphicsItem*);
     void objectSelected(QString);
+    void initArrangement();
 //    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objectCatalogue);
 //    void layoutSaveAttempted();
     void wakeUp();
@@ -161,6 +166,9 @@ private:
     QHash<QString, dunnart::CanvasItem*> itemHash;
     ObjectCatalogueFilter *objectFilter;
     DescriptionUpdater *descriptionUpdater;
+    ObjectCatalogueFilter *boxFilter;
+    ObjectCatalogueFilter *arrowFilter;
+    DescriptionUpdater *arrowDescriptionUpdater;
     QList<QDomDocument*> renderList;
 
     QAction* enableObserverAction;
@@ -175,6 +183,8 @@ private:
     QStringList connections;
     QString m_baseName;
     QString m_layoutFile;
+
+    bool m_newModelLoaded;
 
 //    QString savedLayout;
 //    bool layoutLoaded = false;

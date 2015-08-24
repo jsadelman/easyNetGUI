@@ -654,6 +654,8 @@ void EasyNetMainWindow::loadModel()
 
 void EasyNetMainWindow::afterModelLoaded()
 {
+    modelScene->setNewModelLoaded(true);
+    conversionScene->setNewModelLoaded(true);
     emit modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
 }

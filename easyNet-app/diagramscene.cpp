@@ -87,6 +87,8 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 //    myTextColor = Qt::black;
 //    myLineColor = Qt::black;
 
+    setNewModelLoaded(false);
+
     setProperty("structuralEditingDisabled", true);
     setProperty("idealEdgeLengthModifier", 1.0);
     setProperty("preventOverlaps", true);
@@ -99,7 +101,7 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     QFontMetrics fm(canvasFont());
     qreal boxWidth = (1.0 + 2.0 * boxWidthMarginProportionToLongestLabel) * fm.width(boxLongNameToDisplayIntact);
     int shapeNonOverlapPadding = boxWidth * 0.4; // just an estimate
-    qreal idealConnectorLength = boxWidth * 2.0;
+    qreal idealConnectorLength = boxWidth * 2.0; // just an estimate
     jitter = boxWidth * 0.3; // just an estimate
 
     setProperty("idealConnectorLength", idealConnectorLength);
@@ -112,19 +114,29 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
     objectFilter = new ObjectCatalogueFilter(this);
     objectFilter->setTypeList(QStringList({m_boxType, m_arrowType}));
-    descriptionUpdater = new DescriptionUpdater(this);
-    descriptionUpdater->setProxyModel(objectFilter);
+    boxFilter = new ObjectCatalogueFilter(this);
+    boxFilter->setType(m_boxType);
+    arrowFilter = new ObjectCatalogueFilter(this);
+    arrowFilter->setType(m_arrowType);
+
+//    descriptionUpdater = new DescriptionUpdater(this);
+//    descriptionUpdater->setProxyModel(objectFilter);
+
+    arrowDescriptionUpdater = new DescriptionUpdater(this);
+    arrowDescriptionUpdater->setProxyModel(arrowFilter);
 
 
-    connect(objectFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
+    connect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
             this, SLOT(positionObject(QString, QString, QDomDocument*)));
-    connect(objectFilter, SIGNAL(objectDestroyed(QString)),
+    connect(boxFilter, SIGNAL(objectDestroyed(QString)),
             this, SLOT(removeObject(QString)));
-    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+    connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+    connect(arrowDescriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
             this, SLOT(renderObject(QDomDocument*)));
-    connect(this, SIGNAL(wakeUp()), descriptionUpdater,SLOT(wakeUpUpdate()));
+    connect(this, SIGNAL(wakeUp()), arrowDescriptionUpdater,SLOT(wakeUpUpdate()));
     connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
-    connect(this, SIGNAL(goToSleep()), descriptionUpdater,SLOT(goToSleep()));
+    connect(this, SIGNAL(goToSleep()), arrowDescriptionUpdater,SLOT(goToSleep()));
     connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 }
 
@@ -366,7 +378,7 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
 {
     // wait until all descriptions of recently_* objects have arrived
     renderList.append(domDoc);
-//    if (objectFilter->isAllValid()) // testing! to handle problem with missing conversion
+    if (arrowFilter->isAllValid())
         render();
 }
 
@@ -434,6 +446,11 @@ void DiagramScene::render()
     renderList.clear();
     layout()->initialise();
     updateConnectorsForLayout();
+    if (newModelLoaded())
+    {
+        setNewModelLoaded(false);
+        emit initArrangement();
+    }
 
 }
 
@@ -480,7 +497,7 @@ void DiagramScene::syncToObjCatalogue()
         QVariant v = objectFilter->data(objectFilter->index(matchedIndexList.at(0).row(),3));
         if (v.canConvert<QDomDocument *>())
             renderList.append(v.value<QDomDocument *>());
-        descriptionUpdater->requestDescription(name);
+        arrowDescriptionUpdater->requestDescription(name);
     }
     // remove destroyed objects
     foreach (QString name, itemHash.keys())

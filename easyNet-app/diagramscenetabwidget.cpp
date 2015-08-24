@@ -24,6 +24,7 @@ DiagramSceneTabWidget::DiagramSceneTabWidget(QMainWindow *window)
 int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QString arrowType)
 {
     DiagramScene *scene = new DiagramScene(boxType, arrowType);
+    connect(scene, SIGNAL(initArrangement()), this, SIGNAL(initArrangement()));
     DiagramView *view = new DiagramView(scene);
     m_undo_group->addStack(scene->undoStack());
 

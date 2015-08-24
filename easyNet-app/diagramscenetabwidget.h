@@ -20,6 +20,7 @@ public:
 
 signals:
     void currentDiagramSceneChanged(DiagramScene *scene);
+    void initArrangement();
 
 private slots:
     void emitCurrentDiagramSceneChanged(dunnart::Canvas* canvas);

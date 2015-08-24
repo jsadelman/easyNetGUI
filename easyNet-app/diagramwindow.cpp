@@ -20,6 +20,7 @@ DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidg
 {
     setCentralWidget(diagramSceneTabWidget);
     createMenus();
+    connect(diagramSceneTabWidget, SIGNAL(initArrangement()), this, SLOT(initArrangement()));
 }
 
 
@@ -46,8 +47,17 @@ void DiagramWindow::initArrangement()
 {
 
     fitVisibleButton->setChecked(true);
-    diagramSceneTabWidget->currentDiagramScene()->initShapePlacement();
-    arrange();
+
+    if (QFileInfo(diagramSceneTabWidget->currentDiagramScene()->layoutFile()).exists())
+    {
+        loadLayout();
+        diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
+    }
+    else
+    {
+        diagramSceneTabWidget->currentDiagramScene()->initShapePlacement();
+        arrange();
+    }
 }
 
 void DiagramWindow::sceneScaleChanged(const QString &scale)
@@ -151,20 +161,20 @@ void DiagramWindow::createMenus()
     connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
     layoutToolBar->addAction(arrangeAct);
 
-    QAction *initArrangementAct = new QAction(tr("Init"), this);
-    connect(initArrangementAct, SIGNAL(triggered()), this, SLOT(initArrangement()));
-    layoutToolBar->addAction(initArrangementAct);
+//    QAction *initArrangementAct = new QAction(tr("Init"), this);
+//    connect(initArrangementAct, SIGNAL(triggered()), this, SLOT(initArrangement()));
+//    layoutToolBar->addAction(initArrangementAct);
 
     fitVisibleButton = new QRadioButton(tr("Fit Visible"));
     layoutToolBar->addWidget(fitVisibleButton);
     connect(fitVisibleButton, SIGNAL(toggled(bool)), this, SLOT(fitVisible(bool)));
     fitVisibleButton->setChecked(false);
 
-    QAction *loadLayoutAct = new QAction(tr("Load"), this);
+    QAction *loadLayoutAct = new QAction(tr("Reload layout"), this);
     connect(loadLayoutAct, SIGNAL(triggered()), this, SLOT(loadLayout()));
     layoutToolBar->addAction(loadLayoutAct);
 
-    QAction *saveLayoutAct = new QAction(tr("Save"), this);
+    QAction *saveLayoutAct = new QAction(tr("Save layout"), this);
     connect(saveLayoutAct, SIGNAL(triggered()), this, SLOT(saveLayout()));
     layoutToolBar->addAction(saveLayoutAct);
 
@@ -321,7 +331,7 @@ void DiagramWindow::createMenus()
 
 
     // DELETE
-    QAction *deleteAct = new QAction(tr("delete"), this);
+    QAction *deleteAct = new QAction(tr("delete alignment"), this);
     deleteAct->setShortcut(QKeySequence::Delete);
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteSelection()));
     QToolBar *editToolBar = addToolBar("Edit");
