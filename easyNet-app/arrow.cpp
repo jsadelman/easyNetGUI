@@ -33,6 +33,9 @@ void Arrow::lesion()
 {
     QString cmd = QString("%1 lesion").arg(m_name);
     SessionManager::instance()->runCmd(cmd);
+    // basic version (should check if cmd was executed succesfully)
+    setDashedStroke(true);
+
 }
 
 
@@ -40,5 +43,7 @@ void Arrow::unlesion()
 {
     QString cmd = QString("%1 unlesion").arg(m_name);
     SessionManager::instance()->runCmd(cmd);
+    // basic version (should check if cmd was executed succesfully)
+    setDashedStroke(false);
 }
 

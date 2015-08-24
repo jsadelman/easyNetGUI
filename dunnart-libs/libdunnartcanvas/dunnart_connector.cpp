@@ -1592,6 +1592,7 @@ void Connector::paint(QPainter *painter,
     }
 
     QPen pen(m_colour);
+    pen.setWidth(2);
     pen.setCosmetic(true);
     if (m_dashed_stroke)
     {
