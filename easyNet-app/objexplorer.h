@@ -118,7 +118,7 @@ public:
    }
    virtual ~localListFiller();
 private slots:
-   doFillList(QDomDocument*dom)
+   void doFillList(QDomDocument*dom)
    {
        oe_->doFillList(qaim_,dom,at_);
    }

@@ -55,7 +55,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
     signals:
-        newParamValueSig (QString);
+    void newParamValueSig (QString);
 
 private slots:
 private:

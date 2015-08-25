@@ -46,7 +46,11 @@ void SessionManager::startLazyNut(QString lazyNutBat)
 
     if (!lazyNut->waitForStarted())
     {
-        qDebug() << lazyNut->program() << lazyNut->nativeArguments()<<  lazyNut->arguments() << lazyNut->error() << lazyNut->errorString();
+        qDebug() << lazyNut->program() <<
+            #ifdef WIN32
+                    lazyNut->nativeArguments()<<
+            #endif
+                    lazyNut->arguments() << lazyNut->error() << lazyNut->errorString();
         emit lazyNutNotRunning();
         qDebug("lazyNut not running");
     }

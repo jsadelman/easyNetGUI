@@ -201,3 +201,14 @@ DISTFILES += \
 CONFIG += c++11
 
 ICON = images/easyNet.hqx
+
+
+macx {
+  libdunnartcanvas.path = Contents/MacOS
+  libdunnartcanvas.files  = $${PWD}/../dll/libdunnartcanvas.1.dylib
+  libdunnartcanvas.files += $${PWD}/../dll/libavoid.1.dylib
+  libdunnartcanvas.files += $${PWD}/../dll/libvpsc.1.dylib
+  libdunnartcanvas.files += $${PWD}/../dll/libcola.1.dylib
+  libdunnartcanvas.files += $${PWD}/../dll/libtopology.1.dylib
+  QMAKE_BUNDLE_DATA += libdunnartcanvas
+}
