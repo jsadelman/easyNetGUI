@@ -112,8 +112,8 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     itemOffset = QPointF(0,50) ; // 150);
     arrowOffset = QPointF(50,0);
 
-    objectFilter = new ObjectCatalogueFilter(this);
-    objectFilter->setTypeList(QStringList({m_boxType, m_arrowType}));
+//    objectFilter = new ObjectCatalogueFilter(this);
+//    objectFilter->setTypeList(QStringList({m_boxType, m_arrowType}));
     boxFilter = new ObjectCatalogueFilter(this);
     boxFilter->setType(m_boxType);
     arrowFilter = new ObjectCatalogueFilter(this);
@@ -126,17 +126,12 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     arrowDescriptionUpdater->setProxyModel(arrowFilter);
 
 
-    connect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-            this, SLOT(positionObject(QString, QString, QDomDocument*)));
-    connect(boxFilter, SIGNAL(objectDestroyed(QString)),
-            this, SLOT(removeObject(QString)));
-    connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
-            this, SLOT(removeObject(QString)));
+
     connect(arrowDescriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
             this, SLOT(renderObject(QDomDocument*)));
-    connect(this, SIGNAL(wakeUp()), arrowDescriptionUpdater,SLOT(wakeUpUpdate()));
-    connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
-    connect(this, SIGNAL(goToSleep()), arrowDescriptionUpdater,SLOT(goToSleep()));
+//    connect(this, SIGNAL(wakeUp()), arrowDescriptionUpdater,SLOT(wakeUpUpdate()));
+//    connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
+//    connect(this, SIGNAL(goToSleep()), arrowDescriptionUpdater,SLOT(goToSleep()));
     connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 }
 
@@ -291,6 +286,30 @@ void DiagramScene::initShapePlacement()
     }
     layout()->initialise();
     updateConnectorsForLayout();
+
+}
+
+void DiagramScene::wakeUp()
+{
+    connect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
+            this, SLOT(positionObject(QString, QString, QDomDocument*)));
+    connect(boxFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+    connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+    arrowDescriptionUpdater->wakeUpUpdate();
+    syncToObjCatalogue();
+}
+
+void DiagramScene::goToSleep()
+{
+    disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
+            this, SLOT(positionObject(QString, QString, QDomDocument*)));
+    disconnect(boxFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+    disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+    arrowDescriptionUpdater->goToSleep();
 
 }
 
@@ -474,35 +493,48 @@ void DiagramScene::syncToObjCatalogue()
 {
     qDebug() << "Entered syncToObjCatalogue()";
     QString name;
-    QStringList newConnections{};
+//    QStringList newConnections{};
     // display new layers, hold new connections in a list
-    for (int row=0;row<objectFilter->rowCount();row++)
+    for (int row=0;row<boxFilter->rowCount();row++)
     {
-        name = objectFilter->data(objectFilter->index(row,0)).toString();
-        if ((objectFilter->data(objectFilter->index(row,1)).toString() == m_boxType) &&
-            (!itemHash.contains(name)))
+        name = boxFilter->data(boxFilter->index(row,0)).toString();
+        if (!itemHash.contains(name))
             positionObject(name, m_boxType, nullptr);
-        else if ((objectFilter->data(objectFilter->index(row,1)).toString() == m_arrowType))
+//        else if ((boxFilter->data(boxFilter->index(row,1)).toString() == m_arrowType))
 //            &&   (!itemHash.contains(name)))
-            newConnections << name;
+//            newConnections << name;
     }
 
     //    display new connections
+    for (int row=0;row<arrowFilter->rowCount();row++)
+    {
+        name = arrowFilter->data(arrowFilter->index(row,0)).toString();
+        if (!itemHash.contains(name))
+        {
+            connections.append(name);
+            QVariant v = arrowFilter->data(arrowFilter->index(row, 3));
+            if (v.canConvert<QDomDocument *>())
+                renderList.append(v.value<QDomDocument *>());
+            arrowDescriptionUpdater->requestDescription(name);
+        }
+    }
+
+   # if 0
     foreach(QString name, newConnections)
     {
         connections.append(name);
-//        qDebug() << "looking for" << name;
         QModelIndexList matchedIndexList = objectFilter->match(objectFilter->index(0,0),Qt::DisplayRole,name);
-//        qDebug() << "matching row" << objectFilter->data(matchedIndexList.at(0));
         QVariant v = objectFilter->data(objectFilter->index(matchedIndexList.at(0).row(),3));
         if (v.canConvert<QDomDocument *>())
             renderList.append(v.value<QDomDocument *>());
         arrowDescriptionUpdater->requestDescription(name);
     }
+#endif
     // remove destroyed objects
     foreach (QString name, itemHash.keys())
     {
-        QModelIndexList matchedIndexList = objectFilter->match(objectFilter->index(0,0),Qt::DisplayRole,name);
+        QModelIndexList matchedIndexList = boxFilter->match(boxFilter->index(0,0),Qt::DisplayRole,name);
+        matchedIndexList.append(arrowFilter->match(arrowFilter->index(0,0),Qt::DisplayRole,name));
         if (matchedIndexList.isEmpty())
             removeObject(name);
     }

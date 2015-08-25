@@ -19,7 +19,7 @@ public:
 signals:
     void descriptionUpdated(QDomDocument*);
 
-protected slots:
+public slots:
     void goToSleep();
     void wakeUpUpdate();
 private slots:

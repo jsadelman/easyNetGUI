@@ -123,6 +123,8 @@ public slots:
 //    void prepareToLoadLayout(QString fileName);
 
     void initShapePlacement();
+    void wakeUp();
+    void goToSleep();
 
 signals:
     void itemInserted(DiagramItem*);
@@ -132,8 +134,7 @@ signals:
     void initArrangement();
 //    void showObj(LazyNutObj * obj, LazyNutObjCatalogue* objectCatalogue);
 //    void layoutSaveAttempted();
-    void wakeUp();
-    void goToSleep();
+
     void animationFinished();
     void createNewPlotOfType(QString name, QString type,
                              QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
@@ -164,7 +165,7 @@ private:
 
     ObjectCatalogue *objectCatalogue;
     QHash<QString, dunnart::CanvasItem*> itemHash;
-    ObjectCatalogueFilter *objectFilter;
+//    ObjectCatalogueFilter *objectFilter;
     DescriptionUpdater *descriptionUpdater;
     ObjectCatalogueFilter *boxFilter;
     ObjectCatalogueFilter *arrowFilter;

@@ -274,12 +274,12 @@ void EasyNetMainWindow::setRunAllMode(bool mode)
 
 void EasyNetMainWindow::diagramSceneTabChanged(int index)
 {
-    emit modelScene->goToSleep();
-    emit conversionScene->goToSleep();
+     modelScene->goToSleep();
+     conversionScene->goToSleep();
     if (index == modelTabIdx)
-        emit modelScene->wakeUp();
+         modelScene->wakeUp();
     else if (index == conversionTabIdx)
-        emit conversionScene->wakeUp();
+         conversionScene->wakeUp();
 }
 
 void EasyNetMainWindow::setParamDataFrame(QString name)
@@ -614,8 +614,8 @@ void EasyNetMainWindow::loadModel()
                                                     tr("Script Files (*.eNs *.eNm)"));
     if (!fileName.isEmpty())
     {
-        emit modelScene->goToSleep();
-        emit conversionScene->goToSleep();
+         modelScene->goToSleep();
+         conversionScene->goToSleep();
 
 
 
@@ -656,7 +656,7 @@ void EasyNetMainWindow::afterModelLoaded()
 {
     modelScene->setNewModelLoaded(true);
     conversionScene->setNewModelLoaded(true);
-    emit modelScene->wakeUp();
+     modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
 }
 
