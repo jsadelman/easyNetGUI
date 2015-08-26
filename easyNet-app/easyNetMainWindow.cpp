@@ -611,7 +611,7 @@ void EasyNetMainWindow::loadModel()
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     scriptsDir,
-                                                    tr("Script Files (*.eNs *.eNm)"));
+                                                    tr("easyNet Model Files (*.eNm)"));
     if (!fileName.isEmpty())
     {
          modelScene->goToSleep();
