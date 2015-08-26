@@ -127,6 +127,11 @@ void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
         job->runCommands();
 }
 
+void SessionManager::setupNoOp(QObject *sender)
+{
+    setupJob(new LazyNutJobParam, sender);
+}
+
 
 LazyNutJob *SessionManager::currentJob(QObject *sender)
 {

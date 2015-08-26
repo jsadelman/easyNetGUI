@@ -77,7 +77,10 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     // else send it to some log file or other location
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
-        return; // startup header or other spontaneous lazyNut output, or synch error
+    {
+        emit commandsExecuted();
+        return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or synch error
+    }
     QString currentCmd, beginContent, timeString;
     int beginOffset, endOffset;
     while (true)

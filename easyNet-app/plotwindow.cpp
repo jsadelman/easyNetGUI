@@ -365,6 +365,8 @@ void PlotWindow::draw()
 {
     if (plotSettingsForm)
         sendSettings(this, SLOT(sendDrawCmd()));
+    else
+        SessionManager::instance()->setupNoOp(sender());
 }
 
 
