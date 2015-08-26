@@ -28,8 +28,8 @@ public:
     bool checkIfReadyToRun();
     QString getStimulusSet();
 signals:
-    runAllModeChanged(bool);
-    trialDescriptionUpdated(QDomDocument*);
+    void runAllModeChanged(bool);
+    void trialDescriptionUpdated(QDomDocument*);
 
 private slots:
     void update(QString trialName);
