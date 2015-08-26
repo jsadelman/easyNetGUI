@@ -384,6 +384,8 @@ void EasyNetMainWindow::initialiseToolBar()
       trialComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       trialListFilter->setType("steps");
+      connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+              trialComboBox, SLOT(setCurrentText(QString)));
 
 
 
