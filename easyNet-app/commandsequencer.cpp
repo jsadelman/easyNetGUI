@@ -43,7 +43,9 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
 
     if (commandList.size() == 0)
     {
-        // likely the user has selected only empty lines (by mistake)
+        // the user has selected only empty lines (by mistake)
+        // or an empty job was sent
+        // (on purpose, e.g. for terminating a macro from a slot designated as next job slot)
         emit commandsExecuted();
         return;
     }
@@ -77,10 +79,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     // else send it to some log file or other location
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
-    {
-        emit commandsExecuted();
         return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or synch error
-    }
     QString currentCmd, beginContent, timeString;
     int beginOffset, endOffset;
     while (true)
