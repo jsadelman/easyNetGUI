@@ -10,7 +10,6 @@
 #include <QScreen>
 #include <QDebug>
 #include <QtCore/QLibraryInfo>
-#include <QSvgWidget>
 #include <QMessageBox>
 
 
@@ -198,7 +197,7 @@ void EasyNetMainWindow::constructForms()
 
 //    modelTabIdx = visualiserPanel->addTab(designWindow, tr("Model"));
 //    conversionTabIdx = visualiserPanel->addTab(conversionWindow, tr("Conversions"));
-    visualiserPanel->addTab(plotWindow, tr("Plot settings"));
+    plotSettingsTabIdx = visualiserPanel->addTab(plotWindow, tr("Plot settings"));
     plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
     //        lazynutPanel->addTab(lazyNutConsole, tr("Console"));
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
@@ -236,7 +235,12 @@ void EasyNetMainWindow::constructForms()
             this,SLOT(setParam(QString)));
     connect(plotWindow, SIGNAL(plot(QString,QByteArray)),
             plotViewer,SLOT(load(QString,QByteArray)));
+    connect(plotWindow, SIGNAL(newPlotSignal()),
+            plotViewer,SLOT(addPlot()));
+
     connect(plotViewer,SIGNAL(sendDrawCmd()),plotWindow,SLOT(sendDrawCmd()));
+    connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
+
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
     connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
     connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
@@ -265,6 +269,12 @@ void EasyNetMainWindow::showExplorer()
     explorerDock->show();
     explorerDock->setFocus();
     explorerDock->raise();
+}
+
+void EasyNetMainWindow::showPlotSettings()
+{
+    visualiserDock->raise();
+    visualiserPanel->setCurrentIndex(plotSettingsTabIdx);
 }
 
 void EasyNetMainWindow::setRunAllMode(bool mode)
@@ -335,7 +345,7 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
     viewMenu->addAction(visualiserDock->toggleViewAction());
     visualiserDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-    diagramDock = new QDockWidget(tr("Diagrams"), this);
+    diagramDock = new QDockWidget(tr("Architecture"), this);
     diagramDock->setWidget(diagramWindow);
     addDockWidget(Qt::LeftDockWidgetArea, diagramDock);
     viewMenu->addAction(diagramDock->toggleViewAction());

@@ -1,6 +1,5 @@
 
 #include <QtWidgets>
-#include <QSvgWidget>
 #include <QDomDocument>
 #include <QListView>
 #include <QScrollArea>
@@ -263,6 +262,7 @@ void PlotWindow::createNewPlot(QString name)
     param->cmdList = QStringList({QString("create rplot %1").arg(name)});
     param->setNextJobReceiver(this,SLOT(getSettingsXML()));
     SessionManager::instance()->setupJob(param, sender());
+    emit newPlotSignal();
 }
 
 void PlotWindow::createNewPlotOfType(QString name, QString rScript,
@@ -280,6 +280,7 @@ void PlotWindow::createNewPlotOfType(QString name, QString rScript,
     SessionManager::instance()->setupJob(param, sender());
     currentPlot = name;
     currentPlotType = rScript;
+    emit newPlotSignal();
 
 }
 

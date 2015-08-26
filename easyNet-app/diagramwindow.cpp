@@ -325,7 +325,7 @@ void DiagramWindow::createMenus()
     QWidget *controlsWidget = new QWidget;
     controlsWidget->setLayout(controlsLayout);
 
-    QDockWidget *controlsDock = new QDockWidget("Layout Controls");
+    QDockWidget *controlsDock = new QDockWidget("Layout");
     controlsDock->setWidget(controlsWidget);
     addDockWidget(Qt::LeftDockWidgetArea, controlsDock);
 

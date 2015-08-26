@@ -17,10 +17,13 @@ public:
     PlotViewer(QString easyNetHome, QWidget *parent=0);
     ~PlotViewer();
 
+    QTabWidget*     plotPanel;
     QSvgWidget*     svgWidget;
+    QVector <QSvgWidget*>     plots;
     QToolBar*       fileToolBar;
     QToolBar*       editToolBar;
     QToolBar*       navigationToolBar;
+    QAction *       settingsAct;
     QAction *       refreshAct;
     QAction *       openAct;
     QAction *       saveAct;
@@ -28,12 +31,14 @@ public:
 
 signals:
     void sendDrawCmd();
+    void showPlotSettings();
 
 private slots:
     void loadSVGFile();
     void load(QString name, QByteArray byteArray);
     void save();
     void copySVGToClipboard();
+    void addPlot();
 private:
     void createToolBars();
     void createActions();
@@ -41,6 +46,8 @@ private:
     QString         easyNetHome;
     QLabel*         titleLabel;
     QByteArray      byteArray;
+    int             currentPlot;
+    int             numPlots;
 
 };
 

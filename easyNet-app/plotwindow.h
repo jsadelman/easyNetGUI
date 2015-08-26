@@ -6,7 +6,6 @@
 #include <QMap>
 
 
-class QSvgWidget;
 class CodeEditor;
 class QDomDocument;
 class QLabel;
@@ -30,7 +29,6 @@ public:
 
 signals:
     void createNewPlotOfType(QString, QString);
-
 
 };
 
@@ -64,6 +62,7 @@ public:
     void setDefaultModelSetting(QString setting, QString value);
 signals:
         void plot(QString, QByteArray);
+        void newPlotSignal();
 public slots:
         void createNewPlotOfType(QString name, QString type,
                                  QMap<QString, QString> _defaultSettings=QMap<QString,QString>());

@@ -132,5 +132,6 @@
         <file>images/run_disabled.png</file>
         <file>images/add-on.png</file>
         <file>images/clipboard.png</file>
+        <file>images/plot_settings.png</file>
     </qresource>
 </RCC>

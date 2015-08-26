@@ -133,6 +133,7 @@ private slots:
     void showExplorer();
     void restart();
     void showMostRecentError();
+    void showPlotSettings();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -260,6 +261,7 @@ private:
     int             infoTabIdx;
     int             paramTabIdx;
     int             plotTabIdx;
+    int             plotSettingsTabIdx;
     int             modelTabIdx;
     int             conversionTabIdx;
     int             scriptTabIdx;
