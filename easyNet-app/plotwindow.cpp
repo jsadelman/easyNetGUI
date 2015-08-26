@@ -269,7 +269,6 @@ void PlotWindow::createNewPlotOfType(QString name, QString rScript,
                                      QMap <QString,QString> _defaultSettings)
 {
     defaultSettings = _defaultSettings;
-    qDebug() << "PlotWindow defaultSettings" << defaultSettings;
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = QStringList({
@@ -312,6 +311,7 @@ void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
 //        importHomonyms(settingsList);
 
     plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, defaultSettings, this);
+    defaultSettings.clear();
     plotTitleLabel = new QLabel(QString("%1 (%2)").arg(currentPlot).arg(currentPlotType));
     plotTitleLabel->setStyleSheet("QLabel {"
                              "background-color: white;"
@@ -336,6 +336,7 @@ void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = plotSettingsForm->getSettingsCmdList();
+    qDebug() << "PlotWindow::sendSettings"<< plotSettingsForm->getSettingsCmdList() << sender();
     param->setNextJobReceiver(nextJobReceiver, nextJobSlot);
     SessionManager::instance()->setupJob(param, sender());
 }
@@ -365,6 +366,8 @@ void PlotWindow::draw()
 {
     if (plotSettingsForm)
         sendSettings(this, SLOT(sendDrawCmd()));
+    else
+        SessionManager::instance()->setupNoOp(sender());
 }
 
 

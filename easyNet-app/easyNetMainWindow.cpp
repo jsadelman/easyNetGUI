@@ -394,6 +394,8 @@ void EasyNetMainWindow::initialiseToolBar()
       trialComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       trialListFilter->setType("steps");
+      connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+              trialComboBox, SLOT(setCurrentText(QString)));
 
 
 
@@ -621,7 +623,7 @@ void EasyNetMainWindow::loadModel()
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     scriptsDir,
-                                                    tr("Script Files (*.eNs *.eNm)"));
+                                                    tr("easyNet Model Files (*.eNm)"));
     if (!fileName.isEmpty())
     {
          modelScene->goToSleep();

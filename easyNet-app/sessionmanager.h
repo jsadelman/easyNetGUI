@@ -46,6 +46,7 @@ public:
     static SessionManager* instance(); // singleton
     void startLazyNut(QString lazyNutBat);
     void setupJob (LazyNutJobParam* param, QObject* sender = nullptr);
+    void setupNoOp(QObject* sender = nullptr);
     LazyNutJob *currentJob(QObject* sender);
     LazyNutJob* nextJob(QObject* sender);
     QString currentModel() {return m_currentModel;}

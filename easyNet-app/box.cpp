@@ -114,8 +114,8 @@ void Box::sendCreateNewPlotOfType()
 {
     QMap<QString,QString> settings;
     settings["df"]=QString("((%1 default_observer) default_dataframe)").arg(m_name);
-    QString plotName = QString("%1.%2.default.%3").arg(
-                SessionManager::instance()->currentModel(), m_name, defaultPlotType());
+    QString plotName = QString("%1.%2.default").arg(
+                SessionManager::instance()->currentModel(), m_name);
     emit createNewPlotOfType(plotName, QString("%1.R").arg(defaultPlotType()), settings);
 }
 
