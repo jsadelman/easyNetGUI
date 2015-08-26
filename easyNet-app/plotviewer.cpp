@@ -18,9 +18,9 @@ PlotViewer::PlotViewer(QString _easyNetHome, QWidget* parent)
 
     svgWidget = new QSvgWidget(this);
     svgWidget->show();
-    plots.push_back(new QSvgWidget(this));
+//    plots.push_back(new QSvgWidget(this));
     numPlots = 0;
-    currentPlot = 0;
+    currentPlotIdx = 0;
 //    addPlot();
     setCentralWidget(plotPanel);
 
@@ -60,8 +60,11 @@ void PlotViewer::createActions()
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
     refreshAct->setStatusTip(tr("Refresh plot"));
-    connect(refreshAct, SIGNAL(triggered()), this, SIGNAL(sendDrawCmd()));
-
+//    connect(refreshAct, SIGNAL(triggered()), this, SIGNAL(sendDrawCmd()));
+    connect(refreshAct, &QAction::triggered, [=](){
+       emit sendDrawCmd(plotMap[plotPanel->currentIndex()]);
+    });
+//    connect(refreshAct, SIGNAL(triggered()), this, SLOT(updateCurrentPlot()));
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
     openAct->setStatusTip(tr("Load plot"));
@@ -85,15 +88,16 @@ void PlotViewer::loadSVGFile()
                                                     tr("SVG Files (*.svg)"));
     if (!fileName.isEmpty())
     {
-        plots[currentPlot]->load(fileName);
+        plots[plotPanel->currentIndex()]->load(fileName);
         titleLabel->setText(fileName);
     }
 }
 
-void PlotViewer::load(QString name, QByteArray _byteArray)
+void PlotViewer::loadByteArray(QString name, QByteArray _byteArray)
 {
     byteArray = _byteArray;
-    plots[currentPlot]->load(byteArray);
+
+    plots[plotMap.key(name)]->load(byteArray);
     titleLabel->setText(name);
 }
 
@@ -119,23 +123,32 @@ void PlotViewer::save()
 
 void PlotViewer::copySVGToClipboard()
 {
-    QPixmap* currPixmap = new QPixmap(plots[currentPlot]->width(),
-                                      plots[currentPlot]->height());
+    QPixmap* currPixmap = new QPixmap(plots[plotPanel->currentIndex()]->width(),
+                                      plots[plotPanel->currentIndex()]->height());
     currPixmap->fill(Qt::transparent);
 
-    plots[currentPlot]->render(currPixmap, QPoint(), QRegion(), QWidget::DrawChildren);
+    plots[plotPanel->currentIndex()]->render(currPixmap, QPoint(), QRegion(), QWidget::DrawChildren);
     QClipboard *p_Clipboard = QApplication::clipboard();
     p_Clipboard->setPixmap(*currPixmap);
 
 
+
 }
 
-void PlotViewer::addPlot()
+void PlotViewer::addPlot(QString name)
 {
     plots.push_back(new QSvgWidget(this));
     numPlots++;
-    currentPlot = numPlots-1;
+    currentPlotIdx = numPlots-1;
     int idx = plotPanel->addTab(plots[numPlots-1], tr("Plot ")+QString::number(numPlots));
     qDebug() << "adding plot to panel. New numPlots = " << numPlots;
     plotPanel->setCurrentIndex(idx);
+    plotMap[idx] = name;
+}
+
+void PlotViewer::updateActivePlots()
+{
+    foreach(QString plotName,plotMap.values())
+        emit sendDrawCmd(plotName);
+
 }

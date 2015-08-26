@@ -28,7 +28,7 @@ class EditWindow;
 class CommandLog;
 class ScriptEditor;
 class Highlighter;
-class PlotWindow;
+class PlotSettingsWindow;
 class ObjectCatalogueFilter;
 class LazyNutListComboBox;
 //class LazyNutScriptEditor;
@@ -238,7 +238,7 @@ private:
     DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
     DiagramScene    *conversionScene;
-    PlotWindow      *plotWindow;
+    PlotSettingsWindow      *plotSettingsWindow;
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
     TableEditor     *dataframesWindow;

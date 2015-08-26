@@ -17,7 +17,7 @@
 
 
 
-PlotWindow::PlotWindow(QWidget *parent)
+PlotSettingsWindow::PlotSettingsWindow(QWidget *parent)
     : createNewPlotText("Create new plot"),
       openPlotSettingsText("Open plot settings"),
       savePlotSettingsText("Save plot settings"),
@@ -32,14 +32,14 @@ PlotWindow::PlotWindow(QWidget *parent)
 
 }
 
-void PlotWindow::createToolBars()
+void PlotSettingsWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(refreshAct);
 }
 
 
-int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
+int PlotSettingsWindow::getValueFromByteArray(QByteArray ba, QString key)
 {
     QMessageBox msgBox;
     QByteArray w;
@@ -69,7 +69,7 @@ int PlotWindow::getValueFromByteArray(QByteArray ba, QString key)
 }
 
 
-void PlotWindow::createPlotControlPanel()
+void PlotSettingsWindow::createPlotControlPanel()
 {
     // actions and menus
     plotsMenu = new LazyNutListMenu;
@@ -110,7 +110,7 @@ void PlotWindow::createPlotControlPanel()
 
 }
 
-void PlotWindow::openPlotSettings()
+void PlotSettingsWindow::openPlotSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     QString fileName = QFileDialog::getOpenFileName(this,tr("Open plot settings file"),
@@ -119,7 +119,7 @@ void PlotWindow::openPlotSettings()
         loadSettings(fileName);
 }
 
-void PlotWindow::loadSettings(QString fileName)
+void PlotSettingsWindow::loadSettings(QString fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -140,7 +140,7 @@ void PlotWindow::loadSettings(QString fileName)
     // ...
 }
 
-void PlotWindow::createActions()
+void PlotSettingsWindow::createActions()
 {
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
@@ -148,7 +148,7 @@ void PlotWindow::createActions()
     connect(refreshAct, SIGNAL(triggered()), this, SLOT(sendDrawCmd()));
 }
 
-void PlotWindow::updateRecentRScriptsActs()
+void PlotSettingsWindow::updateRecentRScriptsActs()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     QStringList rScripts = settings.value("recentRScripts","").toStringList();
@@ -170,7 +170,7 @@ void PlotWindow::updateRecentRScriptsActs()
 
 
 
-void PlotWindow::importHomonyms(QDomDocument *settingsList)
+void PlotSettingsWindow::importHomonyms(QDomDocument *settingsList)
 {
     XMLelement xml = XMLelement(*settingsList);
     foreach (QString label, xml.listLabels())
@@ -187,18 +187,19 @@ void PlotWindow::importHomonyms(QDomDocument *settingsList)
     }
 }
 
-void PlotWindow::sendDrawCmd()
+void PlotSettingsWindow::sendDrawCmd(QString plotName)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({QString("%1 get").arg(currentPlot)});
+    param->cmdList = QStringList({QString("%1 get").arg(plotName)});
     param->answerFormatterType = AnswerFormatterType::SVG;
-    param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray)));
+    param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)));
     SessionManager::instance()->setupJob(param, sender());
 }
 
-void PlotWindow::displaySVG(QByteArray plotByteArray)
+void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
 {
+    QString plotName = cmd.remove("get").simplified();
 //    replace tags that QSvgWidget doesn't like
     plotByteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
     plotByteArray.replace (QByteArray("</symbol"),QByteArray("</g     "));
@@ -215,11 +216,12 @@ void PlotWindow::displaySVG(QByteArray plotByteArray)
 //    plot_svg->setMinimumSize(size);
 
 //    send signal to load the byte array into the plot
-    emit plot(currentPlot, plotByteArray);
+    qDebug() << "We think the plot name is" << plotName;
+    emit plot(plotName, plotByteArray);
 
 }
 
-void PlotWindow::setPlot(QString name)
+void PlotSettingsWindow::setPlot(QString name)
 {
     qDebug() << "In setPlot, name is" << name;
     if (name == createNewPlotText)
@@ -238,7 +240,7 @@ void PlotWindow::setPlot(QString name)
     }
 }
 
-void PlotWindow::newPlot()
+void PlotSettingsWindow::newPlot()
 {
 //    bool ok;
 //    QString name = QInputDialog::getText(this, tr("New plot"), tr("Plot name:"), QLineEdit::Normal,
@@ -254,7 +256,7 @@ void PlotWindow::newPlot()
     plotWizard->show();
 }
 
-void PlotWindow::createNewPlot(QString name)
+void PlotSettingsWindow::createNewPlot(QString name)
 {
     setCurrentPlotType(QString());
     LazyNutJobParam *param = new LazyNutJobParam;
@@ -262,10 +264,10 @@ void PlotWindow::createNewPlot(QString name)
     param->cmdList = QStringList({QString("create rplot %1").arg(name)});
     param->setNextJobReceiver(this,SLOT(getSettingsXML()));
     SessionManager::instance()->setupJob(param, sender());
-    emit newPlotSignal();
+    emit newPlotSignal(name);
 }
 
-void PlotWindow::createNewPlotOfType(QString name, QString rScript,
+void PlotSettingsWindow::createNewPlotOfType(QString name, QString rScript,
                                      QMap <QString,QString> _defaultSettings)
 {
     defaultSettings = _defaultSettings;
@@ -279,11 +281,11 @@ void PlotWindow::createNewPlotOfType(QString name, QString rScript,
     SessionManager::instance()->setupJob(param, sender());
     currentPlot = name;
     currentPlotType = rScript;
-    emit newPlotSignal();
+    emit newPlotSignal(name);
 
 }
 
-void PlotWindow::setType(QString rScript)
+void PlotSettingsWindow::setType(QString rScript)
 {
     setCurrentPlotType(rScript);
     LazyNutJobParam *param = new LazyNutJobParam;
@@ -294,7 +296,7 @@ void PlotWindow::setType(QString rScript)
     currentPlotType = rScript;
 }
 
-void PlotWindow::getSettingsXML()
+void PlotSettingsWindow::getSettingsXML()
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode &= ECHO_INTERPRETER; // debug purpose
@@ -305,7 +307,7 @@ void PlotWindow::getSettingsXML()
 }
 
 
-void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
+void PlotSettingsWindow::buildSettingsForm(QDomDocument *settingsList)
 {
 //    if (plotSettingsForm)
 //        importHomonyms(settingsList);
@@ -331,7 +333,7 @@ void PlotWindow::buildSettingsForm(QDomDocument *settingsList)
 
 }
 
-void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
+void PlotSettingsWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
@@ -341,7 +343,7 @@ void PlotWindow::sendSettings(QObject *nextJobReceiver, const char *nextJobSlot)
     SessionManager::instance()->setupJob(param, sender());
 }
 
-void PlotWindow::getPlotType(QObject *nextJobReceiver, const char *nextJobSlot)
+void PlotSettingsWindow::getPlotType(QObject *nextJobReceiver, const char *nextJobSlot)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode &= ECHO_INTERPRETER; // debug purpose
@@ -352,7 +354,7 @@ void PlotWindow::getPlotType(QObject *nextJobReceiver, const char *nextJobSlot)
     SessionManager::instance()->setupJob(param, sender());
 }
 
-void PlotWindow::extractPlotType(QDomDocument *description)
+void PlotSettingsWindow::extractPlotType(QDomDocument *description)
 {
     currentPlotType = QFileInfo(XMLelement(*description)["Type"]()).fileName();
 }
@@ -362,7 +364,7 @@ void PlotWindow::extractPlotType(QDomDocument *description)
 //    sendSettings(this, SLOT(getSettingsXML()));
 //}
 
-void PlotWindow::draw()
+void PlotSettingsWindow::draw()
 {
     if (plotSettingsForm)
         sendSettings(this, SLOT(sendDrawCmd()));
@@ -372,7 +374,7 @@ void PlotWindow::draw()
 
 
 
-void PlotWindow::selectRScript()
+void PlotSettingsWindow::selectRScript()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
@@ -382,14 +384,14 @@ void PlotWindow::selectRScript()
         setType(QFileInfo(rScript).fileName());
 }
 
-void PlotWindow::selectRecentRScript()
+void PlotSettingsWindow::selectRecentRScript()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action)
         setType(action->data().toString());
 }
 
-void PlotWindow::setCurrentPlotType(QString rScript)
+void PlotSettingsWindow::setCurrentPlotType(QString rScript)
 {
     qDebug() << "In setCurrentPlotType, rScript is" << rScript;
     currentPlotType = rScript;
@@ -458,7 +460,7 @@ void NewPlotPage::selectRScript()
         typeEdit->setText(QFileInfo(rScript).fileName());
 }
 
-void PlotWindow::setDefaultModelSetting(QString setting, QString value)
+void PlotSettingsWindow::setDefaultModelSetting(QString setting, QString value)
 {
     plotSettingsForm->setDefaultModelSetting(setting, value);
 }

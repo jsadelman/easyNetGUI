@@ -2,6 +2,7 @@
 #define PLOTVIEWER_H
 
 #include <QMainWindow>
+#include <QMap>
 
 class QSvgWidget;
 class QToolBar;
@@ -29,16 +30,18 @@ public:
     QAction *       saveAct;
     QAction *       copyAct;
 
+public slots:
+    void updateActivePlots();
 signals:
-    void sendDrawCmd();
+    void sendDrawCmd(QString);
     void showPlotSettings();
 
 private slots:
     void loadSVGFile();
-    void load(QString name, QByteArray byteArray);
+    void loadByteArray(QString name, QByteArray byteArray);
     void save();
     void copySVGToClipboard();
-    void addPlot();
+    void addPlot(QString name);
 private:
     void createToolBars();
     void createActions();
@@ -46,8 +49,9 @@ private:
     QString         easyNetHome;
     QLabel*         titleLabel;
     QByteArray      byteArray;
-    int             currentPlot;
+    int             currentPlotIdx;
     int             numPlots;
+    QMap <int, QString> plotMap;
 
 };
 

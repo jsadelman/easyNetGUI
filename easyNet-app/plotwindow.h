@@ -51,25 +51,25 @@ private:
 };
 
 
-class PlotWindow : public QMainWindow
+class PlotSettingsWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    PlotWindow(QWidget *parent = 0);
+    PlotSettingsWindow(QWidget *parent = 0);
     int getValueFromByteArray(QByteArray ba, QString key);
 
     void setDefaultModelSetting(QString setting, QString value);
 signals:
         void plot(QString, QByteArray);
-        void newPlotSignal();
+        void newPlotSignal(QString);
 public slots:
         void createNewPlotOfType(QString name, QString type,
                                  QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
 
 private slots:
-    void sendDrawCmd();
-    void displaySVG(QByteArray plotByteArray);
+    void sendDrawCmd(QString plotName);
+    void displaySVG(QByteArray plotByteArray, QString cmd);
     void setPlot(QString name);
     void newPlot();
     void createNewPlot(QString name);

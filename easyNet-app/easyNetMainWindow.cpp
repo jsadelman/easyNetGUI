@@ -124,7 +124,7 @@ void EasyNetMainWindow::constructForms()
     textEdit12->hide();
 
     lazyNutConsole2 = new Console(this);
-    plotWindow = new PlotWindow(this);
+    plotSettingsWindow = new PlotSettingsWindow(this);
 
     objExplorer = new ObjExplorer(ObjectCatalogue::instance(),this);
 //    designWindow = new DesignWindow(ObjectCatalogue::instance(), "layer", "connection", this);
@@ -176,7 +176,7 @@ void EasyNetMainWindow::constructForms()
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
-            plotWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
+            plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
 //    modelScene->setProperty("structuralEditingDisabled", true);
@@ -197,7 +197,7 @@ void EasyNetMainWindow::constructForms()
 
 //    modelTabIdx = visualiserPanel->addTab(designWindow, tr("Model"));
 //    conversionTabIdx = visualiserPanel->addTab(conversionWindow, tr("Conversions"));
-    plotSettingsTabIdx = visualiserPanel->addTab(plotWindow, tr("Plot settings"));
+    plotSettingsTabIdx = visualiserPanel->addTab(plotSettingsWindow, tr("Plot settings"));
     plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
     //        lazynutPanel->addTab(lazyNutConsole, tr("Console"));
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
@@ -233,12 +233,12 @@ void EasyNetMainWindow::constructForms()
              this,SLOT(setParamDataFrame(QString)));
     connect(paramEdit, SIGNAL(newParamValueSig(QString)),
             this,SLOT(setParam(QString)));
-    connect(plotWindow, SIGNAL(plot(QString,QByteArray)),
-            plotViewer,SLOT(load(QString,QByteArray)));
-    connect(plotWindow, SIGNAL(newPlotSignal()),
-            plotViewer,SLOT(addPlot()));
+    connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
+            plotViewer,SLOT(loadByteArray(QString,QByteArray)));
+    connect(plotSettingsWindow, SIGNAL(newPlotSignal(QString)),
+            plotViewer,SLOT(addPlot(QString)));
 
-    connect(plotViewer,SIGNAL(sendDrawCmd()),plotWindow,SLOT(sendDrawCmd()));
+    connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
 
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
@@ -545,7 +545,7 @@ void EasyNetMainWindow::runTrial()
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER;
     param->cmdList = QStringList({cmd});
-    param->setNextJobReceiver(plotWindow, SLOT(draw()));
+    param->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
     SessionManager::instance()->setupJob(param);
     outputPanel->setCurrentIndex(plotTabIdx); // show Plot viewer tab
 
