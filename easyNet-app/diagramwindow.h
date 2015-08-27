@@ -40,6 +40,8 @@ private slots:
     void setZoom();
     void loadLayout();
     void saveLayout();
+    void vertAlignSlot();
+    void horizAlignSlot();
 private:
     void createMenus();
     DiagramSceneTabWidget *diagramSceneTabWidget;
@@ -52,12 +54,9 @@ private:
     QPushButton *saveLayoutButton;
     QPushButton *deleteAlignmentButton;
     QPushButton *arrangeActButton;
-    QToolButton* titlebutton;
     QDockWidget *controlsDock;
-    QWidget *controlsWidget;
-    QVBoxLayout *controlsLayout;
+    QToolBar *diagramToolBar;
     bool hidden;
-    int defaultWidth;
 
 };
 
