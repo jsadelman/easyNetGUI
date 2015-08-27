@@ -17,8 +17,8 @@ public:
     DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent = 0);
 
 public slots:
-    void rearrange();
-    void arrange();
+    void rearrange(bool ignoreEdges = false);
+    void arrange(bool ignoreEdges = false);
     void initArrangement();
 
 private slots:

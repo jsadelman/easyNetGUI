@@ -170,7 +170,7 @@ public:
     //! unclocks all shapes
     void unpinAllShapes(QWidget **c);
     //! stores current shape positions for use in "sticky node" behaviour
-    void initialise(void);
+    void initialise(bool _ignoreEdges = false);
     //! called by GUI thread to update object positions in handling
     //  USEREVENT_LAYOUT_UPDATES event
     int processReturnPositions(void);
@@ -182,7 +182,8 @@ public:
     void setOutputDebugFiles(const bool value);
     //! whether the layout thread is currently active.
     bool isRunning(void) const;
-    void runDirect(const bool shouldReinitialise) {run(shouldReinitialise);}
+    void runDirect(const bool shouldReinitialise, bool _ignoreEdges = false)
+    {run(shouldReinitialise, _ignoreEdges);}
     void clearFixedList();
 
 
@@ -215,7 +216,7 @@ private:
     LayoutThread *m_layout_thread;
 
     cola::UnsatisfiableConstraintInfos unsatisfiableX, unsatisfiableY;
-    void run(const bool shouldReinitialise);
+    void run(const bool shouldReinitialise, bool _ignoreEdges = false);
     void showUnsatisfiable(cola::UnsatisfiableConstraintInfo* i);
     void addToFixedList(CanvasItemsList & objList);
     void addPinnedShapesToFixedList(void);

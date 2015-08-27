@@ -514,15 +514,15 @@ void CanvasTabWidget::addEditMenuActions(QMenu *edit_menu)
     edit_menu->addAction(m_action_undo);
     edit_menu->addAction(m_action_redo);
     edit_menu->addSeparator();
-    edit_menu->addAction(m_action_cut);
-    edit_menu->addAction(m_action_copy);
-    edit_menu->addAction(m_action_paste);
+//    edit_menu->addAction(m_action_cut);
+//    edit_menu->addAction(m_action_copy);
+//    edit_menu->addAction(m_action_paste);
     edit_menu->addAction(m_action_delete);
-    edit_menu->addAction(m_action_edit_separator);
+//    edit_menu->addAction(m_action_edit_separator);
     edit_menu->addAction(m_action_select_all);
-    edit_menu->addSeparator();
-    edit_menu->addAction(m_action_bring_to_front);
-    edit_menu->addAction(m_action_send_to_back);
+//    edit_menu->addSeparator();
+//    edit_menu->addAction(m_action_bring_to_front);
+//    edit_menu->addAction(m_action_send_to_back);
 }
 
 
@@ -539,20 +539,21 @@ void CanvasTabWidget::addEditToolBarActions(QToolBar *edit_toolbar)
     edit_toolbar->addAction(m_action_undo);
     edit_toolbar->addAction(m_action_redo);
     edit_toolbar->addSeparator();
-    edit_toolbar->addAction(m_action_cut);
-    edit_toolbar->addAction(m_action_copy);
-    edit_toolbar->addAction(m_action_paste);
-    edit_toolbar->addAction(m_action_edit_separator);
-    edit_toolbar->addAction(m_action_selection_mode);
-    edit_toolbar->addAction(m_action_connection_mode);
-    edit_toolbar->addAction(m_action_edit_separator2);
+    edit_toolbar->addAction(m_action_delete);
+//    edit_toolbar->addAction(m_action_cut);
+//    edit_toolbar->addAction(m_action_copy);
+//    edit_toolbar->addAction(m_action_paste);
+//    edit_toolbar->addAction(m_action_edit_separator);
+//    edit_toolbar->addAction(m_action_selection_mode);
+//    edit_toolbar->addAction(m_action_connection_mode);
+//    edit_toolbar->addAction(m_action_edit_separator2);
 
-    edit_toolbar->addAction(m_action_bring_to_front);
-    edit_toolbar->addAction(m_action_send_to_back);
-    edit_toolbar->addSeparator();
-    edit_toolbar->addAction(m_action_automatic_layout);
-    edit_toolbar->addSeparator();
-    edit_toolbar->addAction(m_action_lock);
+//    edit_toolbar->addAction(m_action_bring_to_front);
+//    edit_toolbar->addAction(m_action_send_to_back);
+//    edit_toolbar->addSeparator();
+//    edit_toolbar->addAction(m_action_automatic_layout);
+//    edit_toolbar->addSeparator();
+//    edit_toolbar->addAction(m_action_lock);
 }
 
 

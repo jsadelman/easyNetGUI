@@ -13,6 +13,11 @@ DiagramSceneTabWidget::DiagramSceneTabWidget(QMainWindow *window)
     : CanvasTabWidget(window)
 {
     setTabsClosable(false);
+//    addActions(QList<QAction*>{m_action_delete, m_action_undo, m_action_redo});
+    m_action_delete->setIcon(QIcon(":/images/delete-icon.png"));
+    m_action_undo->setIcon(QIcon(":/images/Undo-icon.png"));
+    m_action_redo->setIcon(QIcon(":/images/Redo-icon.png"));
+
 //    connect(this, SIGNAL(currentCanvasChanged(Canvas*)),
 //            this, SLOT(emitCurrentDiagramSceneChanged(Canvas*)));
 //    connect(this, &dunnart::CanvasTabWidget::currentCanvasChanged, [=](Canvas *canvas){
@@ -28,10 +33,7 @@ int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QStri
     DiagramView *view = new DiagramView(scene);
     m_undo_group->addStack(scene->undoStack());
 
-    qDebug() << "Adding tab for diagram scene" << title;
     return addTab(view, title);
-//    return insertTab(INT_MAX, view, title);
-//    setCurrentWidget(canvasview);
 }
 
 DiagramScene *DiagramSceneTabWidget::currentDiagramScene()

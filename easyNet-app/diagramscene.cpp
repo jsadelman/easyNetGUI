@@ -220,6 +220,19 @@ void DiagramScene::setBaseName(QString baseName)
     m_baseName = baseName;
     m_layoutFile = m_baseName.append(QString(".%1.json").arg(m_boxType));
 }
+
+bool DiagramScene::validForAlignment(QList<dunnart::CanvasItem *> items)
+{
+    // a list of selected items should contain at least one ShapeObj,
+    // otherwise Dunnart crashes.
+    foreach(dunnart::CanvasItem *item, items)
+    {
+        if (qobject_cast<ShapeObj*>(item))
+            return true;
+    }
+    return false;
+}
+
 //! [4]
 
 //    if (!layoutLoaded)

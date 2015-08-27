@@ -24,23 +24,20 @@ DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidg
 }
 
 
-void DiagramWindow::rearrange()
+void DiagramWindow::rearrange(bool ignoreEdges)
 {
     if (fitVisibleButton->isChecked())
         connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
                 this, SLOT(toFitVisible()));
 
-    diagramSceneTabWidget->currentCanvas()->layout()->runDirect(true);
+    diagramSceneTabWidget->currentCanvas()->layout()->runDirect(true, ignoreEdges);
     diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
 }
 
-void DiagramWindow::arrange()
+void DiagramWindow::arrange(bool ignoreEdges)
 {
-
-//    diagramSceneTabWidget->currentCanvas()->setProperty("preventOverlaps", true);
-//    diagramSceneTabWidget->currentCanvas()->setProperty("shapeNonOverlapPadding", 20);
     diagramSceneTabWidget->currentCanvas()->layout()->clearFixedList();
-    rearrange();
+    rearrange(ignoreEdges);
 }
 
 void DiagramWindow::initArrangement()
@@ -124,10 +121,12 @@ void DiagramWindow::deleteSelection()
 
 void DiagramWindow::alignSelection(int alignType)
 {
-    if (!diagramSceneTabWidget->currentCanvas()->selectedItems().isEmpty())
+//    if (!diagramSceneTabWidget->currentCanvas()->selectedItems().isEmpty())
+    if (diagramSceneTabWidget->currentDiagramScene()->validForAlignment(
+                diagramSceneTabWidget->currentCanvas()->selectedItems()))
     {
         diagramSceneTabWidget->currentCanvas()->alignSelection(alignType);
-        arrange();
+        arrange(true);
     }
 }
 
@@ -333,11 +332,16 @@ void DiagramWindow::createMenus()
 
 
     // DELETE
-    QAction *deleteAct = new QAction(tr("delete alignment"), this);
-    deleteAct->setShortcut(QKeySequence::Delete);
-    connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteSelection()));
+//    QAction *deleteAct = new QAction(tr("delete alignment"), this);
+//    deleteAct->setShortcut(QKeySequence::Delete);
+//    connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteSelection()));
+//    QToolBar *editToolBar = addToolBar("Edit");
+//    editToolBar->addAction(deleteAct);
+
     QToolBar *editToolBar = addToolBar("Edit");
-    editToolBar->addAction(deleteAct);
+    diagramSceneTabWidget->addEditToolBarActions(editToolBar);
+
+
 
 
     connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restore()));

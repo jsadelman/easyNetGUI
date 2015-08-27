@@ -106,6 +106,7 @@ public:
     void setLayoutFile(QString layoutFile) {m_layoutFile = layoutFile;}
     bool newModelLoaded() {return m_newModelLoaded;}
     void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
+    bool validForAlignment(QList<dunnart::CanvasItem *> items);
 
 
     QList<QSet<dunnart::ShapeObj *> > connectedComponents();

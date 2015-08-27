@@ -1236,9 +1236,10 @@ void GraphLayout::setOptimizationMethod(OptimizationMethod newOM)
     cout << "Optimization method set to " << s << endl;
 }
 
-void GraphLayout::initialise(void)
+void GraphLayout::initialise(bool _ignoreEdges)
 {
 //    qDebug("GraphLayout::initialise: runlevel=%d",runLevel);
+    ignoreEdges = _ignoreEdges;
     if (m_graph!=NULL)
     {
         delete m_graph;
@@ -1249,11 +1250,11 @@ void GraphLayout::initialise(void)
 }
 
 
-void GraphLayout::run(const bool shouldReinitialise)
+void GraphLayout::run(const bool shouldReinitialise, bool _ignoreEdges)
 {
     if (shouldReinitialise)
     {
-        initialise();
+        initialise(_ignoreEdges);
     }
 
     //printf("Running graph layout...\n");

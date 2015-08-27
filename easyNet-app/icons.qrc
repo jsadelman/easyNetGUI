@@ -133,5 +133,8 @@
         <file>images/add-on.png</file>
         <file>images/clipboard.png</file>
         <file>images/plot_settings.png</file>
+        <file>images/Undo-icon.png</file>
+        <file>images/Redo-icon.png</file>
+        <file>images/delete-icon.png</file>
     </qresource>
 </RCC>
