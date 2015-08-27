@@ -22,7 +22,7 @@ DEPENDPATH =  .. .
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = easyNet5
+TARGET = easyNet3
 TEMPLATE = app
 
 

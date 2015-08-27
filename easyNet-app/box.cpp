@@ -45,9 +45,7 @@ void Box::autoSize()
 
 void Box::paintLabel(QPainter *painter)
 {
-    qDebug() << "We are in paintLabel" << painter << Qt::black;
-
-//    painter->setPen(Qt::black);
+    painter->setPen(Qt::black);
     if (canvas())
     {
         painter->setFont(canvas()->canvasFont());
