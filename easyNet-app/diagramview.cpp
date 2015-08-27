@@ -43,23 +43,25 @@ void DiagramView::read(const QJsonObject &json)
 {
     qobject_cast<DiagramScene*>(canvas())->read(json);
     canvas()->updateConnectorsForLayout();
+# if 0
     qreal zoomScale = json["zoomScale"].toDouble();
     qreal zoomDx = json["zoomDx"].toDouble();
     qreal zoomDy = json["zoomDy"].toDouble();
     resetTransform();
     translate(zoomDx, zoomDy);
     scale(zoomScale, zoomScale);
-
     emit zoomChanged();
-
+#endif
 }
 
 void DiagramView::write(QJsonObject &json)
 {
     qobject_cast<DiagramScene*>(canvas())->write(json);
+#if 0
     json["zoomScale"] = transform().m11();
     json["zoomDx"] = transform().m31();
     json["zoomDy"] = transform().m32();
+#endif
 }
 
 

@@ -50,6 +50,8 @@ void DiagramWindow::initArrangement()
 
     if (QFileInfo(diagramSceneTabWidget->currentDiagramScene()->layoutFile()).exists())
     {
+        connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
+                this, SLOT(toFitVisible()));
         loadLayout();
         diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
     }

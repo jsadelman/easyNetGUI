@@ -345,11 +345,8 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
 {
     // layers are placed on the scene before arrows
     Q_UNUSED(domDoc)
-//    if (type == "layer")
       if (type == m_boxType)
     {
-//        DiagramItem *diagramItem = new DiagramItem(DiagramItem::Layer, name, myItemMenu);
-//        diagramItem->setBrush(myItemColor);
         Box *box = new Box();
         connect(box, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString, QString>)),
                 this, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
@@ -359,22 +356,16 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
         box->setLazyNutType(m_boxType);
         // temporarily define dimensions here
 
-//        int boxHeight = 80;
-//        int boxWidth = qCeil((qreal)boxHeight * 1.618);
         box->setProperty("position", defaultPosition);
         box->setProperty("longNameToDisplayIntact", boxLongNameToDisplayIntact);
         box->setProperty("widthMarginProportionToLongestLabel", boxWidthMarginProportionToLongestLabel);
         box->setProperty("widthOverHeight", boxWidthOverHeight);
         box->autoSize();
-//        box->setPosAndSize(defaultPosition, QSizeF(boxWidth,boxHeight));
-
         box->setLabel(name);
         box->setToolTip(name);
         if (m_boxType == "representation")
             box->setFillColour(QColor("azure"));
 
-//        currentPosition += itemOffset;
-//        diagramItem->setPos(currentPosition);
         itemHash.insert(name,box);
     }
 }
@@ -491,9 +482,7 @@ bool DiagramScene::isItemChange(int type)
 
 void DiagramScene::syncToObjCatalogue()
 {
-    qDebug() << "Entered syncToObjCatalogue()";
     QString name;
-//    QStringList newConnections{};
     // display new layers, hold new connections in a list
     for (int row=0;row<boxFilter->rowCount();row++)
     {
