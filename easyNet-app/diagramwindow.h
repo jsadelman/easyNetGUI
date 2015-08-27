@@ -2,12 +2,16 @@
 #define DIAGRAMWINDOW_H
 
 #include <QMainWindow>
+#include <QTabBar>
 
 class DiagramSceneTabWidget;
 class QComboBox;
 class QSpinBox;
 class QDoubleSpinBox;
 class QRadioButton;
+class QPushButton;
+class QToolButton;
+class QVBoxLayout;
 
 class DiagramWindow
         : public QMainWindow
@@ -21,6 +25,7 @@ public slots:
     void arrange(bool ignoreEdges = false);
     void initArrangement();
 
+    void ToggleControlsDock();
 private slots:
     void sceneScaleChanged(const QString &scale);
     void fitVisible(bool on);
@@ -43,7 +48,18 @@ private:
     QSpinBox *shapeNonOverlapPaddingSpinBox;
     QDoubleSpinBox *flowSeparationModifierSpinBox;
     QRadioButton *fitVisibleButton;
+    QPushButton *loadLayoutButton;
+    QPushButton *saveLayoutButton;
+    QPushButton *deleteAlignmentButton;
+    QPushButton *arrangeActButton;
+    QToolButton* titlebutton;
+    QDockWidget *controlsDock;
+    QWidget *controlsWidget;
+    QVBoxLayout *controlsLayout;
+    bool hidden;
+    int defaultWidth;
 
 };
+
 
 #endif // DIAGRAMWINDOW_H

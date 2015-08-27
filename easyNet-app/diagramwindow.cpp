@@ -21,6 +21,7 @@ DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidg
     setCentralWidget(diagramSceneTabWidget);
     createMenus();
     connect(diagramSceneTabWidget, SIGNAL(initArrangement()), this, SLOT(initArrangement()));
+    hidden = false;
 }
 
 
@@ -158,27 +159,26 @@ void DiagramWindow::createMenus()
 {
     QToolBar *layoutToolBar = addToolBar("Auto layout");
 
-    QAction *arrangeAct = new QAction(tr("Arrange"), this);
-    connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
-    layoutToolBar->addAction(arrangeAct);
+    arrangeActButton = new QPushButton(tr("Arrange"));
+    connect(arrangeActButton, SIGNAL(clicked()), this, SLOT(arrange()));
 
 //    QAction *initArrangementAct = new QAction(tr("Init"), this);
 //    connect(initArrangementAct, SIGNAL(triggered()), this, SLOT(initArrangement()));
 //    layoutToolBar->addAction(initArrangementAct);
 
+    loadLayoutButton = new QPushButton(tr("Reload layout"));
+    connect(loadLayoutButton, SIGNAL(clicked()), this, SLOT(loadLayout()));
+
+    saveLayoutButton = new QPushButton(tr("Save layout"));
+    connect(saveLayoutButton, SIGNAL(clicked()), this, SLOT(saveLayout()));
+
     fitVisibleButton = new QRadioButton(tr("Fit Visible"));
-    layoutToolBar->addWidget(fitVisibleButton);
     connect(fitVisibleButton, SIGNAL(toggled(bool)), this, SLOT(fitVisible(bool)));
     fitVisibleButton->setChecked(false);
 
-    QAction *loadLayoutAct = new QAction(tr("Reload layout"), this);
-    connect(loadLayoutAct, SIGNAL(triggered()), this, SLOT(loadLayout()));
-    layoutToolBar->addAction(loadLayoutAct);
-
-    QAction *saveLayoutAct = new QAction(tr("Save layout"), this);
-    connect(saveLayoutAct, SIGNAL(triggered()), this, SLOT(saveLayout()));
-    layoutToolBar->addAction(saveLayoutAct);
-
+    // DELETE
+    deleteAlignmentButton = new QPushButton(tr("delete alignment"));
+    connect(deleteAlignmentButton, SIGNAL(clicked()), this, SLOT(deleteSelection()));
 
 #if 0
     QGroupBox * layoutModeBox = new QGroupBox("Layout modes");
@@ -275,12 +275,6 @@ void DiagramWindow::createMenus()
          connect(diagramSceneTabWidget->diagramViewAt(i), SIGNAL(zoomChanged()),
                  this, SLOT(restoreZoom()));
 
-    QToolBar *pointerToolbar = addToolBar("Zoom");
-    pointerToolbar->addWidget(sceneScaleCombo);
-
-
-
-
 #if 0
     // PROPERTIES
     QLabel *idealEdgeLengthModifierLabel = new QLabel("idealEdgeLengthModifier");
@@ -318,33 +312,71 @@ void DiagramWindow::createMenus()
 #endif
 
 
-    QVBoxLayout *controlsLayout = new QVBoxLayout;
+
+    controlsLayout = new QVBoxLayout;
+    QHBoxLayout *hLayout = new QHBoxLayout;
+    QLabel *sceneScaleComboLabel = new QLabel("Zoom");
+    hLayout->addWidget(sceneScaleComboLabel);
+    hLayout->addWidget(sceneScaleCombo);
+    controlsLayout->addLayout(hLayout);
+
 //    controlsLayout->addWidget(layoutModeBox);
     controlsLayout->addWidget(alignmentBox);
+    controlsLayout->addWidget(deleteAlignmentButton);
 //    controlsLayout->addWidget(propertiesBox);
+    controlsLayout->addWidget(fitVisibleButton);
+    controlsLayout->addWidget(loadLayoutButton);
+    controlsLayout->addWidget(saveLayoutButton);
+    controlsLayout->addWidget(arrangeActButton);
     controlsLayout->addStretch();
-    QWidget *controlsWidget = new QWidget;
+    controlsWidget = new QWidget;
     controlsWidget->setLayout(controlsLayout);
 
-    QDockWidget *controlsDock = new QDockWidget("Layout");
+    controlsDock = new QDockWidget("");
     controlsDock->setWidget(controlsWidget);
+    defaultWidth = 150;
+
+    titlebutton = new QToolButton();
+
+    titlebutton->setArrowType(Qt::LeftArrow);
+    controlsDock->setTitleBarWidget(titlebutton);
+    connect(titlebutton, SIGNAL(clicked()), this, SLOT(ToggleControlsDock()));
     addDockWidget(Qt::LeftDockWidgetArea, controlsDock);
-
-
-    // DELETE
-//    QAction *deleteAct = new QAction(tr("delete alignment"), this);
-//    deleteAct->setShortcut(QKeySequence::Delete);
-//    connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteSelection()));
-//    QToolBar *editToolBar = addToolBar("Edit");
-//    editToolBar->addAction(deleteAct);
-
-    QToolBar *editToolBar = addToolBar("Edit");
-    diagramSceneTabWidget->addEditToolBarActions(editToolBar);
-
-
-
 
     connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restore()));
 
+    QToolBar *editToolBar = addToolBar("Edit");
+    diagramSceneTabWidget->addEditToolBarActions(editToolBar);
 }
+
+void DiagramWindow::ToggleControlsDock()
+{
+    int minSize=18;
+    qDebug() << "Entered ToggleControlsDock, width = " << controlsDock->width();
+    if (hidden)
+    {
+        titlebutton->setArrowType(Qt::LeftArrow);
+        controlsWidget->show();
+        controlsDock->setMinimumWidth(defaultWidth);
+        controlsDock->setMaximumWidth(defaultWidth);
+//        controlsDock->setMinimumHeight(600);
+//        controlsDock->setMaximumHeight(600);
+    }
+    else
+    {
+        defaultWidth = controlsDock->width();
+        titlebutton->setArrowType(Qt::RightArrow);
+        controlsWidget->hide();
+        controlsDock->setMinimumWidth(minSize);
+        controlsDock->setMaximumWidth(minSize);
+//        controlsDock->setMinimumHeight(minSize);
+//        controlsDock->setMaximumHeight(minSize);
+//        controlsWidget->setMaximumHeight(minSize);
+    }
+    hidden = !hidden;
+
+
+}
+
+
 
