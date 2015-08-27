@@ -123,6 +123,7 @@ void XMLForm::buildShallowList()
             element = element.nextSiblingElement();
         }
         listWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+        listWidget->setMinimumWidth(listWidget->sizeHintForColumn(0)*1.1);
     }
 }
 
