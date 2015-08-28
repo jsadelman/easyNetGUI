@@ -63,7 +63,11 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
 
     setWindowTitle(tr("easyNet"));
+#ifdef __APPLE__
+    setWindowIcon(QIcon(":/images/easyNet.hqx"));
+#else
     setWindowIcon(QIcon(":/images/zebra.png"));
+#endif
     setUnifiedTitleAndToolBarOnMac(true);
 
     createActions();
