@@ -1,7 +1,6 @@
 EASYNETBASE = $${PWD}/..
 
-macx
-{
+macx {
   DESTDIR = $$EASYNETBASE/dll
 }
 
