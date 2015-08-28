@@ -136,5 +136,9 @@
         <file>images/Undo-icon.png</file>
         <file>images/Redo-icon.png</file>
         <file>images/delete-icon.png</file>
+        <file>images/horizontalAlign.png</file>
+        <file>images/verticalAlign.png</file>
+        <file>images/resize.png</file>
+        <file>images/magic_wand.png</file>
     </qresource>
 </RCC>

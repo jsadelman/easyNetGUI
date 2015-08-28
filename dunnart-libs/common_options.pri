@@ -1,9 +1,7 @@
-
 EASYNETBASE = $${PWD}/..
 
-#DESTDIR = $$MINIDUNNARTBASE/build
-macx
-{
+macx {
   DESTDIR = $$EASYNETBASE/dll
 }
+
 DLLDESTDIR = $$EASYNETBASE/dll

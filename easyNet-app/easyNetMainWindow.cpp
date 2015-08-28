@@ -264,6 +264,7 @@ void EasyNetMainWindow::constructForms()
 //    visualiserPanel->setCurrentIndex(conversionTabIdx);
 //    visualiserPanel->setCurrentIndex(modelTabIdx); // start on Design window
     diagramPanel->setCurrentIndex(modelTabIdx);
+    diagramWindow->ToggleControlsDock();
 
 
 }
