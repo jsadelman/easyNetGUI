@@ -390,7 +390,9 @@ void DiagramScene::removeObject(QString name)
         return;
 
     setSelection(QList<CanvasItem*>{item});
+    setProperty("structuralEditingDisabled", false);
     deleteSelection();
+    setProperty("structuralEditingDisabled", true);
     delete item;
     itemHash.remove(name);
 
