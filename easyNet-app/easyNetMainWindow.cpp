@@ -50,6 +50,11 @@
 #include "diagramscene.h"
 #include "diagramwindow.h"
 
+#ifdef __APPLE__
+  #define EN_FONT "Helvetica Neue"
+#else
+  #define EN_FONT "Georgia"
+#endif
 EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -95,7 +100,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     // debug: load and run qtest at startup
 //    loadFile(QString("%1/qtest").arg(scriptsDir));
 //    runScript();
-
+    setSmallFont();
 }
 
 void EasyNetMainWindow::checkLazyNut()
@@ -986,24 +991,48 @@ void EasyNetMainWindow::setEasyNetHome()
 
 void EasyNetMainWindow::setSmallFont()
 {
-    QFont smallFont("Georgia", 10);
+    int small=
+                #ifdef __APPLE__
+                    12
+                #else
+                    10
+                #endif
+            ;
+            QFont smallFont(EN_FONT,small);
     QApplication::setFont(smallFont);
-    lazyNutConsole2->setConsoleFontSize(10);
+    lazyNutConsole2->setConsoleFontSize(small);
 
 }
 
 void EasyNetMainWindow::setMediumFont()
 {
-    QFont mediumFont("Georgia", 12);
+    int medium=
+                 #ifdef __APPLE__
+                     14
+                 #else
+                     12
+                 #endif
+    ;
+    QFont mediumFont(EN_FONT,medium
+                     );
+
     QApplication::setFont(mediumFont);
-    lazyNutConsole2->setConsoleFontSize(12);
+    lazyNutConsole2->setConsoleFontSize(medium);
 }
 
 void EasyNetMainWindow::setLargerFont()
 {
-    QFont largerFont("Georgia", 16);
+     int larger=
+                 #ifdef __APPLE__
+                     18
+                 #else
+                     16
+                 #endif
+                     ;
+    QFont largerFont(EN_FONT,larger);
+
     QApplication::setFont(largerFont);
-    lazyNutConsole2->setConsoleFontSize(16);
+    lazyNutConsole2->setConsoleFontSize(larger);
 }
 
 //void EasyNetMainWindow::showPauseState(bool isPaused)
