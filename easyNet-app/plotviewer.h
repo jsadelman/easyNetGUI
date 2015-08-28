@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QTimer>
 
 class QSvgWidget;
 class QToolBar;
@@ -35,6 +36,7 @@ public slots:
 signals:
     void sendDrawCmd(QString);
     void showPlotSettings();
+    void resized(QSize);
 
 private slots:
     void loadSVGFile();
@@ -42,9 +44,11 @@ private slots:
     void save();
     void copySVGToClipboard();
     void addPlot(QString name);
+    void resizeTimeout();
 private:
     void createToolBars();
     void createActions();
+    void resizeEvent(QResizeEvent*);
 
     QString         easyNetHome;
     QLabel*         titleLabel;
@@ -52,7 +56,7 @@ private:
     int             currentPlotIdx;
     int             numPlots;
     QMap <int, QString> plotMap;
-
+    QTimer*         resizeTimer;
 };
 
 #endif // PLOTVIEWER_H

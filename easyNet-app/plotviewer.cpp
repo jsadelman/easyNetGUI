@@ -27,6 +27,8 @@ PlotViewer::PlotViewer(QString _easyNetHome, QWidget* parent)
     createActions();
     createToolBars();
 
+    resizeTimer = new QTimer(this);
+    connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
 }
 
 PlotViewer::~PlotViewer()
@@ -151,4 +153,20 @@ void PlotViewer::updateActivePlots()
     foreach(QString plotName,plotMap.values())
         emit sendDrawCmd(plotName);
 
+}
+
+void PlotViewer::resizeEvent(QResizeEvent*)
+{
+    resizeTimer->stop();
+    resizeTimer->start(250);
+}
+
+void PlotViewer::resizeTimeout()
+{
+   resizeTimer->stop();
+   if(plotPanel->currentIndex()>-1)
+   {
+     emit resized(plotPanel->size());
+     emit sendDrawCmd(plotMap[plotPanel->currentIndex()]);
+   }
 }
