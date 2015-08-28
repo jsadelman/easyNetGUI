@@ -23,7 +23,8 @@ PlotSettingsWindow::PlotSettingsWindow(QWidget *parent)
       savePlotSettingsText("Save plot settings"),
       savePlotSettingsAsText("Save plot setings as..."),
       plotSettingsForm(nullptr),
-      QMainWindow(parent)
+      QMainWindow(parent),
+      plotAspr_(1.)
 {
     createPlotControlPanel();
     setUnifiedTitleAndToolBarOnMac(true);

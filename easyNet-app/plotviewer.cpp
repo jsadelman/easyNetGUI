@@ -164,9 +164,9 @@ void PlotViewer::resizeEvent(QResizeEvent*)
 void PlotViewer::resizeTimeout()
 {
    resizeTimer->stop();
+   emit resized(plotPanel->size());
    if(plotPanel->currentIndex()>-1)
    {
-     emit resized(plotPanel->size());
      emit sendDrawCmd(plotMap[plotPanel->currentIndex()]);
    }
 }
