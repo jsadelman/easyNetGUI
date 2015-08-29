@@ -22,7 +22,7 @@ DEPENDPATH =  .. .
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = easyNet4
+TARGET = easyNet40
 TEMPLATE = app
 
 
@@ -103,7 +103,8 @@ SOURCES +=  \
     xmlform.cpp \
     objectxml.cpp \
     trialxml.cpp \
-    trialeditor.cpp
+    trialeditor.cpp \
+    tableviewer2.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -181,7 +182,8 @@ HEADERS  += \
     xmlform.h \
     objectxml.h \
     trialxml.h \
-    trialeditor.h
+    trialeditor.h \
+    tableviewer2.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

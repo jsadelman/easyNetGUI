@@ -117,7 +117,8 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     QLineEdit *ed = argumentMap[args[args.count()-1]]->lineEdit();
     connect(ed, SIGNAL(returnPressed()),runAction,SIGNAL(triggered()));
 
-    runButton = new QToolButton(this);
+    if (runButton == NULL)
+        runButton = new QToolButton(this);
     runButton->setAutoRaise(true);
     runButton->setDefaultAction(runAction);
     runButton->setIcon(QIcon(":/images/run_disabled.png"));
@@ -154,7 +155,8 @@ void TrialWidget::clearLayout(QLayout *layout)
         if (item->widget())
         {
             qDebug() << "found widget" << item->widget();
-            delete item->widget();
+            if (item->widget() != runButton)
+                delete item->widget();
         }
         qDebug() << "deleting item" << item;
         delete item;

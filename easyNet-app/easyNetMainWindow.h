@@ -34,6 +34,7 @@ class LazyNutListComboBox;
 //class LazyNutScriptEditor;
 class MaxMinPanel;
 class TableEditor;
+class TableViewer;
 class LazyNutConsole;
 class Assistant;
 class TextEdit;
@@ -73,6 +74,7 @@ public slots:
     void setRunAllMode(bool mode);
     void loadTrial();
     void loadAddOn();
+    void showPlotViewer();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -82,7 +84,6 @@ signals:
     void showHistory(QString line);
 
 private slots:
-    void save();
 //    void about();
     void updateTableView(QString text);
 
@@ -186,23 +187,20 @@ private:
     QStringList     modelList;
     QStringList     trialList;
 
-    QTextEdit *textEdit1;
-    QTextEdit *textEdit2;
-    QTextEdit *textEdit3;
-    QTextEdit *textEdit4;
-    QTextEdit *textEdit5;
-    QTextEdit *textEdit12;
-    QTabWidget *visualiserPanel;
+//    QTextEdit *textEdit12;
+    QTabWidget *methodsPanel;
+    QTabWidget *introPanel;
     QTabWidget *lazynutPanel;
-    QTabWidget *outputPanel;
+    QTabWidget *resultsPanel;
     QTabWidget *explorerPanel;
     DiagramSceneTabWidget *diagramPanel;
     DiagramWindow *diagramWindow;
+    QDockWidget* introDock;
     QDockWidget* codePanelDock;
-    QDockWidget *visualiserDock;
+    QDockWidget *methodsDock;
     QDockWidget *diagramDock;
     QDockWidget *explorerDock;
-    QDockWidget *outputDock;
+    QDockWidget *resultsDock;
 
     QListWidget* customerList;
     QListWidget* paragraphsList;
@@ -242,7 +240,9 @@ private:
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
     TableEditor     *dataframesWindow;
-    TableEditor     *tablesWindow;
+    TableEditor     *oldTablesWindow;
+//    TableViewer     *tablesWindow;
+    TableViewer     *tablesWindow;
     TableEditor     *paramEdit;
     DebugLog        *debugLog;
     QToolBar        *infoToolBar;
@@ -330,6 +330,7 @@ private:
     bool runAllMode;
 //    enum runMode {RunSingle, RunAll};
 
+    void connectSignalsAndSlots();
 };
 
 #endif // NMCONSOLE_H

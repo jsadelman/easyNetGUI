@@ -106,6 +106,7 @@ void Box::defaultPlot()
     param->cmdList = QStringList({QString("(%1 default_observer) enable").arg(m_name)});
     param->setEndOfJobReceiver(this,SLOT(sendCreateNewPlotOfType()));
     SessionManager::instance()->setupJob(param, sender());
+
 }
 
 void Box::sendCreateNewPlotOfType()

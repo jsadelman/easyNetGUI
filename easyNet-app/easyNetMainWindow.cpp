@@ -49,6 +49,7 @@
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"
+#include "tableviewer2.h"
 
 #ifdef __APPLE__
   #define EN_FONT "Helvetica Neue"
@@ -83,23 +84,25 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
 
     constructForms();
     createDockWindows();
-    setCentralWidget(textEdit12);
 
-    /* signals & slots */
-    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
-            ObjectCatalogue::instance(), SLOT(create(QDomDocument*)));
-    connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
-            ObjectCatalogue::instance(), SLOT(invalidateCache(QStringList)));
-    connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
-            ObjectCatalogue::instance(), SLOT(destroy(QStringList)));
-    connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
-            commandLog, SLOT(addText(QString)));
-    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
-            debugLog, SLOT(addRowToTable(QString,QString)));
+    QWidget *dummyWidget = new QWidget;
+    dummyWidget->hide();
+    setCentralWidget(dummyWidget);
+
+    connectSignalsAndSlots();
 
     // debug: load and run qtest at startup
 //    loadFile(QString("%1/qtest").arg(scriptsDir));
 //    runScript();
+
+    /* INITIAL DISPLAY AT STARTUP */
+//    showExplorer();
+    introDock->raise();
+    introPanel->setCurrentIndex(infoTabIdx); // start on Intro tab, to welcome user
+    diagramDock->raise();
+    diagramPanel->setCurrentIndex(modelTabIdx);
+    diagramWindow->ToggleControlsDock(); // hide layout controls
+    setQuietMode();
     setSmallFont();
 }
 
@@ -123,32 +126,21 @@ void EasyNetMainWindow::checkLazyNut()
 
 void EasyNetMainWindow::constructForms()
 {
-    // construct all of the forms
-    textEdit1 = new QTextEdit;
-    textEdit2 = new QTextEdit;
-    textEdit3 = new QTextEdit;
-//    textEdit4 = new QTextEdit;
-//    textEdit5 = new QTextEdit;
-    textEdit12 = new QTextEdit;
-    textEdit12->hide();
+    /* CONSTRUCT TABWIDGETS */
+
+    introPanel = new QTabWidget;
+    lazynutPanel = new QTabWidget;
+    methodsPanel = new QTabWidget;
+    explorerPanel = new QTabWidget;
+    resultsPanel = new QTabWidget;
+    diagramPanel = new DiagramSceneTabWidget(this);
+    lazynutPanel->setMovable(true);
+
+    /* CONSTRUCT ALL THE INDIVIDUAL FORMS */
 
     lazyNutConsole2 = new Console(this);
     plotSettingsWindow = new PlotSettingsWindow(this);
-
     objExplorer = new ObjExplorer(ObjectCatalogue::instance(),this);
-//    designWindow = new DesignWindow(ObjectCatalogue::instance(), "layer", "connection", this);
-//    conversionWindow = new DesignWindow(ObjectCatalogue::instance(), "representation", "conversion", this);
-//    connect(this,SIGNAL(saveLayout()),designWindow,SIGNAL(saveLayout()));
-//    connect(this,SIGNAL(saveLayout()),conversionWindow,SIGNAL(saveLayout()));
-    connect(lazyNutConsole2,SIGNAL(historyKey(int)),
-            this,SLOT(processHistoryKey(int)));
-    connect(this,SIGNAL(showHistory(QString)),
-            lazyNutConsole2,SLOT(showHistory(QString)));
-//    connect(designWindow,SIGNAL(objectSelected(QString)),
-//            objExplorer,SIGNAL(objectSelected(QString)));
-//    connect(designWindow,SIGNAL(objectSelected(QString)),
-//            this,SLOT(showExplorer()));
-
     scriptEdit = new ScriptEditor(scriptsDir, this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
@@ -159,86 +151,58 @@ void EasyNetMainWindow::constructForms()
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
     stimSetForm = new TableEditor ("Stimuli",this);
-    tablesWindow = new TableEditor (ObjectCatalogue::instance(),"Tables",this);
+//    tablesWindow = new TableEditor (ObjectCatalogue::instance(),"Tables",this);
+    tablesWindow = new TableViewer("Tables",this);
     dataframesWindow = new TableEditor (ObjectCatalogue::instance(),"Dataframes",this);
     paramEdit = new TableEditor ("Parameters",this);
     plotViewer = new PlotViewer(easyNetHome, this);
+    diagramWindow = new DiagramWindow(diagramPanel, this);
+    trialEditor = new TrialEditor(this);
 
     infoWindow = new HelpWindow;
     assistant = new Assistant;
     infoWindow->show();
 
-    // construct the panels
-    lazynutPanel = new QTabWidget;
-    visualiserPanel = new QTabWidget;
-    explorerPanel = new QTabWidget;
-    outputPanel = new QTabWidget;
 
-    infoTabIdx = outputPanel->addTab(infoWindow, tr("Info"));
-
-
-    diagramPanel = new DiagramSceneTabWidget(this);
+    /* ADD TABS */
+    infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
     conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
     conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
-    connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-    connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
-            plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
-    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-//    modelScene->setProperty("structuralEditingDisabled", true);
-//    conversionScene->setProperty("structuralEditingDisabled", true);
-//    modelScene->setProperty("idealEdgeLengthModifier", 2.0);
 
-//    conversionScene->setProperty("idealEdgeLengthModifier", 2.0);
-//    modelScene->setProperty("preventOverlaps", true);
-//    conversionScene->setProperty("preventOverlaps", true);
-//    modelScene->setProperty("shapeNonOverlapPadding", 10);
-//    conversionScene->setProperty("shapeNonOverlapPadding", 10);
-//    modelScene->setProperty("flowSeparationModifier", 2.0);
-//    conversionScene->setProperty("flowSeparationModifier", 2.0);
-    diagramWindow = new DiagramWindow(diagramPanel, this);
+    stimSetTabIdx = methodsPanel->addTab(stimSetForm, tr("Stimuli"));
+    trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
+    paramTabIdx = methodsPanel->addTab(paramEdit, tr("Parameters"));
+    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
 
-
-
-
-//    modelTabIdx = visualiserPanel->addTab(designWindow, tr("Model"));
-//    conversionTabIdx = visualiserPanel->addTab(conversionWindow, tr("Conversions"));
-    plotSettingsTabIdx = visualiserPanel->addTab(plotSettingsWindow, tr("Plot settings"));
-    plotTabIdx = outputPanel->addTab(plotViewer, tr("Plots"));
-    //        lazynutPanel->addTab(lazyNutConsole, tr("Console"));
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
-    explorerPanel->addTab(objExplorer, tr("Objects"));
-    explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
-    trialEditor = new TrialEditor(this);
-    trialFormTabIdx = visualiserPanel->addTab(trialEditor, tr("Trial")); //textEdit1
-
-
     lazynutPanel->addTab(commandLog, tr("History"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
-    paramTabIdx = explorerPanel->addTab(paramEdit, tr("Parameters"));
-    stimSetTabIdx = outputPanel->addTab(stimSetForm, tr("Stimuli"));
-    outputTablesTabIdx = outputPanel->addTab(tablesWindow, tr("Tables"));
+//    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
+    explorerPanel->addTab(objExplorer, tr("Objects"));
+    explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
 
+    plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
+    outputTablesTabIdx = resultsPanel->addTab(tablesWindow, tr("Tables"));
+//    outputTablesTabIdx = resultsPanel->addTab(oldTablesWindow, tr("Tables"));
 
-    lazynutPanel->setMovable(true);
     // perhaps use this code for detachable tabs?
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs
+}
 
-    outputPanel->setCurrentIndex(infoTabIdx); // start on Intro tab, to welcome user
-
+void EasyNetMainWindow::connectSignalsAndSlots()
+{
     // refresh params when user clicks on param tab or changes model in combobox
     connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
-    connect (this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
+    connect(this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentModel(QString)));
     connect(this,SIGNAL(newTableSelection(QString)),tablesWindow,SLOT(updateTableView(QString)));
-    connect (paramEdit,SIGNAL(setParamDataFrameSignal(QString)),
+    connect(paramEdit,SIGNAL(setParamDataFrameSignal(QString)),
              this,SLOT(setParamDataFrame(QString)));
     connect(paramEdit, SIGNAL(newParamValueSig(QString)),
             this,SLOT(setParam(QString)));
@@ -260,17 +224,33 @@ void EasyNetMainWindow::constructForms()
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole2,SLOT(addText(QString)));
+    connect(lazyNutConsole2,SIGNAL(historyKey(int)),
+            this,SLOT(processHistoryKey(int)));
+    connect(this,SIGNAL(showHistory(QString)),
+            lazyNutConsole2,SLOT(showHistory(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
-
-
-//    visualiserPanel->setCurrentIndex(conversionTabIdx);
-//    visualiserPanel->setCurrentIndex(modelTabIdx); // start on Design window
-    diagramPanel->setCurrentIndex(modelTabIdx);
-    diagramWindow->ToggleControlsDock();
-
+    connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+    connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
+            plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
+    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
+            this,SLOT(showPlotViewer()));
+    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+    /* signals & slots */
+    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
+            ObjectCatalogue::instance(), SLOT(create(QDomDocument*)));
+    connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
+            ObjectCatalogue::instance(), SLOT(invalidateCache(QStringList)));
+    connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
+            ObjectCatalogue::instance(), SLOT(destroy(QStringList)));
+    connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
+            commandLog, SLOT(addText(QString)));
+    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
+            debugLog, SLOT(addRowToTable(QString,QString)));
 
 }
 
@@ -283,8 +263,14 @@ void EasyNetMainWindow::showExplorer()
 
 void EasyNetMainWindow::showPlotSettings()
 {
-    visualiserDock->raise();
-    visualiserPanel->setCurrentIndex(plotSettingsTabIdx);
+    methodsDock->raise();
+    methodsPanel->setCurrentIndex(plotSettingsTabIdx);
+}
+
+void EasyNetMainWindow::showPlotViewer()
+{
+    resultsDock->raise();
+    resultsPanel->setCurrentIndex(plotTabIdx);
 }
 
 void EasyNetMainWindow::setRunAllMode(bool mode)
@@ -328,42 +314,48 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
  void EasyNetMainWindow::createDockWindows()
 {
 
-    explorerDock = new QDockWidget("Explorer",this);
-//    explorerDock->setAllowedAreas(Qt::RightDockWidgetArea);
-    explorerDock->setWidget(explorerPanel);
-    addDockWidget(Qt::RightDockWidgetArea, explorerDock);
-    viewMenu->addAction(explorerDock->toggleViewAction());
-    explorerDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
-//    explorerDock->hide(); // initially, don't show explorer dock
+     introDock = new QDockWidget("Intro",this);
+     introDock->setWidget(introPanel);
+     addDockWidget(Qt::LeftDockWidgetArea, introDock);
+     viewMenu->addAction(introDock->toggleViewAction());
+     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-    outputDock = new QDockWidget(tr("Output"), this);
-    outputDock->setWidget(outputPanel);
-    addDockWidget(Qt::RightDockWidgetArea, outputDock);
-    viewMenu->addAction(outputDock->toggleViewAction());
-    outputDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+     codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
+     codePanelDock->setWidget(lazynutPanel);
+     addDockWidget(Qt::LeftDockWidgetArea, codePanelDock);
+     viewMenu->addAction(codePanelDock->toggleViewAction());
+     codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+ //    codePanelDock->hide(); // initially, don't show codePanelDock
 
-    codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
-    codePanelDock->setWidget(lazynutPanel);
-    addDockWidget(Qt::LeftDockWidgetArea, codePanelDock);
-    viewMenu->addAction(codePanelDock->toggleViewAction());
-    codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
-//    codePanelDock->hide(); // initially, don't show codePanelDock
+     methodsDock = new QDockWidget(tr("Methods"), this);
+     methodsDock->setWidget(methodsPanel);
+     addDockWidget(Qt::LeftDockWidgetArea, methodsDock);
+     viewMenu->addAction(methodsDock->toggleViewAction());
+     methodsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-    visualiserDock = new QDockWidget(tr("Visualiser"), this);
-    visualiserDock->setWidget(visualiserPanel);
-    addDockWidget(Qt::LeftDockWidgetArea, visualiserDock);
-    viewMenu->addAction(visualiserDock->toggleViewAction());
-    visualiserDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-    diagramDock = new QDockWidget(tr("Architecture"), this);
-    diagramDock->setWidget(diagramWindow);
-    addDockWidget(Qt::LeftDockWidgetArea, diagramDock);
-    viewMenu->addAction(diagramDock->toggleViewAction());
-    diagramDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+     diagramDock = new QDockWidget(tr("Architecture"), this);
+     diagramDock->setWidget(diagramWindow);
+     addDockWidget(Qt::RightDockWidgetArea, diagramDock);
+     viewMenu->addAction(diagramDock->toggleViewAction());
+     diagramDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-    tabifyDockWidget(codePanelDock, visualiserDock);
-    tabifyDockWidget(visualiserDock, diagramDock);
-    tabifyDockWidget(explorerDock, outputDock);
+     explorerDock = new QDockWidget("Explorer",this);
+     explorerDock->setWidget(explorerPanel);
+     addDockWidget(Qt::RightDockWidgetArea, explorerDock);
+     viewMenu->addAction(explorerDock->toggleViewAction());
+     explorerDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+
+     resultsDock = new QDockWidget(tr("Results"), this);
+     resultsDock->setWidget(resultsPanel);
+     addDockWidget(Qt::RightDockWidgetArea, resultsDock);
+     viewMenu->addAction(resultsDock->toggleViewAction());
+     resultsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+
+     tabifyDockWidget(introDock, codePanelDock);
+     tabifyDockWidget(codePanelDock, methodsDock);
+     tabifyDockWidget(diagramDock, explorerDock);
+     tabifyDockWidget(explorerDock, resultsDock);
 }
 
 
@@ -389,8 +381,8 @@ void EasyNetMainWindow::initialiseToolBar()
 
     connect(modelButton, SIGNAL(clicked()),
               this, SLOT(loadModel()));
-//    connect(trialButton, SIGNAL(clicked()),
-//              this, SLOT(loadTrial()));
+    connect(trialButton, SIGNAL(clicked()),
+              this, SLOT(loadAddOn()));
 
       modelListFilter = new ObjectCatalogueFilter(this);
       modelComboBox->setModel(modelListFilter);
@@ -459,31 +451,6 @@ void EasyNetMainWindow::updateTableView(QString text)
     param->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)));
     SessionManager::instance()->setupJob(param, sender());
 }
-
-void EasyNetMainWindow::save()
-{
-    QString fileName = QFileDialog::getSaveFileName(this,
-                        tr("Choose a file name"), ".",
-                        tr("HTML (*.html *.htm)"));
-    if (fileName.isEmpty())
-        return;
-    QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Dock Widgets"),
-                             tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
-        return;
-    }
-
-    QTextStream out(&file);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-    out << textEdit1->toHtml();
-    QApplication::restoreOverrideCursor();
-
-    statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);
-}
-
 
 
 /*void EasyNetMainWindow::createActions()
@@ -557,8 +524,6 @@ void EasyNetMainWindow::runTrial()
     param->cmdList = QStringList({cmd});
     param->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
     SessionManager::instance()->setupJob(param);
-    outputPanel->setCurrentIndex(plotTabIdx); // show Plot viewer tab
-
 }
 
 
@@ -591,19 +556,44 @@ void EasyNetMainWindow::runAllTrial()
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER;
     QStringList cmds;
-    QString cmd = quietMode + currentTrial + stepCmd  + stimArg;
+    QString cmd;
+    QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
+    cmd = QString("xml " + tableName + " clear"); // clear the dataframe before running a new set
+    cmds << cmd;
+    cmd = quietMode + currentTrial + stepCmd  + stimArg;
+    cmds << cmd;
+    int tableNum = tablesWindow->addTable(tableName);
+    QString displayTableName = QString("Table_") + QString::number(tableNum);
+    cmd = tableName + " copy " + displayTableName;
     cmds << cmd;
 
+    // rename headers
+    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"[\\\\(\\\\)]\",\"\",names(eN[\"Table_1\"]))";
+    cmd.replace("Table_1",displayTableName);
+    cmds << cmd;
+    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"event_pattern\",\"\",names(eN[\"Table_1\"]))";
+    cmd.replace("Table_1",displayTableName);
+    cmds << cmd;
+    cmd = QString("R << names(eN[\"Table_1\"])<-gsub(\"") + currentTrial;
+    cmd += QString("\",\"\",names(eN[\"Table_1\"]))");
+    cmd.replace("Table_1",displayTableName);
+    cmds << cmd;
+    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"^\\\\s+|\\\\s+$\",\"\",names(eN[\"Table_1\"]))";
+    cmd.replace("Table_1",displayTableName);
+    cmds << cmd;
+//    cmd = "R << print(names(eN[\"Table_1\"]))";
+//    cmds << cmd;
+
     // display table of means after running set
-    QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
-    cmd = QString("xml " + tableName + " get");
+    cmd = QString("xml " + displayTableName + " get");
     cmds << cmd;
     param->answerFormatterType = AnswerFormatterType::XML;
+//    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
     param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
     param->cmdList = cmds;
     SessionManager::instance()->setupJob(param);
-    outputPanel->setCurrentIndex(outputTablesTabIdx);
-    tablesWindow->setTableText(tableName);
+    resultsDock->raise();
+    resultsPanel->setCurrentIndex(outputTablesTabIdx);
 
 }
 
@@ -719,8 +709,8 @@ void EasyNetMainWindow::loadAddOn()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load add-on"),
-                                                    scriptsDir,
-                                                    tr("Add-ons (*.eNa)"));
+                                                    trialsDir,
+                                                    tr("Add-ons (ia.*.eNa)"));
     if (!fileName.isEmpty())
     {
         // load and run script
@@ -781,8 +771,9 @@ void EasyNetMainWindow::loadStimulusSet()
         // change combobox text
         stimSetForm->setTableText(base);
 
-        //showViewMode(Stimuli);
-        outputPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
+        //show Stimuli;
+        methodsDock->raise();
+        methodsPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
 
     }
 }
@@ -926,7 +917,6 @@ void EasyNetMainWindow::loadScript()
             loadFile(fileName);
             lazynutPanel->setCurrentIndex(scriptTabIdx); // show scripts tab
             codePanelDock->show();
-//            visualiserDock->hide();
         }
  //   }
 }
