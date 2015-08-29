@@ -563,8 +563,7 @@ void EasyNetMainWindow::runAllTrial()
     cmds << cmd;
     cmd = quietMode + currentTrial + stepCmd  + stimArg;
     cmds << cmd;
-    int tableNum = tablesWindow->addTable(tableName);
-    QString displayTableName = QString("Table_") + QString::number(tableNum);
+    QString displayTableName = tablesWindow->addTable();
     cmd = tableName + " copy " + displayTableName;
     cmds << cmd;
 
@@ -590,7 +589,7 @@ void EasyNetMainWindow::runAllTrial()
     cmds << cmd;
     param->answerFormatterType = AnswerFormatterType::XML;
 //    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
-    param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
+    param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
     param->cmdList = cmds;
     SessionManager::instance()->setupJob(param);
     resultsDock->raise();

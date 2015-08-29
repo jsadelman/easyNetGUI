@@ -41,7 +41,7 @@ public:
 
 public slots:
     void setTableText(QString text);
-    int addTable(QString name);
+    QString addTable(QString name="");
 signals:
     void currentKeyChanged(QString key);
     void newTableSelection(QString name);
@@ -54,7 +54,7 @@ signals:
 
 private slots:
 //    void submit();
-    void addDataFrameToWidget(QDomDocument* domDoc);
+    void addDataFrameToWidget(QDomDocument* domDoc, QString cmd);
     void rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected );
     void updateParamTable(QString model);
     void resizeColumns();

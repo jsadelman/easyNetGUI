@@ -39,16 +39,19 @@ TableViewer::TableViewer(const QString &tableName, QWidget *parent)
 //    addTable("bla");
 }
 
-int TableViewer::addTable(QString name)
+QString TableViewer::addTable(QString name)
 {
     tables.push_back(new QTableView(this));
     myHeaders.push_back(new DataFrameHeader(tables.back()));
     numTables++;
     currentTableIdx = numTables-1;
-    int idx = tablePanel->addTab(tables[numTables-1], tr("Table ")+QString::number(numTables));
+    if (name.isEmpty())
+        name = tr("Table_")+QString::number(numTables);
+    int idx = tablePanel->addTab(tables[numTables-1], name);
     qDebug() << "adding table to panel. New numTables = " << numTables;
     tablePanel->setCurrentIndex(idx);
     tableMap[idx] = name;
+    qDebug() << name << "has idx " << idx;
 
     tables[tablePanel->currentIndex()]->setEditTriggers(QAbstractItemView::NoEditTriggers);
     // stimulus set allows a column to be dragged
@@ -62,7 +65,7 @@ int TableViewer::addTable(QString name)
     connect(myHeaders[tablePanel->currentIndex()], SIGNAL(restoreComboBoxText()), this, SIGNAL(restoreComboBoxText()));
     connect(this,SIGNAL(newTableName(QString)),myHeaders[tablePanel->currentIndex()],SLOT(setTableName(QString)));
 
-    return(numTables);
+    return(name);
 }
 
 void TableViewer::setTableText(QString text)
@@ -143,18 +146,21 @@ void TableViewer::setView(QString name)
     emit newTableSelection(name);
 }
 
-void TableViewer::addDataFrameToWidget(QDomDocument* domDoc)
+void TableViewer::addDataFrameToWidget(QDomDocument* domDoc, QString cmd)
 {
+    qDebug() << "I think cmd is" << cmd;
+    QString tableName = cmd.remove(QRegExp(" get.*$")).remove(QRegExp("^.*xml")).simplified();
+    qDebug() << "I think table name is" << tableName;
+    int idx = tableMap.key(tableName);
+    qDebug() << "I think idx is" << idx;
     dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
-    connect(dfModel, SIGNAL(newParamValueSig(QString)),
-            this,SIGNAL(newParamValueSig(QString)));
 
-    tables[tablePanel->currentIndex()]->setModel(dfModel);
-    tables[tablePanel->currentIndex()]->resizeColumnsToContents();
-    tables[tablePanel->currentIndex()]->show();
+    tables[idx]->setModel(dfModel);
+    tables[idx]->resizeColumnsToContents();
+    tables[idx]->show();
     // at this point we have a view widget showing the table
-    tables[tablePanel->currentIndex()]->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
-    QItemSelectionModel* selModel = tables[tablePanel->currentIndex()]->selectionModel();
+    tables[idx]->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
+    QItemSelectionModel* selModel = tables[idx]->selectionModel();
     connect(selModel, SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
             this,SLOT(rowChangedSlot( const QModelIndex& , const QModelIndex& )));
 }

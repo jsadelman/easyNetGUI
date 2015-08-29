@@ -216,10 +216,7 @@ void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
 //    plot_svg->setMaximumSize(size);
 //    plot_svg->setMinimumSize(size);
 
-//    send signal to load the byte array into the plot
-    qDebug() << "We think the plot name is" << plotName;
     emit plot(plotName, plotByteArray);
-
 }
 
 void PlotSettingsWindow::setPlot(QString name)
