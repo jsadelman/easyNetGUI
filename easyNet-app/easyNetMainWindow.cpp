@@ -212,6 +212,7 @@ void EasyNetMainWindow::connectSignalsAndSlots()
             plotViewer,SLOT(addPlot(QString)));
 
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
+    connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
 
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));

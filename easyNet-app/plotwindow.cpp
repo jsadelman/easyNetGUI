@@ -13,7 +13,7 @@
 #include "lazynutlistmenu.h"
 #include "plotsettingsform.h"
 #include "xmlelement.h"
-
+#include "plotviewer.h"
 
 
 
@@ -23,7 +23,8 @@ PlotSettingsWindow::PlotSettingsWindow(QWidget *parent)
       savePlotSettingsText("Save plot settings"),
       savePlotSettingsAsText("Save plot setings as..."),
       plotSettingsForm(nullptr),
-      QMainWindow(parent)
+      QMainWindow(parent),
+      plotAspr_(1.)
 {
     createPlotControlPanel();
     setUnifiedTitleAndToolBarOnMac(true);
@@ -191,7 +192,7 @@ void PlotSettingsWindow::sendDrawCmd(QString plotName)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({QString("%1 get").arg(plotName)});
+    param->cmdList = QStringList({QString("%1 get %2").arg(plotName).arg(plotAspr_)});
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)));
     SessionManager::instance()->setupJob(param, sender());
@@ -199,7 +200,7 @@ void PlotSettingsWindow::sendDrawCmd(QString plotName)
 
 void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
 {
-    QString plotName = cmd.remove("get").simplified();
+    QString plotName = cmd.remove(QRegExp(" get .*$")).simplified();
 //    replace tags that QSvgWidget doesn't like
     plotByteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
     plotByteArray.replace (QByteArray("</symbol"),QByteArray("</g     "));
@@ -463,4 +464,9 @@ void NewPlotPage::selectRScript()
 void PlotSettingsWindow::setDefaultModelSetting(QString setting, QString value)
 {
     plotSettingsForm->setDefaultModelSetting(setting, value);
+}
+
+void PlotSettingsWindow::newAspectRatio(QSize size)
+{
+    plotAspr_=double(size.width())/size.height();
 }

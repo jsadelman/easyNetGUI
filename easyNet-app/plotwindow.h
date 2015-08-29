@@ -84,7 +84,7 @@ private slots:
     void selectRecentRScript();
     void setCurrentPlotType(QString rScript);
     void draw();
-
+    void newAspectRatio(QSize);
 
 private:
 
@@ -136,7 +136,7 @@ private:
     QAction *saveAsAct;
     QAction *exitAct;
     QAction *copyAct;
-
+    double plotAspr_;
 };
 
 
