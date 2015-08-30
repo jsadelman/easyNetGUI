@@ -42,6 +42,7 @@ public:
 public slots:
     void setTableText(QString text);
     QString addTable(QString name="");
+    QString addTrialTable(QString name);
 signals:
     void currentKeyChanged(QString key);
     void newTableSelection(QString name);

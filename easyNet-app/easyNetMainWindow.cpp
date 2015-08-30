@@ -103,7 +103,8 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     diagramPanel->setCurrentIndex(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
     setQuietMode();
-    setSmallFont();
+//    setSmallFont();
+    setMediumFont();
 }
 
 void EasyNetMainWindow::checkLazyNut()
@@ -233,6 +234,8 @@ void EasyNetMainWindow::connectSignalsAndSlots()
             trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
+    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
+            tablesWindow,SLOT(addTrialTable(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
@@ -512,17 +515,56 @@ void EasyNetMainWindow::runTrial()
         return;
     }
 
+    QString cmd;
+
+//    after running cmd, call draw on plotForm and update trial table
+    LazyNutJobParam *param = new LazyNutJobParam;
+    param->logMode |= ECHO_INTERPRETER;
+
+    QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
+    cmd = QString("xml " + tableName + " clear"); // clear the dataframe before running a new set
+    QStringList cmds;
+    cmds << cmd;
     QString stepCmd  = " step ";
     QString modelArg = QString(" model=") + currentModel;
 
-    QString cmd = quietMode + currentTrial + stepCmd + trialWidget->getTrialCmd(); // modelArg + stimArg;
-//    msgBox(cmd);
+    cmd = quietMode + currentTrial + stepCmd + trialWidget->getTrialCmd(); // modelArg + stimArg;
+    cmds << cmd;
 
-//    after running cmd, call draw on plotForm
-//     this seems like far too much code to achieve this !!
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
-    param->cmdList = QStringList({cmd});
+    QString displayTableName = currentTrial;
+    displayTableName.append(".table");
+
+    // now rbind the data to existing trial table
+    cmd = QString("R << eN[\"trial.table\"] <- rbind(eN[\"trial.table\"],eN[\"default_dataframe\"])");
+    cmd.replace("trial.table",displayTableName);
+    cmd.replace("default_dataframe",tableName);
+    cmds << cmd;
+
+//    // rename headers
+//    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"[\\\\(\\\\)]\",\"\",names(eN[\"Table_1\"]))";
+//    cmd.replace("Table_1",displayTableName);
+//    cmds << cmd;
+//    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"event_pattern\",\"\",names(eN[\"Table_1\"]))";
+//    cmd.replace("Table_1",displayTableName);
+//    cmds << cmd;
+//    cmd = QString("R << names(eN[\"Table_1\"])<-gsub(\"") + currentTrial;
+//    cmd += QString("\",\"\",names(eN[\"Table_1\"]))");
+//    cmd.replace("Table_1",displayTableName);
+//    cmds << cmd;
+//    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"^\\\\s+|\\\\s+$\",\"\",names(eN[\"Table_1\"]))";
+//    cmd.replace("Table_1",displayTableName);
+//    cmds << cmd;
+////    cmd = "R << print(names(eN[\"Table_1\"]))";
+////    cmds << cmd;
+
+    // display table of means after running set
+    cmd = QString("xml " + displayTableName + " get");
+    cmds << cmd;
+    param->answerFormatterType = AnswerFormatterType::XML;
+//    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
+    param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
+    param->cmdList = cmds;
+
     param->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
     SessionManager::instance()->setupJob(param);
 }

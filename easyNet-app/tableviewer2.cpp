@@ -39,14 +39,29 @@ TableViewer::TableViewer(const QString &tableName, QWidget *parent)
 //    addTable("bla");
 }
 
+QString TableViewer::addTrialTable(QString name)
+{
+    QString tableName = addTable(name); // this adds the tab, if it's unique
+    QString defaultTableName = QString("((") + name + QString(" default_observer) default_dataframe)");
+    QString cmd = defaultTableName + " copy " + tableName;
+    SessionManager::instance()->runCmd(cmd);
+}
+
 QString TableViewer::addTable(QString name)
 {
+    qDebug() << "addTable(" << name << ")";
+    if (name.isEmpty())
+        name = tr("Table_")+QString::number(numTables);
+    else
+        name.append(".table");
+    qDebug() << "current list: " << tableMap.values();
+    if (tableMap.values().contains(name))
+        return(name);
+    qDebug() << "going to add a new one";
     tables.push_back(new QTableView(this));
     myHeaders.push_back(new DataFrameHeader(tables.back()));
     numTables++;
     currentTableIdx = numTables-1;
-    if (name.isEmpty())
-        name = tr("Table_")+QString::number(numTables);
     int idx = tablePanel->addTab(tables[numTables-1], name);
     qDebug() << "adding table to panel. New numTables = " << numTables;
     tablePanel->setCurrentIndex(idx);
@@ -133,6 +148,7 @@ void TableViewer::createToolBars()
     fileToolBar->addAction(saveAct);
 
     editToolBar = addToolBar(tr("Edit"));
+    editToolBar->addAction(copyAct);
     editToolBar->addAction(copyDFAct);
     editToolBar->addAction(findAct);
 

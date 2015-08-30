@@ -43,6 +43,8 @@ TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
     hideSetComboBoxAction = new QAction(QIcon(":/images/icon_dismiss.png"),tr("&Hide"), this);
     hideSetComboBoxAction->setStatusTip(tr("Hide"));
     connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
+
+    buildComboBoxesTest(QStringList());
 }
 
 TrialWidget::~TrialWidget()
@@ -114,8 +116,11 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
         layout2->addWidget(argumentMap[args[i]]);
     }
 
-    QLineEdit *ed = argumentMap[args[args.count()-1]]->lineEdit();
-    connect(ed, SIGNAL(returnPressed()),runAction,SIGNAL(triggered()));
+    if (!args.isEmpty())
+    {
+        QLineEdit *ed = argumentMap[args[args.count()-1]]->lineEdit();
+        connect(ed, SIGNAL(returnPressed()),runAction,SIGNAL(triggered()));
+    }
 
     if (runButton == NULL)
         runButton = new QToolButton(this);
@@ -142,26 +147,21 @@ void TrialWidget::argWasChanged(QString arg)
 
 void TrialWidget::clearLayout(QLayout *layout)
 {
-    qDebug() << "Entered clearLayout" << layout;
     QLayoutItem *item;
     while((item = layout->takeAt(0)))
     {
         if (item->layout())
         {
-            qDebug() << "found layout" << item->layout();
             clearLayout(item->layout());
 //            delete item->layout();
         }
         if (item->widget())
         {
-            qDebug() << "found widget" << item->widget();
             if (item->widget() != runButton)
                 delete item->widget();
         }
-        qDebug() << "deleting item" << item;
         delete item;
     }
-    qDebug() << "Completed clearLayout" << layout;
 
 
 }
