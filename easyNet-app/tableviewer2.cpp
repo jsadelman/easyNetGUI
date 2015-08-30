@@ -39,11 +39,13 @@ TableViewer::TableViewer(const QString &tableName, QWidget *parent)
 //    addTable("bla");
 }
 
-QString TableViewer::addTrialTable(QString name)
+void TableViewer::addTrialTable(QString name)
 {
     QString tableName = addTable(name); // this adds the tab, if it's unique
     QString defaultTableName = QString("((") + name + QString(" default_observer) default_dataframe)");
-    QString cmd = defaultTableName + " copy " + tableName;
+//    qDebug() << "defaultTableName =" << defaultTableName;
+//    qDebug() << "tableName =" << tableName;
+    QString cmd = defaultTableName + QString(" copy ") + tableName;
     SessionManager::instance()->runCmd(cmd);
 }
 
@@ -81,6 +83,12 @@ QString TableViewer::addTable(QString name)
     connect(this,SIGNAL(newTableName(QString)),myHeaders[tablePanel->currentIndex()],SLOT(setTableName(QString)));
 
     return(name);
+}
+
+void TableViewer::switchTab(QString tableName)
+{
+    int idx = tableMap.key(tableName);
+    tablePanel->setCurrentIndex(idx);
 }
 
 void TableViewer::setTableText(QString text)

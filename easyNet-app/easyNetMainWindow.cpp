@@ -240,8 +240,8 @@ void EasyNetMainWindow::connectSignalsAndSlots()
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
             plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
-    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
-            this,SLOT(showPlotViewer()));
+//    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
+//            this,SLOT(showPlotViewer()));
     connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     /* signals & slots */
@@ -567,6 +567,10 @@ void EasyNetMainWindow::runTrial()
 
     param->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
     SessionManager::instance()->setupJob(param);
+
+    resultsDock->raise();
+    resultsPanel->setCurrentIndex(outputTablesTabIdx);
+    tablesWindow->switchTab(displayTableName);
 }
 
 
