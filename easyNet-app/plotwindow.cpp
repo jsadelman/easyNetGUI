@@ -146,7 +146,10 @@ void PlotSettingsWindow::createActions()
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
 //    refreshAct->setStatusTip(tr("Refresh plot"));
-    connect(refreshAct, SIGNAL(triggered()), this, SLOT(sendDrawCmd()));
+    connect(refreshAct, &QAction::triggered, this, [=]{
+        if (plotSettingsForm)
+            sendSettings(this, SLOT(sendDrawCmd()));
+    });
 }
 
 void PlotSettingsWindow::updateRecentRScriptsActs()
@@ -196,6 +199,11 @@ void PlotSettingsWindow::sendDrawCmd(QString plotName)
     param->answerFormatterType = AnswerFormatterType::SVG;
     param->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)));
     SessionManager::instance()->setupJob(param, sender());
+}
+
+void PlotSettingsWindow::sendDrawCmd()
+{
+    sendDrawCmd(currentPlot);
 }
 
 void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
@@ -336,7 +344,6 @@ void PlotSettingsWindow::sendSettings(QObject *nextJobReceiver, const char *next
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode |= ECHO_INTERPRETER; // debug purpose
     param->cmdList = plotSettingsForm->getSettingsCmdList();
-    qDebug() << "PlotWindow::sendSettings"<< plotSettingsForm->getSettingsCmdList() << sender();
     param->setNextJobReceiver(nextJobReceiver, nextJobSlot);
     SessionManager::instance()->setupJob(param, sender());
 }
@@ -366,6 +373,7 @@ void PlotSettingsWindow::draw()
 {
     if (plotSettingsForm)
         sendSettings(this, SLOT(sendDrawCmd()));
+
     else
         SessionManager::instance()->setupNoOp(sender());
 }

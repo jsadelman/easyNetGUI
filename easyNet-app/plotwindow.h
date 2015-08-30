@@ -66,11 +66,14 @@ signals:
 public slots:
         void createNewPlotOfType(QString name, QString type,
                                  QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
+        void sendDrawCmd(QString plotName);
+        void sendDrawCmd();
+        void setPlot(QString name);
+
+
 
 private slots:
-    void sendDrawCmd(QString plotName);
     void displaySVG(QByteArray plotByteArray, QString cmd);
-    void setPlot(QString name);
     void newPlot();
     void createNewPlot(QString name);
     void setType(QString rScript);

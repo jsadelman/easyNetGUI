@@ -214,7 +214,7 @@ void EasyNetMainWindow::connectSignalsAndSlots()
 
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
-    connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
+    connect(plotViewer,SIGNAL(showPlotSettings(QString)),this,SLOT(showPlotSettings(QString)));
 
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
     connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
@@ -265,10 +265,11 @@ void EasyNetMainWindow::showExplorer()
     explorerDock->raise();
 }
 
-void EasyNetMainWindow::showPlotSettings()
+void EasyNetMainWindow::showPlotSettings(QString plotName)
 {
     methodsDock->raise();
     methodsPanel->setCurrentIndex(plotSettingsTabIdx);
+    plotSettingsWindow->setPlot(plotName);
 }
 
 void EasyNetMainWindow::showPlotViewer()

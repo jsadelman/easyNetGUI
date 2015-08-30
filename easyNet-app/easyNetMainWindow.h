@@ -134,7 +134,7 @@ private slots:
     void showExplorer();
     void restart();
     void showMostRecentError();
-    void showPlotSettings();
+    void showPlotSettings(QString plotName);
 protected:
     void closeEvent(QCloseEvent *event);
 

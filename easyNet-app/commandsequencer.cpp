@@ -78,7 +78,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         emit userLazyNutOutputReady(lazyNutOutput);
     // else send it to some log file or other location
     lazyNutBuffer.append(lazyNutOutput);
-    if (commandList.isEmpty())
+      if (commandList.isEmpty())
         return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or synch error
     QString currentCmd, beginContent, timeString;
     int beginOffset, endOffset;
@@ -87,6 +87,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         beginContent = beginRex.cap(1);
+        if (commandList.first().contains("min_n_units"))
+            qDebug() << beginContent;
 //        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
         QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(beginContent)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);

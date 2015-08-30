@@ -57,8 +57,9 @@ void PlotViewer::createActions()
     settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
     settingsAct->setShortcuts(QKeySequence::Refresh);
     settingsAct->setStatusTip(tr("Plot settings"));
-    connect(settingsAct, SIGNAL(triggered()), this, SIGNAL(showPlotSettings()));
-
+    connect(settingsAct, &QAction::triggered, this, [=](){
+            emit showPlotSettings(plotMap[plotPanel->currentIndex()]);
+    });
     refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
     refreshAct->setStatusTip(tr("Refresh plot"));

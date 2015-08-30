@@ -35,7 +35,7 @@ public slots:
     void updateActivePlots();
 signals:
     void sendDrawCmd(QString);
-    void showPlotSettings();
+    void showPlotSettings(QString);
     void resized(QSize);
 
 private slots:
