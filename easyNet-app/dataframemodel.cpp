@@ -61,12 +61,13 @@ QStringList DataFrameModel::colNames()
 bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
     if (index.column() == 0) // can't edit parameter names
-            return true;
+            return false;
     // check legality
     bool ok;
     float fvalue = value.toFloat(&ok);
     if (!ok) // not a float
-        return true;
+        return false;
+    // NOTE: hack for parameters dataframe only, would not work e.g. for editing a stimulus set
     if (role == Qt::EditRole)
     {
         tBody().childNodes().at(index.row() + 1).childNodes().at(index.column() +1).firstChild().setNodeValue(value.toString());
@@ -84,6 +85,9 @@ bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, 
 Qt::ItemFlags DataFrameModel::flags (const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QAbstractTableModel::flags(index);
+    // same criteria as in setData
+    if (index.column() == 0)
+        return defaultFlags;
 
     return Qt::ItemIsDragEnabled | Qt::ItemIsEditable  | defaultFlags;
 

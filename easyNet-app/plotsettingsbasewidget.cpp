@@ -374,8 +374,7 @@ PlotSettingsSingleChoiceWidget::PlotSettingsSingleChoiceWidget(XMLelement settin
 void PlotSettingsSingleChoiceWidget::updateWidget(XMLelement xml)
 {
     PlotSettingsBaseWidget::updateWidget(xml);
-    delete editDisplayWidget;
-    editDisplayWidget = nullptr;
+
     createEditWidget();
 }
 
@@ -400,6 +399,9 @@ void PlotSettingsSingleChoiceWidget::createEditWidget()
 
 void PlotSettingsSingleChoiceWidget::buildEditWidget()
 {
+    delete editDisplayWidget;
+    editDisplayWidget = nullptr;
+
     editDisplayWidget = new QComboBox;
     static_cast<QComboBox*>(editDisplayWidget)->setModel(levelsListModel);
     setWidgetValue(raw2widgetValue(settingsElement["value"]()));
@@ -467,10 +469,7 @@ PlotSettingsMultipleChoiceWidget::PlotSettingsMultipleChoiceWidget(XMLelement se
 void PlotSettingsMultipleChoiceWidget::updateWidget(XMLelement xml)
 {
     PlotSettingsBaseWidget::updateWidget(xml);
-    delete editDisplayWidget;
-    editDisplayWidget = nullptr;
-    delete editExtraWidget;
-    editExtraWidget = nullptr;
+
     createEditWidget();
 }
 
@@ -493,6 +492,11 @@ void PlotSettingsMultipleChoiceWidget::createEditWidget()
 
 void PlotSettingsMultipleChoiceWidget::buildEditWidget()
 {
+    delete editDisplayWidget;
+    editDisplayWidget = nullptr;
+    delete editExtraWidget;
+    editExtraWidget = nullptr;
+
     editDisplayWidget = new QLineEdit();
     static_cast<QLineEdit*>(editDisplayWidget)->setReadOnly(true);
     gridLayout->addWidget(editDisplayWidget, 0,1);
