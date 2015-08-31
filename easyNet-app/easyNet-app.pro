@@ -22,7 +22,7 @@ DEPENDPATH =  .. .
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = easyNet4
+TARGET = easyNet10
 TEMPLATE = app
 
 
@@ -198,7 +198,8 @@ DISTFILES += \
     documentation/easyNetHelp.qch \
     documentation/easyNetHelp.qhc \
     images/clipboard.png \
-    images/plot_settings.png
+    images/plot_settings.png \
+    images/refresh.png
 
 
 CONFIG += c++11

@@ -60,7 +60,7 @@ void PlotViewer::createActions()
     connect(settingsAct, &QAction::triggered, this, [=](){
             emit showPlotSettings(plotMap[plotPanel->currentIndex()]);
     });
-    refreshAct = new QAction(QIcon(":/images/reload.png"), tr("&Refresh"), this);
+    refreshAct = new QAction(QIcon(":/images/refresh.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
     refreshAct->setStatusTip(tr("Refresh plot"));
 //    connect(refreshAct, SIGNAL(triggered()), this, SIGNAL(sendDrawCmd()));

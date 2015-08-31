@@ -140,5 +140,6 @@
         <file>images/verticalAlign.png</file>
         <file>images/resize.png</file>
         <file>images/magic_wand.png</file>
+        <file>images/refresh.png</file>
     </qresource>
 </RCC>

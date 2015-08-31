@@ -172,11 +172,8 @@ void TableViewer::setView(QString name)
 
 void TableViewer::addDataFrameToWidget(QDomDocument* domDoc, QString cmd)
 {
-    qDebug() << "I think cmd is" << cmd;
     QString tableName = cmd.remove(QRegExp(" get.*$")).remove(QRegExp("^.*xml")).simplified();
-    qDebug() << "I think table name is" << tableName;
     int idx = tableMap.key(tableName);
-    qDebug() << "I think idx is" << idx;
     dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
 
     tables[idx]->setModel(dfModel);

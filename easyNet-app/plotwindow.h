@@ -18,6 +18,9 @@ class QListView;
 class QScrollArea;
 class PlotSettingsForm;
 class LazyNutListMenu;
+class QComboBox;
+//class ObjectCatalogueFilter;
+class QGridLayout;
 
 class NewPlotWizard: public QWizard
 {
@@ -89,6 +92,7 @@ private slots:
     void draw();
     void newAspectRatio(QSize);
 
+    void buildWindow();
 private:
 
 
@@ -100,25 +104,28 @@ private:
     void savePlotSettingsAs();
     void createActions();
     void updateRecentRScriptsActs();
-    void createToolBars();
     void importHomonyms(QDomDocument *settingsList);
 
     QScrollArea *plotControlPanelScrollArea;
     PlotSettingsForm *plotSettingsForm;
     QLabel *plotTitleLabel;
     QWidget *plotSettingsWidget;
+//    QComboBox* plotNameBox;
+    QLabel* plotNameBox;
+    QLabel* plotTypeBox;
+
 
     QMenu *typeMenu;
     QMenu *recentRScriptsMenu;
     LazyNutListMenu *dataMenu;
     LazyNutListMenu *plotsMenu;
-    QAction *drawAct;
+//    QAction *drawAct;
     QAction *separatorAct;
     enum { MaxRecentRScripts = 5 };
     QAction *recentRScriptsActs[MaxRecentRScripts];
     QAction *selectRScriptAct;
     QAction *selectDataAct;
-
+//    ObjectCatalogueFilter* plotListFilter;
     QString currentPlotType;
     QString currentOutput;
     QString currentPlot;
@@ -127,6 +134,7 @@ private:
     QString savePlotSettingsText;
     QString savePlotSettingsAsText;
     QMap <QString,QString> defaultSettings;
+    QGridLayout *gridLayout;
 
     QString curFile;
     QMenu *fileMenu;

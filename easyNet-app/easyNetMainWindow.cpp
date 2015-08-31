@@ -523,7 +523,7 @@ void EasyNetMainWindow::runTrial()
     param->logMode |= ECHO_INTERPRETER;
 
     QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
-    cmd = QString("xml " + tableName + " clear"); // clear the dataframe before running a new set
+    cmd = QString(tableName + " clear"); // clear the dataframe before running a new set
     QStringList cmds;
     cmds << cmd;
     QString stepCmd  = " step ";
@@ -569,8 +569,8 @@ void EasyNetMainWindow::runTrial()
     param->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
     SessionManager::instance()->setupJob(param);
 
-    resultsDock->raise();
-    resultsPanel->setCurrentIndex(outputTablesTabIdx);
+//    resultsDock->raise();
+//    resultsPanel->setCurrentIndex(outputTablesTabIdx);
     tablesWindow->switchTab(displayTableName);
 }
 
