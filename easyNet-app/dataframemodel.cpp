@@ -148,11 +148,11 @@ void DataFrameHeader::mousePressEvent(QMouseEvent *event)
         QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
 
-        mimeData->setText(text);
+        mimeData->setText(QString("$")+text);
         drag->setMimeData(mimeData);
         Qt::DropAction dropAction = drag->exec();
-//        qDebug() << "Initiating drag from headerview" << text;
-//        qDebug() << "return from drag->exec is" << dropAction;
+        qDebug() << "Initiating drag from headerview" << text;
+        qDebug() << "return from drag->exec is" << dropAction;
         if (dropAction != Qt::IgnoreAction)
         {
             qDebug() << "Emitting column dropped, table name = " << tableName;
@@ -180,8 +180,12 @@ void DataFrameHeader::performDrag()
 {
     QDrag *drag = new QDrag(this);
     QMimeData *mimeData = new QMimeData;
-    mimeData->setText(text);
+    qDebug() << "performDrag, text = " << text;
+    mimeData->setText(QString("$")+text);
+
     drag->setMimeData(mimeData);
+    qDebug() << "performDrag, mimeData = " << mimeData;
+
     if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
     {
         qDebug() << "moved header";

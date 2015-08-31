@@ -608,7 +608,11 @@ void EasyNetMainWindow::runAllTrial()
     QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
     cmd = QString("xml " + tableName + " clear"); // clear the dataframe before running a new set
     cmds << cmd;
+    cmd = QString("set ") + trialWidget->getTrialCmd();
+    cmds << cmd;
     cmd = quietMode + currentTrial + stepCmd  + stimArg;
+    cmds << cmd;
+    cmd = QString("unset ") + trialWidget->getArguments().join(" ");
     cmds << cmd;
     QString displayTableName = tablesWindow->addTable();
     cmd = tableName + " copy " + displayTableName;

@@ -27,6 +27,8 @@ public:
     QString getTrialCmd();
     bool checkIfReadyToRun();
     QString getStimulusSet();
+public slots:
+    QStringList getArguments();
 signals:
     void runAllModeChanged(bool);
     void trialDescriptionUpdated(QDomDocument*);
@@ -42,6 +44,7 @@ private slots:
     void showSetLabel(QString set);
     void restoreComboBoxText();
     void argWasChanged(QString arg);
+    void clearArgumentBoxes();
 private:
 
     ObjectCatalogueFilter* trialFilter;

@@ -183,6 +183,11 @@ QString TrialWidget::getTrialCmd()
 
 }
 
+QStringList TrialWidget::getArguments()
+{
+    return(argumentMap.keys());
+}
+
 bool TrialWidget::checkIfReadyToRun()
 {
     QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
@@ -193,6 +198,16 @@ bool TrialWidget::checkIfReadyToRun()
         i++;
     }
     return true;
+}
+
+void TrialWidget::clearArgumentBoxes()
+{
+    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
+    while (i != argumentMap.constEnd())
+    {
+        static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
+        i++;
+    }
 }
 
 void TrialWidget::setRunButtonIcon()
@@ -214,6 +229,7 @@ void TrialWidget::hideSetComboBox()
 {
     setComboBox->hide();
     setCancelButton->hide();
+    clearArgumentBoxes();
     emit runAllModeChanged(false);
 
 }
