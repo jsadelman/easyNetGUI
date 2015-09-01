@@ -868,7 +868,7 @@ void EasyNetMainWindow::loadFile(const QString &fileName)
 void EasyNetMainWindow::readSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
-    easyNetHome = settings.value("easyNetHome","").toString();
+    easyNetHome = settings.value("easyNetHome","../..").toString();
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
 
