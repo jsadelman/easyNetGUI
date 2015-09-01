@@ -174,6 +174,8 @@ void TableViewer::addDataFrameToWidget(QDomDocument* domDoc, QString cmd)
 {
     QString tableName = cmd.remove(QRegExp(" get.*$")).remove(QRegExp("^.*xml")).simplified();
     int idx = tableMap.key(tableName);
+
+    // leakage: need to delete model and model viewer
     dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
 
     tables[idx]->setModel(dfModel);

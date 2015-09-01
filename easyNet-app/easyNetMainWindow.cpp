@@ -642,7 +642,7 @@ void EasyNetMainWindow::runAllTrial()
 //    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
     param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
     param->cmdList = cmds;
-    SessionManager::instance()->setupJob(param);
+    SessionManager::instance()->setupJob(param, sender());
     resultsDock->raise();
     resultsPanel->setCurrentIndex(outputTablesTabIdx);
 
