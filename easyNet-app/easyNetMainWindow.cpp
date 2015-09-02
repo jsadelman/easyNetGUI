@@ -184,7 +184,7 @@ void EasyNetMainWindow::constructForms()
 
 //    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
     explorerPanel->addTab(objExplorer, tr("Objects"));
-    explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
+    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
 
     plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
     outputTablesTabIdx = resultsPanel->addTab(tablesWindow, tr("Tables"));
@@ -217,10 +217,11 @@ void EasyNetMainWindow::connectSignalsAndSlots()
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
     connect(plotViewer,SIGNAL(setPlot(QString)), plotSettingsWindow, SLOT(setPlot(QString)));
 //    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
-
+    connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
     connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
     connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
+    connect(dataframesWindow, SIGNAL(openFileRequest()),this,SLOT(importDataFrame()));
 //    connect(diagramPanel, SIGNAL(currentDiagramSceneChanged(DiagramScene*)),
 //            this, SLOT(diagramSceneTabChanged(DiagramScene*)));
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
@@ -834,20 +835,25 @@ void EasyNetMainWindow::loadStimulusSet()
 void EasyNetMainWindow::importDataFrame()
 {
     // bring up file dialog
+    QString base;
     QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
                                                     stimDir,
-                                                    tr("Database Files (*.eNd)"));
+                                                    tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
     fileName = QDir(easyNetHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
         // create db
         QFileInfo fi(fileName);
-        QString base = fi.baseName();
+        base = fi.baseName();
 
         SessionManager::instance()->runCmd(QStringList({
                                         QString("create dataframe %1").arg(base),
                                         QString("%1 load %2").arg(base).arg(fileName)}));
     }
+    //show new dataframe;
+    explorerDock->raise();
+    explorerPanel->setCurrentIndex(dfTabIdx);
+    dataframesWindow->setTableText(base);
 }
 
 void EasyNetMainWindow::currentStimulusChanged(QString stim)

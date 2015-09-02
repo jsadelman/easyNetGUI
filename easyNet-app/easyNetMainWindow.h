@@ -268,6 +268,7 @@ private:
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
+    int             dfTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;

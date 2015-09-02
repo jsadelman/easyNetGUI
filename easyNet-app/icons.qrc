@@ -144,5 +144,6 @@
         <file>images/label_blue_new.png</file>
         <file>images/snapshot-icon.png</file>
         <file>images/rename-icon.png</file>
+        <file>images/add-icon.png</file>
     </qresource>
 </RCC>
