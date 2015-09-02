@@ -75,6 +75,7 @@ public slots:
     void loadTrial();
     void loadAddOn();
     void showPlotViewer();
+    void importDataFrame();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -135,6 +136,7 @@ private slots:
     void restart();
     void showMostRecentError();
     void showPlotSettings();
+    void updateDFComboBox();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -183,6 +185,7 @@ private:
     QString         easyNetHome = "";
     QString         paramDataFrame;
     QString         quietMode;
+    QString         df_name_for_updating_combobox;
 
     QStringList     modelList;
     QStringList     trialList;
@@ -267,6 +270,7 @@ private:
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
+    int             dfTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;

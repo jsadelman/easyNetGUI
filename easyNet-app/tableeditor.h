@@ -42,6 +42,7 @@ public:
 
 public slots:
     void setTableText(QString text);
+    void selectTable(QString text);
 signals:
     void currentKeyChanged(QString key);
     void newTableSelection(QString name);

@@ -150,7 +150,8 @@ void PlotSettingsWindow::createActions()
 //        if (plotSettingsForm)
             sendSettings(this, SLOT(sendDrawCmd()));
     });
-    newPlotAct = new QAction(QIcon(":/images/label_blue_new.png"), tr("&New Plot"), this);
+//    newPlotAct = new QAction(QIcon(":/images/label_blue_new.png"), tr("&New Plot"), this);
+    newPlotAct = new QAction(QIcon(":/images/add-icon.png"), tr("&New Plot"), this);
     newPlotAct->setShortcuts(QKeySequence::New);
     connect(newPlotAct, SIGNAL(triggered()), this, SLOT(newPlot()));
 }
@@ -436,7 +437,7 @@ void PlotSettingsWindow::buildWindow()
     QToolButton* newButton = new QToolButton(this);
     newButton->setAutoRaise(true);
     newButton->setDefaultAction(newPlotAct);
-    newButton->setIcon(QIcon(":/images/label_blue_new.png"));
+    newButton->setIcon(QIcon(":/images/add-icon.png"));
     newButton->setIconSize(QSize(40, 40));
     newButton->show();
 
@@ -460,6 +461,8 @@ void PlotSettingsWindow::sendSettings(QObject *nextJobReceiver, const char *next
         param->cmdList = form->getSettingsCmdList();
         param->setNextJobReceiver(nextJobReceiver, nextJobSlot);
         SessionManager::instance()->setupJob(param, sender());
+
+        emit showPlotViewer();
     }
 }
 

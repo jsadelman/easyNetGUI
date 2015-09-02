@@ -66,6 +66,7 @@ public:
 signals:
         void plot(QString, QByteArray);
         void newPlotSignal(QString);
+        void showPlotViewer();
 public slots:
         void createNewPlotOfType(QString name, QString type,
                                  QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
