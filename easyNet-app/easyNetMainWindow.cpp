@@ -845,15 +845,26 @@ void EasyNetMainWindow::importDataFrame()
         // create db
         QFileInfo fi(fileName);
         base = fi.baseName();
+        df_name_for_updating_combobox = base;
+        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),
+                                                  this,SLOT(updateDFComboBox()));
 
         SessionManager::instance()->runCmd(QStringList({
-                                        QString("create dataframe %1").arg(base),
-                                        QString("%1 load %2").arg(base).arg(fileName)}));
+                                         QString("create dataframe %1").arg(base),
+                                         QString("%1 load %2").arg(base).arg(fileName)}));
+
     }
+}
+
+void EasyNetMainWindow::updateDFComboBox()
+{
     //show new dataframe;
     explorerDock->raise();
     explorerPanel->setCurrentIndex(dfTabIdx);
-    dataframesWindow->setTableText(base);
+    dataframesWindow->selectTable(df_name_for_updating_combobox);
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),
+                                              this,SLOT(updateDFComboBox()));
+
 }
 
 void EasyNetMainWindow::currentStimulusChanged(QString stim)

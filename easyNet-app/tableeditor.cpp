@@ -161,6 +161,15 @@ void TableEditor::setTableText(QString text)
     emit newTableName(text);
 }
 
+void TableEditor::selectTable(QString text)
+{
+    qDebug() << "Received request to select " << text;
+
+    tableBox->setCurrentIndex(tableBox->findData(text,Qt::DisplayRole));
+    qDebug() << "Selected table is" << tableBox->currentText();
+
+}
+
 void TableEditor::setFilter(QString type)
 {
     qDebug() << "Entered setFilter with type: " << type << "; tableBox = " << tableBox;
