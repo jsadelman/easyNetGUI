@@ -829,6 +829,25 @@ void EasyNetMainWindow::loadStimulusSet()
     }
 }
 
+void EasyNetMainWindow::importDataFrame()
+{
+    // bring up file dialog
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
+                                                    stimDir,
+                                                    tr("Database Files (*.eNd)"));
+    fileName = QDir(easyNetHome).relativeFilePath(fileName);
+    if (!fileName.isEmpty())
+    {
+        // create db
+        QFileInfo fi(fileName);
+        QString base = fi.baseName();
+
+        SessionManager::instance()->runCmd(QStringList({
+                                        QString("create dataframe %1").arg(base),
+                                        QString("%1 load %2").arg(base).arg(fileName)}));
+    }
+}
+
 void EasyNetMainWindow::currentStimulusChanged(QString stim)
 {
 //    if (inputComboBox->findText(stim) == -1)

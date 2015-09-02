@@ -75,6 +75,7 @@ public slots:
     void loadTrial();
     void loadAddOn();
     void showPlotViewer();
+    void importDataFrame();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
