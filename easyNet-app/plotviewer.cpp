@@ -10,22 +10,23 @@
 #include <QPixmap>
 #include <QDebug>
 
-PlotViewer::PlotViewer(QString _easyNetHome, QWidget* parent)
-    : QMainWindow(parent)
+PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
+    : easyNetHome(easyNetHome), QMainWindow(parent)
 {
-    easyNetHome = _easyNetHome;
     plotPanel = new QTabWidget;
 
-    svgWidget = new QSvgWidget(this);
-    svgWidget->show();
+//    svgWidget = new QSvgWidget(this);
+//    svgWidget->show();
 //    plots.push_back(new QSvgWidget(this));
-    numPlots = 0;
-    currentPlotIdx = 0;
+//    numPlots = 0;
+//    currentPlotIdx = 0;
 //    addPlot();
     setCentralWidget(plotPanel);
 
     createActions();
     createToolBars();
+
+    connect(plotPanel, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 
     resizeTimer = new QTimer(this);
     connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
@@ -40,6 +41,7 @@ void PlotViewer::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(refreshAct);
+    fileToolBar->addAction(snapshotAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
     titleLabel = new QLabel("");
@@ -57,17 +59,22 @@ void PlotViewer::createActions()
     settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
     settingsAct->setShortcuts(QKeySequence::Refresh);
     settingsAct->setStatusTip(tr("Plot settings"));
-    connect(settingsAct, &QAction::triggered, this, [=](){
-            emit showPlotSettings(plotMap[plotPanel->currentIndex()]);
-    });
+    connect(settingsAct, SIGNAL(triggered()), this, SIGNAL(showPlotSettings()));
+
     refreshAct = new QAction(QIcon(":/images/refresh.png"), tr("&Refresh"), this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
     refreshAct->setStatusTip(tr("Refresh plot"));
-//    connect(refreshAct, SIGNAL(triggered()), this, SIGNAL(sendDrawCmd()));
     connect(refreshAct, &QAction::triggered, [=](){
-       emit sendDrawCmd(plotMap[plotPanel->currentIndex()]);
+       emit sendDrawCmd(plotName[static_cast<QSvgWidget*>(plotPanel->currentWidget())]);
     });
-//    connect(refreshAct, SIGNAL(triggered()), this, SLOT(updateCurrentPlot()));
+
+    snapshotAct = new QAction(QIcon(":/images/snapshot-icon.png"), tr("Snapshot"), this);
+    snapshotAct->setStatusTip(tr("Snapshot"));
+    connect(snapshotAct, SIGNAL(triggered()), this, SLOT(snapshot()));
+
+//    renameAct =  new QAction(QIcon(":/images/rename-icon.png"), tr("Rename"), this);
+//    renameAct->setStatusTip(tr("Rename"));
+//    connect(renameAct, SIGNAL(triggered()), this, SLOT(renamePlot()));
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
     openAct->setStatusTip(tr("Load plot"));
@@ -91,7 +98,7 @@ void PlotViewer::loadSVGFile()
                                                     tr("SVG Files (*.svg)"));
     if (!fileName.isEmpty())
     {
-        plots[plotPanel->currentIndex()]->load(fileName);
+//        plots[plotPanel->currentIndex()]->load(fileName);
         titleLabel->setText(fileName);
     }
 }
@@ -99,9 +106,13 @@ void PlotViewer::loadSVGFile()
 void PlotViewer::loadByteArray(QString name, QByteArray _byteArray)
 {
     byteArray = _byteArray;
-
-    plots[plotMap.key(name)]->load(byteArray);
-    titleLabel->setText(name);
+    QSvgWidget* svg = plotName.key(name);
+    if (svg)
+    {
+        svg->load(byteArray);
+        plotPanel->setCurrentWidget(svg);
+        titleLabel->setText(name);
+    }
 }
 
 void PlotViewer::save()
@@ -126,13 +137,12 @@ void PlotViewer::save()
 
 void PlotViewer::copySVGToClipboard()
 {
-    QPixmap* currPixmap = new QPixmap(plots[plotPanel->currentIndex()]->width(),
-                                      plots[plotPanel->currentIndex()]->height());
-    currPixmap->fill(Qt::transparent);
+//    QPixmap* currPixmap = new QPixmap(plots[plotPanel->currentIndex()]->width(),
+//                                      plots[plotPanel->currentIndex()]->height());
+//    currPixmap->fill(Qt::transparent);
 
-    plots[plotPanel->currentIndex()]->render(currPixmap, QPoint(), QRegion(), QWidget::DrawChildren);
-    QClipboard *p_Clipboard = QApplication::clipboard();
-    p_Clipboard->setPixmap(*currPixmap);
+//    QClipboard *p_Clipboard = QApplication::clipboard();
+//    p_Clipboard->setPixmap(*currPixmap);
 
 
 
@@ -140,20 +150,23 @@ void PlotViewer::copySVGToClipboard()
 
 void PlotViewer::addPlot(QString name)
 {
-    plots.push_back(new QSvgWidget(this));
-    numPlots++;
-    currentPlotIdx = numPlots-1;
-    int idx = plotPanel->addTab(plots[numPlots-1], tr("Plot ")+QString::number(numPlots));
-    qDebug() << "adding plot to panel. New numPlots = " << numPlots;
-    plotPanel->setCurrentIndex(idx);
-    plotMap[idx] = name;
+    QSvgWidget *svg = new QSvgWidget;
+    plotName[svg] = name;
+    plotIsActive[svg] = true;
+    plotPanel->addTab(svg, QString("Plot %1").arg(++progressiveTabIdx));
+    plotPanel->setCurrentWidget(svg);
 }
 
 void PlotViewer::updateActivePlots()
 {
-    foreach(QString plotName,plotMap.values())
-        emit sendDrawCmd(plotName);
-
+//    foreach(QString plotName,plotMap.values())
+//        emit sendDrawCmd(plotName);
+    QMapIterator<QSvgWidget*, bool> plotIsActiveIt(plotIsActive);
+    while (plotIsActiveIt.hasNext()) {
+        plotIsActiveIt.next();
+        if (plotIsActiveIt.value())
+            emit sendDrawCmd(plotName[plotIsActiveIt.key()]);
+    }
 }
 
 void PlotViewer::resizeEvent(QResizeEvent*)
@@ -168,6 +181,35 @@ void PlotViewer::resizeTimeout()
    emit resized(plotPanel->size());
    if(plotPanel->currentIndex()>-1)
    {
-     emit sendDrawCmd(plotMap[plotPanel->currentIndex()]);
+     emit sendDrawCmd(plotName[static_cast<QSvgWidget*>(plotPanel->currentWidget())]);
    }
+}
+
+void PlotViewer::freeze(QSvgWidget* svg)
+{
+    if (!svg)
+        svg = static_cast<QSvgWidget*>(plotPanel->currentWidget());
+
+    plotIsActive[svg] = false;
+}
+
+void PlotViewer::snapshot()
+{
+    freeze();
+    QSvgWidget* currentSVG = static_cast<QSvgWidget*>(plotPanel->currentWidget());
+    QString currentName = plotName.value(currentSVG);
+    plotName[currentSVG] = QString("%1_SNAPSHOT").arg(currentName);
+    addPlot(currentName);
+
+}
+
+void PlotViewer::currentTabChanged(int index)
+{
+    QSvgWidget* svg = static_cast<QSvgWidget*>(plotPanel->widget(index));
+    if (plotIsActive[svg])
+        emit setPlot(plotName[svg]);
+    settingsAct->setEnabled(plotIsActive[svg]);
+    refreshAct->setEnabled(plotIsActive[svg]);
+    snapshotAct->setEnabled(plotIsActive[svg]);
+    titleLabel->setText(plotName[svg]);
 }

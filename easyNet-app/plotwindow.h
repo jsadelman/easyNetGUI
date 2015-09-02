@@ -72,6 +72,7 @@ public slots:
         void sendDrawCmd(QString plotName);
         void sendDrawCmd();
         void setPlot(QString name);
+//        void hidePlotSettings();
 
 
 
@@ -89,7 +90,7 @@ private slots:
     void selectRScript();
     void selectRecentRScript();
     void setCurrentPlotType(QString rScript);
-    void draw();
+//    void draw();
     void newAspectRatio(QSize);
 
     void buildWindow();
@@ -107,12 +108,15 @@ private:
     void importHomonyms(QDomDocument *settingsList);
 
     QScrollArea *plotControlPanelScrollArea;
-    PlotSettingsForm *plotSettingsForm;
+//    PlotSettingsForm *plotSettingsForm;
     QLabel *plotTitleLabel;
     QWidget *plotSettingsWidget;
 //    QComboBox* plotNameBox;
     QLabel* plotNameBox;
     QLabel* plotTypeBox;
+
+    QMap<QString, PlotSettingsForm*> plotForms;
+    QMap<QString, QString> plotTypes;
 
 
     QMenu *typeMenu;
@@ -142,6 +146,7 @@ private:
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QAction *refreshAct;
+    QAction *newPlotAct;
     QAction *openAct;
     QAction *saveAct;
     QAction *saveAsAct;

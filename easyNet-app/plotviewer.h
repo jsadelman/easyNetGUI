@@ -20,13 +20,15 @@ public:
     ~PlotViewer();
 
     QTabWidget*     plotPanel;
-    QSvgWidget*     svgWidget;
-    QVector <QSvgWidget*>     plots;
+//    QSvgWidget*     svgWidget;
+//    QVector <QSvgWidget*>     plots;
     QToolBar*       fileToolBar;
     QToolBar*       editToolBar;
     QToolBar*       navigationToolBar;
     QAction *       settingsAct;
     QAction *       refreshAct;
+    QAction *       snapshotAct;
+    QAction *       renameAct;
     QAction *       openAct;
     QAction *       saveAct;
     QAction *       copyAct;
@@ -35,8 +37,10 @@ public slots:
     void updateActivePlots();
 signals:
     void sendDrawCmd(QString);
-    void showPlotSettings(QString);
+    void showPlotSettings();
+    void setPlot(QString);
     void resized(QSize);
+    void hidePlotSettings();
 
 private slots:
     void loadSVGFile();
@@ -45,6 +49,9 @@ private slots:
     void copySVGToClipboard();
     void addPlot(QString name);
     void resizeTimeout();
+    void snapshot();
+    void currentTabChanged(int index);
+    void freeze(QSvgWidget *svg = nullptr);
 private:
     void createToolBars();
     void createActions();
@@ -53,9 +60,11 @@ private:
     QString         easyNetHome;
     QLabel*         titleLabel;
     QByteArray      byteArray;
-    int             currentPlotIdx;
-    int             numPlots;
-    QMap <int, QString> plotMap;
+//    int             currentPlotIdx;
+    int             progressiveTabIdx;
+    QMap <QSvgWidget*, QString> plotName;
+//    QMap <QSvgWidget*, bool> plotSettingsOn;
+    QMap <QSvgWidget*, bool> plotIsActive;
     QTimer*         resizeTimer;
 };
 

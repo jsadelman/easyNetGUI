@@ -130,6 +130,7 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
 void PlotSettingsForm::recordValueChange()
 {
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
+    qDebug() << widget->name() << "has changed value";
     hasChanged[widget->name()] = true;
 }
 
