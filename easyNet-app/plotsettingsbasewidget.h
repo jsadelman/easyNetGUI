@@ -41,7 +41,7 @@ class PlotSettingsBaseWidget : public QFrame//, PlotSettingsAbstractBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsBaseWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsBaseWidget(XMLelement settingsElement, bool useRFormat = false, QWidget *parent = 0);
     virtual ~PlotSettingsBaseWidget() {}
     virtual QString name() {return settingsElement.label();}
     virtual QString value();
@@ -83,6 +83,7 @@ protected:
     int editMode;
 
     XMLelement settingsElement;
+    bool useRFormat;
     bool valueSet;
     QString currentValue;
     QAbstractItemModel *levelsListModel;
@@ -106,7 +107,7 @@ class PlotSettingsNumericWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsNumericWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsNumericWidget(XMLelement settingsElement, bool useRFormat, QWidget *parent = 0);
     virtual ~PlotSettingsNumericWidget() {}
 
 protected:
@@ -125,7 +126,7 @@ class PlotSettingsSingleChoiceWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsSingleChoiceWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsSingleChoiceWidget(XMLelement settingsElement, bool useRFormat, QWidget *parent = 0);
     virtual ~PlotSettingsSingleChoiceWidget() {}
     virtual void updateWidget(XMLelement xml) Q_DECL_OVERRIDE;
 
@@ -146,7 +147,7 @@ class PlotSettingsMultipleChoiceWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, bool useRFormat, QWidget *parent = 0);
     virtual ~PlotSettingsMultipleChoiceWidget() {}
     virtual void updateWidget(XMLelement xml) Q_DECL_OVERRIDE;
 

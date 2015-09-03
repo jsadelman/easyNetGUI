@@ -12,27 +12,30 @@
 class QVBoxLayout;
 class PlotSettingsBaseWidget;
 
-class PlotSettingsForm : public QTabWidget //QWidget
+class PlotSettingsForm : public QTabWidget
 {
     Q_OBJECT
+    Q_PROPERTY(QString plotName READ plotName WRITE setPlotName)
 public:
-    explicit PlotSettingsForm(QDomDocument *domDoc, QString plotName,
-                              QMap<QString,QString>, QWidget *parent = 0);
+    explicit PlotSettingsForm(QDomDocument *domDoc, QWidget *parent = 0);
     ~PlotSettingsForm();
-//    QMap<QString,QString> getSettings();
+    void build();
     QStringList getSettingsCmdList();
     QString value(QString label);
     QStringList listLabels() {return rootElement.listLabels();}
-
     void setDefaultModelSetting(QString setting, QString value);
+
+    // setters and getters
+    QString plotName() {return m_plotName;}
+    void setPlotName(QString plotName) {m_plotName = plotName;}
+    QMap<QString, QString> defaultSettings() {return m_defaultSettings;}
+    void setDefaultSettings(QMap<QString, QString> defaultSettings) {m_defaultSettings = defaultSettings;}
+
+
 signals:
     void updateRequest();
 
-//public slots:
-//    void setFactorList(QStringList list);
-
 private slots:
-//    void addWidget(QWidget *widget);
     void recordValueChange();
     void checkDependencies();
     void updateDependees(QDomDocument *newDomDoc);
@@ -54,7 +57,10 @@ private:
     XMLelement rootElement;
     QSet<QString> dependersSet;
     QString dependerOnUpdate;
-    QString plotName;
+    bool useRFormat;
+
+    QString m_plotName;
+    QMap<QString, QString> m_defaultSettings;
 };
 
 #endif // PLOTSETTINGSFORM_H

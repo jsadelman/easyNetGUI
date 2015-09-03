@@ -12,15 +12,18 @@
 #include <QComboBox>
 
 
-PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName,
-                                   QMap<QString, QString> defaultSettings, QWidget *parent)
-    : domDoc(domDoc), rootElement(*domDoc), plotName(plotName), QTabWidget(parent)
+PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QWidget *parent)
+    : domDoc(domDoc), rootElement(*domDoc), useRFormat(true), QTabWidget(parent)
 {
-//    mainLayout = new QVBoxLayout;
-//    mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
-//    setTabPosition(QTabWidget::West);
-//    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+}
 
+PlotSettingsForm::~PlotSettingsForm()
+{
+    delete domDoc;
+}
+
+void PlotSettingsForm::build()
+{
     XMLelement settingsElement = rootElement.firstChild();
     while (!settingsElement.isNull())
     {
@@ -52,22 +55,13 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QString plotName,
         twidgetMap[tabname]->setLayout(layoutMap[tabname]);
         addTab(twidgetMap[tabname],tabname);
     }
-//    setLayout(mainLayout);
     initDependersSet();
-//    updateSize();
-    QMap<QString, QString>::const_iterator i = defaultSettings.constBegin();
-    qDebug() << "defaultSettings = " << defaultSettings;
-    while (i != defaultSettings.constEnd())
+    QMap<QString, QString>::const_iterator i = m_defaultSettings.constBegin();
+    while (i != m_defaultSettings.constEnd())
     {
         setDefaultModelSetting(i.key(), i.value());
         ++i;
     }
-
-}
-
-PlotSettingsForm::~PlotSettingsForm()
-{
-    delete domDoc;
 }
 
 void PlotSettingsForm::initDependersSet()
@@ -109,16 +103,16 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
     QString choice = settingsElement["choice"]();
     PlotSettingsBaseWidget *widget;
     if (type == "numeric")
-        widget = new PlotSettingsNumericWidget(settingsElement);
+        widget = new PlotSettingsNumericWidget(settingsElement, useRFormat);
 
     else if ((type == "dataframe" || type == "factor") && choice == "single")
-        widget = new PlotSettingsSingleChoiceWidget(settingsElement);
+        widget = new PlotSettingsSingleChoiceWidget(settingsElement, useRFormat);
 
     else if ((type == "dataframe" || type == "factor") && choice == "multiple")
-        widget = new PlotSettingsMultipleChoiceWidget(settingsElement);
+        widget = new PlotSettingsMultipleChoiceWidget(settingsElement, useRFormat);
 
     else
-        widget = new PlotSettingsBaseWidget(settingsElement);
+        widget = new PlotSettingsBaseWidget(settingsElement, useRFormat);
 
 
     connect(widget, SIGNAL(valueChanged()), this, SLOT(recordValueChange()));
@@ -130,7 +124,6 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(XMLelement settingsElemen
 void PlotSettingsForm::recordValueChange()
 {
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
-    qDebug() << widget->name() << "has changed value";
     hasChanged[widget->name()] = true;
 }
 
@@ -143,7 +136,7 @@ void PlotSettingsForm::checkDependencies()
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode &= ECHO_INTERPRETER; // debug purpose
         param->cmdList = getSettingsCmdList();
-        param->cmdList.append(QString("xml %1 list_settings").arg(plotName));
+        param->cmdList.append(QString("xml %1 list_settings").arg(m_plotName));
         param->answerFormatterType = AnswerFormatterType::XML;
         param->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)));
         SessionManager::instance()->setupJob(param, sender());
@@ -186,7 +179,7 @@ void PlotSettingsForm::updateSize()
 QString PlotSettingsForm::getSettingCmdLine(QString setting)
 {
     return QString("%1 %2 %3 %4")
-            .arg(plotName)
+            .arg(m_plotName)
             .arg(rootElement[setting]["type"]() == "dataframe" ? "setting_object" : "setting")
             .arg(setting)
             .arg(widgetMap[setting]->value());

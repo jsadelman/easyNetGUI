@@ -12,14 +12,13 @@
 #include <QMetaObject>
 
 
-PlotSettingsBaseWidget::PlotSettingsBaseWidget(XMLelement settingsElement, QWidget *parent)
-    : settingsElement(settingsElement), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
+PlotSettingsBaseWidget::PlotSettingsBaseWidget(XMLelement settingsElement, bool useRFormat, QWidget *parent)
+    : settingsElement(settingsElement), useRFormat(useRFormat), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
 {
     createDisplay();
     createLevelsListModel();
     editMode = RawEditMode;
 }
-
 
 
 void PlotSettingsBaseWidget::createDisplay()
@@ -301,8 +300,8 @@ void PlotSettingsBaseWidget::getLevels()
 
 
 
-PlotSettingsNumericWidget::PlotSettingsNumericWidget(XMLelement settingsElement, QWidget *parent)
-    : PlotSettingsBaseWidget(settingsElement, parent)
+PlotSettingsNumericWidget::PlotSettingsNumericWidget(XMLelement settingsElement, bool useRFormat, QWidget *parent)
+    : PlotSettingsBaseWidget(settingsElement, useRFormat, parent)
 {
     createEditWidget();
 }
@@ -364,8 +363,8 @@ void PlotSettingsNumericWidget::createEditWidget()
 
 
 
-PlotSettingsSingleChoiceWidget::PlotSettingsSingleChoiceWidget(XMLelement settingsElement, QWidget *parent)
-    : PlotSettingsBaseWidget(settingsElement, parent)
+PlotSettingsSingleChoiceWidget::PlotSettingsSingleChoiceWidget(XMLelement settingsElement, bool useRFormat, QWidget *parent)
+    : PlotSettingsBaseWidget(settingsElement, useRFormat, parent)
 {
     connect(this, SIGNAL(levelsReady()), this, SLOT(buildEditWidget()));
     createEditWidget();
@@ -438,7 +437,7 @@ QVariant PlotSettingsSingleChoiceWidget::raw2widgetValue(QString val)
     if (val.isEmpty() || val == "NULL")
         return QString();
 
-    return settingsElement["type"]() == "factor" ?
+    return (settingsElement["type"]() == "factor" && useRFormat) ?
         val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"")).simplified() : val;
 }
 
@@ -452,15 +451,15 @@ QString PlotSettingsSingleChoiceWidget::widget2rawValue(QVariant val)
         else if (settingsElement["default"]() == "NULL")
             return "NULL";
     }
-    return settingsElement["type"]() == "factor" ?
+    return (settingsElement["type"]() == "factor" && useRFormat) ?
             QString("c(\"%1\")").arg(stringVal) : stringVal;
 }
 
 //////////////////////// PlotSettingsMultipleChoiceWidget
 
 
-PlotSettingsMultipleChoiceWidget::PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, QWidget *parent)
-    : editExtraWidget(nullptr), PlotSettingsBaseWidget(settingsElement, parent)
+PlotSettingsMultipleChoiceWidget::PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, bool useRFormat, QWidget *parent)
+    : editExtraWidget(nullptr), PlotSettingsBaseWidget(settingsElement, useRFormat, parent)
 {
     connect(this, SIGNAL(levelsReady()), this, SLOT(buildEditWidget()));
     createEditWidget();
@@ -570,7 +569,7 @@ QVariant PlotSettingsMultipleChoiceWidget::raw2widgetValue(QString val)
     if (val.isEmpty() || val == "NULL")
         return QStringList();
 
-    if (settingsElement["type"]() == "factor")
+    if (settingsElement["type"]() == "factor" && useRFormat)
         return val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"")).simplified().split(QRegExp("\\s*,\\s*")); // |^\\s*NULL\\s*$
 
     return BracketedParser::parse(val);
@@ -587,7 +586,7 @@ QString PlotSettingsMultipleChoiceWidget::widget2rawValue(QVariant val)
             return "NULL";
     }
 
-    return (settingsElement["type"]() == "factor") ?
+    return (settingsElement["type"]() == "factor" && useRFormat) ?
         QString("c(%1)").arg(stringListVal.replaceInStrings(QRegExp("^|$"),"\"").join(", ")) :
         stringListVal.join(' ');
 }
