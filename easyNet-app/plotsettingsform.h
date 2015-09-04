@@ -8,6 +8,7 @@
 #include <QSet>
 #include <QTabWidget>
 #include "xmlelement.h"
+#include "xmlaccessor.h"
 
 class QVBoxLayout;
 class PlotSettingsBaseWidget;
@@ -22,7 +23,7 @@ public:
     void build();
     QStringList getSettingsCmdList();
     QString value(QString label);
-    QStringList listLabels() {return rootElement.listLabels();}
+    QStringList listLabels() {return XMLAccessor::listLabels(rootElement);}
     void setDefaultModelSetting(QString setting, QString value);
 
     // setters and getters
@@ -43,8 +44,9 @@ private slots:
 
 private:
     void initDependersSet();
-    PlotSettingsBaseWidget *createWidget(QDomElement settingsElement);
-    PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
+//    PlotSettingsBaseWidget *createWidget(QDomElement settingsElement);
+//    PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
+    PlotSettingsBaseWidget *createWidget(QDomElement &domElement);
     QString getSettingCmdLine(QString setting);
 
     QStringList tabOrder;
@@ -54,10 +56,11 @@ private:
     QMap<QString, bool> hasChanged;
     QVBoxLayout *mainLayout;
     QDomDocument *domDoc;
-    XMLelement rootElement;
+//    XMLelement rootElement;
+    QDomElement rootElement;
     QSet<QString> dependersSet;
     QString dependerOnUpdate;
-    bool useRFormat;
+    bool m_useRFormat;
 
     QString m_plotName;
     QMap<QString, QString> m_defaultSettings;

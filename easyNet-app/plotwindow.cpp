@@ -15,6 +15,7 @@
 #include "xmlelement.h"
 #include "plotviewer.h"
 #include "objectcataloguefilter.h"
+#include "xmlaccessor.h"
 
 
 
@@ -479,6 +480,8 @@ void PlotSettingsWindow::getPlotType(QObject *nextJobReceiver, const char *nextJ
 
 void PlotSettingsWindow::extractPlotType(QDomDocument *description)
 {
+//    QDomElement descriptionElement = description->documentElement();
+//    QDomElement typeElement = XMLAccessor::childElement(descriptionElement, "Type");
     currentPlotType = QFileInfo(XMLelement(*description)["Type"]()).fileName();
     plotTypeBox->setText(currentPlotType);
 }

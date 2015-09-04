@@ -104,7 +104,10 @@ SOURCES +=  \
     objectxml.cpp \
     trialxml.cpp \
     trialeditor.cpp \
-    tableviewer2.cpp
+    tableviewer2.cpp \
+ #   settingsform.cpp \
+ #   settingsformdialog.cpp
+    xmlaccessor.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -183,7 +186,10 @@ HEADERS  += \
     objectxml.h \
     trialxml.h \
     trialeditor.h \
-    tableviewer2.h
+    tableviewer2.h \
+  #  settingsform.h \
+  #  settingsformdialog.h
+    xmlaccessor.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

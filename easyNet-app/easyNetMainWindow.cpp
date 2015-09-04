@@ -1030,6 +1030,8 @@ void EasyNetMainWindow::setEasyNetHome()
         return;
     lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
     SessionManager::instance()->restartLazyNut(lazyNutBat);
+    QSettings settings("QtEasyNet", "nmConsole");
+    settings.setValue("easyNetHome", easyNetHome);
 }
 
 void EasyNetMainWindow::setSmallFont()

@@ -145,5 +145,6 @@
         <file>images/snapshot-icon.png</file>
         <file>images/rename-icon.png</file>
         <file>images/icon-record.png</file>
+        <file>images/Merge_Icon.png</file>
     </qresource>
 </RCC>
