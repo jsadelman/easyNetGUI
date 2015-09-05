@@ -107,7 +107,8 @@ SOURCES +=  \
     tableviewer2.cpp \
     settingsform.cpp \
     settingsformdialog.cpp \
-    xmlaccessor.cpp
+    xmlaccessor.cpp \
+    objectnamevalidator.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -189,7 +190,8 @@ HEADERS  += \
     tableviewer2.h \
    settingsform.h \
     settingsformdialog.h \
-    xmlaccessor.h
+    xmlaccessor.h \
+    objectnamevalidator.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
