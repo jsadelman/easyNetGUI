@@ -67,6 +67,7 @@ private slots:
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void save();
     void on_copy_DF_clicked();
+
 private:
 
     QToolBar *fileToolBar;

@@ -71,6 +71,7 @@ private slots:
     void save();
     void on_copy_DF_clicked();
     void preparePlot();
+    void mergeFD();
 private:
 
     QToolBar *fileToolBar;
@@ -80,6 +81,7 @@ private:
     QAction *saveAsAct;
     QAction *copyAct;
     QAction *copyDFAct;
+    QAction *mergeDFAct;
     QAction *findAct;
     QAction *plotAct;
 

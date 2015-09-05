@@ -18,6 +18,7 @@
 #include "sessionmanager.h"
 #include "finddialog.h"
 
+
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
 {
@@ -239,6 +240,8 @@ void TableEditor::createActions()
     connect(copyDFAct, SIGNAL(triggered()), this, SLOT(on_copy_DF_clicked()));
     copyDFAct->setEnabled(true);
 
+
+
 //    if (!isReadOnly)
 //    {
 //    pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste"), this);
@@ -434,8 +437,8 @@ void TableEditor::on_copy_DF_clicked()
 {
     QString cmd = currentTable + " copy " + "new_df";
     SessionManager::instance()->runCmd(cmd);
-
 }
+
 
 void TableEditor::dragEnterEvent(QDragEnterEvent *event)
 {
