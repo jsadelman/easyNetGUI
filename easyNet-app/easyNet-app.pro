@@ -201,8 +201,6 @@ QMAKE_CXXFLAGS += -std=c++11
 DISTFILES += \
     images/test.svg \
     images/image001.jpg \
-    documentation/easyNetDemo.qch \
-    documentation/easyNetDemo.qhc \
     images/clipboard.png \
     images/plot_settings.png \
     images/refresh.png

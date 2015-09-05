@@ -161,7 +161,7 @@ void EasyNetMainWindow::constructForms()
     trialEditor = new TrialEditor(this);
 
     infoWindow = new HelpWindow;
-    assistant = new Assistant;
+    assistant = new Assistant(easyNetHome + "/documentation/easyNetDemo.qhc");
     infoWindow->show();
 
 
