@@ -22,7 +22,7 @@ DEPENDPATH =  .. .
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = easyNet8
+TARGET = easyNet9
 TEMPLATE = app
 
 
@@ -195,8 +195,8 @@ QMAKE_CXXFLAGS += -std=c++11
 DISTFILES += \
     images/test.svg \
     images/image001.jpg \
-    documentation/easyNetHelp.qch \
-    documentation/easyNetHelp.qhc \
+    documentation/easyNetDemo.qch \
+    documentation/easyNetDemo.qhc \
     images/clipboard.png \
     images/plot_settings.png \
     images/refresh.png
