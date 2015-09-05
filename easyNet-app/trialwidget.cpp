@@ -3,6 +3,7 @@
 #include "descriptionupdater.h"
 #include "xmlelement.h"
 #include "mycombobox.h"
+#include "sessionmanager.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -269,7 +270,7 @@ void TrialWidget::showSetLabel(QString set)
     showSetComboBox();
     setComboBox->addItem(set);
     setComboBox->setCurrentIndex(setComboBox->findData(set,Qt::DisplayRole));
-
+    SessionManager::instance()->setCurrentSet(set);
 }
 
 void TrialWidget::restoreComboBoxText()

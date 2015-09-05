@@ -5,8 +5,10 @@
 #include <QLineEdit>
 #include <QDebug>
 #include <QFrame>
+#include <QDomElement>
 
 #include "xmlelement.h"
+#include "xmlaccessor.h"
 
 class QDomDocument;
 class QHBoxLayout;
@@ -41,12 +43,12 @@ class PlotSettingsBaseWidget : public QFrame//, PlotSettingsAbstractBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsBaseWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsBaseWidget(QDomElement& settingsElement, bool useRFormat = false, QWidget *parent = 0);
     virtual ~PlotSettingsBaseWidget() {}
-    virtual QString name() {return settingsElement.label();}
+    virtual QString name() {return XMLAccessor::label(settingsElement);}
     virtual QString value();
     virtual QString settingMethod();
-    virtual void updateWidget(XMLelement xml);
+    virtual void updateWidget(QDomElement& xml);
     virtual void setValue(QString val);
 
 public slots:
@@ -82,7 +84,9 @@ protected:
     enum {RawEditMode, WidgetEditMode};
     int editMode;
 
-    XMLelement settingsElement;
+    QDomElement settingsElement;
+//    XMLelement settingsElement;
+    bool useRFormat;
     bool valueSet;
     QString currentValue;
     QAbstractItemModel *levelsListModel;
@@ -106,7 +110,7 @@ class PlotSettingsNumericWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsNumericWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsNumericWidget(QDomElement& settingsElement, bool useRFormat, QWidget *parent = 0);
     virtual ~PlotSettingsNumericWidget() {}
 
 protected:
@@ -125,9 +129,9 @@ class PlotSettingsSingleChoiceWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsSingleChoiceWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsSingleChoiceWidget(QDomElement& settingsElement, bool useRFormat, QWidget *parent = 0);
     virtual ~PlotSettingsSingleChoiceWidget() {}
-    virtual void updateWidget(XMLelement xml) Q_DECL_OVERRIDE;
+    virtual void updateWidget(QDomElement &xml) Q_DECL_OVERRIDE;
 
 protected slots:
     void buildEditWidget();
@@ -146,9 +150,9 @@ class PlotSettingsMultipleChoiceWidget : public PlotSettingsBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, QWidget *parent = 0);
+    explicit PlotSettingsMultipleChoiceWidget(QDomElement& settingsElement, bool useRFormat, QWidget *parent = 0);
     virtual ~PlotSettingsMultipleChoiceWidget() {}
-    virtual void updateWidget(XMLelement xml) Q_DECL_OVERRIDE;
+    virtual void updateWidget(QDomElement &xml) Q_DECL_OVERRIDE;
 
 
 protected slots:

@@ -17,6 +17,8 @@
 #include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "finddialog.h"
+#include "settingsform.h"
+#include "settingsformdialog.h"
 
 TableViewer::TableViewer(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
@@ -123,6 +125,11 @@ void TableViewer::createActions()
     connect(copyDFAct, SIGNAL(triggered()), this, SLOT(on_copy_DF_clicked()));
     copyDFAct->setEnabled(true);
 
+    mergeDFAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
+    mergeDFAct->setStatusTip(tr("Merge two dataframes"));
+    connect(mergeDFAct, SIGNAL(triggered()), this, SLOT(mergeFD()));
+    mergeDFAct->setEnabled(true);
+
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
     findAct->setToolTip(tr("Find text in this table"));
@@ -187,6 +194,7 @@ void TableViewer::createToolBars()
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
     editToolBar->addAction(copyDFAct);
+    editToolBar->addAction(mergeDFAct);
     editToolBar->addAction(findAct);
 //    editToolBar->addAction(plotAct);
 
@@ -350,6 +358,41 @@ void TableViewer::on_copy_DF_clicked()
     QString cmd = tableMap[tablePanel->currentIndex()] + " copy " + "new_df";
     SessionManager::instance()->runCmd(cmd);
 
+}
+
+void TableViewer::mergeFD()
+{
+    // load XML
+    QDomDocument* domDoc = new QDomDocument;
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString easyNetHome = settings.value("easyNetHome","../..").toString();
+    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(easyNetHome));
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+    if (!domDoc->setContent(&file)) {
+        file.close();
+        return;
+    }
+    file.close();
+    // setup form
+    SettingsForm *form = new SettingsForm(domDoc, this);
+    form->setUseRFormat(false);
+    QMap<QString, QString> preFilledSettings;
+    preFilledSettings["x"] = tablePanel->tabText(tablePanel->currentIndex());
+    preFilledSettings["y"] = SessionManager::instance()->currentSet();
+    form->setDefaultSettings(preFilledSettings);
+    // setup dialog
+    QString info("Select two dataframes you want to merge into one. Their key columns should match.");
+    SettingsFormDialog dialog(domDoc, form, info, this);
+    qDebug() << "setDefaultModelSetting: " <<
+                tablePanel->tabText(tablePanel->currentIndex()) <<
+                SessionManager::instance()->currentSet();
+
+    connect(&dialog, &SettingsFormDialog::cmdListReady, [=](QStringList cmdList)
+    {
+        SessionManager::instance()->runCmd(cmdList);
+    });
+    dialog.exec();
 }
 
 void TableViewer::dragEnterEvent(QDragEnterEvent *event)

@@ -1,5 +1,6 @@
-#ifndef PLOTSETTINGSFORM_H
-#define PLOTSETTINGSFORM_H
+#ifndef SETTINGSFORM_H
+#define SETTINGSFORM_H
+
 
 #include <QWidget>
 #include <QList>
@@ -7,19 +8,20 @@
 #include <QMap>
 #include <QSet>
 #include <QTabWidget>
-#include "xmlelement.h"
+//#include "xmlelement.h"
 #include "xmlaccessor.h"
 
 class QVBoxLayout;
 class PlotSettingsBaseWidget;
 
-class PlotSettingsForm : public QTabWidget
+
+class SettingsForm: public QTabWidget
 {
     Q_OBJECT
-    Q_PROPERTY(QString plotName READ plotName WRITE setPlotName)
+    Q_PROPERTY(bool useRFormat READ useRFormat WRITE setUseRFormat)
 public:
-    explicit PlotSettingsForm(QDomDocument *domDoc, QWidget *parent = 0);
-    ~PlotSettingsForm();
+    explicit SettingsForm(QDomDocument *domDoc, QWidget *parent = 0);
+    ~SettingsForm();
     void build();
     QStringList getSettingsCmdList();
     QString value(QString label);
@@ -27,9 +29,9 @@ public:
     void setDefaultModelSetting(QString setting, QString value);
 
     // setters and getters
-    QString plotName() {return m_plotName;}
-    void setPlotName(QString plotName) {m_plotName = plotName;}
-    QMap<QString, QString> defaultSettings() {return m_defaultSettings;}
+    bool useRFormat() {return m_useRFormat;}
+    void setUseRFormat(bool useRFormat) {m_useRFormat = useRFormat;}
+//    QMap<QString, QString> defaultSettings() {return m_defaultSettings;}
     void setDefaultSettings(QMap<QString, QString> defaultSettings) {m_defaultSettings = defaultSettings;}
 
 
@@ -38,16 +40,17 @@ signals:
 
 private slots:
     void recordValueChange();
-    void checkDependencies();
-    void updateDependees(QDomDocument *newDomDoc);
+    virtual void checkDependencies();
+    void updateDependees(QDomDocument *newDomDoc = nullptr);
     void updateSize();
 
 private:
     void initDependersSet();
-//    PlotSettingsBaseWidget *createWidget(QDomElement settingsElement);
-//    PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
     PlotSettingsBaseWidget *createWidget(QDomElement &domElement);
-    QString getSettingCmdLine(QString setting);
+//    PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
+
+    virtual QString getSettingCmdLine(QString setting);
+    void substituteDependentValues(QDomElement& settingsElement);
 
     QStringList tabOrder;
     QMap<QString, QVBoxLayout*> layoutMap;
@@ -56,14 +59,12 @@ private:
     QMap<QString, bool> hasChanged;
     QVBoxLayout *mainLayout;
     QDomDocument *domDoc;
-//    XMLelement rootElement;
     QDomElement rootElement;
     QSet<QString> dependersSet;
     QString dependerOnUpdate;
     bool m_useRFormat;
 
-    QString m_plotName;
     QMap<QString, QString> m_defaultSettings;
 };
 
-#endif // PLOTSETTINGSFORM_H
+#endif // SETTINGSFORM_H

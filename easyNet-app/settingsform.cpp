@@ -1,8 +1,7 @@
-#include "plotsettingsform.h"
+#include "settingsform.h"
 #include "plotsettingsbasewidget.h"
 #include "lazynutjobparam.h"
 #include "sessionmanager.h"
-#include "xmlaccessor.h"
 
 #include <QDomDocument>
 #include <QVBoxLayout>
@@ -12,21 +11,22 @@
 #include <QVBoxLayout>
 #include <QComboBox>
 
-
-PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QWidget *parent)
-    : domDoc(domDoc), m_useRFormat(true), QTabWidget(parent)
+SettingsForm::SettingsForm(QDomDocument *domDoc, QWidget *parent)
+   : domDoc(domDoc), QTabWidget(parent)
 {
     rootElement = domDoc->documentElement();
+//    m_defaultSettings.clear();
 }
 
-PlotSettingsForm::~PlotSettingsForm()
+SettingsForm::~SettingsForm()
 {
     delete domDoc;
 }
 
-void PlotSettingsForm::build()
+
+void SettingsForm::build()
 {
-    QDomElement domElement = domDoc->documentElement().firstChildElement();
+    QDomElement domElement = rootElement.firstChildElement();
 //    XMLelement settingsElement = rootElement.firstChild();
     while (!domElement.isNull())
     {
@@ -68,10 +68,9 @@ void PlotSettingsForm::build()
     }
 }
 
-void PlotSettingsForm::initDependersSet()
+void SettingsForm::initDependersSet()
 {
     QDomElement settingsElement = rootElement.firstChildElement();
-
     while (!settingsElement.isNull())
     {
         QDomElement dependenciesElement = XMLAccessor::childElement(settingsElement, "dependencies");
@@ -84,7 +83,7 @@ void PlotSettingsForm::initDependersSet()
 
 
 
-QStringList PlotSettingsForm::getSettingsCmdList()
+QStringList SettingsForm::getSettingsCmdList()
 {
     QStringList cmdList;
     foreach (QString setting, XMLAccessor::listLabels(rootElement))
@@ -96,14 +95,15 @@ QStringList PlotSettingsForm::getSettingsCmdList()
     return cmdList;
 }
 
-QString PlotSettingsForm::value(QString label)
+QString SettingsForm::value(QString label)
 {
     return widgetMap[label]->value();
 }
 
 
-PlotSettingsBaseWidget *PlotSettingsForm::createWidget(QDomElement& domElement)
+PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement &domElement)
 {
+    // TODO: implement this with a factory
     QDomElement typeElement = XMLAccessor::childElement(domElement, "type");
     QDomElement choiceElement = XMLAccessor::childElement(domElement, "choice");
     QString type = XMLAccessor::value(typeElement);
@@ -128,47 +128,49 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(QDomElement& domElement)
     return widget;
 }
 
-void PlotSettingsForm::recordValueChange()
+void SettingsForm::recordValueChange()
 {
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
     hasChanged[widget->name()] = true;
 }
 
-void PlotSettingsForm::checkDependencies()
+void SettingsForm::checkDependencies()
 {
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
     if (widget && dependersSet.contains(widget->name()))
     {
         dependerOnUpdate = widget->name();
-        LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode &= ECHO_INTERPRETER; // debug purpose
-        param->cmdList = getSettingsCmdList();
-        param->cmdList.append(QString("xml %1 list_settings").arg(m_plotName));
-        param->answerFormatterType = AnswerFormatterType::XML;
-        param->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)));
-        SessionManager::instance()->setupJob(param, sender());
+        updateDependees();
     }
 }
 
-void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
+void SettingsForm::updateDependees(QDomDocument* newDomDoc)
 {
-    delete domDoc;
-    domDoc = newDomDoc;
-    rootElement = domDoc->documentElement();
+    if (newDomDoc)
+    {
+        delete domDoc;
+        domDoc = newDomDoc;
+        rootElement = domDoc->documentElement();
+    }
     if (dependerOnUpdate.isEmpty())
         return; // just safety
+//    XMLelement settingsElement = rootElement.firstChild();
     QDomElement settingsElement = rootElement.firstChildElement();
     while (!settingsElement.isNull())
     {
         QDomElement dependenciesElement = XMLAccessor::childElement(settingsElement, "dependencies");
         if ((XMLAccessor::listValues(dependenciesElement)).contains(dependerOnUpdate))
-            widgetMap[XMLAccessor::label(settingsElement)]->updateWidget(settingsElement);
+        {
+            if (!newDomDoc)
+                substituteDependentValues(settingsElement);
 
+            widgetMap[XMLAccessor::label(settingsElement)]->updateWidget(settingsElement);
+        }
         settingsElement = settingsElement.nextSiblingElement();
     }
 }
 
-void PlotSettingsForm::updateSize()
+void SettingsForm::updateSize()
 {
     // http://doc.qt.digia.com/qq/qq06-qwidgetstack.html
     for (int i = 0; i < count(); ++i)
@@ -184,18 +186,40 @@ void PlotSettingsForm::updateSize()
 
 
 
-QString PlotSettingsForm::getSettingCmdLine(QString setting)
+QString SettingsForm::getSettingCmdLine(QString setting)
 {
-    QDomElement settingsElement = XMLAccessor::childElement(rootElement, setting);
-    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
-    return QString("%1 %2 %3 %4")
-            .arg(m_plotName)
-            .arg(XMLAccessor::value(typeElement) == "dataframe" ? "setting_object" : "setting")
+    // base implementation returns "setting value"
+    return QString("%1 %2")
             .arg(setting)
             .arg(widgetMap[setting]->value());
 }
 
-void PlotSettingsForm::setDefaultModelSetting(QString setting, QString value)
+void SettingsForm::substituteDependentValues(QDomElement &settingsElement)
+{
+    if (dependerOnUpdate.isEmpty())
+        return; // just safety
+    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
+    if (levelsElement.tagName() != "command")
+        return;
+//    XMLelement cmd = settingsElement["levels"];
+    QDomElement dependerOnUpdateElement = XMLAccessor::childElement(rootElement, dependerOnUpdate);
+    QDomElement valueDependerOnUpdateElement = XMLAccessor::childElement(dependerOnUpdateElement, "value");
+
+    QString value = XMLAccessor::value(valueDependerOnUpdateElement);
+    QDomElement cmdToken = levelsElement.firstChildElement();
+    while (!cmdToken.isNull())
+    {
+        if (XMLAccessor::label(cmdToken) == QString("$%1").arg(dependerOnUpdate))
+        {
+            XMLAccessor::setValue(cmdToken, value);
+            qDebug() << XMLAccessor::value(cmdToken);
+        }
+
+        cmdToken = cmdToken.nextSiblingElement();
+    }
+}
+
+void SettingsForm::setDefaultModelSetting(QString setting, QString value)
 {
     widgetMap[setting]->setValue(value);
     widgetMap[setting]->setValueSetTrue();

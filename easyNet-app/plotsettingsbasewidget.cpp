@@ -9,11 +9,12 @@
 #include "selectfromlistmodel.h"
 #include "objectcataloguefilter.h"
 #include "proxymodelextrarows.h"
+#include "xmlaccessor.h"
 #include <QMetaObject>
 
 
-PlotSettingsBaseWidget::PlotSettingsBaseWidget(XMLelement settingsElement, QWidget *parent)
-    : settingsElement(settingsElement), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
+PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, bool useRFormat, QWidget *parent)
+    : settingsElement(settingsElement), useRFormat(useRFormat), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
 {
     createDisplay();
     createLevelsListModel();
@@ -21,13 +22,12 @@ PlotSettingsBaseWidget::PlotSettingsBaseWidget(XMLelement settingsElement, QWidg
 }
 
 
-
 void PlotSettingsBaseWidget::createDisplay()
 {
     gridLayout = new QGridLayout;
     nameLabel = new QLabel;
 //    QString labelText = settingsElement["pretty name"]().isEmpty() ? name() : settingsElement["pretty name"]();
-    QString labelText = settingsElement.label();
+    QString labelText = XMLAccessor::label(settingsElement);
     if (!hasDefault())
         labelText.append("*");
 
@@ -39,18 +39,22 @@ void PlotSettingsBaseWidget::createDisplay()
     if (!hasDefault())
         rawEdit->setPlaceholderText("*mandatory field*");
 
-    if (settingsElement["value"]().isEmpty())
+    QDomElement settingsValue = XMLAccessor::childElement(settingsElement, "value");
+    QDomElement settingsDefault = XMLAccessor::childElement(settingsElement, "default");
+    QDomElement settingsComment = XMLAccessor::childElement(settingsElement, "comment");
+
+    if (XMLAccessor::value(settingsValue).isEmpty())
     {
         if (hasDefault())
-            rawEdit->setText(settingsElement["default"]());
+            rawEdit->setText(XMLAccessor::value(settingsDefault));
     }
      else
-        rawEdit->setText(settingsElement["value"]());
+        rawEdit->setText(XMLAccessor::value(settingsValue));
 
 
     connect(rawEdit, SIGNAL(textChanged(QString)), this, SLOT(emitValueChanged()));
     commentLabel = new QLabel;
-    commentLabel->setText(settingsElement["comment"]());
+    commentLabel->setText(XMLAccessor::value(settingsComment));
     commentLabel->setWordWrap(true);
     commentLabel->setStyleSheet("QLabel {"
                                 "background-color: lightyellow;"
@@ -67,7 +71,7 @@ void PlotSettingsBaseWidget::createDisplay()
     if (hasDefault())
     {
         defaultButton = new QPushButton("Default");
-        defaultButton->setToolTip(QString("Reset default value: %1").arg(settingsElement["default"]()));
+        defaultButton->setToolTip(QString("Reset default value: %1").arg(XMLAccessor::value(settingsDefault)));
     }
     else
     {
@@ -90,10 +94,10 @@ void PlotSettingsBaseWidget::createDisplay()
     setLayout(vboxLayout);
 
     valueSet =  hasDefault() ?
-                settingsElement["value"]() != settingsElement["default"]() :
-                !settingsElement["value"]().isEmpty();
+                XMLAccessor::value(settingsValue) != XMLAccessor::value(settingsDefault) :
+                !(XMLAccessor::value(settingsValue)).isEmpty();
 
-    currentValue = settingsElement["value"]();
+    currentValue = XMLAccessor::value(settingsValue);
 
 
     // set max size to fit text
@@ -116,25 +120,25 @@ void PlotSettingsBaseWidget::createLevelsListModel()
     delete levelsListModel;
     levelsListModel = nullptr;
 
-    XMLelement levelsElement = settingsElement["levels"];
+    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
     if (levelsElement.isNull())
         return;
-    else if (levelsElement.isParameter())
+    else if (levelsElement.tagName() == "parameter")
     {
         levelsListModel = new ObjectCatalogueFilter(this);
-        static_cast<ObjectCatalogueFilter*>(levelsListModel)->setType(levelsElement.type());
+        static_cast<ObjectCatalogueFilter*>(levelsListModel)->setType(XMLAccessor::type(levelsElement));
 
     }
-    else if (levelsElement.isCommand())
+    else if (levelsElement.tagName() == "command")
     {
         levelsListModel = new StringListModel(QStringList(), this);
         levelsCmdObjectWatcher = new ObjectCatalogueFilter(this);
         QStringList objectsInCmd;
-        XMLelement cmdElement = levelsElement.firstChild("object");
+        QDomElement cmdElement = levelsElement.firstChildElement("object");
         while (!cmdElement.isNull())
         {
-            objectsInCmd.append(cmdElement());
-            cmdElement = cmdElement.nextSibling("object");
+            objectsInCmd.append(XMLAccessor::value(cmdElement));
+            cmdElement = cmdElement.nextSiblingElement("object");
         }
         levelsCmdObjectWatcher->setNameList(objectsInCmd);
         connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
@@ -163,6 +167,14 @@ QString PlotSettingsBaseWidget::getValue()
 
 void PlotSettingsBaseWidget::setValue(QString val)
 {
+    //settingsElement["value"].setValue(val);
+    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+    qDebug() << "setValue element is null" <<  valueElement.isNull();
+    XMLAccessor::setValue(valueElement, val);
+
+
+    qDebug() << "setValue:" << val << "check" << XMLAccessor::value(valueElement);
+
     switch(editMode)
     {
     case RawEditMode:
@@ -182,7 +194,7 @@ bool PlotSettingsBaseWidget::isValueSet()
 
 bool PlotSettingsBaseWidget::hasDefault()
 {
-    return settingsElement.listLabels().contains("default");
+    return (XMLAccessor::listLabels(settingsElement)).contains("default");
 }
 
 
@@ -196,20 +208,23 @@ QString PlotSettingsBaseWidget::value()
 
 QString PlotSettingsBaseWidget::settingMethod()
 {
-    return settingsElement["default"]() == "dataframe" ? "setting_object" : "setting";
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    return XMLAccessor::value(typeElement) == "dataframe" ? "setting_object" : "setting";
 }
 
-void PlotSettingsBaseWidget::updateWidget(XMLelement xml)
+void PlotSettingsBaseWidget::updateWidget(QDomElement &xml)
 {
     settingsElement = xml;
-    if (!levelsListModel || settingsElement["levels"].isNull())
+    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
+    if (!levelsListModel || levelsElement.isNull())
         createLevelsListModel();
 }
 
 
 void PlotSettingsBaseWidget::resetDefault()
 {
-    QString defaultValue = hasDefault() ? settingsElement["default"]() : QString();
+    QDomElement defaultElement = XMLAccessor::childElement(settingsElement, "default");
+    QString defaultValue = hasDefault() ? XMLAccessor::value(defaultElement) : QString();
     if (valueSet)
     {
         setValue(defaultValue);
@@ -279,6 +294,10 @@ void PlotSettingsBaseWidget::emitValueChanged()
     {
         currentValue = getValue();
         valueSet = true;
+        // write on XML
+        QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+        XMLAccessor::setValue(valueElement, currentValue);
+
         emit valueChanged();
         qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
 
@@ -287,8 +306,19 @@ void PlotSettingsBaseWidget::emitValueChanged()
 
 void PlotSettingsBaseWidget::getLevels()
 {
+    // check that all object fields in the levels command have been filled
+    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
+    QDomElement cmdToken = levelsElement.firstChildElement("object");
+    while (!cmdToken.isNull())
+    {
+        if ((XMLAccessor::value(cmdToken)).isEmpty())
+            return;
+
+        cmdToken = cmdToken.nextSiblingElement("object");
+    }
+    // get the levels
     LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = QStringList({settingsElement["levels"]().prepend("xml ")});
+    param->cmdList = QStringList({(XMLAccessor::command(levelsElement)).prepend("xml ")});
     param->logMode &= ECHO_INTERPRETER; // debug purpose
     param->answerFormatterType = AnswerFormatterType::ListOfValues;
     param->setAnswerReceiver(qobject_cast<StringListModel*>(levelsListModel), SLOT(updateList(QStringList)));
@@ -301,15 +331,16 @@ void PlotSettingsBaseWidget::getLevels()
 
 
 
-PlotSettingsNumericWidget::PlotSettingsNumericWidget(XMLelement settingsElement, QWidget *parent)
-    : PlotSettingsBaseWidget(settingsElement, parent)
+PlotSettingsNumericWidget::PlotSettingsNumericWidget(QDomElement &domElement, bool useRFormat, QWidget *parent)
+    : PlotSettingsBaseWidget(domElement, useRFormat, parent)
 {
     createEditWidget();
 }
 
 void PlotSettingsNumericWidget::setWidgetValue(QVariant val)
 {
-    if (settingsElement["value"].isReal())
+    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+    if (valueElement.tagName() == "real")
         static_cast<QDoubleSpinBox*>(editDisplayWidget)->setValue(val.toDouble());
     else
         static_cast<QSpinBox*>(editDisplayWidget)->setValue(val.toInt());
@@ -318,7 +349,8 @@ void PlotSettingsNumericWidget::setWidgetValue(QVariant val)
 
 QVariant PlotSettingsNumericWidget::getWidgetValue()
 {
-    if (settingsElement["value"].isReal())
+    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+    if (valueElement.tagName() == "real")
         return QString::number(static_cast<QDoubleSpinBox*>(editDisplayWidget)->value());
     else
         return QString::number(static_cast<QSpinBox*>(editDisplayWidget)->value());
@@ -336,22 +368,23 @@ QString PlotSettingsNumericWidget::widget2rawValue(QVariant val)
 
 void PlotSettingsNumericWidget::createEditWidget()
 {
-    if (settingsElement["value"].isReal())
+    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+    if (valueElement.tagName() == "real")
     {
         editDisplayWidget = new QDoubleSpinBox;
-        setWidgetValue(settingsElement["value"]());
+        setWidgetValue(XMLAccessor::value(valueElement));
         connect(static_cast<QDoubleSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(double)),
                 this, SLOT(emitValueChanged()));
     }
     else
     {
         editDisplayWidget = new QSpinBox;
-        setWidgetValue(settingsElement["value"]());
+        setWidgetValue(XMLAccessor::value(valueElement));
         connect(static_cast<QSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(int)),
                 this, SLOT(emitValueChanged()));
     }
-    currentValue = settingsElement["value"]();
-    valueSet = !settingsElement["value"]().isEmpty();
+    currentValue = XMLAccessor::value(valueElement);
+    valueSet = !currentValue.isEmpty();
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);
     rawEditModeButton->setChecked(false);
@@ -364,14 +397,14 @@ void PlotSettingsNumericWidget::createEditWidget()
 
 
 
-PlotSettingsSingleChoiceWidget::PlotSettingsSingleChoiceWidget(XMLelement settingsElement, QWidget *parent)
-    : PlotSettingsBaseWidget(settingsElement, parent)
+PlotSettingsSingleChoiceWidget::PlotSettingsSingleChoiceWidget(QDomElement &domElement, bool useRFormat, QWidget *parent)
+    : PlotSettingsBaseWidget(domElement, useRFormat, parent)
 {
     connect(this, SIGNAL(levelsReady()), this, SLOT(buildEditWidget()));
     createEditWidget();
 }
 
-void PlotSettingsSingleChoiceWidget::updateWidget(XMLelement xml)
+void PlotSettingsSingleChoiceWidget::updateWidget(QDomElement& xml)
 {
     PlotSettingsBaseWidget::updateWidget(xml);
 
@@ -381,11 +414,11 @@ void PlotSettingsSingleChoiceWidget::updateWidget(XMLelement xml)
 
 void PlotSettingsSingleChoiceWidget::createEditWidget()
 {
-    XMLelement levelsElement = settingsElement["levels"];
+    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
 
-    if (levelsElement.isParameter())
+    if (levelsElement.tagName() == "parameter")
         buildEditWidget();
-    else if (levelsElement.isCommand())
+    else if (levelsElement.tagName() == "command")
         getLevels();
     else
     {
@@ -404,18 +437,24 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
 
     editDisplayWidget = new QComboBox;
     static_cast<QComboBox*>(editDisplayWidget)->setModel(levelsListModel);
-    setWidgetValue(raw2widgetValue(settingsElement["value"]()));
-    currentValue = settingsElement["value"]();
-    valueSet = !settingsElement["value"]().isEmpty();
+
+    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+    currentValue = XMLAccessor::value(valueElement);
+    setWidgetValue(raw2widgetValue(currentValue));
+    valueSet = !currentValue.isEmpty();
     connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
             this, SLOT(emitValueChanged()));
 //    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentTextChanged(QString)),
 //            this, SLOT(emitValueChanged()));
+    connect(static_cast<QComboBox*>(editDisplayWidget),  static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            [=](int index){
+        qDebug() << "PlotSettingsSingleChoiceWidget index changed" << index;
+    });
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);
     rawEditModeButton->setChecked(false);
     setRawEditModeOff();
-    valueSet = !settingsElement["value"]().isEmpty();
+    valueSet = !currentValue.isEmpty();
     currentValue = value();
 }
 
@@ -437,36 +476,38 @@ QVariant PlotSettingsSingleChoiceWidget::raw2widgetValue(QString val)
 {
     if (val.isEmpty() || val == "NULL")
         return QString();
-
-    return settingsElement["type"]() == "factor" ?
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    return ((XMLAccessor::value(typeElement)) == "factor" && useRFormat) ?
         val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"")).simplified() : val;
 }
 
 QString PlotSettingsSingleChoiceWidget::widget2rawValue(QVariant val)
 {
+    QDomElement defaultElement = XMLAccessor::childElement(settingsElement, "default");
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
     QString stringVal = val.toString();
     if (stringVal.isEmpty())
     {
         if (!hasDefault())
             return QString();
-        else if (settingsElement["default"]() == "NULL")
+        else if ((XMLAccessor::value(defaultElement)) == "NULL")
             return "NULL";
     }
-    return settingsElement["type"]() == "factor" ?
+    return ((XMLAccessor::value(typeElement)) == "factor" && useRFormat) ?
             QString("c(\"%1\")").arg(stringVal) : stringVal;
 }
 
 //////////////////////// PlotSettingsMultipleChoiceWidget
 
 
-PlotSettingsMultipleChoiceWidget::PlotSettingsMultipleChoiceWidget(XMLelement settingsElement, QWidget *parent)
-    : editExtraWidget(nullptr), PlotSettingsBaseWidget(settingsElement, parent)
+PlotSettingsMultipleChoiceWidget::PlotSettingsMultipleChoiceWidget(QDomElement& domElement, bool useRFormat, QWidget *parent)
+    : editExtraWidget(nullptr), PlotSettingsBaseWidget(domElement, useRFormat, parent)
 {
     connect(this, SIGNAL(levelsReady()), this, SLOT(buildEditWidget()));
     createEditWidget();
 }
 
-void PlotSettingsMultipleChoiceWidget::updateWidget(XMLelement xml)
+void PlotSettingsMultipleChoiceWidget::updateWidget(QDomElement& xml)
 {
     PlotSettingsBaseWidget::updateWidget(xml);
 
@@ -476,11 +517,11 @@ void PlotSettingsMultipleChoiceWidget::updateWidget(XMLelement xml)
 
 void PlotSettingsMultipleChoiceWidget::createEditWidget()
 {
-    XMLelement levelsElement = settingsElement["levels"];
+    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
 
-    if (levelsElement.isParameter())
+    if (levelsElement.tagName() == "parameter")
         buildEditWidget();
-    else if (levelsElement.isCommand())
+    else if (levelsElement.tagName() == "command")
         getLevels();
     else
     {
@@ -504,10 +545,12 @@ void PlotSettingsMultipleChoiceWidget::buildEditWidget()
 
     vboxLayout->addWidget(editExtraWidget);
 
-    setWidgetValue(raw2widgetValue(settingsElement["value"]()));
+    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+    currentValue = XMLAccessor::value(valueElement);
+    setWidgetValue(raw2widgetValue(currentValue));
     updateEditDisplayWidget();
-    currentValue = settingsElement["value"]();
-    valueSet = !settingsElement["value"]().isEmpty();
+
+    valueSet = !currentValue.isEmpty();
 
     connect(static_cast<PairedListWidget*>(editExtraWidget),SIGNAL(valueChanged()),
             this, SLOT(emitValueChanged()));
@@ -537,7 +580,8 @@ void PlotSettingsMultipleChoiceWidget::setRawEditModeOff()
 
 void PlotSettingsMultipleChoiceWidget::updateEditDisplayWidget()
 {
-    QString displayValue = settingsElement["type"]() == "factor" ?
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    QString displayValue = (XMLAccessor::value(typeElement)) == "factor" ?
                 getWidgetValue().toStringList().replaceInStrings(QRegExp("^|$"),"\"").join(", ") :
                 getWidgetValue().toStringList().join(" ");
     static_cast<QLineEdit*>(editDisplayWidget)->setText(displayValue);
@@ -570,7 +614,8 @@ QVariant PlotSettingsMultipleChoiceWidget::raw2widgetValue(QString val)
     if (val.isEmpty() || val == "NULL")
         return QStringList();
 
-    if (settingsElement["type"]() == "factor")
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    if ((XMLAccessor::value(typeElement)) == "factor" && useRFormat)
         return val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"")).simplified().split(QRegExp("\\s*,\\s*")); // |^\\s*NULL\\s*$
 
     return BracketedParser::parse(val);
@@ -578,16 +623,18 @@ QVariant PlotSettingsMultipleChoiceWidget::raw2widgetValue(QString val)
 
 QString PlotSettingsMultipleChoiceWidget::widget2rawValue(QVariant val)
 {
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    QDomElement defaultElement = XMLAccessor::childElement(settingsElement, "default");
     QStringList stringListVal = val.toStringList();
     if (stringListVal.isEmpty())
     {
         if (!hasDefault())
             return QString();
-        else if (settingsElement["default"]() == "NULL")
+        else if (XMLAccessor::value(defaultElement) == "NULL")
             return "NULL";
     }
 
-    return (settingsElement["type"]() == "factor") ?
+    return ((XMLAccessor::value(typeElement)) == "factor" && useRFormat) ?
         QString("c(%1)").arg(stringListVal.replaceInStrings(QRegExp("^|$"),"\"").join(", ")) :
         stringListVal.join(' ');
 }

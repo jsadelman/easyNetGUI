@@ -15,6 +15,7 @@
 #include "xmlelement.h"
 #include "plotviewer.h"
 #include "objectcataloguefilter.h"
+#include "xmlaccessor.h"
 
 
 
@@ -326,8 +327,11 @@ void PlotSettingsWindow::getSettingsXML()
 
 void PlotSettingsWindow::buildSettingsForm(QDomDocument *settingsList)
 {
+    PlotSettingsForm *plotSettingsForm = new PlotSettingsForm(settingsList, this);
+    plotSettingsForm->setPlotName(currentPlot);
+    plotSettingsForm->setDefaultSettings(defaultSettings);
+    plotSettingsForm->build();
 
-    PlotSettingsForm *plotSettingsForm = new PlotSettingsForm(settingsList, currentPlot, defaultSettings, this);
     defaultSettings.clear();
     plotForms[currentPlot] = plotSettingsForm;
 
@@ -479,6 +483,8 @@ void PlotSettingsWindow::getPlotType(QObject *nextJobReceiver, const char *nextJ
 
 void PlotSettingsWindow::extractPlotType(QDomDocument *description)
 {
+//    QDomElement descriptionElement = description->documentElement();
+//    QDomElement typeElement = XMLAccessor::childElement(descriptionElement, "Type");
     currentPlotType = QFileInfo(XMLelement(*description)["Type"]()).fileName();
     plotTypeBox->setText(currentPlotType);
 }
