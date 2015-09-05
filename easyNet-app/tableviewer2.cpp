@@ -102,6 +102,12 @@ void TableViewer::setTableText(QString text)
 
 void TableViewer::createActions()
 {
+    refreshAct = new QAction(QIcon(":/images/refresh.png"), tr("&Refresh"), this);
+    refreshAct->setShortcut(QKeySequence::Refresh);
+    refreshAct->setStatusTip(tr("Refresh table"));
+    connect(refreshAct, SIGNAL(triggered()), this, SLOT(refresh()));
+
+
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
@@ -149,9 +155,11 @@ void TableViewer::createActions()
     connect(barchartAct, SIGNAL(triggered()), this, SLOT(preparePlot()));
 
     plotAct->setMenu(menu);
+}
 
-
-
+void TableViewer::refresh()
+{
+    updateTableView(tableMap[tablePanel->currentIndex()]);
 
 }
 
@@ -192,6 +200,7 @@ void TableViewer::createToolBars()
     fileToolBar->addAction(saveAct);
 
     editToolBar = addToolBar(tr("Edit"));
+    editToolBar->addAction(refreshAct);
     editToolBar->addAction(copyAct);
     editToolBar->addAction(copyDFAct);
     editToolBar->addAction(mergeDFAct);
@@ -492,8 +501,9 @@ void TableViewer::updateTableView(QString text)
         return;
     if (text=="Untitled")
         return;
-    if (text==tableMap[tablePanel->currentIndex()])
-        return;
+
+//    if (text==tableMap[tablePanel->currentIndex()])
+//        return;
 
     currentTable = text;
     LazyNutJobParam *param = new LazyNutJobParam;

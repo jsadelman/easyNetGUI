@@ -68,6 +68,7 @@ private slots:
     void save();
     void on_copy_DF_clicked();
 
+    void refresh();
 private:
 
     QToolBar *fileToolBar;
@@ -78,6 +79,7 @@ private:
     QAction *copyAct;
     QAction *copyDFAct;
     QAction *findAct;
+    QAction *refreshAct;
 
     ObjectCatalogue  *objectCatalogue;
     ObjectCatalogueFilter *objectListFilter;

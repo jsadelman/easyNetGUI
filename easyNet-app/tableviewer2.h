@@ -72,6 +72,7 @@ private slots:
     void on_copy_DF_clicked();
     void preparePlot();
     void mergeFD();
+    void refresh();
 private:
 
     QToolBar *fileToolBar;
@@ -84,6 +85,7 @@ private:
     QAction *mergeDFAct;
     QAction *findAct;
     QAction *plotAct;
+    QAction *refreshAct;
 
     QPushButton *submitButton;
     QPushButton *revertButton;

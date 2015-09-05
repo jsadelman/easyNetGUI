@@ -198,6 +198,11 @@ void TableEditor::setFilter(QString type)
 
 void TableEditor::createActions()
 {
+    refreshAct = new QAction(QIcon(":/images/refresh.png"), tr("&Refresh"), this);
+    refreshAct->setShortcut(QKeySequence::Refresh);
+    refreshAct->setStatusTip(tr("Refresh table"));
+    connect(refreshAct, SIGNAL(triggered()), this, SLOT(refresh()));
+
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
@@ -260,6 +265,12 @@ void TableEditor::createActions()
 
 }
 
+void TableEditor::refresh()
+{
+    updateTableView(tableBox->currentText());
+
+}
+
 void TableEditor::save()
 {
     QSettings settings("QtEasyNet", "nmConsole");
@@ -286,6 +297,8 @@ void TableEditor::createToolBars()
 //    fileToolBar->addAction(saveAsAct);
 
     editToolBar = addToolBar(tr("Edit"));
+    editToolBar->addAction(refreshAct);
+
 //    if (!isReadOnly)
 //        editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
@@ -537,8 +550,8 @@ void TableEditor::updateTableView(QString text)
         return;
     if (text=="Untitled")
         return;
-    if (text==currentTable)
-        return;
+//    if (text==currentTable)
+//        return;
 
     currentTable = text;
     LazyNutJobParam *param = new LazyNutJobParam;
