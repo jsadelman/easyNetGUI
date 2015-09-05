@@ -254,6 +254,7 @@ private:
     QComboBox       *trialComboBox;
     TrialWidget     *trialWidget;
     TrialEditor     *trialEditor;
+    QPushButton     * trialButton;
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;
@@ -271,6 +272,7 @@ private:
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
     int             dfTabIdx;
+    int             explorerTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QList<QToolButton*> viewModeButtons;

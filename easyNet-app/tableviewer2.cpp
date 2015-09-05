@@ -129,6 +129,35 @@ void TableViewer::createActions()
     connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
     findAct->setEnabled(true);
 
+    plotAct = new QAction(QIcon(":/images/barchart2.png"), tr("&Plot"), this);
+    plotAct->setToolTip(tr("Create a plot based on these data"));
+//    connect(plotAct, SIGNAL(triggered()), this, SLOT(preparePlot()));
+    plotAct->setEnabled(true);
+
+    QMenu *menu = new QMenu();
+    QAction *barchartAct = new QAction("barchart", this);
+    QAction *activityAct = new QAction("activity", this);
+    menu->addAction(barchartAct);
+    menu->addAction(activityAct);
+    connect(barchartAct, SIGNAL(triggered()), this, SLOT(preparePlot()));
+
+    plotAct->setMenu(menu);
+
+
+
+
+}
+
+void TableViewer::preparePlot()
+{
+    if (tableMap[tablePanel->currentIndex()].isEmpty())
+        return;
+    QMap<QString,QString> settings;
+    settings["df"]=tableMap[tablePanel->currentIndex()];
+    QString plotName = tableMap[tablePanel->currentIndex()].append(".plot");
+    QString plotType = "plot_mean_bars.R"; // testing!!!
+    emit createNewPlotOfType(plotName, plotType, settings);
+    emit showPlotSettings();
 }
 
 void TableViewer::save()
@@ -143,7 +172,7 @@ void TableViewer::save()
     if (fileName.isEmpty())
         return;
 
-    QString cmd = currentTable + " save_csv " + fileName;
+    QString cmd = tableMap[tablePanel->currentIndex()] + " save_csv " + fileName;
     SessionManager::instance()->runCmd(cmd);
 
 }
@@ -159,9 +188,23 @@ void TableViewer::createToolBars()
     editToolBar->addAction(copyAct);
     editToolBar->addAction(copyDFAct);
     editToolBar->addAction(findAct);
+//    editToolBar->addAction(plotAct);
 
     fileToolBar->setMovable(false);
     editToolBar->setMovable(false);
+
+//    QMenu *menu = new QMenu();
+////    QAction *testAction = new QAction("barchart", this);
+//    menu->addAction(plotAct);
+
+//    QToolButton* plotButton = new QToolButton(this);
+//    plotButton->setIcon(QIcon(":/images/barchart2.png"));
+//    plotButton->setToolTip(tr("Create a plot based on these data"));
+//    plotButton->setMenu(menu);
+//    plotButton->setPopupMode(QToolButton::InstantPopup);
+//    editToolBar->addWidget(plotButton);
+
+    editToolBar->addAction(plotAct);
 }
 
 void TableViewer::setView(QString name)
@@ -246,6 +289,13 @@ void TableViewer::resizeColumns()
 
 void TableViewer::on_copy_clicked()
 {
+    // a different approach -- get R to copy the df to the clipboard
+
+    QString cmd = "R << write.table(eN[\"THEDATAFRAME\"], \"clipboard\", sep=\"\t\", row.names=FALSE)";
+    cmd.replace("THEDATAFRAME",tableMap[tablePanel->currentIndex()]);
+    SessionManager::instance()->runCmd(cmd);
+    return;
+
     QAbstractItemModel *abmodel = tables[tablePanel->currentIndex()]->model();
     QItemSelectionModel *model = tables[tablePanel->currentIndex()]->selectionModel();
     QModelIndexList list = model->selectedIndexes();
@@ -297,7 +347,7 @@ void TableViewer::on_copy_clicked()
 
 void TableViewer::on_copy_DF_clicked()
 {
-    QString cmd = currentTable + " copy " + "new_df";
+    QString cmd = tableMap[tablePanel->currentIndex()] + " copy " + "new_df";
     SessionManager::instance()->runCmd(cmd);
 
 }
@@ -399,7 +449,7 @@ void TableViewer::updateTableView(QString text)
         return;
     if (text=="Untitled")
         return;
-    if (text==currentTable)
+    if (text==tableMap[tablePanel->currentIndex()])
         return;
 
     currentTable = text;

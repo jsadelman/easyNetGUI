@@ -183,7 +183,7 @@ void EasyNetMainWindow::constructForms()
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
 //    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
-    explorerPanel->addTab(objExplorer, tr("Objects"));
+    explorerTabIdx = explorerPanel->addTab(objExplorer, tr("Objects"));
     dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
 
     plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
@@ -215,6 +215,7 @@ void EasyNetMainWindow::connectSignalsAndSlots()
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
+    connect(tablesWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
     connect(plotViewer,SIGNAL(setPlot(QString)), plotSettingsWindow, SLOT(setPlot(QString)));
 //    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
     connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
@@ -245,6 +246,8 @@ void EasyNetMainWindow::connectSignalsAndSlots()
             plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
 //            this,SLOT(showPlotViewer()));
+    connect(tablesWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
+            plotSettingsWindow, SLOT(createNewPlotOfType(QString, QString, QMap<QString, QString>)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     /* signals & slots */
@@ -266,6 +269,7 @@ void EasyNetMainWindow::showExplorer()
     explorerDock->show();
     explorerDock->setFocus();
     explorerDock->raise();
+    explorerPanel->setCurrentIndex(explorerTabIdx);
 }
 
 void EasyNetMainWindow::showPlotSettings()
@@ -335,7 +339,7 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
      codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
  //    codePanelDock->hide(); // initially, don't show codePanelDock
 
-     methodsDock = new QDockWidget(tr("Methods"), this);
+     methodsDock = new QDockWidget(tr("Stimuli \& Procedure"), this);
      methodsDock->setWidget(methodsPanel);
      addDockWidget(Qt::LeftDockWidgetArea, methodsDock);
      viewMenu->addAction(methodsDock->toggleViewAction());
@@ -377,8 +381,9 @@ void EasyNetMainWindow::initialiseToolBar()
     modelButton->setFlat(true);
 
 //    QLabel* trialBoxLabel = new QLabel("Trial:");
-    QPushButton* trialButton = new QPushButton("Trial:");
+    trialButton = new QPushButton("Trial:");
     trialButton->setFlat(true);
+    trialButton->setEnabled(false);
 
     modelComboBox = new QComboBox(this);
     modelComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
@@ -645,6 +650,7 @@ void EasyNetMainWindow::runAllTrial()
 //    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
     param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
     param->cmdList = cmds;
+    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
     SessionManager::instance()->setupJob(param, sender());
     resultsDock->raise();
     resultsPanel->setCurrentIndex(outputTablesTabIdx);
@@ -715,6 +721,9 @@ void EasyNetMainWindow::loadModel()
         // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
         // should then call getList() and choose the appropriate model
 
+        trialButton->setEnabled(true);
+        loadAddOnAct->setEnabled(true);
+
     }
 }
 
@@ -761,10 +770,14 @@ void EasyNetMainWindow::loadTrial()
 
 void EasyNetMainWindow::loadAddOn()
 {
+    QString currentModel = modelComboBox->currentText();
+    if (currentModel.isEmpty())
+        return; // for now we don't want users attempting load add-ons without models
+
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load add-on"),
                                                     trialsDir,
-                                                    tr("Add-ons (ia.*.eNa)"));
+                                                    "Add-ons (" + currentModel + ".*.eNa)");
     if (!fileName.isEmpty())
     {
         // load and run script
@@ -904,6 +917,7 @@ void EasyNetMainWindow::loadFile(const QString &fileName)
 void EasyNetMainWindow::readSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
+//    easyNetHome = settings.value("easyNetHome","../").toString();
     easyNetHome = settings.value("easyNetHome","../..").toString();
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
@@ -1169,6 +1183,7 @@ void EasyNetMainWindow::createActions()
 //    loadAddOnAct->setShortcuts(QKeySequence::Open);
     loadAddOnAct->setStatusTip(tr("Load an add-on to extend the model"));
     connect(loadAddOnAct, SIGNAL(triggered()), this, SLOT(loadAddOn()));
+    loadAddOnAct->setEnabled(false);
 
     importDataFrameAct = new QAction(QIcon(":/images/list-2x.png"), tr("&Import dataframe"), this);
 //    importDataFrameAct->setShortcuts(QKeySequence::Open);
@@ -1183,7 +1198,7 @@ void EasyNetMainWindow::createActions()
 //    loadScriptAct->setShortcuts(QKeySequence::Open);
     loadScriptAct->setStatusTip(tr("Open an existing lazyNut script"));
     connect(loadScriptAct, SIGNAL(triggered()), this, SLOT(loadScript()));
-
+    loadScriptAct->setEnabled(false); // no script loading until after UKOG!
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);

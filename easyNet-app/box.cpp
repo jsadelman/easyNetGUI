@@ -64,7 +64,10 @@ QRectF Box::labelBoundingRect() const
 QString Box::defaultPlotType()
 {
     if (m_lazyNutType == "layer")
-        return "activity";
+        if (m_name == "spatial_code") //quick and dirty hack!!!
+            return "spactivity-3";
+        else
+            return "activity";
     else
         return "";
 }

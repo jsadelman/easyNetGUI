@@ -146,5 +146,6 @@
         <file>images/rename-icon.png</file>
         <file>images/add-icon.png</file>
         <file>images/icon-record.png</file>
+        <file>images/barchart2.png</file>
     </qresource>
 </RCC>

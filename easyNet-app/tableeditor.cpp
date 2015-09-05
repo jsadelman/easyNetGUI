@@ -541,7 +541,7 @@ void TableEditor::updateTableView(QString text)
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode &= ECHO_INTERPRETER;
 //    param->cmdList = QStringList({QString("xml " + text + " get")});
-    param->cmdList = QStringList({QString("xml " + text + " get 1-40 1-20")}); // just enough to fill the screen
+    param->cmdList = QStringList({QString("xml " + text + " get 1-80 1-20")}); // just enough to fill the screen
     param->answerFormatterType = AnswerFormatterType::XML;
     param->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*)));
     SessionManager::instance()->setupJob(param, sender());

@@ -53,6 +53,8 @@ signals:
     void restoreComboBoxText();
     void newTableName(QString);
     void openFileRequest();
+    void createNewPlotOfType(QString, QString, QMap<QString, QString>);
+    void showPlotSettings();
 
 private slots:
 //    void submit();
@@ -68,6 +70,7 @@ private slots:
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void save();
     void on_copy_DF_clicked();
+    void preparePlot();
 private:
 
     QToolBar *fileToolBar;
@@ -78,6 +81,7 @@ private:
     QAction *copyAct;
     QAction *copyDFAct;
     QAction *findAct;
+    QAction *plotAct;
 
     QPushButton *submitButton;
     QPushButton *revertButton;

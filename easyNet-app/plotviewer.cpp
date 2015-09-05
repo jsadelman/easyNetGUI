@@ -23,8 +23,8 @@ PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
 
     connect(plotPanel, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 
-    resizeTimer = new QTimer(this);
-    connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
+//    resizeTimer = new QTimer(this);
+//    connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
 }
 
 PlotViewer::~PlotViewer()
@@ -172,11 +172,13 @@ void PlotViewer::updateActivePlots()
     }
 }
 
+/*
 void PlotViewer::resizeEvent(QResizeEvent*)
 {
     resizeTimer->stop();
     resizeTimer->start(250);
 }
+*/
 
 void PlotViewer::setPlotActive(bool isActive, QSvgWidget *svg)
 {
@@ -187,7 +189,7 @@ void PlotViewer::setPlotActive(bool isActive, QSvgWidget *svg)
                                      QIcon(":/images/snapshot-icon.png"));
 }
 
-
+/*
 void PlotViewer::resizeTimeout()
 {
    resizeTimer->stop();
@@ -197,6 +199,7 @@ void PlotViewer::resizeTimeout()
      emit sendDrawCmd(plotName.value(currentSvgWidget()));
    }
 }
+*/
 
 void PlotViewer::freeze(QSvgWidget* svg)
 {
