@@ -221,7 +221,8 @@ void TrialWidget::clearDollarArgumentBoxes()
     while (i != argumentMap.constEnd())
     {
         qDebug()<<static_cast<myComboBox*>(argumentMap[i.key()])->currentText();
-        if(static_cast<myComboBox*>(argumentMap[i.key()])->currentText().at(0)=='$')
+        if(!static_cast<myComboBox*>(argumentMap[i.key()])->currentText().isEmpty()) // fix Jamesbug
+            if (static_cast<myComboBox*>(argumentMap[i.key()])->currentText().at(0)=='$')
         {
             static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
             static_cast<myComboBox*>(argumentMap[i.key()])->setCurrentText(defs[i.key()]);
@@ -249,6 +250,7 @@ void TrialWidget::hideSetComboBox()
 {
     setComboBox->hide();
     setCancelButton->hide();
+//    clearArgumentBoxes();
     clearDollarArgumentBoxes();
     emit runAllModeChanged(false);
 
