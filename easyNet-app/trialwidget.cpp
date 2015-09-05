@@ -65,13 +65,15 @@ void TrialWidget::update(QString trialName)
 void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
 {
     QStringList argList;
+    defs.clear();
     XMLelement arg = XMLelement(*domDoc)["arguments"].firstChild();
     while (!arg.isNull())
     {
         argList.append(arg.label());
+        defs[arg.label()]=(arg.value());
         arg = arg.nextSibling();
     }
-    qDebug() << "buildComboBoxes args = " << argList;
+    qDebug() << "buildComboBoxes args = " << argList << "defs = " << defs;
     if (argList.size())
         buildComboBoxesTest(argList);
 
@@ -138,6 +140,7 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     setLayout(layout);
 
     hideSetComboBox();
+    clearArgumentBoxes();
 }
 
 void TrialWidget::argWasChanged(QString arg)
@@ -203,9 +206,26 @@ bool TrialWidget::checkIfReadyToRun()
 void TrialWidget::clearArgumentBoxes()
 {
     QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
+
     while (i != argumentMap.constEnd())
     {
         static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
+        static_cast<myComboBox*>(argumentMap[i.key()])->setCurrentText(defs[i.key()]);
+        i++;
+    }
+}
+
+void TrialWidget::clearDollarArgumentBoxes()
+{
+    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
+    while (i != argumentMap.constEnd())
+    {
+        qDebug()<<static_cast<myComboBox*>(argumentMap[i.key()])->currentText();
+        if(static_cast<myComboBox*>(argumentMap[i.key()])->currentText().at(0)=='$')
+        {
+            static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
+            static_cast<myComboBox*>(argumentMap[i.key()])->setCurrentText(defs[i.key()]);
+        }
         i++;
     }
 }
@@ -229,7 +249,7 @@ void TrialWidget::hideSetComboBox()
 {
     setComboBox->hide();
     setCancelButton->hide();
-    clearArgumentBoxes();
+    clearDollarArgumentBoxes();
     emit runAllModeChanged(false);
 
 }

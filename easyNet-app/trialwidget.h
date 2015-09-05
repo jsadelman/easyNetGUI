@@ -45,6 +45,7 @@ private slots:
     void restoreComboBoxText();
     void argWasChanged(QString arg);
     void clearArgumentBoxes();
+    void clearDollarArgumentBoxes();
 private:
 
     ObjectCatalogueFilter* trialFilter;
@@ -64,7 +65,7 @@ private:
     QAction*        hideSetComboBoxAction;
     QString         argChanged;
 
-
+    QMap<QString,QString>     defs;
 
 
 

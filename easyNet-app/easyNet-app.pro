@@ -216,3 +216,4 @@ macx {
   libdunnartcanvas.files += $${PWD}/../dll/libtopology.1.dylib
   QMAKE_BUNDLE_DATA += libdunnartcanvas
 }
+
