@@ -17,8 +17,7 @@
 #include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "finddialog.h"
-//#include "settingsform.h"
-//#include "settingsformdialog.h"
+
 
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
@@ -232,10 +231,7 @@ void TableEditor::createActions()
     connect(copyDFAct, SIGNAL(triggered()), this, SLOT(on_copy_DF_clicked()));
     copyDFAct->setEnabled(true);
 
-    mergeDFAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
-    mergeDFAct->setStatusTip(tr("Merge two dataframes"));
-    connect(mergeDFAct, SIGNAL(triggered()), this, SLOT(mergeFD()));
-    mergeDFAct->setEnabled(true);
+
 
 //    if (!isReadOnly)
 //    {
@@ -287,7 +283,6 @@ void TableEditor::createToolBars()
 //    if (!isReadOnly)
 //        editToolBar->addAction(pasteAct);
     editToolBar->addAction(copyDFAct);
-    editToolBar->addAction(mergeDFAct);
     editToolBar->addAction(findAct);
 
     fileToolBar->setMovable(false);
@@ -435,31 +430,6 @@ void TableEditor::on_copy_DF_clicked()
     SessionManager::instance()->runCmd(cmd);
 }
 
-void TableEditor::mergeFD()
-{
-#if 0
-    // load XML
-    QDomDocument* domDoc = new QDomDocument;
-    QSettings settings("QtEasyNet", "nmConsole");
-    QString easyNetHome = settings.value("easyNetHome","../..").toString();
-    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(easyNetHome));
-    if (!file.open(QIODevice::ReadOnly))
-        return;
-    if (!domDoc->setContent(&file)) {
-        file.close();
-        return;
-    }
-    file.close();
-    // setup form
-    SettingsForm *form = new SettingsForm(domDoc, this);
-    form->setUseRFormat(false);
-    // setup dialog
-    QString info("This part describes the form");
-    SettingsFormDialog dialog(domDoc, form, info, this);
-    dialog.exec();
-
-#endif
-}
 
 void TableEditor::dragEnterEvent(QDragEnterEvent *event)
 {

@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QFormLayout>
+#include <QLineEdit>
 #include <QDebug>
 
 SettingsFormDialog::SettingsFormDialog(QDomDocument* domDoc, SettingsForm* form, QString info, QWidget* parent)
@@ -18,13 +20,24 @@ SettingsFormDialog::SettingsFormDialog(QDomDocument* domDoc, SettingsForm* form,
 SettingsFormDialog::~SettingsFormDialog()
 {
     delete form;
-    delete domDoc;
+//    delete domDoc;
 }
 
 void SettingsFormDialog::accept()
 {
     // just print for the moment
-    qDebug() << form->getSettingsCmdList();
+//    QStringList settingsList = form->getSettingsCmdList();
+    QStringList cmdList;
+    QString dbName = nameLineEdit->text();
+    cmdList << QString("create dataframe_merge %1").arg(dbName);
+    cmdList << form->getSettingsCmdList().replaceInStrings(QRegExp("^"), QString("%1 set_").arg(dbName));
+    cmdList.replaceInStrings(QRegExp("(set_[xy]_key) (.*)$"), "\\1 \"\\2\"");
+    cmdList << QString ("%1 get").arg(dbName);
+//    qDebug() << cmdList;
+
+    emit cmdListReady(cmdList);
+
+    QDialog::accept();
 }
 
 void SettingsFormDialog::build()
@@ -33,6 +46,8 @@ void SettingsFormDialog::build()
     // top
     QHBoxLayout* topLayout = new QHBoxLayout;
     QLabel* infobLabel = new QLabel(info,this);
+    infobLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    infobLabel->setWordWrap(true);
     QString backCol("white");
     QString textCol("black");
     infobLabel->setStyleSheet("QLabel {"
@@ -53,6 +68,11 @@ void SettingsFormDialog::build()
     topLayout->addStretch();
     topLayout->addLayout(buttonsLayout);
     mainLayout->addLayout(topLayout);
+    // db name
+    QFormLayout *nameLayout = new QFormLayout;
+    nameLineEdit = new QLineEdit;
+    nameLayout->addRow("Dataframe name:", nameLineEdit);
+    mainLayout->addLayout(nameLayout);
     // form
     QScrollArea *scrollArea = new QScrollArea;
     form->build();

@@ -105,8 +105,8 @@ SOURCES +=  \
     trialxml.cpp \
     trialeditor.cpp \
     tableviewer2.cpp \
- #   settingsform.cpp \
- #   settingsformdialog.cpp
+    settingsform.cpp \
+    settingsformdialog.cpp \
     xmlaccessor.cpp
 
 HEADERS  += \
@@ -187,8 +187,8 @@ HEADERS  += \
     trialxml.h \
     trialeditor.h \
     tableviewer2.h \
-  #  settingsform.h \
-  #  settingsformdialog.h
+   settingsform.h \
+    settingsformdialog.h \
     xmlaccessor.h
 
 RESOURCES   =	diagramscene.qrc \

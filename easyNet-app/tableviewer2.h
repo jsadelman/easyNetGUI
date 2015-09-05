@@ -68,6 +68,7 @@ private slots:
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void save();
     void on_copy_DF_clicked();
+    void mergeFD();
 private:
 
     QToolBar *fileToolBar;
@@ -77,6 +78,7 @@ private:
     QAction *saveAsAct;
     QAction *copyAct;
     QAction *copyDFAct;
+    QAction *mergeDFAct;
     QAction *findAct;
 
     QPushButton *submitButton;

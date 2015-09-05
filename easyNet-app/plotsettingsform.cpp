@@ -74,9 +74,7 @@ void PlotSettingsForm::initDependersSet()
 
     while (!settingsElement.isNull())
     {
-        qDebug() << XMLAccessor::label(settingsElement);
         QDomElement dependenciesElement = XMLAccessor::childElement(settingsElement, "dependencies");
-        qDebug() << XMLAccessor::listValues(dependenciesElement);
         foreach (QString depender, XMLAccessor::listValues(dependenciesElement))
             dependersSet.insert(depender);
 

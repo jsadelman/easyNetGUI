@@ -294,6 +294,10 @@ void PlotSettingsBaseWidget::emitValueChanged()
     {
         currentValue = getValue();
         valueSet = true;
+        // write on XML
+        QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+        XMLAccessor::setValue(valueElement, currentValue);
+
         emit valueChanged();
         qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
 
@@ -442,6 +446,10 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
             this, SLOT(emitValueChanged()));
 //    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentTextChanged(QString)),
 //            this, SLOT(emitValueChanged()));
+    connect(static_cast<QComboBox*>(editDisplayWidget),  static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            [=](int index){
+        qDebug() << "PlotSettingsSingleChoiceWidget index changed" << index;
+    });
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);
     rawEditModeButton->setChecked(false);

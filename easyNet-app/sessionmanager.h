@@ -38,7 +38,7 @@ class SessionManager: public QObject
     Q_OBJECT
     Q_PROPERTY(QString currentModel READ currentModel WRITE setCurrentModel)
     Q_PROPERTY(QString currentTrial READ currentTrial WRITE setCurrentTrial)
-    Q_PROPERTY(QString currentPlot READ currentPlot WRITE setCurrentPlot)
+    Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet)
 
 
 
@@ -51,7 +51,8 @@ public:
     LazyNutJob* nextJob(QObject* sender);
     QString currentModel() {return m_currentModel;}
     QString currentTrial() {return m_currentTrial;}
-    QString currentPlot() {return m_currentPlot;}
+    QString currentSet() {return m_currentSet;}
+
 
 
 signals:
@@ -106,7 +107,8 @@ public slots:
 
     void setCurrentModel(QString s) {m_currentModel = s;}
     void setCurrentTrial(QString s) {m_currentTrial = s;}
-    void setCurrentPlot(QString s) {m_currentPlot = s;}
+    void setCurrentSet(QString s) {m_currentSet = s;}
+
 private slots:
 
     void getOOB(const QString &lazyNutOutput);
@@ -131,7 +133,7 @@ private:
     // state
     QString m_currentModel;
     QString m_currentTrial;
-    QString m_currentPlot; // not used
+    QString m_currentSet;
 
     MacroQueue *macroQueue;
     CommandSequencer *commandSequencer;

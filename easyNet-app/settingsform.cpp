@@ -33,7 +33,8 @@ void SettingsForm::build()
         PlotSettingsBaseWidget *widget = createWidget(domElement);
         widgetMap.insert(widget->name(), widget);
         hasChanged.insert(widget->name(), false);
-        QString tabname =  XMLelement(domElement)["pretty name"]();
+        QDomElement prettyElement = XMLAccessor::childElement(domElement, "pretty name");
+        QString tabname = XMLAccessor::value(prettyElement);
         QWidget* tab = 0;
         QVBoxLayout* lay = 0;
         bool novel=!twidgetMap.contains(tabname);
@@ -59,12 +60,12 @@ void SettingsForm::build()
         addTab(twidgetMap[tabname],tabname);
     }
     initDependersSet();
-//    QMap<QString, QString>::const_iterator i = m_defaultSettings.constBegin();
-//    while (i != m_defaultSettings.constEnd())
-//    {
-//        setDefaultModelSetting(i.key(), i.value());
-//        ++i;
-//    }
+    QMap<QString, QString>::const_iterator i = m_defaultSettings.constBegin();
+    while (i != m_defaultSettings.constEnd())
+    {
+        setDefaultModelSetting(i.key(), i.value());
+        ++i;
+    }
 }
 
 void SettingsForm::initDependersSet()
@@ -72,7 +73,8 @@ void SettingsForm::initDependersSet()
     QDomElement settingsElement = rootElement.firstChildElement();
     while (!settingsElement.isNull())
     {
-        foreach (QString depender, XMLelement(settingsElement)["dependencies"].listValues())
+        QDomElement dependenciesElement = XMLAccessor::childElement(settingsElement, "dependencies");
+        foreach (QString depender, XMLAccessor::listValues(dependenciesElement))
             dependersSet.insert(depender);
 
         settingsElement = settingsElement.nextSiblingElement();
@@ -84,7 +86,7 @@ void SettingsForm::initDependersSet()
 QStringList SettingsForm::getSettingsCmdList()
 {
     QStringList cmdList;
-    foreach (QString setting, XMLelement(rootElement).listLabels())
+    foreach (QString setting, XMLAccessor::listLabels(rootElement))
         if (hasChanged[setting])
         {
             cmdList.append(getSettingCmdLine(setting));
@@ -99,11 +101,13 @@ QString SettingsForm::value(QString label)
 }
 
 
-PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement domElement)
+PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement &domElement)
 {
     // TODO: implement this with a factory
-    QString type = XMLelement(domElement)["type"]();
-    QString choice = XMLelement(domElement)["choice"]();
+    QDomElement typeElement = XMLAccessor::childElement(domElement, "type");
+    QDomElement choiceElement = XMLAccessor::childElement(domElement, "choice");
+    QString type = XMLAccessor::value(typeElement);
+    QString choice = XMLAccessor::value(choiceElement);
     PlotSettingsBaseWidget *widget;
     if (type == "numeric")
         widget = new PlotSettingsNumericWidget(domElement, m_useRFormat);
@@ -154,12 +158,13 @@ void SettingsForm::updateDependees(QDomDocument* newDomDoc)
     QDomElement settingsElement = rootElement.firstChildElement();
     while (!settingsElement.isNull())
     {
-        if (XMLelement(settingsElement)["dependencies"].listValues().contains(dependerOnUpdate))
+        QDomElement dependenciesElement = XMLAccessor::childElement(settingsElement, "dependencies");
+        if ((XMLAccessor::listValues(dependenciesElement)).contains(dependerOnUpdate))
         {
             if (!newDomDoc)
                 substituteDependentValues(settingsElement);
-            qDebug() << XMLelement(settingsElement)["levels"]();
-            widgetMap[XMLelement(settingsElement).label()]->updateWidget(XMLelement(settingsElement));
+
+            widgetMap[XMLAccessor::label(settingsElement)]->updateWidget(settingsElement);
         }
         settingsElement = settingsElement.nextSiblingElement();
     }
@@ -189,22 +194,28 @@ QString SettingsForm::getSettingCmdLine(QString setting)
             .arg(widgetMap[setting]->value());
 }
 
-void SettingsForm::substituteDependentValues(QDomElement domElement)
+void SettingsForm::substituteDependentValues(QDomElement &settingsElement)
 {
     if (dependerOnUpdate.isEmpty())
         return; // just safety
-    XMLelement settingsElement(domElement);
-    if (!settingsElement["levels"].isCommand())
+    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
+    if (levelsElement.tagName() != "command")
         return;
-    XMLelement cmd = settingsElement["levels"];
-    QString value = XMLelement(rootElement)[dependerOnUpdate]["value"]();
-    XMLelement cmdToken = cmd.firstChild();
+//    XMLelement cmd = settingsElement["levels"];
+    QDomElement dependerOnUpdateElement = XMLAccessor::childElement(rootElement, dependerOnUpdate);
+    QDomElement valueDependerOnUpdateElement = XMLAccessor::childElement(dependerOnUpdateElement, "value");
+
+    QString value = XMLAccessor::value(valueDependerOnUpdateElement);
+    QDomElement cmdToken = levelsElement.firstChildElement();
     while (!cmdToken.isNull())
     {
-        if (cmdToken.label() == QString("$%1").arg(dependerOnUpdate))
-            cmdToken.setValue(value);
+        if (XMLAccessor::label(cmdToken) == QString("$%1").arg(dependerOnUpdate))
+        {
+            XMLAccessor::setValue(cmdToken, value);
+            qDebug() << XMLAccessor::value(cmdToken);
+        }
 
-        cmdToken = cmdToken.nextSibling();
+        cmdToken = cmdToken.nextSiblingElement();
     }
 }
 
