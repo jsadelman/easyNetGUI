@@ -1,5 +1,7 @@
 #include "settingsformdialog.h"
 #include "settingsform.h"
+#include "objectnamevalidator.h"
+
 
 #include <QDomDocument>
 #include <QVBoxLayout>
@@ -9,6 +11,7 @@
 #include <QScrollArea>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QDebug>
 
 SettingsFormDialog::SettingsFormDialog(QDomDocument* domDoc, SettingsForm* form, QString info, QWidget* parent)
@@ -71,6 +74,8 @@ void SettingsFormDialog::build()
     // db name
     QFormLayout *nameLayout = new QFormLayout;
     nameLineEdit = new QLineEdit;
+    validator = new ObjectNameValidator(this);
+    connect(nameLineEdit, SIGNAL(editingFinished()), this, SLOT(validateName()));
     nameLayout->addRow("Dataframe name:", nameLineEdit);
     mainLayout->addLayout(nameLayout);
     // form
@@ -79,5 +84,16 @@ void SettingsFormDialog::build()
     scrollArea->setWidget(form);
     mainLayout->addWidget(scrollArea);
     setLayout(mainLayout);
+
+}
+
+void SettingsFormDialog::validateName()
+{
+    if (!validator->isValid(nameLineEdit->text()))
+    {
+        QMessageBox::critical(this, "Illegal dataframe name",QString("The name you chose is not valid, since it conflicts with an existing name or command.\n"
+                                                                     "Please select another name."));
+        nameLineEdit->setText("");
+    }
 }
 

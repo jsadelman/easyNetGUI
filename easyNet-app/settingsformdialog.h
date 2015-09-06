@@ -6,6 +6,7 @@
 class QDomDocument;
 class SettingsForm;
 class QLineEdit;
+class ObjectNameValidator;
 
 
 class SettingsFormDialog: public QDialog
@@ -22,6 +23,10 @@ public slots:
 signals:
     void cmdListReady(QStringList);
 
+private slots:
+    void validateName();
+
+
 private:
     void build();
 
@@ -29,6 +34,7 @@ private:
     SettingsForm* form;
     QString info;
     QLineEdit *nameLineEdit;
+    ObjectNameValidator *validator;
 };
 
 #endif // SETTINGSFORMDIALOG_H
