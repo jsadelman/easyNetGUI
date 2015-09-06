@@ -47,7 +47,7 @@ signals:
     void currentKeyChanged(QString key);
     void newTableSelection(QString name);
     void setParamDataFrameSignal(QString);
-    void newParamValueSig(QString);
+    void newParamValueSig(QString,QString);
     void columnDropped(QString set);
     void restoreComboBoxText();
     void newTableName(QString);
@@ -99,6 +99,8 @@ private:
     QWidget         *widget;
     QString         currentTable;
     FindDialog*     findDialog;
+    bool            thisIsParamWindow;
+
 
     void createToolBars();
     void createActions();

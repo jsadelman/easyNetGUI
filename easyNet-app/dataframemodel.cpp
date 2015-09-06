@@ -73,13 +73,17 @@ bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, 
         tBody().childNodes().at(index.row() + 1).childNodes().at(index.column() +1).firstChild().setNodeValue(value.toString());
         QString newParamValue = tBody().childNodes().at(index.row() + 1).childNodes().at(index.column()).toElement().text() +
                 " " + value.toString();
-        emit newParamValueSig(newParamValue);
+        emit newParamValueSig(tableName,newParamValue);
 
     }
     return true;
 }
 
-
+void DataFrameModel::setTableName(QString name)
+{
+    tableName = name;
+    qDebug() << "DataFrameModel: tableName set to " << tableName;
+}
 
 
 Qt::ItemFlags DataFrameModel::flags (const QModelIndex &index) const
@@ -202,4 +206,5 @@ void DataFrameHeader::performDrag()
 void DataFrameHeader::setTableName(QString name)
 {
     tableName = name;
+    qDebug() << "DataFrameHeader: tableName set to " << tableName;
 }

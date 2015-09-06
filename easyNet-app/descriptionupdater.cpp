@@ -29,7 +29,7 @@ void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
 
 void DescriptionUpdater::wakeUpUpdate()
 {
-    qDebug() << this << "wakeUpUpdate";
+//    qDebug() << this << "wakeUpUpdate";
     connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(requestDescriptions(QModelIndex,QModelIndex)));
     connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -38,7 +38,7 @@ void DescriptionUpdater::wakeUpUpdate()
 
 void DescriptionUpdater::goToSleep()
 {
-    qDebug() << this << "go to sleep ";
+//    qDebug() << this << "go to sleep ";
     disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(requestDescriptions(QModelIndex,QModelIndex)));
     disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),

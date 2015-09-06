@@ -203,10 +203,10 @@ void EasyNetMainWindow::connectSignalsAndSlots()
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentModel(QString)));
     connect(this,SIGNAL(newTableSelection(QString)),tablesWindow,SLOT(updateTableView(QString)));
-    connect(paramEdit,SIGNAL(setParamDataFrameSignal(QString)),
-             this,SLOT(setParamDataFrame(QString)));
-    connect(paramEdit, SIGNAL(newParamValueSig(QString)),
-            this,SLOT(setParam(QString)));
+//    connect(paramEdit,SIGNAL(setParamDataFrameSignal(QString)),
+//             this,SLOT(setParamDataFrame(QString)));
+    connect(paramEdit, SIGNAL(newParamValueSig(QString,QString)),
+            this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
             plotViewer,SLOT(loadByteArray(QString,QByteArray)));
     connect(plotSettingsWindow, SIGNAL(newPlotSignal(QString)),
@@ -306,10 +306,11 @@ void EasyNetMainWindow::setParamDataFrame(QString name)
     paramEdit->setTableText(name);
 }
 
-void EasyNetMainWindow::setParam(QString newParamValue)
+void EasyNetMainWindow::setParam(QString paramDataFrame, QString newParamValue)
 {
     QString cmd1 = paramDataFrame + " set " + newParamValue;
     QString cmd2 = QString("xml ") + paramDataFrame + " get ";
+    qDebug() << "Called setParam():" << newParamValue;
     SessionManager::instance()->runCmd({cmd1,cmd2});
 }
 
