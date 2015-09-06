@@ -12,7 +12,7 @@
 #include <QDebug>
 
 PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
-    : easyNetHome(easyNetHome), progressiveTabIdx(0), QMainWindow(parent)
+    : easyNetHome(easyNetHome), progressiveTabIdx(0), QMainWindow(parent),pend(false)
 {
     plotPanel = new QTabWidget;
 
@@ -121,6 +121,7 @@ void PlotViewer::loadByteArray(QString name, QByteArray _byteArray)
     QSvgWidget* svg = plotName.key(name);
     if (svg)
     {
+//        if(byteArray[svg]) delete(byeArray[svg]);
         byteArray[svg] = _byteArray;
         svg->load(byteArray.value(svg));
         plotPanel->setCurrentWidget(svg);
@@ -173,17 +174,28 @@ void PlotViewer::updateActivePlots()
     }
     if(plotPanel->currentIndex()>-1)
     {
-      if(plotIsActive[currentSvgWidget()]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(currentSvgWidget()));
+      if(plotIsActive[currentSvgWidget()])
+      {
+          if(visibleRegion().isEmpty())
+          {
+              pend=true;
+          }
+              else
+          {
+              emit sendDrawCmd(plotName.value(currentSvgWidget()));
+          }
+      }
     }
 }
 
 void PlotViewer::paintEvent(QPaintEvent * event)
 {
-    if(plotPanel->currentIndex()>-1)
+    if(pend)
     {
-      if(!plotIsUpToDate[currentSvgWidget()]&&plotIsActive[currentSvgWidget()]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(currentSvgWidget()));
+        pend=false;
+        resizeTimer->stop();
+        resizeTimer->start(250);
     }
-
 }
 
 void PlotViewer::resizeEvent(QResizeEvent*)

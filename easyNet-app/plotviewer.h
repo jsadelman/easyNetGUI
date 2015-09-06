@@ -73,6 +73,7 @@ private:
     QMap <QSvgWidget*, QByteArray> byteArray;
     QMap <QSvgWidget*, bool> plotIsUpToDate;
     QTimer*         resizeTimer;
+    bool            pend;
 };
 
 #endif // PLOTVIEWER_H
