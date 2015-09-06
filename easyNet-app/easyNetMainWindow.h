@@ -122,7 +122,7 @@ private slots:
     void showDocumentation();
     void explorerTabChanged(int idx);
     void setParamDataFrame(QString name);
-    void setParam(QString newParamValue);
+    void setParam(QString paramDataFrame, QString newParamValue);
 
     void setSmallFont();
     void setMediumFont();

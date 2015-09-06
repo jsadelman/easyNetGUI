@@ -47,9 +47,10 @@
 
 #include "assistant.h"
 
-Assistant::Assistant()
+Assistant::Assistant(QString file)
     : proc(0)
 {
+    qhc_file = file;
 }
 
 //! [0]
@@ -94,7 +95,9 @@ bool Assistant::startAssistant()
 //        QString link = QApplication::applicationDirPath() + "/documentation/easyNetHelp.qhc";
         QString link = QApplication::applicationDirPath() + "/documentation/easyNetDemo.qhc";
         args << QLatin1String("-collectionFile")
-             <<  QLatin1String("C:/Users/pscjd/Google Drive/lazyNutGUI/documentation/easyNetDemo.qhc")
+//             <<  QLatin1String("C:/Users/pscjd/Google Drive/lazyNutGUI/documentation/easyNetDemo.qhc")
+//             << QLatin1String(qhc_file)
+             << qhc_file
 //               <<  QLatin1String("./documentation/easyNetDemo.qhc")
 // NOT SURE HOW TO SPECIFY A RELATIVE PATH?
 //             <<  link

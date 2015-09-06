@@ -22,6 +22,10 @@
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
 {
+    tableBox=nullptr;
+    thisIsParamWindow=false;
+    if (tableName=="Parameters")
+        thisIsParamWindow=true;
     // this style of constructor is used for stimSetForm
     init(tableName, parent);
 //    listTitle->hide();
@@ -31,10 +35,8 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     // can't edit stimulus sets (at present)
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     // but can edit parameter sets
-    if (tableName=="Parameters")
-    {
+    if (thisIsParamWindow)
         view->setEditTriggers(QAbstractItemView::AllEditTriggers);
-    }
     else if (tableName=="Debug_log")
         setViewToStringList(); // temp!!!
     else
@@ -49,6 +51,7 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
         view->setHorizontalHeader(myHeader);
         connect(myHeader, SIGNAL(columnDropped(QString)), this, SIGNAL(columnDropped(QString)));
         connect(myHeader, SIGNAL(restoreComboBoxText()), this, SIGNAL(restoreComboBoxText()));
+        connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
         connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
 
     }
@@ -75,17 +78,16 @@ void TableEditor::init(const QString &tableName, QWidget *parent)
     widget = new QWidget(this);
     setCentralWidget(widget);
     QVBoxLayout* layout = new QVBoxLayout(widget);
-    tableBox = new QComboBox(widget);
 
-/*
- *     editDisplayWidget = new QComboBox;
-    static_cast<QComboBox*>(editDisplayWidget)->setModel(levelsListModel);
-    setWidgetValue(raw2widgetValue(settingsElement["value"]()));
-    currentValue = settingsElement["value"]();
-    valueSet = !settingsElement["value"]().isEmpty();
-*/
-    layout->addWidget(tableBox);
-    connect(tableBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTableView(QString)));
+    qDebug() << "In TableEditor::init() tableName is " << tableName << "is it param window:" << thisIsParamWindow;
+    if (!thisIsParamWindow)
+    {
+        tableBox = new QComboBox(widget);
+        layout->addWidget(tableBox);
+//        connect(tableBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateTableView(QString)));
+        // don't use currentIndexChanged(), because it'll lead to lots of gets during model load
+        connect(tableBox, SIGNAL(activated(QString)), this, SLOT(updateTableView(QString)));
+    }
 
     view = new QTableView(this);
 //    objectListView = new QListView(this);
@@ -157,18 +159,29 @@ void TableEditor::init(const QString &tableName, QWidget *parent)
 
 void TableEditor::setTableText(QString text)
 {
-    tableBox->addItem(text);
-    tableBox->setCurrentIndex(tableBox->findData(text,Qt::DisplayRole));
+    if (tableBox)
+    {
+        tableBox->addItem(text);
+        tableBox->setCurrentIndex(tableBox->findData(text,Qt::DisplayRole));
+    }
     emit newTableName(text);
+
 }
+
+//void TableEditor::setParamSetName(QString text)
+//{
+
+
+//}
 
 void TableEditor::selectTable(QString text)
 {
     qDebug() << "Received request to select " << text;
-
-    tableBox->setCurrentIndex(tableBox->findData(text,Qt::DisplayRole));
-    qDebug() << "Selected table is" << tableBox->currentText();
-
+    if (tableBox)
+    {
+        tableBox->setCurrentIndex(tableBox->findData(text,Qt::DisplayRole));
+        qDebug() << "Selected table is" << tableBox->currentText();
+    }
 }
 
 void TableEditor::setFilter(QString type)
@@ -267,7 +280,13 @@ void TableEditor::createActions()
 
 void TableEditor::refresh()
 {
-    updateTableView(tableBox->currentText());
+    qDebug() << "Entered refresh(), currentTable is " << currentTable;
+    if (tableBox)
+        qDebug() << " and tableBox->currentText is " << tableBox->currentText();
+    if (thisIsParamWindow)
+        updateTableView(currentTable);
+    else
+        updateTableView(tableBox->currentText());
 
 }
 
@@ -335,8 +354,9 @@ void TableEditor::setView(QString name)
 void TableEditor::addDataFrameToWidget(QDomDocument* domDoc)
 {
     dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
-    connect(dfModel, SIGNAL(newParamValueSig(QString)),
-            this,SIGNAL(newParamValueSig(QString)));
+    dfModel->setTableName(currentTable);
+    connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
+            this,SIGNAL(newParamValueSig(QString,QString)));
 
     view->setModel(dfModel);
     view->resizeColumnsToContents();
@@ -544,8 +564,9 @@ bool TableEditor::dropMimeData(const QMimeData * data, Qt::DropAction action, in
 
 void TableEditor::updateTableView(QString text)
 {
-//    qDebug() << this << "Entered updateTableView with " << text;
-//    qDebug() << "currentIndex = " << view->currentIndex();
+    qDebug() << this << "Entered updateTableView with " << text;
+    qDebug() << "currentIndex = " << view->currentIndex();
+    qDebug() << "is this param window?" << thisIsParamWindow;
     if (!text.size())
         return;
     if (text=="Untitled")

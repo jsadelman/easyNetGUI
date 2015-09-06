@@ -54,8 +54,10 @@ public:
 
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
-    signals:
-    void newParamValueSig (QString);
+public slots:
+    void setTableName(QString name);
+signals:
+    void newParamValueSig (QString,QString);
 
 private slots:
 private:
