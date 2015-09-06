@@ -177,6 +177,14 @@ void PlotViewer::updateActivePlots()
     }
 }
 
+void PlotViewer::paintEvent(QPaintEvent * event)
+{
+    if(plotPanel->currentIndex()>-1)
+    {
+      if(!plotIsUpToDate[currentSvgWidget()]&&plotIsActive[currentSvgWidget()]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(currentSvgWidget()));
+    }
+
+}
 
 void PlotViewer::resizeEvent(QResizeEvent*)
 {

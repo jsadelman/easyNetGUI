@@ -49,6 +49,7 @@ private slots:
 private:
     void createToolBars();
     void createActions();
+    void paintEvent(QPaintEvent * event);
     void resizeEvent(QResizeEvent*);
     void setPlotActive(bool isActive, QSvgWidget *svg = nullptr);
 
