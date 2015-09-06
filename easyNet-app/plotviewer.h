@@ -39,7 +39,7 @@ private slots:
     void save();
     void copySVGToClipboard();
     void addPlot(QString name);
-//    void resizeTimeout();
+    void resizeTimeout();
     void snapshot();
     void currentTabChanged(int index);
     void freeze(QSvgWidget *svg = nullptr);
@@ -49,7 +49,7 @@ private slots:
 private:
     void createToolBars();
     void createActions();
-//    void resizeEvent(QResizeEvent*);
+    void resizeEvent(QResizeEvent*);
     void setPlotActive(bool isActive, QSvgWidget *svg = nullptr);
 
     QToolBar*       fileToolBar;
