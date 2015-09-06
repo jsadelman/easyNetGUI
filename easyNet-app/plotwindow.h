@@ -95,6 +95,7 @@ private slots:
     void setCurrentPlotType(QString rScript);
 //    void draw();
     void newAspectRatio(QSize);
+    void removePlot(QString name);
 
     void buildWindow();
 private:
