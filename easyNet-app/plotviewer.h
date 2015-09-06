@@ -45,6 +45,8 @@ private slots:
     void freeze(QSvgWidget *svg = nullptr);
     void renamePlot();
     void deletePlot();
+    void makeSnapshot(QString name);
+
 
 private:
     void createToolBars();

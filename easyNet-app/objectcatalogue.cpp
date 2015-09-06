@@ -247,6 +247,17 @@ QString ObjectCatalogue::type(const QString &name)
     return data(index(rowFromName(name), TypeCol)).toString();
 }
 
+bool ObjectCatalogue::exists(const QString &name)
+{
+    QModelIndexList nameMatchList = ObjectCatalogue::instance()->match(
+                ObjectCatalogue::instance()->index(ObjectCatalogue::NameCol,0),
+                Qt::DisplayRole,
+                name,
+                1,
+                Qt::MatchExactly);
+    return (nameMatchList.length() > 0);
+}
+
 bool ObjectCatalogue::create(QDomDocument *domDoc)
 {
     bool success = true;

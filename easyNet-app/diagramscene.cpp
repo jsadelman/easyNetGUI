@@ -133,6 +133,8 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 //    connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
 //    connect(this, SIGNAL(goToSleep()), arrowDescriptionUpdater,SLOT(goToSleep()));
     connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
+
+
 }
 
 
@@ -365,8 +367,13 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
                 this, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
 
         addItem(box);
-        box->setName(name);
+        box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers
         box->setLazyNutType(m_boxType);
+        connect(box, SIGNAL(plotDestroyed(QString)), this, SIGNAL(plotDestroyed(QString)));
+
+
+
+
         // temporarily define dimensions here
 
         box->setProperty("position", defaultPosition);
