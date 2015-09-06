@@ -279,7 +279,7 @@ void PlotViewer::currentTabChanged(int index)
     if (plotIsActive.value(svg))
     {
         emit setPlot(plotName.value(svg));
-        if(!plotIsUpToDate[svg]) emit sendDrawCmd(plotName.value(svg));
+        if(!plotIsUpToDate[svg]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(svg));
     }
     settingsAct->setEnabled(plotIsActive.value(svg));
     refreshAct->setEnabled(plotIsActive.value(svg));
