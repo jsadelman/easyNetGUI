@@ -23,8 +23,8 @@ PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
 
     connect(plotPanel, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 
-//    resizeTimer = new QTimer(this);
-//    connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
+    resizeTimer = new QTimer(this);
+    connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
 }
 
 PlotViewer::~PlotViewer()
@@ -125,6 +125,7 @@ void PlotViewer::loadByteArray(QString name, QByteArray _byteArray)
         svg->load(byteArray.value(svg));
         plotPanel->setCurrentWidget(svg);
         titleLabel->setText(name);
+        plotIsUpToDate[svg]=true;
     }
 }
 
@@ -168,17 +169,29 @@ void PlotViewer::updateActivePlots()
     while (plotIsActiveIt.hasNext()) {
         plotIsActiveIt.next();
         if (plotIsActiveIt.value())
-            emit sendDrawCmd(plotName[plotIsActiveIt.key()]);
+            plotIsUpToDate[plotIsActiveIt.key()]=false;
+    }
+    if(plotPanel->currentIndex()>-1)
+    {
+      if(plotIsActive[currentSvgWidget()]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(currentSvgWidget()));
     }
 }
 
-/*
+void PlotViewer::paintEvent(QPaintEvent * event)
+{
+    if(plotPanel->currentIndex()>-1)
+    {
+      if(!plotIsUpToDate[currentSvgWidget()]&&plotIsActive[currentSvgWidget()]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(currentSvgWidget()));
+    }
+
+}
+
 void PlotViewer::resizeEvent(QResizeEvent*)
 {
     resizeTimer->stop();
     resizeTimer->start(250);
 }
-*/
+
 
 void PlotViewer::setPlotActive(bool isActive, QSvgWidget *svg)
 {
@@ -189,17 +202,14 @@ void PlotViewer::setPlotActive(bool isActive, QSvgWidget *svg)
                                      QIcon(":/images/snapshot-icon.png"));
 }
 
-/*
+
 void PlotViewer::resizeTimeout()
 {
    resizeTimer->stop();
    emit resized(plotPanel->size());
-   if(plotPanel->currentIndex()>-1)
-   {
-     emit sendDrawCmd(plotName.value(currentSvgWidget()));
-   }
+   updateActivePlots();
 }
-*/
+
 
 void PlotViewer::freeze(QSvgWidget* svg)
 {
@@ -239,15 +249,17 @@ void PlotViewer::snapshot()
     QString currentName = plotName.value(currentSVG);
     plotName[currentSVG] = QString("%1_SNAPSHOT").arg(currentName);
     addPlot(currentName);
-
+    plotIsUpToDate[currentSVG]=true;
 }
 
 void PlotViewer::currentTabChanged(int index)
 {
     QSvgWidget* svg = static_cast<QSvgWidget*>(plotPanel->widget(index));
     if (plotIsActive.value(svg))
+    {
         emit setPlot(plotName.value(svg));
-
+        if(!plotIsUpToDate[svg]) emit sendDrawCmd(plotName.value(svg));
+    }
     settingsAct->setEnabled(plotIsActive.value(svg));
     refreshAct->setEnabled(plotIsActive.value(svg));
     snapshotAct->setEnabled(plotIsActive.value(svg));
