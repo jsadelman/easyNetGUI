@@ -99,10 +99,12 @@ void PairedListWidget::buildWidget()
     selectedView->setModel(selectedModel);
     selectedView->setModelColumn(0);
     selectedView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+//    selectedView->setResizeMode(QListView::Adjust);
     notSelectedView = new QListView(this);
     notSelectedView->setModel(notSelectedModel);
     notSelectedView->setModelColumn(0);
     notSelectedView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+//    notSelectedView->setResizeMode(QListView::Adjust);
 
     addButton = new QPushButton("==>", this);
     addButton->setToolTip("Add to selected factors");

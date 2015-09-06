@@ -34,7 +34,7 @@ void SettingsFormDialog::accept()
     QString dbName = nameLineEdit->text();
     cmdList << QString("create dataframe_merge %1").arg(dbName);
     cmdList << form->getSettingsCmdList().replaceInStrings(QRegExp("^"), QString("%1 set_").arg(dbName));
-    cmdList.replaceInStrings(QRegExp("(set_[xy]_key) (.*)$"), "\\1 \"\\2\"");
+//    cmdList.replaceInStrings(QRegExp("(set_[xy]_key) (.*)$"), "\\1 \"\\2\"");
     cmdList << QString ("%1 get").arg(dbName);
 //    qDebug() << cmdList;
 
@@ -79,11 +79,13 @@ void SettingsFormDialog::build()
     nameLayout->addRow("Dataframe name:", nameLineEdit);
     mainLayout->addLayout(nameLayout);
     // form
-    QScrollArea *scrollArea = new QScrollArea;
-    form->build();
-    scrollArea->setWidget(form);
-    mainLayout->addWidget(scrollArea);
+//    QScrollArea *scrollArea = new QScrollArea;
+
+//    mainLayout->addWidget(scrollArea);
     setLayout(mainLayout);
+    form->build();
+     mainLayout->addWidget(form);
+//    scrollArea->setWidget(form);
 
 }
 

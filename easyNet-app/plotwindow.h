@@ -140,6 +140,7 @@ private:
     QString savePlotSettingsAsText;
     QMap <QString,QString> defaultSettings;
     QGridLayout *gridLayout;
+//    QVBoxLayout* vlayout;
 
     QString curFile;
     QMenu *fileMenu;

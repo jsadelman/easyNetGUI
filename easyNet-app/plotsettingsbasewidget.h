@@ -43,7 +43,7 @@ class PlotSettingsBaseWidget : public QFrame//, PlotSettingsAbstractBaseWidget
 {
     Q_OBJECT
 public:
-    explicit PlotSettingsBaseWidget(QDomElement& settingsElement, bool useRFormat = false, QWidget *parent = 0);
+    explicit PlotSettingsBaseWidget(QDomElement& settingsElement, bool _useRFormat = false, QWidget *parent = 0);
     virtual ~PlotSettingsBaseWidget() {}
     virtual QString name() {return XMLAccessor::label(settingsElement);}
     virtual QString value();

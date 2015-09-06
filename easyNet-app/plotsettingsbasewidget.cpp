@@ -13,12 +13,15 @@
 #include <QMetaObject>
 
 
-PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, bool useRFormat, QWidget *parent)
-    : settingsElement(settingsElement), useRFormat(useRFormat), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
+PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, bool _useRFormat, QWidget *parent)
+    : settingsElement(settingsElement), useRFormat(_useRFormat), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
 {
     createDisplay();
     createLevelsListModel();
     editMode = RawEditMode;
+    QDomElement settingsUseRFormat = XMLAccessor::childElement(settingsElement, "useRFormat");
+    if (!settingsUseRFormat.isNull())
+        useRFormat = XMLAccessor::value(settingsUseRFormat) == "true";
 }
 
 
