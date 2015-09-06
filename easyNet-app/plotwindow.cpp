@@ -149,12 +149,17 @@ void PlotSettingsWindow::createActions()
 //    refreshAct->setStatusTip(tr("Refresh plot"));
     connect(refreshAct, &QAction::triggered, this, [=]{
 //        if (plotSettingsForm)
-            sendSettings(this, SLOT(sendDrawCmd()));
+            sendSettings(this, SLOT(sendGetCmd()));
     });
 //    newPlotAct = new QAction(QIcon(":/images/label_blue_new.png"), tr("&New Plot"), this);
     newPlotAct = new QAction(QIcon(":/images/add-icon.png"), tr("&New Plot"), this);
     newPlotAct->setShortcuts(QKeySequence::New);
     connect(newPlotAct, SIGNAL(triggered()), this, SLOT(newPlot()));
+}
+
+void PlotSettingsWindow::triggerRefresh()
+{
+    sendSettings(this, SLOT(sendGetCmd()));
 }
 
 void PlotSettingsWindow::updateRecentRScriptsActs()
@@ -198,7 +203,7 @@ void PlotSettingsWindow::importHomonyms(QDomDocument *settingsList)
 //    }
 }
 
-void PlotSettingsWindow::sendDrawCmd(QString plotName)
+void PlotSettingsWindow::sendGetCmd(QString plotName)
 {
     LazyNutJobParam *param = new LazyNutJobParam;
     param->logMode &= ECHO_INTERPRETER; // debug purpose
@@ -208,11 +213,17 @@ void PlotSettingsWindow::sendDrawCmd(QString plotName)
     SessionManager::instance()->setupJob(param, sender());
 }
 
-void PlotSettingsWindow::sendDrawCmd()
+void PlotSettingsWindow::sendGetCmd()
 {
     if (plotControlPanelScrollArea->widget())
-        sendDrawCmd(plotForms.key(
+        sendGetCmd(plotForms.key(
                         qobject_cast<PlotSettingsForm*>(plotControlPanelScrollArea->widget())));
+}
+
+void PlotSettingsWindow::sendDrawCmd(QString plotName)
+{
+    sendSettings(plotName);
+    sendGetCmd(plotName);
 }
 
 void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
@@ -467,6 +478,18 @@ void PlotSettingsWindow::sendSettings(QObject *nextJobReceiver, const char *next
         SessionManager::instance()->setupJob(param, sender());
 
         emit showPlotViewer();
+    }
+}
+
+void PlotSettingsWindow::sendSettings(QString name)
+{
+    PlotSettingsForm * form = qobject_cast<PlotSettingsForm*>(plotForms[name]);
+    if (form)
+    {
+        LazyNutJobParam *param = new LazyNutJobParam;
+        param->logMode |= ECHO_INTERPRETER; // debug purpose
+        param->cmdList = form->getSettingsCmdList();
+        SessionManager::instance()->setupJob(param, sender());
     }
 }
 

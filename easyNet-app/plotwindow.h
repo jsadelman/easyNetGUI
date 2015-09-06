@@ -70,13 +70,16 @@ signals:
 public slots:
         void createNewPlotOfType(QString name, QString type,
                                  QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
-        void sendDrawCmd(QString plotName);
-        void sendDrawCmd();
+        void sendGetCmd(QString plotName);
+        void sendGetCmd();
         void setPlot(QString name);
 //        void hidePlotSettings();
+        void sendSettings(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+        void sendSettings(QString name);
 
 
-
+        void triggerRefresh();
+        void sendDrawCmd(QString plotName);
 private slots:
     void displaySVG(QByteArray plotByteArray, QString cmd);
     void newPlot();
@@ -84,7 +87,6 @@ private slots:
     void setType(QString rScript);
     void getSettingsXML();
     void buildSettingsForm(QDomDocument* settingsList);
-    void sendSettings(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
     void getPlotType(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
     void extractPlotType(QDomDocument* description);
 //    void updateSettingsForm();
