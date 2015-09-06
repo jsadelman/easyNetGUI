@@ -2,6 +2,8 @@
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
 #include "libdunnartcanvas/limitstring.h"
+#include "objectcataloguefilter.h"
+
 
 #include <QPainter>
 #include <QDebug>
@@ -14,6 +16,7 @@ Box::Box()
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618)
 {
+    connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultDataframesFilter()));
 }
 
 
@@ -79,57 +82,113 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
     {
         menu.addSeparator();
     }
-    QAction *defaultPlotAct = menu.addAction(tr("Set up default plot"));
-    defaultPlotAct->setVisible(m_lazyNutType == "layer");
-    QAction *enableObserverAct = menu.addAction(tr("Enable default observer"));
-    enableObserverAct->setVisible(m_lazyNutType == "layer");
-    QAction *disableObserverAct = menu.addAction(tr("Disable default observer"));
-    disableObserverAct->setVisible(m_lazyNutType == "layer");
+    if (m_lazyNutType == "layer")
+    {
+        QMenu *plotMenu = new QMenu("Plot");
+        QList<QAction*> actionList;
+        for (int row = 0; row < defaultDataframesFilter->rowCount(); ++row)
+        {
+            // from:
+            // ((my_level default_input_observer 0) default_dataframe)
+            // to:
+            // my_model.my_level.default_input.0.plot
+            QString plotName = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+            plotName.remove(QRegExp("\\(|_observer|\\).*"));
+            plotName.replace(" ", ".");
+            plotName.prepend(QString("%1.").arg(SessionManager::instance()->currentModel()));
+            plotName.append(".plot");
+            actionList.append(plotMenu->addAction(plotName));
+            actionList.at(row)->setCheckable(true);
+            actionList.at(row)->setChecked(ObjectCatalogue::instance()->exists(plotName));
+        }
 
-    QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
 
-    if (action == defaultPlotAct)
-        defaultPlot();
+        menu.addMenu(plotMenu);
 
-    else if (action == enableObserverAct)
-        enableObserver();
+//        QMenu *enableObserverMenu = new QMenu("Observer");
+//        QAction *enableObserverAct = enableObserverMenu->addAction(tr("Enable default observer"));
+//        QAction *disableObserverAct = enableObserverMenu->addAction(tr("Disable default observer"));
+//        menu.addMenu(enableObserverMenu);
 
-    else if (action == disableObserverAct)
-        disableObserver();
+        QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
 
-    return action;
+        for (int row = 0; row < defaultDataframesFilter->rowCount(); ++row)
+        {
+            if (action == actionList.at(row))
+            {
+                QString dataframe = defaultDataframesFilter->data(
+                            defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+                QString observer = dataframe;
+                observer.remove(QRegExp("^\\(| default_dataframe\\)"));
+                if (action->isChecked())
+                {
+                    enableObserver(observer);
+                    defaultPlot(action->text(), dataframe);
+                    return action;
+                }
+                else
+                {
+                    disableObserver(observer);
+                    SessionManager::instance()->runCmd(QString("destroy %1").arg(action->text()));
+                    emit plotDestroyed(action->text());
+                }
+            }
+        }
+
+//        else if (action == enableObserverAct)
+//            enableObserver();
+
+//        else if (action == disableObserverAct)
+//            disableObserver();
+
+
+    }
+    else
+    {
+        QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
+        return action;
+    }
 }
 
 
 
-void Box::defaultPlot()
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({QString("(%1 default_observer) enable").arg(m_name)});
-    param->setEndOfJobReceiver(this,SLOT(sendCreateNewPlotOfType()));
-    SessionManager::instance()->setupJob(param, sender());
-
-}
-
-void Box::sendCreateNewPlotOfType()
+void Box::defaultPlot(QString plotName, QString dataframe)
 {
     QMap<QString,QString> settings;
-    settings["df"]=QString("((%1 default_observer) default_dataframe)").arg(m_name);
-    QString plotName = QString("%1.%2.default").arg(
-                SessionManager::instance()->currentModel(), m_name);
+    settings["df"] = dataframe;
     emit createNewPlotOfType(plotName, QString("%1.R").arg(defaultPlotType()), settings);
 }
 
-void Box::enableObserver()
+//void Box::sendCreateNewPlotOfType()
+//{
+//    QMap<QString,QString> settings;
+//    settings["df"]=QString("((%1 default_observer) default_dataframe)").arg(m_name);
+//    QString plotName = QString("%1.%2.default").arg(
+//                SessionManager::instance()->currentModel(), m_name);
+//    emit createNewPlotOfType(plotName, QString("%1.R").arg(defaultPlotType()), settings);
+//}
+
+void Box::setupDefaultDataframesFilter()
 {
-    QString cmd = QString("(%1 default_observer) enable").arg(m_name);
+    if (m_lazyNutType == "layer")
+    {
+        qDebug() << "in setupDefaultDataframesFilter";
+        defaultDataframesFilter = new ObjectCatalogueFilter(this);
+        QRegExp rex(QString("^\\(\\(%1 .*observer.*default_dataframe\\)$").arg(m_name));
+        defaultDataframesFilter->setFilterRegExp(rex);
+        defaultDataframesFilter->setFilterKeyColumn(ObjectCatalogue::NameCol);
+    }
+}
+
+void Box::enableObserver(QString observer)
+{
+    QString cmd = QString("%1 enable").arg(observer);
     SessionManager::instance()->runCmd(cmd);
 }
 
-void Box::disableObserver()
+void Box::disableObserver(QString observer)
 {
-    QString cmd = QString("(%1 default_observer) disable").arg(m_name);
+    QString cmd = QString("%1 disable").arg(observer);
     SessionManager::instance()->runCmd(cmd);
 }
 

@@ -232,6 +232,15 @@ void PlotViewer::deletePlot()
     }
 }
 
+void PlotViewer::makeSnapshot(QString name)
+{
+    QSvgWidget* svg = plotName.key(name);
+    freeze(svg);
+    plotName[svg] = QString("%1_SNAPSHOT").arg(name);
+    if (svg == static_cast<QSvgWidget*>(plotPanel->currentWidget()))
+        currentTabChanged(plotPanel->currentIndex());
+}
+
 void PlotViewer::snapshot()
 {
     freeze();

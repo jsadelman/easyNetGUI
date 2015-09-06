@@ -29,6 +29,7 @@ public:
     bool isInvalid(const QString& name);
     bool isPending(const QString& name);
     QString type(const QString& name);
+    bool exists(const QString& name);
 
 public slots:
     bool create(const QString& name, const QString& type);

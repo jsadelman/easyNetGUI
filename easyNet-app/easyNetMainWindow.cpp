@@ -244,6 +244,8 @@ void EasyNetMainWindow::connectSignalsAndSlots()
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
             plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
+    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
+    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(makeSnapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
 //            this,SLOT(showPlotViewer()));
     connect(tablesWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
@@ -933,6 +935,8 @@ void EasyNetMainWindow::readSettings()
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
     settings.endGroup();
+    writeSettings(); // in case some setting was missing. Settings are read by the GUI,
+    // e.g. easyNetHome, since it's private to EasyNetMainWindow.
 }
 
 void EasyNetMainWindow::writeSettings()

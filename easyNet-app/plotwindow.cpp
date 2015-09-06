@@ -291,7 +291,7 @@ void PlotSettingsWindow::createNewPlotOfType(QString name, QString rScript,
                                      QString("create rplot %1").arg(name),
                                      QString("%1 set_type %2").arg(name).arg(rScript)
                                  });
-    param->setNextJobReceiver(this,SLOT(getSettingsXML()));
+    param->setNextJobReceiver(SessionManager::instance(),SLOT(updateObjectCatalogue()));
     SessionManager::instance()->setupJob(param, sender());
 
     currentPlot = name;
@@ -300,6 +300,8 @@ void PlotSettingsWindow::createNewPlotOfType(QString name, QString rScript,
     emit newPlotSignal(name);
     plotNameBox->setText(name);
     plotTypeBox->setText(rScript);
+
+    getSettingsXML();
 
 }
 
@@ -601,4 +603,16 @@ void PlotSettingsWindow::setDefaultModelSetting(QString setting, QString value)
 void PlotSettingsWindow::newAspectRatio(QSize size)
 {
     plotAspr_=double(size.width())/size.height();
+}
+
+void PlotSettingsWindow::removePlot(QString name)
+{
+    if (plotForms.value(name) == plotControlPanelScrollArea->widget())
+    {
+        plotNameBox->setText("");
+        plotTypeBox->setText("");
+    }
+    delete plotForms.value(name);
+    plotForms.remove(name);
+    plotTypes.remove(name);
 }
