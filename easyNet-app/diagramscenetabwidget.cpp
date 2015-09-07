@@ -32,6 +32,7 @@ int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QStri
     connect(scene, SIGNAL(initArrangement()), this, SIGNAL(initArrangement()));
     DiagramView *view = new DiagramView(scene);
     m_undo_group->addStack(scene->undoStack());
+    connect(view, SIGNAL(zoomChanged()), this, SIGNAL(zoomChanged()));
 
     return addTab(view, title);
 }

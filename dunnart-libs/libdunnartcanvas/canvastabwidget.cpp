@@ -536,9 +536,9 @@ void CanvasTabWidget::addLayoutMenuActions(QMenu *layout_menu)
 
 void CanvasTabWidget::addEditToolBarActions(QToolBar *edit_toolbar)
 {
-    edit_toolbar->addAction(m_action_undo);
-    edit_toolbar->addAction(m_action_redo);
-    edit_toolbar->addSeparator();
+//    edit_toolbar->addAction(m_action_undo);
+//    edit_toolbar->addAction(m_action_redo);
+//    edit_toolbar->addSeparator();
     edit_toolbar->addAction(m_action_delete);
 //    edit_toolbar->addAction(m_action_cut);
 //    edit_toolbar->addAction(m_action_copy);

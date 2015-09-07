@@ -64,7 +64,7 @@ signals:
 
 public slots:
     void diagramFilenameChanged(const QFileInfo& fileinfo);
-    void currentChanged(int index);
+    virtual void currentChanged(int index);
     bool tabCloseRequested(int index);
     void currentCanvasClose(void);
     void currentCanvasSave(void);

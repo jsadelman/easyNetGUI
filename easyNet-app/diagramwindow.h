@@ -49,7 +49,8 @@ private:
     QDoubleSpinBox *idealEdgeLengthModifierSpinBox;
     QSpinBox *shapeNonOverlapPaddingSpinBox;
     QDoubleSpinBox *flowSeparationModifierSpinBox;
-    QRadioButton *fitVisibleButton;
+//    QRadioButton *fitVisibleButton;
+    QAction* fitVisibleAct;
     QPushButton *loadLayoutButton;
     QPushButton *saveLayoutButton;
     QPushButton *deleteAlignmentButton;

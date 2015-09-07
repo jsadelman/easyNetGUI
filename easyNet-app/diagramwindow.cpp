@@ -21,12 +21,13 @@ DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidg
     setCentralWidget(diagramSceneTabWidget);
     createMenus();
     connect(diagramSceneTabWidget, SIGNAL(initArrangement()), this, SLOT(initArrangement()));
+    connect(diagramSceneTabWidget, SIGNAL(zoomChanged()), this, SLOT(restoreZoom()));
 }
 
 
 void DiagramWindow::rearrange(bool ignoreEdges)
 {
-    if (fitVisibleButton->isChecked())
+    if (fitVisibleAct->isChecked())
         connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
                 this, SLOT(toFitVisible()));
 
@@ -43,7 +44,7 @@ void DiagramWindow::arrange(bool ignoreEdges)
 void DiagramWindow::initArrangement()
 {
 
-    fitVisibleButton->setChecked(true);
+    fitVisibleAct->setChecked(true);
 
     if (QFileInfo(diagramSceneTabWidget->currentDiagramScene()->layoutFile()).exists())
     {
@@ -98,7 +99,6 @@ void DiagramWindow::restoreZoom()
     QString zoomText;
     zoomText.setNum((int)(100 * m11)).append("\%");
     sceneScaleCombo->setCurrentText(zoomText);
-//    sceneScaleCombo->setCurrentIndex(sceneScaleCombo->findText(zoomText));
 }
 
 void DiagramWindow::restoreProperties()
@@ -110,7 +110,7 @@ void DiagramWindow::restoreProperties()
 
 void DiagramWindow::restore()
 {
-    fitVisibleButton->setChecked(false);
+    fitVisibleAct->setChecked(false);
     restoreZoom();
 }
 
@@ -140,13 +140,15 @@ void DiagramWindow::toFitVisible()
 
 void DiagramWindow::setZoom()
 {
-    fitVisibleButton->setChecked(false);
+    fitVisibleAct->setChecked(false);
     sceneScaleChanged(sceneScaleCombo->currentText());
 }
 
 void DiagramWindow::loadLayout()
 {
+    fitVisibleAct->setChecked(false);
     diagramSceneTabWidget->currentDiagramView()->loadLayout();
+    fitVisibleAct->setChecked(true);
 }
 
 void DiagramWindow::saveLayout()
@@ -156,7 +158,7 @@ void DiagramWindow::saveLayout()
 
 void DiagramWindow::createMenus()
 {
-    QToolBar *layoutToolBar = addToolBar("Auto layout");
+//    QToolBar *layoutToolBar = addToolBar("Auto layout");
 
 //    arrangeActButton = new QPushButton(tr("Arrange"));
 //    connect(arrangeActButton, SIGNAL(clicked()), this, SLOT(arrange()));
@@ -165,9 +167,9 @@ void DiagramWindow::createMenus()
 //    connect(initArrangementAct, SIGNAL(triggered()), this, SLOT(initArrangement()));
 //    layoutToolBar->addAction(initArrangementAct);
 
-    fitVisibleButton = new QRadioButton(tr("Fit Visible"));
-    connect(fitVisibleButton, SIGNAL(toggled(bool)), this, SLOT(fitVisible(bool)));
-    fitVisibleButton->setChecked(false);
+//    fitVisibleButton = new QRadioButton(tr("Fit Visible"));
+//    connect(fitVisibleButton, SIGNAL(toggled(bool)), this, SLOT(fitVisible(bool)));
+//    fitVisibleButton->setChecked(false);
 
 
 #if 0
@@ -203,10 +205,11 @@ void DiagramWindow::createMenus()
 
 //    addDockWidget(Qt::LeftDockWidgetArea, layoutDock);
 
-    QAction* fitVisible = new QAction(QIcon(":/images/resize.png"),tr("Fit to window"), this);
-    fitVisible->setStatusTip(tr("Resize diagram to fit window"));
-    connect(fitVisible,SIGNAL(triggered()),
-            this,SLOT(toFitVisible()));
+    fitVisibleAct = new QAction(QIcon(":/images/resize.png"),tr("Fit to window"), this);
+    fitVisibleAct->setStatusTip(tr("Resize diagram to fit window"));
+    fitVisibleAct->setCheckable(true);
+    connect(fitVisibleAct,SIGNAL(toggled(bool)), this,SLOT(fitVisible(bool)));
+    fitVisibleAct->setChecked(false);
 
     QAction* arrangeAct = new QAction(QIcon(":/images/magic_wand.png"),tr("Auto-arrange"), this);
     arrangeAct->setStatusTip(tr("Auto-arrange network layout"));
@@ -278,6 +281,7 @@ void DiagramWindow::createMenus()
     QValidator *zoomValidator = new QRegExpValidator(zoomRex, sceneScaleCombo);
     QLineEdit *zoomEdit = new QLineEdit(sceneScaleCombo);
     zoomEdit->setValidator(zoomValidator);
+    zoomEdit->setMinimumWidth(QFontMetrics(zoomEdit->font()).width("100%"));
     sceneScaleCombo->setLineEdit(zoomEdit);
     sceneScaleCombo->setInsertPolicy(QComboBox::NoInsert);
 
@@ -286,9 +290,9 @@ void DiagramWindow::createMenus()
      connect(sceneScaleCombo->lineEdit(), SIGNAL(returnPressed()),
              this, SLOT(setZoom()));
 
-     for (int i = 0; i < diagramSceneTabWidget->count(); ++i)
-         connect(diagramSceneTabWidget->diagramViewAt(i), SIGNAL(zoomChanged()),
-                 this, SLOT(restoreZoom()));
+//     for (int i = 0; i < diagramSceneTabWidget->count(); ++i)
+//         connect(diagramSceneTabWidget->diagramViewAt(i), SIGNAL(zoomChanged()),
+//                 this, SLOT(restoreZoom()));
 
 #if 0
     // PROPERTIES
@@ -335,12 +339,12 @@ void DiagramWindow::createMenus()
     diagramToolBar->addSeparator();
 
     //    diagramToolBar->addWidget(fitVisibleButton);
-    sceneScaleCombo->setMinimumWidth(60);
-    sceneScaleCombo->setMaximumWidth(60);
-    sceneScaleCombo->setMinimumHeight(40);
-    sceneScaleCombo->setMaximumHeight(40);
+//    sceneScaleCombo->setMinimumWidth();
+//    sceneScaleCombo->setMaximumWidth(60);
+//    sceneScaleCombo->setMinimumHeight(40);
+//    sceneScaleCombo->setMaximumHeight(40);
     diagramToolBar->addWidget(sceneScaleCombo);
-    diagramToolBar->addAction(fitVisible);
+    diagramToolBar->addAction(fitVisibleAct);
 //    diagramToolBar->addWidget(alignmentBox);
     diagramToolBar->addAction(vertAlign);
     diagramToolBar->addAction(horizAlign);
