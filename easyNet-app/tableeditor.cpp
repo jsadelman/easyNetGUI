@@ -417,6 +417,13 @@ void TableEditor::resizeColumns()
 
 void TableEditor::on_copy_clicked()
 {
+    // a different approach -- get R to copy the df to the clipboard
+
+    QString cmd = "R << write.table(eN[\"THEDATAFRAME\"], \"clipboard\", sep=\"\t\", row.names=FALSE)";
+    cmd.replace("THEDATAFRAME",currentTable);
+    SessionManager::instance()->runCmd(cmd);
+    return;
+
     QAbstractItemModel *abmodel = view->model();
     QItemSelectionModel *model = view->selectionModel();
     QModelIndexList list = model->selectedIndexes();

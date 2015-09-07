@@ -51,12 +51,17 @@ void TableViewer::addTrialTable(QString name)
     SessionManager::instance()->runCmd(cmd);
 }
 
-QString TableViewer::addTable(QString name)
+QString TableViewer::addTableWithThisName(QString name)
+{
+    addTable(name, false);
+}
+
+QString TableViewer::addTable(QString name, bool chooseNewName)
 {
     qDebug() << "addTable(" << name << ")";
     if (name.isEmpty())
         name = tr("Table_")+QString::number(numTables);
-    else
+    else if (chooseNewName)
         name.append(".table");
     qDebug() << "current list: " << tableMap.values();
     if (tableMap.values().contains(name))
@@ -510,7 +515,7 @@ void TableViewer::updateTableView(QString text)
     param->logMode &= ECHO_INTERPRETER;
     param->cmdList = QStringList({QString("xml " + text + " get")});
     param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*)));
+    param->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
     SessionManager::instance()->setupJob(param, sender());
 }
 

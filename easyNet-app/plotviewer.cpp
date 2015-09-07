@@ -234,7 +234,9 @@ void PlotViewer::freeze(QSvgWidget* svg)
 void PlotViewer::renamePlot()
 {
     bool ok;
-    QString newName = QInputDialog::getText(this, "Rename plot", "New name:", QLineEdit::Normal,
+    QString newName = QInputDialog::getText(this, "Rename plot",
+                                            "New name:                                    ",
+                                            QLineEdit::Normal,
                                             plotName.value(currentSvgWidget()), &ok);
     if (ok && !newName.isEmpty())
     {

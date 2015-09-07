@@ -23,7 +23,9 @@ LazyNutPairedListWidget::LazyNutPairedListWidget(QString getListCmd, QWidget *pa
     factorList = new QListWidget(this);
     factorList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     selectedList = new QListWidget(this);
-    selectedList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+//    selectedList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    selectedList->setSelectionMode(QAbstractItemView::SingleSelection);
+    selectedList->setDragDropMode(QAbstractItemView::InternalMove);
 
     // debug
 //    connect(this, &LazyNutPairedListWidget::valueChanged,

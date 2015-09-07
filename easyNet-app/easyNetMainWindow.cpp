@@ -263,7 +263,6 @@ void EasyNetMainWindow::connectSignalsAndSlots()
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             debugLog, SLOT(addRowToTable(QString,QString)));
-
 }
 
 void EasyNetMainWindow::showExplorer()
@@ -822,25 +821,27 @@ void EasyNetMainWindow::loadStimulusSet()
         QFileInfo fi(fileName);
         QString base = fi.baseName();
 
-        SessionManager::instance()->runCmd(QStringList({
+ /*
+  *        SessionManager::instance()->runCmd(QStringList({
                                         QString("create stimulus_set %1").arg(base),
-                                        QString("%1 load %2").arg(base).arg(fileName)}));
+                                        QString("%1 load %2").arg(base).arg(fileName),
+                                                       }));
                                         //                                         ,
                                         //               QString("xml %1 get").arg(base)
+*/
 
-/*
         LazyNutJobParam *param = new LazyNutJobParam;
         param->logMode &= ECHO_INTERPRETER;
         param->cmdList = QStringList({
                QString("create stimulus_set %1").arg(base),
-               QString("%1 load %2").arg(base).arg(fileName)
-//                                         ,
-//               QString("xml %1 get").arg(base)
+               QString("%1 load %2").arg(base).arg(fileName),
+               QString("xml %1 get").arg(base)
                                      });
         param->answerFormatterType = AnswerFormatterType::XML;
         param->setAnswerReceiver(stimSetForm, SLOT(addDataFrameToWidget(QDomDocument*)));
+        param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
         SessionManager::instance()->setupJob(param, sender());
-*/
+
         // change combobox text
         stimSetForm->setTableText(base);
 
