@@ -172,7 +172,7 @@ void Box::setupDefaultDataframesFilter()
 {
     if (m_lazyNutType == "layer")
     {
-        qDebug() << "in setupDefaultDataframesFilter";
+//        qDebug() << "in setupDefaultDataframesFilter";
         defaultDataframesFilter = new ObjectCatalogueFilter(this);
         QRegExp rex(QString("^\\(\\(%1 .*observer.*default_dataframe\\)$").arg(m_name));
         defaultDataframesFilter->setFilterRegExp(rex);

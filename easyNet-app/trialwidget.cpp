@@ -55,11 +55,11 @@ TrialWidget::~TrialWidget()
 void TrialWidget::update(QString trialName)
 {
 //    trialDescriptionUpdater->requestDescription(trialName); // 3/7/15 -> added cos currently no descriptions for trials
-    qDebug() << "Entered trialwidget update" << trialName;
+//    qDebug() << "Entered trialwidget update" << trialName;
     if (trialName.isEmpty())
         return;
     trialFilter->setName(trialName);
-    qDebug() << "called setName";
+//    qDebug() << "called setName";
 
 }
 

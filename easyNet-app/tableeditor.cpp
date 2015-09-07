@@ -79,7 +79,7 @@ void TableEditor::init(const QString &tableName, QWidget *parent)
     setCentralWidget(widget);
     QVBoxLayout* layout = new QVBoxLayout(widget);
 
-    qDebug() << "In TableEditor::init() tableName is " << tableName << "is it param window:" << thisIsParamWindow;
+//    qDebug() << "In TableEditor::init() tableName is " << tableName << "is it param window:" << thisIsParamWindow;
     if (!thisIsParamWindow)
     {
         tableBox = new QComboBox(widget);

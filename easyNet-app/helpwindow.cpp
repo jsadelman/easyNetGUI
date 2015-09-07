@@ -62,7 +62,7 @@ HelpWindow::HelpWindow()
 
 void HelpWindow::showInfo(QString page)
 {
-    qDebug() << "show info" << page;
+//    qDebug() << "show info" << page;
     textViewer->setContents(page);
 }
 

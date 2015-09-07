@@ -47,13 +47,13 @@ void ScriptEditor::runSelection()
     QTextCursor *cursor = new QTextCursor(textEdit->document());
     if (cursor->selectedText().trimmed().isEmpty())
     {
-        qDebug() << "runSelection -- nothing selected";
-        qDebug() << "runSelection -- cursorPos" << cursor->position();
+//        qDebug() << "runSelection -- nothing selected";
+//        qDebug() << "runSelection -- cursorPos" << cursor->position();
         cursor->movePosition(QTextCursor::StartOfLine);
-        qDebug() << "runSelection -- cursorPos" << cursor->position();
+//        qDebug() << "runSelection -- cursorPos" << cursor->position();
         cursor->movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-        qDebug() << "runSelection -- cursorPos" << cursor->position();
-        qDebug() << "runSelection -- selected:" << textEdit->getCurrentLine();
+//        qDebug() << "runSelection -- cursorPos" << cursor->position();
+//        qDebug() << "runSelection -- selected:" << textEdit->getCurrentLine();
         emit runCmdAndUpdate(QStringList(textEdit->getCurrentLine()));
     }
     else

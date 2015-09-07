@@ -176,7 +176,7 @@ void PlotSettingsBaseWidget::setValue(QString val)
     XMLAccessor::setValue(valueElement, val);
 
 
-    qDebug() << "setValue:" << val << "check" << XMLAccessor::value(valueElement);
+//    qDebug() << "setValue:" << val << "check" << XMLAccessor::value(valueElement);
 
     switch(editMode)
     {
@@ -302,7 +302,7 @@ void PlotSettingsBaseWidget::emitValueChanged()
         XMLAccessor::setValue(valueElement, currentValue);
 
         emit valueChanged();
-        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
+//        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
 
     }
 }
@@ -451,7 +451,7 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
 //            this, SLOT(emitValueChanged()));
     connect(static_cast<QComboBox*>(editDisplayWidget),  static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             [=](int index){
-        qDebug() << "PlotSettingsSingleChoiceWidget index changed" << index;
+//        qDebug() << "PlotSettingsSingleChoiceWidget index changed" << index;
     });
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);

@@ -51,31 +51,31 @@ void TableViewer::addTrialTable(QString name)
     SessionManager::instance()->runCmd(cmd);
 }
 
-QString TableViewer::addTableWithThisName(QString name)
+void TableViewer::addTableWithThisName(QString name)
 {
     addTable(name, false);
 }
 
 QString TableViewer::addTable(QString name, bool chooseNewName)
 {
-    qDebug() << "addTable(" << name << ")";
+//    qDebug() << "addTable(" << name << ")";
     if (name.isEmpty())
         name = tr("Table_")+QString::number(numTables);
     else if (chooseNewName)
         name.append(".table");
-    qDebug() << "current list: " << tableMap.values();
+//    qDebug() << "current list: " << tableMap.values();
     if (tableMap.values().contains(name))
         return(name);
-    qDebug() << "going to add a new one";
+//    qDebug() << "going to add a new one";
     tables.push_back(new QTableView(this));
     myHeaders.push_back(new DataFrameHeader(tables.back()));
     numTables++;
     currentTableIdx = numTables-1;
     int idx = tablePanel->addTab(tables[numTables-1], name);
-    qDebug() << "adding table to panel. New numTables = " << numTables;
+//    qDebug() << "adding table to panel. New numTables = " << numTables;
     tablePanel->setCurrentIndex(idx);
     tableMap[idx] = name;
-    qDebug() << name << "has idx " << idx;
+//    qDebug() << name << "has idx " << idx;
 
     tables[tablePanel->currentIndex()]->setEditTriggers(QAbstractItemView::NoEditTriggers);
     // stimulus set allows a column to be dragged
@@ -89,7 +89,7 @@ QString TableViewer::addTable(QString name, bool chooseNewName)
     connect(myHeaders[tablePanel->currentIndex()], SIGNAL(restoreComboBoxText()), this, SIGNAL(restoreComboBoxText()));
     connect(this,SIGNAL(newTableName(QString)),myHeaders[tablePanel->currentIndex()],SLOT(setTableName(QString)));
 
-    return(name);
+    return name;
 }
 
 void TableViewer::switchTab(QString tableName)
@@ -231,7 +231,6 @@ void TableViewer::createToolBars()
 
 void TableViewer::setView(QString name)
 {
-    qDebug() << "Entered setView";
     emit newTableSelection(name);
 }
 
@@ -259,7 +258,7 @@ void TableViewer::replaceHeaders(QTableView* view)
     for(int i = 0; i < view->model()->columnCount(); i++)
         headers.append(view->model()->headerData(i, Qt::Horizontal).toString());
 
-    qDebug() << "Here are the original headers" << headers;
+//    qDebug() << "Here are the original headers" << headers;
 
     QString trial = "ldt"; // for example
     int col=0;
@@ -277,7 +276,7 @@ void TableViewer::replaceHeaders(QTableView* view)
         col++;
 
     }
-    qDebug() << "Here are the replaced headers" << newHeaders;
+//    qDebug() << "Here are the replaced headers" << newHeaders;
 
 }
 
@@ -295,7 +294,7 @@ void TableViewer::updateParamTable(QString model)
 {
     if (model.isEmpty())
         return;
-    qDebug() << "Entered updateParamTable():" << model;
+//    qDebug() << "Entered updateParamTable():" << model;
     QString name = QString("(") + model + QString(" parameters)");
     emit setParamDataFrameSignal(name);
     updateTableView(name);
@@ -331,7 +330,7 @@ void TableViewer::on_copy_clicked()
                         list.append(abmodel->index(i,j));
     }
     qSort(list);
-    qDebug() << list;
+//    qDebug() << list;
 
     QString copy_table;
     QModelIndex last = list.last();
@@ -398,20 +397,25 @@ void TableViewer::mergeFD()
     // setup dialog
     QString info("Select two dataframes you want to merge into one. Their key columns should match.");
     SettingsFormDialog dialog(domDoc, form, info, this);
-    qDebug() << "setDefaultModelSetting: " <<
-                tablePanel->tabText(tablePanel->currentIndex()) <<
-                SessionManager::instance()->currentSet();
+
 
     connect(&dialog, &SettingsFormDialog::cmdListReady, [=](QStringList cmdList)
     {
         SessionManager::instance()->runCmd(cmdList);
     });
+    connect(&dialog, &SettingsFormDialog::dfNameReady, [=](QString dfName)
+    {
+       addTableWithThisName(dfName);
+       updateTableView(dfName);
+    });
+
     dialog.exec();
 }
 
+
 void TableViewer::dragEnterEvent(QDragEnterEvent *event)
 {
-    qDebug() << "drageenterevent";
+//    qDebug() << "drageenterevent";
     if (event->mimeData()->hasFormat("application/x-dnditemdata"))
     {
         if (event->source() == this)
@@ -502,7 +506,7 @@ void TableViewer::updateTableView(QString text)
 {
 //    qDebug() << this << "Entered updateTableView with " << text;
 //    qDebug() << "currentIndex = " << tables[tablePanel->currentIndex()]->currentIndex();
-    if (!text.size())
+    if (text.isEmpty())
         return;
     if (text=="Untitled")
         return;

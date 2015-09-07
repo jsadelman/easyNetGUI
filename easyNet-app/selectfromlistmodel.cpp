@@ -154,6 +154,6 @@ void SelectFromListModel::updateRemovedRows(QModelIndex parent, int first, int l
 
 void SelectFromListModel::updateRows(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
-    qDebug() << "dataChanged";
+//    qDebug() << "dataChanged";
     emit dataChanged(index(topLeft.row(),0), index(bottomRight.row(),0),roles);
 }

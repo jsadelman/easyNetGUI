@@ -345,7 +345,7 @@ void EditWindow::showFindDialog()
 
 void EditWindow::findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags)
 {
-    qDebug() << "findForward";
+//    qDebug() << "findForward";
     bool result = textEdit->find(str, flags);
     if (!result)
     {
@@ -361,7 +361,7 @@ void EditWindow::findForward(const QString &str, QFlags<QTextDocument::FindFlag>
 
 void EditWindow::findBackward(const QString &str, QFlags<QTextDocument::FindFlag> flags)
 {
-    qDebug() << "findBackward";
+//    qDebug() << "findBackward";
     bool result = textEdit->find(str,flags);
     if (!result)
     {

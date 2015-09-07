@@ -549,7 +549,7 @@ void PlotSettingsWindow::selectRecentRScript()
 
 void PlotSettingsWindow::setCurrentPlotType(QString rScript)
 {
-    qDebug() << "In setCurrentPlotType, rScript is" << rScript;
+//    qDebug() << "In setCurrentPlotType, rScript is" << rScript;
     currentPlotType = rScript;
     if (!currentPlotType.isEmpty())
     {
