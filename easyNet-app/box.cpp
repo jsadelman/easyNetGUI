@@ -8,6 +8,11 @@
 #include <QPainter>
 #include <QDebug>
 
+
+const QColor layerCol = QColor(240, 240, 210);
+const QColor representationCol = QColor("azure");
+const QColor observedCol = QColor("white");
+
 using dunnart::limitString;
 
 Box::Box()
@@ -17,6 +22,19 @@ Box::Box()
       m_widthOverHeight(1.618)
 {
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultDataframesFilter()));
+
+}
+
+void Box::setLazyNutType(const QString &lazyNutType)
+{
+    m_lazyNutType = lazyNutType;
+    if (m_lazyNutType == "layer")
+        setFillColour(layerCol);
+
+    else if (m_lazyNutType == "representation")
+        setFillColour(representationCol);
+
+    emit lazyNutTypeChanged();
 }
 
 
@@ -124,6 +142,7 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 {
                     enableObserver(observer);
                     defaultPlot(action->text(), dataframe);
+                    setFillColour(observedCol);
                     return action;
                 }
                 else
@@ -131,6 +150,15 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                     disableObserver(observer);
                     SessionManager::instance()->runCmd(QString("destroy %1").arg(action->text()));
                     emit plotDestroyed(action->text());
+                    // if all actions unchecked restore original box colour
+                    bool unobserved = true;
+                    foreach (QAction *a, actionList)
+                        unobserved &= !a->isChecked();
+
+                    if (unobserved)
+                        setFillColour(layerCol);
+
+                    return action;
                 }
             }
         }

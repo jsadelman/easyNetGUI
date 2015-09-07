@@ -21,7 +21,7 @@ public:
     virtual QString name(void) const {return m_name;}
     virtual void setName(const QString& name) {m_name = name;}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
-    virtual void setLazyNutType(const QString& lazyNutType) {m_lazyNutType = lazyNutType; emit lazyNutTypeChanged();}
+    virtual void setLazyNutType(const QString& lazyNutType);
     virtual qreal widthMarginProportionToLongestLabel() {return m_widthMarginProportionToLongestLabel;}
     virtual void setWidthMarginProportionToLongestLabel(qreal w) {m_widthMarginProportionToLongestLabel = w;}
     virtual QString longNameToDisplayIntact() {return m_longNameToDisplayIntact;}
@@ -69,5 +69,9 @@ private:
 
 
 };
+
+extern const QColor layerCol;
+extern const QColor representationCol;
+extern const QColor observedCol;
 
 #endif // BOX_H

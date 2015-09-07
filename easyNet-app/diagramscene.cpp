@@ -383,8 +383,8 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
         box->autoSize();
         box->setLabel(name);
         box->setToolTip(name);
-        if (m_boxType == "representation")
-            box->setFillColour(QColor("azure"));
+//        if (m_boxType == "representation")
+//            box->setFillColour(QColor("azure"));
 
         itemHash.insert(name,box);
     }
