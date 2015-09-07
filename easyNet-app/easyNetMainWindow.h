@@ -83,6 +83,7 @@ signals:
     void paramTabEntered(QString);
     void newTableSelection(QString name);
     void showHistory(QString line);
+    void runAllTrialEnded();
 
 private slots:
 //    void about();
@@ -260,6 +261,8 @@ private:
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;
+    QAction         * runAllTrialMsgAct;
+
     Assistant       *assistant;
 //    TextEdit        *textViewer;
     HelpWindow      *infoWindow;
@@ -296,6 +299,7 @@ private:
     QLabel          *lazyNutCmdLabel;
     QLabel          *lazyNutErrorLabel;
     QComboBox       *lazyNutErrorBox;
+
 
 
 //    QToolBar        *fileToolBar;

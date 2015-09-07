@@ -444,6 +444,22 @@ void EasyNetMainWindow::initialiseToolBar()
     // toolBar is a pointer to an existing toolbar
     toolbar->addWidget(spacer);
     toolbar->addSeparator();
+
+    // notifier of run all trial
+    QLabel *runAllTrialLabel = new QLabel("Processing a set of trials\nPlease wait...");
+    runAllTrialLabel->setStyleSheet("QLabel {"
+                                "color: red;"
+                                 "border: 1px solid red;"
+                                 "padding: 4px;"
+                                 "font: bold 12pt;"
+                                 "}");
+    runAllTrialMsgAct = toolbar->addWidget(runAllTrialLabel);
+    runAllTrialMsgAct->setVisible(false);
+    connect(this, &EasyNetMainWindow::runAllTrialEnded, [=]()
+    {
+        runAllTrialMsgAct->setVisible(false);
+    });
+
 }
 
 void EasyNetMainWindow::updateTableView(QString text)
@@ -654,10 +670,11 @@ void EasyNetMainWindow::runAllTrial()
 //    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
     param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
     param->cmdList = cmds;
+    param->setEndOfJobReceiver(this, SIGNAL(runAllTrialEnded()));
     param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
     SessionManager::instance()->setupJob(param, sender());
 
-
+    runAllTrialMsgAct->setVisible(true);
 
     resultsDock->raise();
     resultsPanel->setCurrentIndex(outputTablesTabIdx);
