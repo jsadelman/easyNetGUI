@@ -36,7 +36,7 @@ class CommandSequencer;
 class SessionManager: public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString currentModel READ currentModel WRITE setCurrentModel)
+    Q_PROPERTY(QString currentModel READ currentModel WRITE setCurrentModel NOTIFY currentModelChanged)
     Q_PROPERTY(QString currentTrial READ currentTrial WRITE setCurrentTrial)
     Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet)
 
@@ -82,6 +82,7 @@ signals:
     // convenient signals for the implementation of updateRecentlyModified()
     void updateObjectCatalogue(QDomDocument*);
     void updateDiagramScene();
+    void currentModelChanged();
 
 
 public slots:
@@ -105,7 +106,7 @@ public slots:
 
     void restartLazyNut(QString lazyNutBat);
 
-    void setCurrentModel(QString s) {m_currentModel = s;}
+    void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged();}
     void setCurrentTrial(QString s) {m_currentTrial = s;}
     void setCurrentSet(QString s) {m_currentSet = s;}
 

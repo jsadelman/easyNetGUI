@@ -137,6 +137,7 @@ private slots:
     void showMostRecentError();
     void showPlotSettings();
     void updateDFComboBox();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -255,6 +256,7 @@ private:
     TrialWidget     *trialWidget;
     TrialEditor     *trialEditor;
     QPushButton     * trialButton;
+    QPushButton     * modelButton;
     QWidget         *spacer;
     ObjectCatalogueFilter* modelListFilter;
     ObjectCatalogueFilter* trialListFilter;

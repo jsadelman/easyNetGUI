@@ -263,6 +263,7 @@ void EasyNetMainWindow::connectSignalsAndSlots()
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             debugLog, SLOT(addRowToTable(QString,QString)));
+
 }
 
 void EasyNetMainWindow::showExplorer()
@@ -379,8 +380,9 @@ void EasyNetMainWindow::initialiseToolBar()
 //    QAction *newa = new QAction(newpix, "&New", this);
     toolbar = addToolBar("main toolbar");
 //    QLabel* modelBoxLabel = new QLabel("Model: ");
-    QPushButton* modelButton = new QPushButton("Model:");
+    modelButton = new QPushButton("Model:");
     modelButton->setFlat(true);
+    modelButton->setEnabled(true);
 
 //    QLabel* trialBoxLabel = new QLabel("Trial:");
     trialButton = new QPushButton("Trial:");
@@ -729,6 +731,9 @@ void EasyNetMainWindow::loadModel()
         trialButton->setEnabled(true);
         loadAddOnAct->setEnabled(true);
 
+        loadModelAct->setEnabled(false);
+        modelButton->setEnabled(false);
+
     }
 }
 
@@ -886,6 +891,7 @@ void EasyNetMainWindow::updateDFComboBox()
                                               this,SLOT(updateDFComboBox()));
 
 }
+
 
 void EasyNetMainWindow::currentStimulusChanged(QString stim)
 {
