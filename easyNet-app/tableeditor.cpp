@@ -63,6 +63,11 @@ TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &table
     : QMainWindow (parent)
 {
     // this style of constructor is used for dataframes in the Tables tab
+    tableBox=nullptr;
+    thisIsParamWindow=false;
+    if (tableName=="Parameters")
+        thisIsParamWindow=true;
+
     init(tableName, parent);
     objectCatalogue = _objectCatalogue;
     setFilter("dataframe");
