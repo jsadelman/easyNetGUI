@@ -20,10 +20,13 @@ Box::Box()
       m_longNameToDisplayIntact("longname"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618),
-      m_labelPointSize(9)
+      m_labelPointSize(9),
+      default_input_observer_Rex("default_input_observer (\\d+)")
 {
     labelFont = canvas() ? canvas()->canvasFont() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultDataframesFilter()));
+    m_ports.clear();
+
 
 }
 
@@ -127,18 +130,47 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         QList<QAction*> actionList;
         for (int row = 0; row < defaultDataframesFilter->rowCount(); ++row)
         {
-            // from:
-            // ((my_level default_input_observer 0) default_dataframe)
-            // to:
-            // my_model.my_level.default_input.0.plot
-            QString plotName = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
-            plotName.remove(QRegExp("\\(|_observer|\\).*"));
-            plotName.replace(" ", ".");
-            plotName.prepend(QString("%1.").arg(SessionManager::instance()->currentModel()));
-            plotName.append(".plot");
-            actionList.append(plotMenu->addAction(plotName));
+
+            QString dataframe = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+            QString observer = dataframe;
+            observer.remove(QRegExp("^\\(| default_dataframe\\)"));
+            QMap <QString, QVariant> plotData; // QMap <QString, QString> is not allowed
+            plotData["dataframe"] = dataframe;
+            plotData["observer"] = observer;
+            QString rplotName;
+            QString prettyName;
+            if (observer.contains("default_observer"))
+            {
+                plotData["rplotName"] = QString("%1.%2.state.plot")
+                        .arg(SessionManager::instance()->currentModel())
+                        .arg(m_name);
+                plotData["prettyName"] = "state";
+            }
+            else if (observer.contains("default_input_observer"))
+            {
+                int i = default_input_observer_Rex.indexIn(observer);
+                if (i < 0)
+                    qDebug() << "cannot find default input port";
+                else
+                {
+                    plotData["prettyName"] = m_ports.value(default_input_observer_Rex.cap(1));
+                    plotData["rplotName"] = QString("%1.%2.%3.plot")
+                            .arg(SessionManager::instance()->currentModel())
+                            .arg(m_name)
+                            .arg(plotData["prettyName"].toString());
+                }
+            }
+
+
+//            QString plotName = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+//            plotName.remove(QRegExp("\\(|_observer|\\).*"));
+//            plotName.replace(" ", ".");
+//            plotName.prepend(QString("%1.").arg(SessionManager::instance()->currentModel()));
+//            plotName.append(".plot");
+            actionList.append(plotMenu->addAction(plotData["prettyName"].toString()));
             actionList.at(row)->setCheckable(true);
-            actionList.at(row)->setChecked(ObjectCatalogue::instance()->exists(plotName));
+            actionList.at(row)->setChecked(ObjectCatalogue::instance()->exists(plotData["rplotName"].toString()));
+            actionList.at(row)->setData(plotData);
         }
 
 
@@ -155,22 +187,23 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         {
             if (action == actionList.at(row))
             {
-                QString dataframe = defaultDataframesFilter->data(
-                            defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
-                QString observer = dataframe;
-                observer.remove(QRegExp("^\\(| default_dataframe\\)"));
+//                QString dataframe = defaultDataframesFilter->data(
+//                            defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+//                QString observer = dataframe;
+//                observer.remove(QRegExp("^\\(| default_dataframe\\)"));
+                QMap <QString, QVariant> plotData = action->data().toMap();
                 if (action->isChecked())
                 {
-                    enableObserver(observer);
-                    defaultPlot(action->text(), dataframe);
+                    enableObserver(plotData.value("observer").toString());
+                    defaultPlot(plotData.value("rplotName").toString(), plotData.value("dataframe").toString());
                     setFillColour(observedCol);
                     return action;
                 }
                 else
                 {
-                    disableObserver(observer);
-                    SessionManager::instance()->runCmd(QString("destroy %1").arg(action->text()));
-                    emit plotDestroyed(action->text());
+                    disableObserver(plotData.value("observer").toString());
+                    SessionManager::instance()->runCmd(QString("destroy %1").arg(plotData.value("rplotName").toString()));
+                    emit plotDestroyed(plotData.value("rplotName").toString());
                     // if all actions unchecked restore original box colour
                     bool unobserved = true;
                     foreach (QAction *a, actionList)

@@ -34,6 +34,8 @@ public:
     virtual qreal widthOverHeight() {return m_widthOverHeight;}
     virtual void setWidthOverHeight(qreal r) {m_widthOverHeight = r;}
 
+    void setPorts(QMap <QString, QString> ports) {m_ports = ports;}
+
 
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
@@ -71,6 +73,8 @@ private:
     qreal m_widthOverHeight;
 
     ObjectCatalogueFilter *defaultDataframesFilter;
+    QMap <QString, QString> m_ports;
+    QRegExp default_input_observer_Rex;
 
 
 

@@ -173,6 +173,7 @@ private:
     ObjectCatalogueFilter *boxFilter;
     ObjectCatalogueFilter *arrowFilter;
     DescriptionUpdater *arrowDescriptionUpdater;
+    DescriptionUpdater *boxDescriptionUpdater;
     QList<QDomDocument*> renderList;
 
     QAction* enableObserverAction;

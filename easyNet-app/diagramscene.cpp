@@ -119,13 +119,14 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     arrowFilter = new ObjectCatalogueFilter(this);
     arrowFilter->setType(m_arrowType);
 
-//    descriptionUpdater = new DescriptionUpdater(this);
-//    descriptionUpdater->setProxyModel(objectFilter);
+    boxDescriptionUpdater = new DescriptionUpdater(this);
+    boxDescriptionUpdater->setProxyModel(boxFilter);
 
     arrowDescriptionUpdater = new DescriptionUpdater(this);
     arrowDescriptionUpdater->setProxyModel(arrowFilter);
 
-
+    connect(boxDescriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+            this, SLOT(renderObject(QDomDocument*)));
 
     connect(arrowDescriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
             this, SLOT(renderObject(QDomDocument*)));
@@ -312,6 +313,7 @@ void DiagramScene::wakeUp()
             this, SLOT(removeObject(QString)));
     connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
             this, SLOT(removeObject(QString)));
+    boxDescriptionUpdater->wakeUpUpdate();
     arrowDescriptionUpdater->wakeUpUpdate();
     syncToObjCatalogue();
 }
@@ -324,6 +326,7 @@ void DiagramScene::goToSleep()
             this, SLOT(removeObject(QString)));
     disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
             this, SLOT(removeObject(QString)));
+    boxDescriptionUpdater->goToSleep();
     arrowDescriptionUpdater->goToSleep();
 
 }
@@ -411,7 +414,7 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
 {
     // wait until all descriptions of recently_* objects have arrived
     renderList.append(domDoc);
-    if (arrowFilter->isAllValid())
+    if (boxFilter->isAllValid() && arrowFilter->isAllValid())
         render();
 }
 
@@ -429,7 +432,16 @@ void DiagramScene::render()
     {
         if (!domDoc)
             continue;
-            if (AsLazyNutObject(*domDoc).type() == m_arrowType)
+        if (AsLazyNutObject(*domDoc).type() == m_boxType)
+        {
+            QString name = AsLazyNutObject(*domDoc).name();
+            QMap <QString, QString> ports;
+            foreach (QString label, XMLelement(*domDoc)["Ports"].listLabels())
+                ports[label] = XMLelement(*domDoc)["Ports"][label]();
+
+            static_cast<Box*>(itemHash.value(name))->setPorts(ports);
+        }
+        else if (AsLazyNutObject(*domDoc).type() == m_arrowType)
         {
             QString name = AsLazyNutObject(*domDoc).name();
             Box *startItem = qgraphicsitem_cast<Box *>
@@ -511,7 +523,13 @@ void DiagramScene::syncToObjCatalogue()
     {
         name = boxFilter->data(boxFilter->index(row,0)).toString();
         if (!itemHash.contains(name))
+        {
             positionObject(name, m_boxType, nullptr);
+            QVariant v = boxFilter->data(boxFilter->index(row, ObjectCatalogue::DescriptionCol));
+            if (v.canConvert<QDomDocument *>())
+                renderList.append(v.value<QDomDocument *>());
+            boxDescriptionUpdater->requestDescription(name);
+        }
 //        else if ((boxFilter->data(boxFilter->index(row,1)).toString() == m_arrowType))
 //            &&   (!itemHash.contains(name)))
 //            newConnections << name;
@@ -523,8 +541,8 @@ void DiagramScene::syncToObjCatalogue()
         name = arrowFilter->data(arrowFilter->index(row,0)).toString();
         if (!itemHash.contains(name))
         {
-            connections.append(name);
-            QVariant v = arrowFilter->data(arrowFilter->index(row, 3));
+            connections.append(name); // OBSOLETE
+            QVariant v = arrowFilter->data(arrowFilter->index(row, ObjectCatalogue::DescriptionCol));
             if (v.canConvert<QDomDocument *>())
                 renderList.append(v.value<QDomDocument *>());
             arrowDescriptionUpdater->requestDescription(name);
