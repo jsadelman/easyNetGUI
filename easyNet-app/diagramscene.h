@@ -81,6 +81,7 @@ class DiagramScene : public dunnart::Canvas
     Q_PROPERTY(QString arrowType READ arrowType)
     Q_PROPERTY(QString baseName READ baseName WRITE setBaseName)
     Q_PROPERTY(QString layoutFile READ layoutFile WRITE setLayoutFile)
+
     Q_PROPERTY(bool newModelLoaded READ newModelLoaded WRITE setNewModelLoaded)
 
 public:

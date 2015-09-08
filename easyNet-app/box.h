@@ -12,6 +12,7 @@ class Box: public dunnart::ShapeObj
     Q_PROPERTY (QString name READ name WRITE setName)
     Q_PROPERTY (QString lazyNutType READ lazyNutType WRITE setLazyNutType NOTIFY lazyNutTypeChanged)
     // graphical parameters
+    Q_PROPERTY(int labelPointSize READ labelPointSize WRITE setLabelPointSize)
     Q_PROPERTY (qreal widthMarginProportionToLongestLabel READ widthMarginProportionToLongestLabel WRITE setWidthMarginProportionToLongestLabel)
     Q_PROPERTY (QString longNameToDisplayIntact READ longNameToDisplayIntact WRITE setLongNameToDisplayIntact)
     Q_PROPERTY (qreal widthOverHeight READ widthOverHeight WRITE setWidthOverHeight)
@@ -22,6 +23,8 @@ public:
     virtual void setName(const QString& name) {m_name = name;}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType);
+    virtual int labelPointSize(void) const {return m_labelPointSize;}
+    virtual void setLabelPointSize(int labelPointSize);
     virtual qreal widthMarginProportionToLongestLabel() {return m_widthMarginProportionToLongestLabel;}
     virtual void setWidthMarginProportionToLongestLabel(qreal w) {m_widthMarginProportionToLongestLabel = w;}
     virtual QString longNameToDisplayIntact() {return m_longNameToDisplayIntact;}
@@ -59,6 +62,8 @@ private:
 
     QString m_name;
     QString m_lazyNutType;
+    int m_labelPointSize;
+    QFont labelFont;
     QString m_longNameToDisplayIntact;
     qreal m_widthMarginProportionToLongestLabel;
     qreal m_widthOverHeight;

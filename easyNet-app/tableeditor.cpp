@@ -20,8 +20,9 @@
 
 
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
-    : QMainWindow(parent),fileToolBar(0),editToolBar(0),tableBox(0)
+    : QMainWindow(parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
 {
+    tableBox=nullptr;
     thisIsParamWindow=false;
     if (tableName=="Parameters")
         thisIsParamWindow=true;
@@ -59,7 +60,7 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
 }
 
 TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &tableName, QWidget *parent)
-    : QMainWindow (parent),fileToolBar(0),editToolBar(0),tableBox(0)
+    : QMainWindow (parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
 {
     // this style of constructor is used for dataframes in the Tables tab
     tableBox=nullptr;

@@ -19,8 +19,10 @@ Box::Box()
     : ShapeObj("rect"),
       m_longNameToDisplayIntact("longnameof_level"),
       m_widthMarginProportionToLongestLabel(0.1),
-      m_widthOverHeight(1.618)
+      m_widthOverHeight(1.618),
+      m_labelPointSize(9)
 {
+    labelFont = canvas() ? canvas()->canvasFont() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultDataframesFilter()));
 
 }
@@ -35,6 +37,12 @@ void Box::setLazyNutType(const QString &lazyNutType)
         setFillColour(representationCol);
 
     emit lazyNutTypeChanged();
+}
+
+void Box::setLabelPointSize(int labelPointSize)
+{
+     m_labelPointSize = labelPointSize;
+     labelFont.setPointSize(m_labelPointSize);
 }
 
 
@@ -58,7 +66,7 @@ void Box::write(QJsonObject &json) const
 
 void Box::autoSize()
 {
-   QFontMetrics fm(canvas()->canvasFont());
+   QFontMetrics fm(labelFont);
    qreal autoWidth = (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
    qreal autoHeigth = autoWidth / m_widthOverHeight;
    cmd_setSize(QSizeF(autoWidth, autoHeigth));
@@ -67,10 +75,13 @@ void Box::autoSize()
 void Box::paintLabel(QPainter *painter)
 {
     painter->setPen(Qt::black);
-    if (canvas())
-    {
-        painter->setFont(canvas()->canvasFont());
-    }
+    painter->setFont(labelFont);
+//    if (canvas())
+//    {
+//        QFont labelFont = canvas()->canvasFont();
+//        labelFont.setPointSize(14);
+//        painter->setFont(labelFont);
+//    }
     painter->setRenderHint(QPainter::TextAntialiasing, true);
     QString displayLabel = limitString(m_label, m_longNameToDisplayIntact.length());
     painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, displayLabel);
