@@ -85,6 +85,7 @@ void PairedListWidget::setupModels()
     selectedModel->setSourceModel(selectFromListModel);
     selectedModel->setFilterRegExp("true");
     selectedModel->setFilterKeyColumn(1);
+    selectedModel->sort(0);
     notSelectedModel = new QSortFilterProxyModel(this);
     notSelectedModel->setSourceModel(selectFromListModel);
     notSelectedModel->setFilterRegExp("false");

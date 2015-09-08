@@ -1336,8 +1336,8 @@ void EasyNetMainWindow::createMenus()
 
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(assistantAct);
-    helpMenu->addSeparator();
-    helpMenu->addAction(versionAct);
+//    helpMenu->addSeparator();
+//    helpMenu->addAction(versionAct);
 
     menuBar()->addMenu(helpMenu);
 }
