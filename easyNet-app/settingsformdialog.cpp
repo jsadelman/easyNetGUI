@@ -65,7 +65,7 @@ void SettingsFormDialog::build()
     QVBoxLayout* buttonsLayout = new QVBoxLayout;
     QPushButton* okButton = new QPushButton("Ok");
     QPushButton* cancelButton = new QPushButton("Cancel");
-    connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(okButton, SIGNAL(clicked()), this, SLOT(checkBeforeAccept()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
     buttonsLayout->addWidget(okButton);
     buttonsLayout->addWidget(cancelButton);
@@ -98,6 +98,17 @@ void SettingsFormDialog::validateName()
         QMessageBox::critical(this, "Illegal dataframe name",QString("The name you chose is not valid, since it conflicts with an existing name or command.\n"
                                                                      "Please select another name."));
         nameLineEdit->setText("");
+    }
+}
+
+void SettingsFormDialog::checkBeforeAccept()
+{
+    if (form->allIsSet() && !nameLineEdit->text().isEmpty())
+        accept();
+
+    else
+    {
+        QMessageBox::critical(this, "Missing values",QString("Please fill in all the values in this form."));
     }
 }
 

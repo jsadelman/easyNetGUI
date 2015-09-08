@@ -26,6 +26,7 @@ signals:
 
 private slots:
     void validateName();
+    void checkBeforeAccept();
 
 
 private:

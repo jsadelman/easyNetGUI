@@ -1347,8 +1347,8 @@ QString ShapeObj::label(void) const
 
 void ShapeObj::setLabel(const QString& label)
 {
-    m_label = limitString(label, m_maxLabelLength);
-    update();
+//    m_label = limitString(label, m_maxLabelLength);
+//    update();
 }
 
 

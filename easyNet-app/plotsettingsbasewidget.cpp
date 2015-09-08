@@ -375,6 +375,8 @@ void PlotSettingsNumericWidget::createEditWidget()
     if (valueElement.tagName() == "real")
     {
         editDisplayWidget = new QDoubleSpinBox;
+        static_cast<QDoubleSpinBox*>(editDisplayWidget)->setMaximum(10000);
+        static_cast<QDoubleSpinBox*>(editDisplayWidget)->setMinimum(-10);
         setWidgetValue(XMLAccessor::value(valueElement));
         connect(static_cast<QDoubleSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(double)),
                 this, SLOT(emitValueChanged()));
@@ -382,6 +384,7 @@ void PlotSettingsNumericWidget::createEditWidget()
     else
     {
         editDisplayWidget = new QSpinBox;
+        static_cast<QSpinBox*>(editDisplayWidget)->setMaximum(10000);
         setWidgetValue(XMLAccessor::value(valueElement));
         connect(static_cast<QSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(int)),
                 this, SLOT(emitValueChanged()));

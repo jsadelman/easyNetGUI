@@ -94,7 +94,7 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     setProperty("preventOverlaps", true);
 
     // box parameters
-    boxLongNameToDisplayIntact = "longnameof_level";
+    boxLongNameToDisplayIntact = "longnameXX";
     boxWidthMarginProportionToLongestLabel = 0.1;
     boxWidthOverHeight = 1.618;
     // compute box width and use it to set shapeNonOverlapPadding

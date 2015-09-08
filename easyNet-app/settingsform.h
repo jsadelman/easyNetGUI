@@ -33,7 +33,7 @@ public:
     void setUseRFormat(bool useRFormat) {m_useRFormat = useRFormat;}
 //    QMap<QString, QString> defaultSettings() {return m_defaultSettings;}
     void setDefaultSettings(QMap<QString, QString> defaultSettings) {m_defaultSettings = defaultSettings;}
-
+    bool allIsSet();
 
 signals:
     void updateRequest();

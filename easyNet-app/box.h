@@ -24,6 +24,8 @@ public:
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType);
     virtual int labelPointSize(void) const {return m_labelPointSize;}
+    virtual void setLabel(const QString& label);
+
     virtual void setLabelPointSize(int labelPointSize);
     virtual qreal widthMarginProportionToLongestLabel() {return m_widthMarginProportionToLongestLabel;}
     virtual void setWidthMarginProportionToLongestLabel(qreal w) {m_widthMarginProportionToLongestLabel = w;}

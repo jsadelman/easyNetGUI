@@ -342,7 +342,7 @@ void EasyNetMainWindow::explorerTabChanged(int idx)
      codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
  //    codePanelDock->hide(); // initially, don't show codePanelDock
 
-     methodsDock = new QDockWidget(tr("Stimuli \& Procedure"), this);
+     methodsDock = new QDockWidget(tr("Method"), this);
      methodsDock->setWidget(methodsPanel);
      addDockWidget(Qt::LeftDockWidgetArea, methodsDock);
      viewMenu->addAction(methodsDock->toggleViewAction());
@@ -1242,7 +1242,7 @@ void EasyNetMainWindow::createActions()
     restartInterpreterAct = new QAction(tr("Restart Interpreter"), this);
     restartInterpreterAct->setStatusTip(tr("Restart the lazyNut interpreter, to start a new session"));
     connect(restartInterpreterAct, SIGNAL(triggered()), this, SLOT(restart()));
-//    restartInterpreterAct->setDisabled(true);
+    restartInterpreterAct->setDisabled(true);
 
 
     viewSettingsAct = new QAction(tr("View easyNet settings"), this);

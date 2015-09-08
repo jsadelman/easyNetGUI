@@ -224,3 +224,12 @@ void SettingsForm::setDefaultModelSetting(QString setting, QString value)
     widgetMap[setting]->setValue(value);
     widgetMap[setting]->setValueSetTrue();
 }
+
+bool SettingsForm::allIsSet()
+{
+    bool result = true;
+    foreach (PlotSettingsBaseWidget* widget, widgetMap)
+        result &= !widget->value().isEmpty();
+
+    return result;
+}

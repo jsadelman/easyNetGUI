@@ -4,6 +4,7 @@
 ObjectNameValidator::ObjectNameValidator(QObject *parent)
 {
     forbiddenNames
+                      << "\\s+"
                       << "[#(0-9].*"
                       << "query"
                       << "xml"

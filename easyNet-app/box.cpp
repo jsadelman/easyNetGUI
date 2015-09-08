@@ -17,7 +17,7 @@ using dunnart::limitString;
 
 Box::Box()
     : ShapeObj("rect"),
-      m_longNameToDisplayIntact("longnameof_level"),
+      m_longNameToDisplayIntact("longname"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618),
       m_labelPointSize(9)
@@ -83,9 +83,17 @@ void Box::paintLabel(QPainter *painter)
 //        painter->setFont(labelFont);
 //    }
     painter->setRenderHint(QPainter::TextAntialiasing, true);
-    QString displayLabel = limitString(m_label, m_longNameToDisplayIntact.length());
-    painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, displayLabel);
+//    QString displayLabel = limitString(m_label, m_longNameToDisplayIntact.length());
+    painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, m_label);
 }
+
+
+void Box::setLabel(const QString& label)
+{
+    m_label = limitString(label, m_longNameToDisplayIntact.length());
+    update();
+}
+
 
 QRectF Box::labelBoundingRect() const
 {
@@ -98,6 +106,8 @@ QString Box::defaultPlotType()
     if (m_lazyNutType == "layer")
         if (m_name == "spatial_code") //quick and dirty hack!!!
             return "spactivity-3";
+        else if (m_name.startsWith("feature"))
+            return "plot_features";
         else
             return "activity";
     else
