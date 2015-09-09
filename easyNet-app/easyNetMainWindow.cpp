@@ -558,7 +558,9 @@ void EasyNetMainWindow::runTrial()
     QString stepCmd  = " step ";
     QString modelArg = QString(" model=") + currentModel;
 
-    cmd = quietMode + currentTrial + stepCmd + trialWidget->getTrialCmd(); // modelArg + stimArg;
+    // case hack to avoid problems with UPPERCASE!!!
+    QString trialString = trialWidget->getTrialCmd().toLower();
+    cmd = quietMode + currentTrial + stepCmd + trialString; // modelArg + stimArg;
     cmds << cmd;
 
     QString displayTableName = currentTrial;
