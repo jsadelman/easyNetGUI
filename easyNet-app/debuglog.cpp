@@ -2,9 +2,11 @@
 #include <QItemSelectionModel>
 #include <QModelIndex>
 #include <QStandardItemModel>
+#include <QDateTime>
 
 #include "debuglog.h"
 #include "finddialog.h"
+#include "sessionmanager.h"
 
 
 DebugLog::DebugLog(QWidget *parent)
@@ -32,6 +34,8 @@ DebugLog::DebugLog(QWidget *parent)
     findDialog->hideExtendedOptions();
     connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
             this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
+    connect(SessionManager::instance(), SIGNAL(lazyNutCrash()), this, SLOT(autoSave()));
+
 }
 
 DebugLog::~DebugLog()
@@ -124,6 +128,14 @@ void DebugLog::createActions()
     findAct->setEnabled(true);
 }
 
+QString DebugLog::defaultLogFileName()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString logDir = QString("%1/Output_files").arg(settings.value("easyNetHome","../..").toString());
+    QString timeStamp = QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
+    return QString("%1/debug_log.%2.log").arg(logDir).arg(timeStamp);
+}
+
 
 void DebugLog::createToolBars()
 {
@@ -185,5 +197,31 @@ void DebugLog::findForward(const QString &str, QFlags<QTextDocument::FindFlag> f
         QMessageBox::warning(this, "Find",QString("The text was not found"));
         findDialog->hide();
     }
+}
+
+void DebugLog::save()
+{
+
+    QString fileName = QFileDialog::getSaveFileName(this,tr("Save debug log to file"),
+                                                    defaultLogFileName(),
+                                                    tr("log files (*.log)"));
+    if (!fileName.isEmpty())
+    {
+         saveLogToFile(fileName);
+    }
+}
+
+void DebugLog::saveLogToFile(QString fileName)
+{
+    QFile file(fileName);
+    file.open(QIODevice::WriteOnly);
+    for (int row = 0; row < model->rowCount(); ++row)
+    {
+        file.write(QString("%1\t%2\t%3\n")
+                   .arg(model->data(model->index(row, 0)).toString())
+                   .arg(model->data(model->index(row, 1)).toString())
+                   .arg(model->data(model->index(row, 2)).toString()).toLocal8Bit());
+    }
+    file.close();
 }
 

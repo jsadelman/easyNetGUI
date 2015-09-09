@@ -27,9 +27,11 @@ signals:
     void historyKey(int dir);
 private slots:
     void showHistory(QString line);
+    void coreDump();
 private:
     int currentLine;
     InputCmdLine* inputCmdLine;
+    QAction *coreDumpAct;
 
 
     void createStatusBar();

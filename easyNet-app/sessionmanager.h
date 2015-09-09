@@ -4,6 +4,7 @@
 #include <QString>
 #include <QObject>
 #include <QStateMachine>
+#include "qprocess.h"
 
 
 //#include "jobqueue.h"
@@ -32,6 +33,7 @@ class ObjExplorer;
 class DesignWindow;
 class LazyNut;
 class CommandSequencer;
+
 
 class SessionManager: public QObject
 {
@@ -84,6 +86,8 @@ signals:
     void updateDiagramScene();
     void currentModelChanged();
 
+    void lazyNutCrash();
+
 
 public slots:
 
@@ -120,6 +124,7 @@ private slots:
     void macroEnded();
 
     void appendCmdListOnNextJob(QStringList cmdList);
+    void sendLazyNutCrash(int, QProcess::ExitStatus);
 
 
 

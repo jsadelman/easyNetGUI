@@ -26,11 +26,19 @@ public:
 
 private slots:
     void addRowToTable(QString cmd, QString time);
-
     void on_copy_clicked();
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
+    void save();
+    void autoSave() {saveLogToFile(defaultLogFileName());}
+
 private:
+     void createToolBars();
+     void createActions();
+     void init(const QString &tableName, QWidget *parent);
+     void setViewToStringList();
+     QString defaultLogFileName();
+     void saveLogToFile(QString fileName);
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
@@ -43,10 +51,7 @@ private:
     QTableView      *view;
     FindDialog*     findDialog;
 
-    void createToolBars();
-    void createActions();
-    void init(const QString &tableName, QWidget *parent);
-    void setViewToStringList();
+
 };
 
 

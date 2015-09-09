@@ -151,6 +151,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
 
 
 
+
 bool CommandSequencer::getStatus()
 {
     return ready;

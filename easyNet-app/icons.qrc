@@ -148,5 +148,6 @@
         <file>images/icon-record.png</file>
         <file>images/barchart2.png</file>
         <file>images/Merge_Icon.png</file>
+        <file>images/Radioactive-icon.png</file>
     </qresource>
 </RCC>

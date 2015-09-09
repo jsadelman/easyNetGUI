@@ -42,6 +42,8 @@ void SessionManager::startLazyNut(QString lazyNutBat)
 {
     lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
     lazyNut->setProgram(lazyNutBat);
+    connect(lazyNut, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(sendLazyNutCrash(int,QProcess::ExitStatus)));
+
     lazyNut->start();
 
     if (!lazyNut->waitForStarted())
@@ -55,6 +57,16 @@ void SessionManager::startLazyNut(QString lazyNutBat)
         qDebug("lazyNut not running");
     }
 }
+
+void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if (exitCode != 0 || exitStatus !=QProcess::NormalExit)
+    {
+//        qDebug() << "exit status " << exitCode << exitStatus;
+     //   emit lazyNutCrash();
+    }
+}
+
 
 void SessionManager::restartLazyNut(QString lazyNutBat)
 {

@@ -140,6 +140,7 @@ void EasyNetMainWindow::constructForms()
     /* CONSTRUCT ALL THE INDIVIDUAL FORMS */
 
     lazyNutConsole2 = new Console(this);
+
     plotSettingsWindow = new PlotSettingsWindow(this);
     objExplorer = new ObjExplorer(ObjectCatalogue::instance(),this);
     scriptEdit = new ScriptEditor(scriptsDir, this);

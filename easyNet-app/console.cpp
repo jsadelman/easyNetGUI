@@ -8,6 +8,9 @@
 #include <QDebug>
 #include <QStatusBar>
 #include <QLabel>
+#include <QSettings>
+#include <QAction>
+#include <QDateTime>
 
 Console::Console(QWidget *parent)
     : EditWindow(parent)
@@ -16,6 +19,11 @@ Console::Console(QWidget *parent)
     fileToolBar->removeAction(openAct);
     editToolBar->removeAction(cutAct);
     editToolBar->removeAction(pasteAct);
+
+    coreDumpAct = new QAction(QIcon(":/images/Radioactive-icon.png"), tr("Core Dump"), this);
+    coreDumpAct->setStatusTip(tr("Save the content of the console to file"));
+    connect(coreDumpAct, SIGNAL(triggered()), this, SLOT(coreDump()));
+    fileToolBar->addAction(coreDumpAct);
 
     setStyleSheet("QToolBar {background-color : gray; color : black}");
     textEdit->setReadOnly(true);
@@ -26,6 +34,7 @@ Console::Console(QWidget *parent)
     createStatusBar();
     statusBar()->show();
 
+    connect(SessionManager::instance(), SIGNAL(lazyNutCrash()), this, SLOT(coreDump()));
 
 }
 
@@ -64,6 +73,20 @@ void Console::showHistory(QString line)
 {
     inputCmdLine->setText(line);
 
+}
+
+void Console::coreDump()
+{
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString logDir = QString("%1/Output_files").arg(settings.value("easyNetHome","../..").toString());
+    QString timeStamp = QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
+    QString fileName = QString("%1/core_dump.%2.log").arg(logDir).arg(timeStamp);
+    QFile file(fileName);
+    file.open(QIODevice::WriteOnly);
+
+        file.write(textEdit->toPlainText().toLocal8Bit());
+
+    file.close();
 }
 
 void Console::setConsoleFontSize(int size)

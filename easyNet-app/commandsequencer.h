@@ -7,6 +7,7 @@
 #include <QQueue>
 #include <QSet>
 #include <QVector>
+//#include <QProcess>
 
 #include "enumclasses.h"
 
@@ -30,6 +31,7 @@ public slots:
     bool isOn();
 
     void processLazyNutOutput(const QString &lazyNutOutput);
+
 signals:
     // send output to editor
     void commandsInJob(int);
