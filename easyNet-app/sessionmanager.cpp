@@ -1,9 +1,9 @@
 #include "sessionmanager.h"
 #include "commandsequencer.h"
-#include "jobqueue.h"
+#include "jobqueue_DEPRECATED.h"
 #include "lazynut.h"
 #include "lazynutmacro.h"
-#include "lazynutjob.h"
+#include "lazynutjob_DEPRECATED.h"
 #include "lazynutjobparam.h"
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
@@ -82,14 +82,14 @@ void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
 {
     if (lazyNut->state() != QProcess::Running)
         return;
-    LazyNutJob* job = qobject_cast<LazyNutJob*>(sender);
+    LazyNutJob_DEPRECATED* job = qobject_cast<LazyNutJob_DEPRECATED*>(sender);
     bool start;
     if ((start = !job))
     {
         LazyNutMacro* macro = new LazyNutMacro(macroQueue, this);
         connect(macro, SIGNAL(started()), this, SIGNAL(lazyNutMacroStarted()));
         connect(macro, SIGNAL(finished()), this, SIGNAL(lazyNutMacroFinished()));
-        job = new LazyNutJob(macro); // job --> endOfMacro
+        job = new LazyNutJob_DEPRECATED(macro); // job --> endOfMacro
         macro->setInitialState(job);
         connect(commandSequencer,SIGNAL(commandsExecuted()),macro,SIGNAL(next()));
         connect(job,SIGNAL(entered()),job,SLOT(runCommands()));
@@ -127,7 +127,7 @@ void SessionManager::setupJob(LazyNutJobParam *param, QObject *sender)
         connect(job,SIGNAL(exited()),param->endOfJobReceiver, param->endOfJobSlot);
     if (param->nextJobReceiver && param->nextJobSlot)
     {
-        LazyNutJob* nextJob = new LazyNutJob(job->macro); // nextJob --> endOfMacro
+        LazyNutJob_DEPRECATED* nextJob = new LazyNutJob_DEPRECATED(job->macro); // nextJob --> endOfMacro
         job->removeTransition(job->transitions().at(0));
         job->addTransition(job->macro,SIGNAL(next()),nextJob); // job --> nextJob --> endOfMacro
         connect(nextJob,SIGNAL(entered()),param->nextJobReceiver,param->nextJobSlot);
@@ -145,24 +145,24 @@ void SessionManager::setupNoOp(QObject *sender)
 }
 
 
-LazyNutJob *SessionManager::currentJob(QObject *sender)
+LazyNutJob_DEPRECATED *SessionManager::currentJob(QObject *sender)
 {
-    LazyNutJob* job = qobject_cast<LazyNutJob*> (sender);
+    LazyNutJob_DEPRECATED* job = qobject_cast<LazyNutJob_DEPRECATED*> (sender);
     if (job)
         return job;
     AnswerFormatter *af = qobject_cast<AnswerFormatter*> (sender);
     if (af)
     {
-        LazyNutJob* job = qobject_cast<LazyNutJob*> (af->parent());
+        LazyNutJob_DEPRECATED* job = qobject_cast<LazyNutJob_DEPRECATED*> (af->parent());
         return job;
     }
     return nullptr;
 }
 //! [nextJob]
-LazyNutJob *SessionManager::nextJob(QObject *sender)
+LazyNutJob_DEPRECATED *SessionManager::nextJob(QObject *sender)
 {
-    LazyNutJob* job = currentJob(sender);
-    LazyNutJob* nextJob = qobject_cast<LazyNutJob*>(job->transitions().at(0)->targetState());
+    LazyNutJob_DEPRECATED* job = currentJob(sender);
+    LazyNutJob_DEPRECATED* nextJob = qobject_cast<LazyNutJob_DEPRECATED*>(job->transitions().at(0)->targetState());
     return nextJob;
 }
 //! [nextJob]

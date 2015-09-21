@@ -3,13 +3,13 @@
 
 #include <QString>
 #include <QStateMachine>
-#include "jobqueue.h"
+#include "jobqueue_DEPRECATED.h"
 
 
-class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
+class MacroQueue: public JobQueue_DEPRECATED<QStateMachine,MacroQueue>
 {
 public:
-    MacroQueue(): JobQueue(){}
+    MacroQueue(): JobQueue_DEPRECATED(){}
     void run(QStateMachine *macro);
     void reset();
     QString name();

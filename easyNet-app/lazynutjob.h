@@ -1,47 +1,47 @@
 #ifndef LAZYNUTJOB_H
 #define LAZYNUTJOB_H
 
-#include <QState>
-#include <functional>
-#include <QStringList>
 #include "enumclasses.h"
 
-#include "answerformatter.h"
+#include <QObject>
+#include <QStringList>
 
-class LazyNutMacro;
+class MacroQueue;
+class AnswerFormatter;
 
-
-class LazyNutJob : public QState
+class LazyNutJob : public QObject
 {
     Q_OBJECT
 public:
-    explicit LazyNutJob(LazyNutMacro *macro);
+    explicit LazyNutJob(MacroQueue* queue);
     ~LazyNutJob();
-    void setAnswerFormatter(AnswerFormatter* af);
-    void setCmdFormatter(std::function<QString (const QString& s)> cf) {cmdFormatter = cf;}
-    void setCmdList(QStringList list) {cmdList = list;}
-    void setCmdList(QString cmd) {cmdList = QStringList({cmd});}
-//    void setJobOrigin(JobOrigin origin) {jobOrigin = origin;}
-
-    LazyNutMacro *macro;
-    QStringList cmdList;
-    AnswerFormatter *answerFormatter;
-    std::function<QString (const QString& s)> cmdFormatter;
-    bool echoOnInterpreter;
+    bool active() {return m_active;}
     unsigned int logMode;
+    QStringList cmdList;
+    void setAnswerReceiver(QObject *receiver, char const *slot, AnswerFormatterType answerFormatterType);
+    void setErrorReceiver(QObject *receiver, char const *slot);
+    void setEndOfJobReceiver(QObject *receiver, char const *slot);
+
+public slots:
+    void run();
 
 signals:
     void runCommands(QStringList, bool, unsigned int);
     void cmdError(QString, QStringList);
-
-
-public slots:
-    void runCommands();
-
+    void finished();
 
 private slots:
+    void finish();
     void formatAnswer(QString answer, QString cmd);
+    void sendCmdError(QString cmd, QStringList errorList);
 
+
+private:
+    void setActive(bool isActive) {m_active = isActive;}
+
+    bool m_active;
+    MacroQueue* queue;
+    AnswerFormatter *answerFormatter;
 };
 
 #endif // LAZYNUTJOB_H

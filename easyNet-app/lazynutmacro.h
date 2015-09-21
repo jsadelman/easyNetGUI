@@ -6,7 +6,7 @@
 
 class MacroQueue;
 
-class LazyNutJob;
+class LazyNutJob_DEPRECATED;
 
 class LazyNutMacro : public QStateMachine
 {

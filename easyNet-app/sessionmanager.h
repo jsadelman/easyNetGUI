@@ -11,7 +11,7 @@
 #include "enumclasses.h"
 
 class QDomDocument;
-class LazyNutJob;
+class LazyNutJob_DEPRECATED;
 class LazyNutJobParam;
 class MacroQueue;
 
@@ -42,15 +42,15 @@ class SessionManager: public QObject
     Q_PROPERTY(QString currentTrial READ currentTrial WRITE setCurrentTrial)
     Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet)
 
-
+friend class LazyNutJob;
 
 public:
     static SessionManager* instance(); // singleton
     void startLazyNut(QString lazyNutBat);
     void setupJob (LazyNutJobParam* param, QObject* sender = nullptr);
     void setupNoOp(QObject* sender = nullptr);
-    LazyNutJob *currentJob(QObject* sender);
-    LazyNutJob* nextJob(QObject* sender);
+    LazyNutJob_DEPRECATED *currentJob(QObject* sender);
+    LazyNutJob_DEPRECATED* nextJob(QObject* sender);
     QString currentModel() {return m_currentModel;}
     QString currentTrial() {return m_currentTrial;}
     QString currentSet() {return m_currentSet;}
@@ -135,6 +135,9 @@ private:
     SessionManager(SessionManager const&){}
     SessionManager& operator=(SessionManager const&){}
     static SessionManager* sessionManager;
+
+    // hack
+    const CommandSequencer *cs() {return commandSequencer;}
 
     // state
     QString m_currentModel;

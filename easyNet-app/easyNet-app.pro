@@ -49,7 +49,7 @@ SOURCES +=  \
         domitem.cpp \
     easyNetMainWindow.cpp \
     macrostate.cpp \
-    lazynutjob.cpp \
+    lazynutjob_DEPRECATED.cpp \
     lazynutmacro.cpp \
     answerformatterfactory.cpp \
     answerformatter.cpp \
@@ -108,7 +108,8 @@ SOURCES +=  \
     settingsform.cpp \
     settingsformdialog.cpp \
     xmlaccessor.cpp \
-    objectnamevalidator.cpp
+    objectnamevalidator.cpp \
+    lazynutjob.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -124,7 +125,7 @@ HEADERS  += \
     codeeditor.h \
     editwindow.h \
     plotwindow.h \
-    jobqueue.h \
+    jobqueue_DEPRECATED.h \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
@@ -132,7 +133,7 @@ HEADERS  += \
         domitem.h \
     easyNetMainWindow.h \
     macrostate.h \
-    lazynutjob.h\
+    lazynutjob_DEPRECATED.h\
     lazynutmacro.h \
     answerformatterfactory.h \
     answerformatter.h \
@@ -191,7 +192,9 @@ HEADERS  += \
    settingsform.h \
     settingsformdialog.h \
     xmlaccessor.h \
-    objectnamevalidator.h
+    objectnamevalidator.h \
+    lazynutjob.h \
+    jobqueue.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
