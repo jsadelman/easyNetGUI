@@ -5,24 +5,17 @@
 #include <QObject>
 #include <QStateMachine>
 #include "qprocess.h"
-
-
-//#include "jobqueue.h"
 #include "enumclasses.h"
 
 class QDomDocument;
 class LazyNutJob_DEPRECATED;
+class LazyNutJob;
 class LazyNutJobParam;
 class MacroQueue;
+template <class Job>
+class JobQueue;
+typedef JobQueue<LazyNutJob*> LazyNutJobQueue;
 
-//class MacroQueue: public JobQueue<QStateMachine,MacroQueue>
-//{
-//public:
-//    MacroQueue(){}
-//    void run(QStateMachine *macro);
-//    void reset();
-//    QString name();
-//};
 
 class QueryContext;
 class TreeModel;
@@ -55,6 +48,13 @@ public:
     QString currentTrial() {return m_currentTrial;}
     QString currentSet() {return m_currentSet;}
 
+    void submitJobs(QList<LazyNutJob*> jobs);
+    void submitJobs(LazyNutJob* job) {submitJobs(QList<LazyNutJob*>{job});}
+
+    LazyNutJob* recentlyCreatedJob();
+    LazyNutJob* recentlyModifiedJob();
+    LazyNutJob* recentlyDestroyedJob();
+    QList<LazyNutJob*> updateObjectCatalogueJobs();
 
 
 signals:
@@ -97,14 +97,14 @@ public slots:
 
     // controls
     void pause();
-    void stop();
+//    void stop();
     void killLazyNut();
-    void updateObjectCatalogue();
-    void updateRecentlyModified();
-    void getDescriptions();
-    void queryRecentlyCreated();
-    void queryRecentlyModified();
-    void queryRecentlyDestroyed();
+//    void updateObjectCatalogue();
+//    void updateRecentlyModified();
+//    void getDescriptions();
+//    void queryRecentlyCreated();
+//    void queryRecentlyModified();
+//    void queryRecentlyDestroyed();
     void runCmd(QString cmd);
     void runCmd(QStringList cmd);
 
@@ -120,8 +120,8 @@ private slots:
     void startCommandSequencer();
     void lazyNutProcessError(int error);
 
-    void macroStarted();
-    void macroEnded();
+//    void macroStarted();
+//    void macroEnded();
 
     void appendCmdListOnNextJob(QStringList cmdList);
     void sendLazyNutCrash(int, QProcess::ExitStatus);
@@ -136,8 +136,6 @@ private:
     SessionManager& operator=(SessionManager const&){}
     static SessionManager* sessionManager;
 
-    // hack
-    const CommandSequencer *cs() {return commandSequencer;}
 
     // state
     QString m_currentModel;
@@ -145,6 +143,7 @@ private:
     QString m_currentSet;
 
     MacroQueue *macroQueue;
+    LazyNutJobQueue *jobQueue;
     CommandSequencer *commandSequencer;
     LazyNut* lazyNut;
     QString lazyNutOutput;

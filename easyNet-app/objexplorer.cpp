@@ -17,7 +17,7 @@
 #include "lazynutobjectmodel.h"
 #include "lazynutobjtablemodel.h"
 #include "sessionmanager.h"
-#include "lazynutjobparam.h"
+#include "lazynutjob.h"
 #include "xmlelement.h"
 #include "expandtofillbutton.h"
 #include "lazynutlistwidget.h"
@@ -261,12 +261,10 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
 void ObjExplorer::queryTypes()
 {
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({"xml list type"});
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SLOT(initTypes(QStringList)));
-    SessionManager::instance()->setupJob(param, sender());
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({"xml list type"});
+    job->setAnswerReceiver(this, SLOT(initTypes(QStringList)), AnswerFormatterType::ListOfValues);
+    SessionManager::instance()->submitJobs(job);
 }
 
 void ObjExplorer::initTypes(QStringList types)
@@ -285,60 +283,14 @@ void ObjExplorer::selectType(QString type)
         objectListFilter->setType(type);
 }
 
-//void ObjExplorer::getTaxonomySubtypes()
-//{
-//    QStringList cmdList;
-//    for (int row = 0; row < objTaxonomyModel->rowCount(); ++row)
-//        cmdList.append(objTaxonomyModel->data(objTaxonomyModel->index(row, 0), Qt::EditRole).toString());
-
-//    LazyNutJobParam *param = new LazyNutJobParam;
-//    param->logMode |= ECHO_INTERPRETER; // debug purpose
-//    param->cmdList = cmdList.replaceInStrings(QRegExp("^"), "xml subtypes ");
-//    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-//    param->setAnswerReceiver(this, SLOT(setTaxonomySubtypes(QStringList,QString)));
-//    param->setEndOfJobReceiver(this, SLOT(connectTaxonomyModel()));
-//    SessionManager::instance()->setupJob(param, sender());
-//}
-
-//void ObjExplorer::setTaxonomySubtypes(QStringList subtypes, QString cmd)
-//{
-//    QRegExp typeNameRex("xml subtypes (\\w+)");
-//    if (typeNameRex.indexIn(cmd) < 0)
-//    {
-//        qDebug() << "no type in ObjExplorer::setTaxonomySubtypes(). cmd = " << cmd;
-//        return;
-//    }
-//    QString typeName = typeNameRex.cap(1);
-//    QModelIndex typeIndex = objTaxonomyModel->match(objTaxonomyModel->index(0,0), Qt::DisplayRole,
-//                            typeName, 1, Qt::MatchExactly).first();
-//    foreach(QString subtype, subtypes)
-//        objTaxonomyModel->appendValue(subtype, typeIndex);
-
-//}
-
-//void ObjExplorer::connectTaxonomyModel()
-//{
-//    foreach(QString view, taxViewMap.keys())
-//    {
-//        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setModel(objTaxonomyModel);
-//        connect(qobject_cast<QAbstractItemView*>(taxViewMap[view]), SIGNAL(clicked(const QModelIndex&)),
-//                objTaxonomyModel, SLOT(getGenealogy(const QModelIndex&)));
-//        connect(objTaxonomyModel,SIGNAL(sendGenealogy(QList<QVariant>)),
-//                lazyNutObjTableProxyModel,SLOT(setFilterFromGenealogy(QList<QVariant>)));
-
-//    }
-//    taxTreeView->expandAll();
-//    taxTreeView->resizeColumnToContents(0);
-//}
 
 void ObjExplorer::showList(QString cmd)
 {
     LazyNutListWidget *listWidget = new LazyNutListWidget(cmd);
     listWidget->setAttribute(Qt::WA_DeleteOnClose, true);
     listWidget->show();
-
-
 }
+
 localListFiller::~localListFiller()
 {
 }

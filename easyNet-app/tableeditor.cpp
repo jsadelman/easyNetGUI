@@ -13,7 +13,6 @@
 #include "dataframemodel.h"
 #include "objectcatalogue.h"
 #include "objectcataloguefilter.h"
-#include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "finddialog.h"
@@ -587,13 +586,10 @@ void TableEditor::updateTableView(QString text)
 //        return;
 
     currentTable = text;
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER;
-//    param->cmdList = QStringList({QString("xml " + text + " get")});
-    param->cmdList = QStringList({QString("xml " + text + " get 1-80 1-20")}); // just enough to fill the screen
-    param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*)));
-    SessionManager::instance()->setupJob(param, sender());
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({QString("xml " + text + " get 1-80 1-20")}); // just enough to fill the screen
+    job->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
+    SessionManager::instance()->submitJobs(job);
 }
 
 

@@ -1,9 +1,11 @@
 #include "sessionmanager.h"
 #include "commandsequencer.h"
 #include "jobqueue_DEPRECATED.h"
+#include "jobqueue.h"
 #include "lazynut.h"
 #include "lazynutmacro.h"
 #include "lazynutjob_DEPRECATED.h"
+#include "lazynutjob.h"
 #include "lazynutjobparam.h"
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
@@ -35,6 +37,7 @@ SessionManager::SessionManager()
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     macroQueue = new MacroQueue;
+    jobQueue = new LazyNutJobQueue;
 }
 
 
@@ -165,6 +168,48 @@ LazyNutJob_DEPRECATED *SessionManager::nextJob(QObject *sender)
     LazyNutJob_DEPRECATED* nextJob = qobject_cast<LazyNutJob_DEPRECATED*>(job->transitions().at(0)->targetState());
     return nextJob;
 }
+
+void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
+{
+    jobQueue->tryRun(jobs);
+}
+
+LazyNutJob *SessionManager::recentlyCreatedJob()
+{
+    LazyNutJob *job = new LazyNutJob();
+    job->logMode &= ECHO_INTERPRETER; // debug purpose
+    job->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
+    job->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)), AnswerFormatterType::XML);
+    return job;
+}
+
+LazyNutJob *SessionManager::recentlyModifiedJob()
+{
+    LazyNutJob *job = new LazyNutJob();
+    job->logMode &= ECHO_INTERPRETER; // debug purpose
+    job->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
+    job->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)), AnswerFormatterType::ListOfValues);
+    return job;
+}
+
+LazyNutJob *SessionManager::recentlyDestroyedJob()
+{
+    LazyNutJob *job = new LazyNutJob();
+    job->logMode &= ECHO_INTERPRETER; // debug purpose
+    job->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
+    job->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)), AnswerFormatterType::ListOfValues);
+    return job;
+}
+
+QList<LazyNutJob *> SessionManager::updateObjectCatalogueJobs()
+{
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << recentlyModifiedJob()
+                                << recentlyCreatedJob()
+                                << recentlyDestroyedJob();
+    jobs.last()->setEndOfJobReceiver(this, SIGNAL(commandsCompleted()));
+    return jobs;
+}
 //! [nextJob]
 
 //! [appendCmdListOnNextJob]
@@ -176,65 +221,8 @@ void SessionManager::appendCmdListOnNextJob(QStringList cmdList)
 
 //! [appendCmdListOnNextJob]
 
-//! [updateRecentlyModified]
-void SessionManager::updateRecentlyModified()
-{
-    qDebug() << "updateRecentlyModified()";
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = QStringList({"xml recently_modified"});
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SLOT(appendCmdListOnNextJob(QStringList)));
-    param->setNextJobReceiver(this, SLOT(getDescriptions()));
-    setupJob(param, sender());
-}
-//! [updateRecentlyModified]
 
-//! [getDescriptions]
-void SessionManager::getDescriptions()
-{
-    qDebug() << "getDescriptions()";
-    LazyNutJobParam *param = new LazyNutJobParam;
-    // no cmdList, since it is set by setCmdListOnNextJob
-    param->cmdFormatter = [] (QString cmd) { return cmd.prepend("xml ");};
-    param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(this, SIGNAL(updateObjectCatalogue(QDomDocument*)));
-    param->setEndOfJobReceiver(this, SIGNAL(updateDiagramScene()));
-    setupJob(param, sender());
-}
 
-void SessionManager::queryRecentlyCreated()
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
-    param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)));
-    param->setNextJobReceiver(this, SLOT(queryRecentlyDestroyed()));
-    setupJob(param, sender());
-}
-
-void SessionManager::queryRecentlyModified()
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)));
-    param->setNextJobReceiver(this, SLOT(queryRecentlyCreated()));
-    setupJob(param, sender());
-}
-
-void SessionManager::queryRecentlyDestroyed()
-{
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)));
-    param->setEndOfJobReceiver(this,SIGNAL(commandsCompleted()));
-    setupJob(param, sender());
-}
-//! [getDescriptions]
 
 
 void SessionManager::getOOB(const QString &lazyNutOutput)
@@ -285,11 +273,6 @@ void SessionManager::killLazyNut()
     lazyNut->kill();
 }
 
-void SessionManager::updateObjectCatalogue()
-{
-    queryRecentlyModified();
-}
-
 
 
 bool SessionManager::isReady()
@@ -309,65 +292,20 @@ void SessionManager::pause()
     emit isPaused(macroQueue->isPaused());
 }
 
-void SessionManager::stop()
-{
-    macroQueue->stop();
-//    commandSequencer->stop();
-}
 
-
-
-void SessionManager::macroStarted()
-{
-    qDebug() << "Macro started.";
-}
-
-void SessionManager::macroEnded()
-{
-    qDebug() << "Macro ended.";
-    macroQueue->freeToRun();
-}
-
-
-
-
-//void MacroQueue::run(QStateMachine *macro)
-//{
-//    qDebug() << "Jobs in MacroQueue:" << queue.size();
-//    macro->start();
-//}
-
-//void MacroQueue::reset()
-//{
-//    qDebug() << "RESET CALLED, Jobs in MacroQueue:" << queue.size();
-//    while (!queue.isEmpty())
-//    {
-//        delete queue.dequeue();
-//    }
-//    if (currentJob)
-//        currentJob->stop();
-//    //delete currentJob;
-//}
-
-//QString MacroQueue::name()
-//{
-//    return "MacroQueue";
-//}
 
 void SessionManager::runCmd(QString cmd)
 {
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = QStringList({cmd});
-    param->logMode |= ECHO_INTERPRETER;
-    param->setNextJobReceiver(this, SLOT(updateObjectCatalogue()));
-    setupJob(param);
+    runCmd(QStringList({cmd}));
 }
 
 void SessionManager::runCmd(QStringList cmd)
 {
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = cmd;
-    param->logMode |= ECHO_INTERPRETER;
-    param->setNextJobReceiver(this, SLOT(updateObjectCatalogue()));
-    setupJob(param);
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = cmd;
+    job->logMode |= ECHO_INTERPRETER;
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << updateObjectCatalogueJobs();
+    submitJobs(jobs);
 }

@@ -6,14 +6,19 @@
 #include <QObject>
 #include <QStringList>
 
-class MacroQueue;
+template <class Job>
+class JobQueue;
+class LazyNutJob;
+typedef JobQueue<LazyNutJob*> LazyNutJobQueue;
+
 class AnswerFormatter;
+
 
 class LazyNutJob : public QObject
 {
     Q_OBJECT
 public:
-    explicit LazyNutJob(MacroQueue* queue);
+    explicit LazyNutJob();
     ~LazyNutJob();
     bool active() {return m_active;}
     unsigned int logMode;
@@ -40,7 +45,6 @@ private:
     void setActive(bool isActive) {m_active = isActive;}
 
     bool m_active;
-    MacroQueue* queue;
     AnswerFormatter *answerFormatter;
 };
 

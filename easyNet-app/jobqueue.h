@@ -1,11 +1,17 @@
 #ifndef JOBQUEUE_H
 #define JOBQUEUE_H
 
-
-
 #include <QQueue>
 #include <QMutex>
 #include <QDebug>
+
+// http://stackoverflow.com/questions/14466620/c-template-specialization-calling-methods-on-types-that-could-be-pointers-or/14466705
+template<typename T>
+T * ptr(T & obj) { return &obj; } //turn reference into pointer!
+
+template<typename T>
+T * ptr(T * obj) { return obj; } //obj is already pointer, return it!
+
 
 template <class Job>
 class JobQueue
@@ -13,7 +19,8 @@ class JobQueue
 
 public:
     JobQueue();
-    void tryRun(Job *job);
+    void tryRun(Job job);
+    void tryRun(QList<Job> jobs);
     void freeToRun();
     bool isReady();
     int jobsInQueue();
@@ -25,11 +32,12 @@ public:
 
 protected:
     void tryRunNext();
-    QQueue<Job*> queue;
+    QQueue<Job> queue;
     QMutex mutex;
+    bool busy;
     bool paused;
     //bool stopped;
-    Job* currentJob;
+//    Job* currentJob;
 
 };
 
@@ -37,23 +45,32 @@ protected:
 
 template <class Job>
 JobQueue<Job>::JobQueue()
-    : paused(false), currentJob(nullptr)
+    : paused(false), busy(false)
 {
 }
 
 template <class Job>
-void JobQueue<Job, DerivedQueue>::tryRun(Job *job)
+void JobQueue<Job>::tryRun(Job job)
 {
     queue.enqueue(job);
+    tryRunNext();
+}
+
+
+template <class Job>
+void JobQueue<Job>::tryRun(QList<Job> jobs)
+{
+    foreach(Job job, jobs)
+        queue.enqueue(job);
     tryRunNext();
 }
 
 template <class Job>
 void JobQueue<Job>::freeToRun()
 {
-    if (currentJob)
+    if (busy)
         mutex.unlock();
-    currentJob = nullptr;
+    busy = false;
     tryRunNext();
 }
 
@@ -62,8 +79,8 @@ void JobQueue<Job>::tryRunNext()
 {
     if(!queue.isEmpty() && !paused && mutex.tryLock())
     {
-        currentJob = queue.dequeue();
-        currentJob->run();
+        busy = true;
+        ptr(queue.dequeue())->run();
     }
 }
 
@@ -71,7 +88,7 @@ void JobQueue<Job>::tryRunNext()
 template <class Job>
 bool JobQueue<Job>::isReady()
 {
-    return !currentJob;
+    return !busy;
 }
 
 

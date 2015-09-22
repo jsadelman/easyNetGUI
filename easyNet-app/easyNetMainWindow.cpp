@@ -28,7 +28,6 @@
 #include "plotwindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
-#include "lazynutlistcombobox.h"
 #include "objectcatalogue.h"
 #include "objectcataloguefilter.h"
 #include "lazynutconsole.h"
@@ -478,12 +477,10 @@ void EasyNetMainWindow::updateTableView(QString text)
         table = stimSetForm;
     qDebug() << "table is " << table;
 
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER;
-    param->cmdList = QStringList({QString("xml " + text + " get")});
-    param->answerFormatterType = AnswerFormatterType::XML;
-    param->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)));
-    SessionManager::instance()->setupJob(param, sender());
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({QString("xml " + text + " get")});
+    job->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
+    SessionManager::instance()->submitJobs(job);
 }
 
 
@@ -548,8 +545,8 @@ void EasyNetMainWindow::runTrial()
     QString cmd;
 
 //    after running cmd, call draw on plotForm and update trial table
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
 
     QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
     cmd = QString(tableName + " clear"); // clear the dataframe before running a new set
@@ -592,13 +589,11 @@ void EasyNetMainWindow::runTrial()
     // display table of means after running set
     cmd = QString("xml " + displayTableName + " get");
     cmds << cmd;
-    param->answerFormatterType = AnswerFormatterType::XML;
-//    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
-    param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
-    param->cmdList = cmds;
+    job->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+    job->cmdList = cmds;
 
-    param->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
-    SessionManager::instance()->setupJob(param);
+    job->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
+    SessionManager::instance()->submitJobs(job);
 
 //    resultsDock->raise();
 //    resultsPanel->setCurrentIndex(outputTablesTabIdx);
@@ -632,8 +627,8 @@ void EasyNetMainWindow::runAllTrial()
     // andrews run_trials iam ldt
 
     // new version doesn't specify model
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
     QStringList cmds;
     QString cmd;
     QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
@@ -669,13 +664,14 @@ void EasyNetMainWindow::runAllTrial()
     // display table of means after running set
     cmd = QString("xml " + displayTableName + " get");
     cmds << cmd;
-    param->answerFormatterType = AnswerFormatterType::XML;
-//    param->setAnswerReceiver(oldTablesWindow, SLOT(addDataFrameToWidget(QDomDocument*)));
-    param->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)));
-    param->cmdList = cmds;
-    param->setEndOfJobReceiver(this, SIGNAL(runAllTrialEnded()));
-    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
-    SessionManager::instance()->setupJob(param, sender());
+    job->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+    job->cmdList = cmds;
+    job->setEndOfJobReceiver(this, SIGNAL(runAllTrialEnded()));
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCatalogueJobs();
+
+    SessionManager::instance()->submitJobs(jobs);
 
     runAllTrialMsgAct->setVisible(true);
 
@@ -759,6 +755,7 @@ void EasyNetMainWindow::loadModel()
 
 void EasyNetMainWindow::afterModelLoaded()
 {
+    qDebug() << "afterModelLoaded";
     modelScene->setNewModelLoaded(true);
     conversionScene->setNewModelLoaded(true);
      modelScene->wakeUp();
@@ -855,17 +852,18 @@ void EasyNetMainWindow::loadStimulusSet()
                                         //               QString("xml %1 get").arg(base)
 */
 
-        LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode &= ECHO_INTERPRETER;
-        param->cmdList = QStringList({
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList = QStringList({
                QString("create stimulus_set %1").arg(base),
                QString("%1 load %2").arg(base).arg(fileName),
                QString("xml %1 get").arg(base)
                                      });
-        param->answerFormatterType = AnswerFormatterType::XML;
-        param->setAnswerReceiver(stimSetForm, SLOT(addDataFrameToWidget(QDomDocument*)));
-        param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
-        SessionManager::instance()->setupJob(param, sender());
+        job->setAnswerReceiver(stimSetForm, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << SessionManager::instance()->updateObjectCatalogueJobs();
+
+        SessionManager::instance()->submitJobs(jobs);
 
         // change combobox text
         stimSetForm->setTableText(base);
@@ -1065,23 +1063,24 @@ void EasyNetMainWindow::loadScript()
 //! [runCmdAndUpdate]
 void EasyNetMainWindow::runCmdAndUpdate(QStringList cmdList)
 {
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode |= ECHO_INTERPRETER;
-    param->cmdList = cmdList;
-    param->setNextJobReceiver(SessionManager::instance(), SLOT(updateObjectCatalogue()));
-    SessionManager::instance()->setupJob(param);
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList = cmdList;
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCatalogueJobs();
+
+    SessionManager::instance()->submitJobs(jobs);
 }
 //! [runCmdAndUpdate]
 
 //! [getVersion]
 void EasyNetMainWindow::getVersion()
 {
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER;
-    param->cmdList = QStringList({"version"});
-    param->answerFormatterType = AnswerFormatterType::Identity;
-    param->setAnswerReceiver(this, SLOT(displayVersion(QString)));
-    SessionManager::instance()->setupJob(param);
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({"version"});
+    job->setAnswerReceiver(this, SLOT(displayVersion(QString)), AnswerFormatterType::Identity);
+    SessionManager::instance()->submitJobs(job);
 }
 
 //void EasyNetMainWindow::showDocumentation()

@@ -74,7 +74,7 @@ public slots:
         void sendGetCmd();
         void setPlot(QString name);
 //        void hidePlotSettings();
-        void sendSettings(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+        void sendSettings();
         void sendSettings(QString name);
 
 
@@ -87,7 +87,7 @@ private slots:
     void setType(QString rScript);
     void getSettingsXML();
     void buildSettingsForm(QDomDocument* settingsList);
-    void getPlotType(QObject *nextJobReceiver = nullptr, char const *nextJobSlot = "");
+    void getPlotType();
     void extractPlotType(QDomDocument* description);
 //    void updateSettingsForm();
     void selectRScript();
@@ -125,8 +125,6 @@ private:
 
     QMenu *typeMenu;
     QMenu *recentRScriptsMenu;
-    LazyNutListMenu *dataMenu;
-    LazyNutListMenu *plotsMenu;
 //    QAction *drawAct;
     QAction *separatorAct;
     enum { MaxRecentRScripts = 5 };

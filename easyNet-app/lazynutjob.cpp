@@ -3,13 +3,14 @@
 #include "commandsequencer.h"
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
-#include "macroqueue.h"
+#include "jobqueue.h"
 
-LazyNutJob::LazyNutJob(MacroQueue *queue)
+LazyNutJob::LazyNutJob()
     : m_active(false),
-      queue(queue),
-      answerFormatter(nullptr)
+      answerFormatter(nullptr),
+      logMode(0)
 {
+    cmdList.clear();
     connect(this,SIGNAL(runCommands(QStringList,bool,unsigned int)),
             SessionManager::instance()->commandSequencer,SLOT(runCommands(QStringList,bool,unsigned int)));
     connect(SessionManager::instance()->commandSequencer,SIGNAL(commandsExecuted()),
@@ -59,7 +60,7 @@ void LazyNutJob::finish()
     if (active())
     {
         emit finished();
-        queue->freeToRun();
+        SessionManager::instance()->jobQueue->freeToRun();
         deleteLater();
     }
 }

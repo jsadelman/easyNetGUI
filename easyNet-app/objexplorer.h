@@ -12,7 +12,7 @@
 
 #include "treemodel.h"
 #include "enumclasses.h"
-#include "lazynutjobparam.h"
+#include "lazynutjob.h"
 #include "sessionmanager.h"
 class ObjectCatalogue;
 class AsLazyNutObject;
@@ -108,14 +108,12 @@ struct localListFiller:QObject
 public:
    localListFiller(QAbstractItemModel*qaim,ObjExplorer* oe,const QModelIndex&at,QString cmd):qaim_(qaim),oe_(oe),at_(at)
    {
-       LazyNutJobParam *param = new LazyNutJobParam;
-       param->logMode &= ECHO_INTERPRETER; // debug purpose
-       param->cmdList = QStringList({QString("xml %1").arg(cmd)});
-       param->answerFormatterType = AnswerFormatterType::XML;
-       param->setAnswerReceiver(this, SLOT(doFillList(QDomDocument*)));
-       SessionManager::instance()->setupJob(param, sender());
-
+       LazyNutJob *job = new LazyNutJob;
+       job->cmdList = QStringList({QString("xml %1").arg(cmd)});
+       job->setAnswerReceiver(this, SLOT(doFillList(QDomDocument*)), AnswerFormatterType::XML);
+       SessionManager::instance()->submitJobs(job);
    }
+
    virtual ~localListFiller();
 private slots:
    void doFillList(QDomDocument*dom)

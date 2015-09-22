@@ -58,9 +58,7 @@ SOURCES +=  \
     plotsettingsbasewidget.cpp \
     plotsettingsform.cpp \
     dataframemodel.cpp \
-    lazynutlistmenu.cpp \
     xmlelement.cpp \
-    lazynutlistcombobox.cpp \
     lazynutlistwidget.cpp \
     lazynutpairedlistwidget.cpp \
     bracketedparser.cpp \
@@ -142,9 +140,7 @@ HEADERS  += \
     plotsettingsbasewidget.h \
     plotsettingsform.h \
     dataframemodel.h \
-    lazynutlistmenu.h \
     xmlelement.h \
-    lazynutlistcombobox.h \
     lazynutlistwidget.h \
     lazynutpairedlistwidget.h \
     bracketedparser.h \

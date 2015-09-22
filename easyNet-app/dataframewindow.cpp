@@ -2,6 +2,7 @@
 #include "tableeditor.h"
 #include "lazynutjobparam.h"
 #include "sessionmanager.h"
+#include "lazynutjob.h"
 
 #include <QtDebug>
 
@@ -40,14 +41,12 @@ QString name = "Andrews_92_short";
 
 void DataFrameWindow::getDataFrameHeaders(QString df_name)
 {
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({"xml " + df_name + " get_colnames"});
-//    param->cmdList = QStringList({"xml " + df_name + " get_colwise"});
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SLOT(processList(QStringList)));
-    param->setNextJobReceiver(this, SLOT(getDataFrameContents()));
-    SessionManager::instance()->setupJob(param, sender());
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({"xml " + df_name + " get_colnames"});
+    job->setAnswerReceiver(this, SLOT(processList(QStringList)), AnswerFormatterType::ListOfValues);
+    SessionManager::instance()->submitJobs(job);
+
+    getDataFrameContents();
 }
 
 void DataFrameWindow::processList(QStringList headerList)
@@ -60,12 +59,10 @@ void DataFrameWindow::getDataFrameContents()
 {
     QString df_name = "Andrews_92_short";
     qDebug() << "Entered getDataFrameContents";
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->cmdList = QStringList({"xml " + df_name + " get_colwise"});
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(this, SLOT(processData(QList(QStringList))));
-    SessionManager::instance()->setupJob(param, sender());
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({"xml " + df_name + " get_colwise"});
+    job->setAnswerReceiver(this, SLOT(processData(QList(QStringList))), AnswerFormatterType::ListOfValues);
+    SessionManager::instance()->submitJobs(job);
 }
 
 void DataFrameWindow::processData(QList<QStringList> dataList)

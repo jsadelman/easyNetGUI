@@ -1,6 +1,6 @@
 #include "plotsettingsform.h"
 #include "plotsettingsbasewidget.h"
-#include "lazynutjobparam.h"
+#include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "xmlaccessor.h"
 
@@ -140,13 +140,11 @@ void PlotSettingsForm::checkDependencies()
     if (widget && dependersSet.contains(widget->name()))
     {
         dependerOnUpdate = widget->name();
-        LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode &= ECHO_INTERPRETER; // debug purpose
-        param->cmdList = getSettingsCmdList();
-        param->cmdList.append(QString("xml %1 list_settings").arg(m_plotName));
-        param->answerFormatterType = AnswerFormatterType::XML;
-        param->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)));
-        SessionManager::instance()->setupJob(param, sender());
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList = getSettingsCmdList();
+        job->cmdList.append(QString("xml %1 list_settings").arg(m_plotName));
+        job->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)), AnswerFormatterType::XML);
+        SessionManager::instance()->submitJobs(job);
     }
 }
 

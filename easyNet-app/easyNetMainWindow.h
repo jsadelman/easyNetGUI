@@ -30,7 +30,7 @@ class ScriptEditor;
 class Highlighter;
 class PlotSettingsWindow;
 class ObjectCatalogueFilter;
-class LazyNutListComboBox;
+//class LazyNutListComboBox;
 //class LazyNutScriptEditor;
 class MaxMinPanel;
 class TableEditor;

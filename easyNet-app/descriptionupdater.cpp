@@ -3,6 +3,7 @@
 #include "lazynutobject.h"
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
+#include "lazynutjob.h"
 #include "enumclasses.h"
 #include <QSortFilterProxyModel>
 #include <QDebug>
@@ -91,18 +92,18 @@ QStringList DescriptionUpdater::getObjectNames(int first, int last)
 
 void DescriptionUpdater::requestDescription(QString name)
 {
+    qDebug() << "requestDescription" << name;
     if (name.isEmpty())
         return;
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
     {
+
         objectCatalogue->setPending(name, false);
-        LazyNutJobParam *param = new LazyNutJobParam;
-        param->logMode &= ECHO_INTERPRETER; // debug purpose
-        param->cmdList = QStringList({QString("xml %1").arg(name)});
-        param->answerFormatterType = AnswerFormatterType::XML;
-        param->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*, QString)));
-        param->setErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
-        SessionManager::instance()->setupJob(param, sender());
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList = QStringList({QString("xml %1").arg(name)});
+        job->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+        job->setErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
+        SessionManager::instance()->submitJobs(job);
     }
     else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
     {

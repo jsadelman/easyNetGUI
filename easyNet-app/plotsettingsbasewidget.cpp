@@ -1,7 +1,7 @@
 #include <QtWidgets>
 
 #include "plotsettingsbasewidget.h"
-#include "lazynutjobparam.h"
+#include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "pairedlistwidget.h"
 #include "bracketedparser.h"
@@ -320,13 +320,11 @@ void PlotSettingsBaseWidget::getLevels()
         cmdToken = cmdToken.nextSiblingElement("object");
     }
     // get the levels
-    LazyNutJobParam *param = new LazyNutJobParam;
-    param->cmdList = QStringList({(XMLAccessor::command(levelsElement)).prepend("xml ")});
-    param->logMode &= ECHO_INTERPRETER; // debug purpose
-    param->answerFormatterType = AnswerFormatterType::ListOfValues;
-    param->setAnswerReceiver(qobject_cast<StringListModel*>(levelsListModel), SLOT(updateList(QStringList)));
-    param->setEndOfJobReceiver(this, SIGNAL(levelsReady()));
-    SessionManager::instance()->setupJob(param, sender());
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({(XMLAccessor::command(levelsElement)).prepend("xml ")});
+    job->setAnswerReceiver(qobject_cast<StringListModel*>(levelsListModel), SLOT(updateList(QStringList)), AnswerFormatterType::ListOfValues);
+    job->setEndOfJobReceiver(this, SIGNAL(levelsReady()));
+    SessionManager::instance()->submitJobs(job);
 }
 
 

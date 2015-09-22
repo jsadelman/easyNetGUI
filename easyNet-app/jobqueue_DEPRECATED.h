@@ -78,21 +78,6 @@ bool JobQueue_DEPRECATED<JOB, DerivedQueue>::isReady()
 }
 
 
-//template <class JOB, class DerivedQueue>
-//bool JobQueue<JOB, DerivedQueue>::isReady()
-//{
-//    // this implementation is incorrect, maybe use a post return guard as in
-//    // http://stackoverflow.com/questions/8763182/execution-of-code-in-a-function-after-the-return-statement-has-been-accessed-in
-
-//    if (mutex.tryLock())
-//    {
-//        mutex.unlock();
-//        // here mutex could be locked
-//        return true;
-//    }
-//    else
-//        return false;
-//}
 
 template <class JOB, class DerivedQueue>
 int JobQueue_DEPRECATED<JOB, DerivedQueue>::jobsInQueue()
