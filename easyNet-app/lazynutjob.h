@@ -24,14 +24,17 @@ public:
     unsigned int logMode;
     QStringList cmdList;
     void setAnswerReceiver(QObject *receiver, char const *slot, AnswerFormatterType answerFormatterType);
-    void setErrorReceiver(QObject *receiver, char const *slot);
-    void setEndOfJobReceiver(QObject *receiver, char const *slot);
+    void setErrorReceiver(QObject *receiver, char const *slot)
+        {errorReceiver = receiver; errorSlot = slot;}
+    void setEndOfJobReceiver(QObject *receiver, char const *slot)
+        {endOfJobReceiver = receiver; endOfJobSlot = slot;}
+
 
 public slots:
     void run();
 
 signals:
-    void runCommands(QStringList, bool, unsigned int);
+//    void runCommands(QStringList, bool, unsigned int);
     void cmdError(QString, QStringList);
     void finished();
 
@@ -46,6 +49,10 @@ private:
 
     bool m_active;
     AnswerFormatter *answerFormatter;
+    QObject *errorReceiver;
+    char const *errorSlot;
+    QObject *endOfJobReceiver;
+    char const *endOfJobSlot;
 };
 
 #endif // LAZYNUTJOB_H

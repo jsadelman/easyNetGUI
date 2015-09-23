@@ -177,7 +177,7 @@ void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
 LazyNutJob *SessionManager::recentlyCreatedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-    job->logMode &= ECHO_INTERPRETER; // debug purpose
+    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
     job->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)), AnswerFormatterType::XML);
     return job;
@@ -186,7 +186,7 @@ LazyNutJob *SessionManager::recentlyCreatedJob()
 LazyNutJob *SessionManager::recentlyModifiedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-    job->logMode &= ECHO_INTERPRETER; // debug purpose
+    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
     job->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)), AnswerFormatterType::ListOfValues);
     return job;
@@ -195,7 +195,7 @@ LazyNutJob *SessionManager::recentlyModifiedJob()
 LazyNutJob *SessionManager::recentlyDestroyedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-    job->logMode &= ECHO_INTERPRETER; // debug purpose
+    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
     job->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)), AnswerFormatterType::ListOfValues);
     return job;

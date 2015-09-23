@@ -33,6 +33,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
 {
     getAnswer = _getAnswer;
     logMode = mode;
+//    QStringList commandsToRun;
 
     foreach (QString cmd, commands)
     {
@@ -40,17 +41,18 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         if ((!emptyLineRex.exactMatch(cmd)) && (!cmd.startsWith("#")))
             commandList.append(cmd);
     }
+//    commandList.append(commandsToRun);
 
     if (commandList.size() == 0)
     {
         // the user has selected only empty lines (by mistake)
         // or an empty job was sent
         // (on purpose, e.g. for terminating a macro from a slot designated as next job slot)
+//        qDebug() << "empty cmdList";
         emit commandsExecuted();
         return;
     }
     ready = false;
-    emit commandsInJob(commandList.size());
     emit isReady(ready);
 
 //    qDebug() << "BUSY" << "first cmd: " << commandList.first();
@@ -63,6 +65,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         emit commandSent(cmd);
         if (logMode &= ECHO_INTERPRETER)
             emit logCommand(cmd);
+//        qDebug() << "runCommands" << cmd;
         lazyNut->sendCommand(cmd);
     }
 }
@@ -77,18 +80,18 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     if (logMode &= ECHO_INTERPRETER)
         emit userLazyNutOutputReady(lazyNutOutput);
     // else send it to some log file or other location
+//    qDebug() << lazyNutOutput;
     lazyNutBuffer.append(lazyNutOutput);
-      if (commandList.isEmpty())
+    if (commandList.isEmpty())
         return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or synch error
     QString currentCmd, beginContent, timeString;
     int beginOffset, endOffset;
     while (true)
     {
+
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         beginContent = beginRex.cap(1);
-        if (commandList.first().contains("min_n_units"))
-            qDebug() << beginContent;
 //        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
         QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(beginContent)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
@@ -143,6 +146,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
             lazyNutBuffer.clear();
             ready = true;
             emit isReady(ready);
+//            qDebug() << " emit commandsExecuted();";
             emit commandsExecuted();
             return;
         }
