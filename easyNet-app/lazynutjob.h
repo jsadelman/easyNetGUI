@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QVariant>
 
 template <class Job>
 class JobQueue;
@@ -21,14 +22,15 @@ public:
     explicit LazyNutJob();
     ~LazyNutJob();
     bool active() {return m_active;}
+    void setAnswerReceiver(QObject *receiver, char const *slot, AnswerFormatterType answerFormatterType);
+    void appendErrorReceiver(QObject *receiver, char const *slot)
+        {errorReceiverList.append(receiver); errorSlotList.append(slot);}
+    void appendEndOfJobReceiver(QObject *receiver, char const *slot)
+        {endOfJobReceiverList.append(receiver); endOfJobSlotList.append(slot);}
+
     unsigned int logMode;
     QStringList cmdList;
-    void setAnswerReceiver(QObject *receiver, char const *slot, AnswerFormatterType answerFormatterType);
-    void setErrorReceiver(QObject *receiver, char const *slot)
-        {errorReceiver = receiver; errorSlot = slot;}
-    void setEndOfJobReceiver(QObject *receiver, char const *slot)
-        {endOfJobReceiver = receiver; endOfJobSlot = slot;}
-
+    QVariant data;
 
 public slots:
     void run();
@@ -49,10 +51,14 @@ private:
 
     bool m_active;
     AnswerFormatter *answerFormatter;
-    QObject *errorReceiver;
-    char const *errorSlot;
-    QObject *endOfJobReceiver;
-    char const *endOfJobSlot;
+    QList<QObject *> errorReceiverList;
+    QList<char const *> errorSlotList;
+    QList<QObject *> endOfJobReceiverList;
+    QList<char const *> endOfJobSlotList;
+//    QObject *errorReceiver;
+//    char const *errorSlot;
+//    QObject *endOfJobReceiver;
+//    char const *endOfJobSlot;
 };
 
 #endif // LAZYNUTJOB_H

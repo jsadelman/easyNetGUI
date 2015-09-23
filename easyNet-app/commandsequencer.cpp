@@ -53,6 +53,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         return;
     }
     ready = false;
+    emit commandsInJob(commandList.size());
     emit isReady(ready);
 
 //    qDebug() << "BUSY" << "first cmd: " << commandList.first();

@@ -8,10 +8,8 @@
 #include "enumclasses.h"
 
 class QDomDocument;
-class LazyNutJob_DEPRECATED;
 class LazyNutJob;
 class LazyNutJobParam;
-class MacroQueue;
 template <class Job>
 class JobQueue;
 typedef JobQueue<LazyNutJob*> LazyNutJobQueue;
@@ -40,10 +38,6 @@ friend class LazyNutJob;
 public:
     static SessionManager* instance(); // singleton
     void startLazyNut(QString lazyNutBat);
-    void setupJob (LazyNutJobParam* param, QObject* sender = nullptr);
-    void setupNoOp(QObject* sender = nullptr);
-    LazyNutJob_DEPRECATED *currentJob(QObject* sender);
-    LazyNutJob_DEPRECATED* nextJob(QObject* sender);
     QString currentModel() {return m_currentModel;}
     QString currentTrial() {return m_currentTrial;}
     QString currentSet() {return m_currentSet;}
@@ -96,7 +90,7 @@ public slots:
     bool isOn();
 
     // controls
-    void pause();
+//    void pause();
 //    void stop();
     void killLazyNut();
 //    void updateObjectCatalogue();
@@ -123,7 +117,6 @@ private slots:
 //    void macroStarted();
 //    void macroEnded();
 
-    void appendCmdListOnNextJob(QStringList cmdList);
     void sendLazyNutCrash(int, QProcess::ExitStatus);
 
 
@@ -142,7 +135,6 @@ private:
     QString m_currentTrial;
     QString m_currentSet;
 
-    MacroQueue *macroQueue;
     LazyNutJobQueue *jobQueue;
     CommandSequencer *commandSequencer;
     LazyNut* lazyNut;

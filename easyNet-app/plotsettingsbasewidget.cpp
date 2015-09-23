@@ -323,7 +323,7 @@ void PlotSettingsBaseWidget::getLevels()
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList({(XMLAccessor::command(levelsElement)).prepend("xml ")});
     job->setAnswerReceiver(qobject_cast<StringListModel*>(levelsListModel), SLOT(updateList(QStringList)), AnswerFormatterType::ListOfValues);
-    job->setEndOfJobReceiver(this, SIGNAL(levelsReady()));
+    job->appendEndOfJobReceiver(this, SIGNAL(levelsReady()));
     SessionManager::instance()->submitJobs(job);
 }
 

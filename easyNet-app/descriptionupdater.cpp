@@ -92,7 +92,6 @@ QStringList DescriptionUpdater::getObjectNames(int first, int last)
 
 void DescriptionUpdater::requestDescription(QString name)
 {
-    qDebug() << "requestDescription" << name;
     if (name.isEmpty())
         return;
     if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
@@ -102,7 +101,7 @@ void DescriptionUpdater::requestDescription(QString name)
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({QString("xml %1").arg(name)});
         job->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
-        job->setErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
+        job->appendErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
         SessionManager::instance()->submitJobs(job);
     }
     else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))

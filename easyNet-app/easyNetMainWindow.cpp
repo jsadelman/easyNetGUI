@@ -592,7 +592,7 @@ void EasyNetMainWindow::runTrial()
     job->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
     job->cmdList = cmds;
 
-    job->setEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
+    job->appendEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
     SessionManager::instance()->submitJobs(job);
 
 //    resultsDock->raise();
@@ -666,7 +666,7 @@ void EasyNetMainWindow::runAllTrial()
     cmds << cmd;
     job->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
     job->cmdList = cmds;
-    job->setEndOfJobReceiver(this, SIGNAL(runAllTrialEnded()));
+    job->appendEndOfJobReceiver(this, SIGNAL(runAllTrialEnded()));
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->updateObjectCatalogueJobs();
@@ -755,10 +755,9 @@ void EasyNetMainWindow::loadModel()
 
 void EasyNetMainWindow::afterModelLoaded()
 {
-    qDebug() << "afterModelLoaded";
     modelScene->setNewModelLoaded(true);
     conversionScene->setNewModelLoaded(true);
-     modelScene->wakeUp();
+    modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
 }
 
@@ -908,6 +907,15 @@ void EasyNetMainWindow::updateDFComboBox()
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),
                                               this,SLOT(updateDFComboBox()));
 
+}
+
+void EasyNetMainWindow::test_dumpJobData()
+{
+    LazyNutJob * job = qobject_cast<LazyNutJob *>(sender());
+    if (job)
+    {
+        qDebug() << job->data;
+    }
 }
 
 

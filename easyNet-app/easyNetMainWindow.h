@@ -139,6 +139,8 @@ private slots:
     void showPlotSettings();
     void updateDFComboBox();
 
+    void test_dumpJobData();
+
 protected:
     void closeEvent(QCloseEvent *event);
 

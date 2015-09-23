@@ -49,12 +49,9 @@ SOURCES +=  \
         domitem.cpp \
     easyNetMainWindow.cpp \
     macrostate.cpp \
-    lazynutjob_DEPRECATED.cpp \
-    lazynutmacro.cpp \
     answerformatterfactory.cpp \
     answerformatter.cpp \
     lazynutjobparam.cpp \
-    macroqueue.cpp \
     plotsettingsbasewidget.cpp \
     plotsettingsform.cpp \
     dataframemodel.cpp \
@@ -123,7 +120,6 @@ HEADERS  += \
     codeeditor.h \
     editwindow.h \
     plotwindow.h \
-    jobqueue_DEPRECATED.h \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
@@ -131,12 +127,9 @@ HEADERS  += \
         domitem.h \
     easyNetMainWindow.h \
     macrostate.h \
-    lazynutjob_DEPRECATED.h\
-    lazynutmacro.h \
     answerformatterfactory.h \
     answerformatter.h \
     lazynutjobparam.h \
-    macroqueue.h \
     plotsettingsbasewidget.h \
     plotsettingsform.h \
     dataframemodel.h \

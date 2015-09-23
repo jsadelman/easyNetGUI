@@ -12,8 +12,9 @@ LazyNutJob::LazyNutJob()
       answerFormatter(nullptr),
       logMode(0),
       cmdList({}),
-      errorReceiver(nullptr),
-      endOfJobReceiver(nullptr)
+      errorReceiverList({}),
+      endOfJobReceiverList({}),
+      data()
 {
 }
 
@@ -38,16 +39,23 @@ void LazyNutJob::run()
         connect(SessionManager::instance()->commandSequencer,SIGNAL(answerReady(QString, QString)),
                 this,SLOT(formatAnswer(QString, QString)));
     }
-    if (errorReceiver)
+    if (!errorReceiverList.isEmpty())
     {
         connect(SessionManager::instance()->commandSequencer,SIGNAL(cmdError(QString, QStringList)),
                 this, SLOT(sendCmdError(QString, QStringList)));
-        connect(this, SIGNAL(cmdError(QString, QStringList)),
-                errorReceiver, errorSlot);
+        for (int i = 0; i < errorReceiverList.length(); ++i)
+        {
+            connect(this, SIGNAL(cmdError(QString, QStringList)),
+                    errorReceiverList.at(i), errorSlotList.at(i));
+        }
     }
-    if (endOfJobReceiver)
+    if (!endOfJobReceiverList.isEmpty())
     {
-         connect(this, SIGNAL(finished()), endOfJobReceiver, endOfJobSlot);
+        for (int i = 0; i < endOfJobReceiverList.length(); ++i)
+        {
+            connect(this, SIGNAL(finished()),
+                    endOfJobReceiverList.at(i), endOfJobSlotList.at(i));
+        }
     }
 //    connect(this,SIGNAL(runCommands(QStringList,bool,unsigned int)),
 //            SessionManager::instance()->commandSequencer,SLOT(runCommands(QStringList,bool,unsigned int)));
