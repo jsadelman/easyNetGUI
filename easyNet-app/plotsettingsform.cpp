@@ -56,6 +56,7 @@ void PlotSettingsForm::build()
     for(auto tabname: tabOrder)
     {
         layoutMap[tabname]->addStretch();
+        layoutMap[tabname]->setSizeConstraint(QLayout::SetFixedSize);
         twidgetMap[tabname]->setLayout(layoutMap[tabname]);
         addTab(twidgetMap[tabname],tabname);
     }
