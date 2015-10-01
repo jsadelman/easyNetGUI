@@ -112,8 +112,6 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     itemOffset = QPointF(0,50) ; // 150);
     arrowOffset = QPointF(50,0);
 
-//    objectFilter = new ObjectCatalogueFilter(this);
-//    objectFilter->setTypeList(QStringList({m_boxType, m_arrowType}));
     boxFilter = new ObjectCatalogueFilter(this);
     boxFilter->setType(m_boxType);
     arrowFilter = new ObjectCatalogueFilter(this);
@@ -130,12 +128,10 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
     connect(arrowDescriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
             this, SLOT(renderObject(QDomDocument*)));
-//    connect(this, SIGNAL(wakeUp()), arrowDescriptionUpdater,SLOT(wakeUpUpdate()));
-//    connect(this, SIGNAL(wakeUp()), this,SLOT(syncToObjCatalogue()));
-//    connect(this, SIGNAL(goToSleep()), arrowDescriptionUpdater,SLOT(goToSleep()));
     connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 
-
+    // default state is wake up
+    wakeUp();
 }
 
 
