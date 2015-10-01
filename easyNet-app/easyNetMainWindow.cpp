@@ -100,6 +100,7 @@ EasyNetMainWindow::EasyNetMainWindow(QWidget *parent)
     introPanel->setCurrentIndex(infoTabIdx); // start on Intro tab, to welcome user
     diagramDock->raise();
     diagramPanel->setCurrentIndex(modelTabIdx);
+    diagramSceneTabChanged(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
     setQuietMode();
 //    setSmallFont();
@@ -757,7 +758,8 @@ void EasyNetMainWindow::afterModelLoaded()
 {
     modelScene->setNewModelLoaded(true);
     conversionScene->setNewModelLoaded(true);
-    modelScene->wakeUp();
+    diagramSceneTabChanged(diagramPanel->currentIndex());
+//    modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
 }
 
@@ -1242,7 +1244,7 @@ void EasyNetMainWindow::createActions()
 //    loadScriptAct->setShortcuts(QKeySequence::Open);
     loadScriptAct->setStatusTip(tr("Open an existing lazyNut script"));
     connect(loadScriptAct, SIGNAL(triggered()), this, SLOT(loadScript()));
-    loadScriptAct->setEnabled(false); // no script loading until after UKOG!
+    loadScriptAct->setEnabled(true); // no script loading until after UKOG!
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);

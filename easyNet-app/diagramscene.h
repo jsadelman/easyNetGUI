@@ -166,6 +166,8 @@ private:
     void render();
 //    bool isItemChange(int type);
 
+    bool awake;
+
     ObjectCatalogue *objectCatalogue;
     QHash<QString, dunnart::CanvasItem*> itemHash;
 //    ObjectCatalogueFilter *objectFilter;
