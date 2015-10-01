@@ -758,7 +758,8 @@ void EasyNetMainWindow::afterModelLoaded()
 {
     modelScene->setNewModelLoaded(true);
     conversionScene->setNewModelLoaded(true);
-    modelScene->wakeUp();
+    diagramSceneTabChanged(diagramPanel->currentIndex());
+//    modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
 }
 

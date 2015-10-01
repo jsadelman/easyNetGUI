@@ -75,7 +75,7 @@ Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
 DiagramScene::DiagramScene(QString box_type, QString arrow_type)
-    : m_boxType(box_type), m_arrowType(arrow_type), Canvas()
+    : m_boxType(box_type), m_arrowType(arrow_type), awake(false), Canvas()
 {
     selectedObject = "";
 //    myItemMenu = itemMenu;
@@ -303,28 +303,35 @@ void DiagramScene::initShapePlacement()
 
 void DiagramScene::wakeUp()
 {
-    connect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-            this, SLOT(positionObject(QString, QString, QDomDocument*)));
-    connect(boxFilter, SIGNAL(objectDestroyed(QString)),
-            this, SLOT(removeObject(QString)));
-    connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
-            this, SLOT(removeObject(QString)));
-    boxDescriptionUpdater->wakeUpUpdate();
-    arrowDescriptionUpdater->wakeUpUpdate();
-    syncToObjCatalogue();
+    if (!awake)
+    {
+        connect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
+                this, SLOT(positionObject(QString, QString, QDomDocument*)));
+        connect(boxFilter, SIGNAL(objectDestroyed(QString)),
+                this, SLOT(removeObject(QString)));
+        connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+                this, SLOT(removeObject(QString)));
+        boxDescriptionUpdater->wakeUpUpdate();
+        arrowDescriptionUpdater->wakeUpUpdate();
+        syncToObjCatalogue();
+        awake = true;
+    }
 }
 
 void DiagramScene::goToSleep()
 {
-    disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-            this, SLOT(positionObject(QString, QString, QDomDocument*)));
-    disconnect(boxFilter, SIGNAL(objectDestroyed(QString)),
-            this, SLOT(removeObject(QString)));
-    disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
-            this, SLOT(removeObject(QString)));
-    boxDescriptionUpdater->goToSleep();
-    arrowDescriptionUpdater->goToSleep();
-
+    if (awake)
+    {
+        disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
+                   this, SLOT(positionObject(QString, QString, QDomDocument*)));
+        disconnect(boxFilter, SIGNAL(objectDestroyed(QString)),
+                   this, SLOT(removeObject(QString)));
+        disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+                   this, SLOT(removeObject(QString)));
+        boxDescriptionUpdater->goToSleep();
+        arrowDescriptionUpdater->goToSleep();
+        awake = false;
+    }
 }
 
 
