@@ -20,12 +20,15 @@ class QModelIndex;
 class QStandardItemModel;
 class QMimeData;
 class QComboBox;
+class QAbstractItemModel;
+class QIdentityProxyModel;
 
 //class ObjectCatalogue;
 class DataFrameModel;
 class DataFrameHeader;
 //class ObjectCatalogueFilter;
 class FindDialog;
+class TrialDataFrameModel;
 
 QT_END_NAMESPACE
 
@@ -45,6 +48,9 @@ public slots:
     void addTrialTable(QString name);
     void switchTab(QString tableName);
     void addTableWithThisName(QString name);
+    void addDataFrameToWidget(QDomDocument* domDoc, QString cmd);
+    void prepareToAddDataFrameToWidget(QDomDocument* domDoc, QString cmd);
+
 signals:
     void currentKeyChanged(QString key);
     void newTableSelection(QString name);
@@ -59,11 +65,11 @@ signals:
 
 private slots:
 //    void submit();
-    void addDataFrameToWidget(QDomDocument* domDoc, QString cmd);
     void rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected );
     void updateParamTable(QString model);
     void resizeColumns();
     void setView(QString name);
+    void setPrettyHeaderFromJob();
 
     void on_copy_clicked();
     void updateTableView(QString text);
@@ -94,7 +100,7 @@ private:
     QDialogButtonBox *buttonBox;
 //    QSqlTableModel *model;
     QStandardItemModel *model;
-    DataFrameModel  *dfModel;
+    DataFrameModel  *lastAddedModel;
     QTableView      *view;
     QComboBox       *tableBox;
     QLabel          *listTitle;
@@ -107,6 +113,7 @@ private:
     QVector <QTableView*>  tables;
     int             currentTableIdx;
     int             numTables;
+    int             lastAddedDataFrameIdx;
     QMap <int, QString> tableMap;
     QVector <DataFrameHeader*> myHeaders;
 
@@ -120,6 +127,7 @@ private:
 
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
     void replaceHeaders(QTableView *view);
+    void setModelAtTableIdx(QAbstractItemModel *model, int idx);
 };
 
 

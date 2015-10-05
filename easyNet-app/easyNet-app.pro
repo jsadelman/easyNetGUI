@@ -104,7 +104,8 @@ SOURCES +=  \
     settingsformdialog.cpp \
     xmlaccessor.cpp \
     objectnamevalidator.cpp \
-    lazynutjob.cpp
+    lazynutjob.cpp \
+    trialdataframemodel.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -183,7 +184,8 @@ HEADERS  += \
     xmlaccessor.h \
     objectnamevalidator.h \
     lazynutjob.h \
-    jobqueue.h
+    jobqueue.h \
+    trialdataframemodel.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

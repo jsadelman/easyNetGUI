@@ -59,6 +59,7 @@ public slots:
 signals:
     void newParamValueSig (QString,QString);
 
+
 private slots:
 private:
     QDomNode tBody() const {return domDoc->firstChild().firstChild();}

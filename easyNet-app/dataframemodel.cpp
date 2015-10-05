@@ -34,7 +34,9 @@ QVariant DataFrameModel::data(const QModelIndex &index, int role) const
 QVariant DataFrameModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+    {
         return tBody().firstChild().childNodes().at(section +1).toElement().text();
+    }
 
     else if (orientation == Qt::Vertical && role == Qt::DisplayRole)
         return tBody().childNodes().at(section +1).firstChildElement().text();
@@ -82,7 +84,6 @@ bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, 
 void DataFrameModel::setTableName(QString name)
 {
     tableName = name;
-    qDebug() << "DataFrameModel: tableName set to " << tableName;
 }
 
 

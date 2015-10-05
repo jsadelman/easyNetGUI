@@ -102,6 +102,9 @@ private slots:
     void currentStimulusChanged(QString stim);
     void msgBox(QString msg);
     void runTrial();
+    void runSingleTrial();
+    void runTrialList();
+
     void runAllTrial();
 
     void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);

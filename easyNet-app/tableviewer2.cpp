@@ -11,6 +11,7 @@
 
 #include "tableviewer2.h"
 #include "dataframemodel.h"
+#include "trialdataframemodel.h"
 #include "objectcatalogue.h"
 #include "objectcataloguefilter.h"
 #include "lazynutjob.h"
@@ -233,22 +234,38 @@ void TableViewer::setView(QString name)
     emit newTableSelection(name);
 }
 
+void TableViewer::setPrettyHeaderFromJob()
+{
+    LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+    TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
+    if (job)
+    {
+        QMapIterator<QString, QVariant> headerReplaceHorizontalIt(job->data.toMap());
+        while (headerReplaceHorizontalIt.hasNext())
+        {
+            headerReplaceHorizontalIt.next();
+            trialDataFrameModel->addHeaderReplace(
+                        Qt::Horizontal,
+                        headerReplaceHorizontalIt.key(),
+                        headerReplaceHorizontalIt.value().toString());
+        }
+    }
+
+    trialDataFrameModel->setSourceModel(lastAddedModel);
+    setModelAtTableIdx(trialDataFrameModel, lastAddedDataFrameIdx);
+}
+
 void TableViewer::addDataFrameToWidget(QDomDocument* domDoc, QString cmd)
 {
+    prepareToAddDataFrameToWidget(domDoc, cmd);
+    setModelAtTableIdx(lastAddedModel, lastAddedDataFrameIdx);
+}
+
+void TableViewer::prepareToAddDataFrameToWidget(QDomDocument *domDoc, QString cmd)
+{
     QString tableName = cmd.remove(QRegExp(" get.*$")).remove(QRegExp("^.*xml")).simplified();
-    int idx = tableMap.key(tableName);
-
-    // leakage: need to delete model and model viewer
-    dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
-
-    tables[idx]->setModel(dfModel);
-    tables[idx]->resizeColumnsToContents();
-    tables[idx]->show();
-    // at this point we have a view widget showing the table
-    tables[idx]->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
-    QItemSelectionModel* selModel = tables[idx]->selectionModel();
-    connect(selModel, SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
-            this,SLOT(rowChangedSlot( const QModelIndex& , const QModelIndex& )));
+    lastAddedDataFrameIdx = tableMap.key(tableName);
+    lastAddedModel = new DataFrameModel(domDoc, this);
 }
 
 void TableViewer::replaceHeaders(QTableView* view)
@@ -277,6 +294,20 @@ void TableViewer::replaceHeaders(QTableView* view)
     }
 //    qDebug() << "Here are the replaced headers" << newHeaders;
 
+}
+
+void TableViewer::setModelAtTableIdx(QAbstractItemModel *model, int idx)
+{
+    QItemSelectionModel *m = tables[idx]->selectionModel();
+    tables[idx]->setModel(model);
+    delete m;
+    tables[idx]->resizeColumnsToContents();
+    tables[idx]->show();
+    // at this point we have a view widget showing the table
+    tables[idx]->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
+    QItemSelectionModel* selModel = tables[idx]->selectionModel();
+    connect(selModel, SIGNAL(currentRowChanged(QModelIndex, QModelIndex)),
+            this,SLOT(rowChangedSlot( const QModelIndex& , const QModelIndex& )));
 }
 
 
@@ -550,14 +581,14 @@ void TableViewer::findForward(const QString &str, QFlags<QTextDocument::FindFlag
     if (col<0)
         col=0;
 
-    QModelIndexList hits = dfModel->match(dfModel->index(row, col),
+    QModelIndexList hits = lastAddedModel->match(lastAddedModel->index(row, col),
                             Qt::DisplayRole,qv,1,flag);
     if (hits.size() == 0)
     {
         //now try a more systematic approach
-        for (int i=0;i<dfModel->columnCount();i++)
+        for (int i=0;i<lastAddedModel->columnCount();i++)
         {
-            hits = dfModel->match(dfModel->index(0, i),
+            hits = lastAddedModel->match(lastAddedModel->index(0, i),
                                 Qt::DisplayRole,qv);
             if (hits.size() > 0)
                 break;

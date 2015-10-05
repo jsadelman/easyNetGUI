@@ -49,6 +49,7 @@
 #include "diagramscene.h"
 #include "diagramwindow.h"
 #include "tableviewer2.h"
+#include "trialdataframemodel.h"
 
 #ifdef __APPLE__
   #define EN_FONT "Helvetica Neue"
@@ -522,11 +523,6 @@ void EasyNetMainWindow::updateTableView(QString text)
 
 void EasyNetMainWindow::runTrial()
 {
-    if (runAllMode)
-    {
-        runAllTrial();
-        return;
-    }
 
     QString currentTrial = trialComboBox->currentText();
     QString currentModel = modelComboBox->currentText();
@@ -543,131 +539,84 @@ void EasyNetMainWindow::runTrial()
         return;
     }
 
-    QString cmd;
+    if (runAllMode)
+        runTrialList();
+    else
+        runSingleTrial();
 
-//    after running cmd, call draw on plotForm and update trial table
+
+}
+
+void EasyNetMainWindow::runSingleTrial()
+{
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
 
-    QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
-    cmd = QString(tableName + " clear"); // clear the dataframe before running a new set
-    QStringList cmds;
-    cmds << cmd;
-    QString stepCmd  = " step ";
-    QString modelArg = QString(" model=") + currentModel;
+    QString tableName = QString("((%1 default_observer) default_dataframe)")
+            .arg(SessionManager::instance()->currentTrial());
+    job->cmdList << QString("%1 clear").arg(tableName);
 
     // case hack to avoid problems with UPPERCASE!!!
     QString trialString = trialWidget->getTrialCmd().toLower();
-    cmd = quietMode + currentTrial + stepCmd + trialString; // modelArg + stimArg;
-    cmds << cmd;
+    job->cmdList << QString("%1 %2 step %3")
+            .arg(quietMode)
+            .arg(SessionManager::instance()->currentTrial())
+            .arg(trialString);
 
-    QString displayTableName = currentTrial;
+    QString displayTableName = SessionManager::instance()->currentTrial();
     displayTableName.append(".table");
 
     // now rbind the data to existing trial table
-    cmd = QString("R << eN[\"trial.table\"] <- rbind(eN[\"trial.table\"],eN[\"default_dataframe\"])");
-    cmd.replace("trial.table",displayTableName);
-    cmd.replace("default_dataframe",tableName);
-    cmds << cmd;
-
-//    // rename headers
-//    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"[\\\\(\\\\)]\",\"\",names(eN[\"Table_1\"]))";
-//    cmd.replace("Table_1",displayTableName);
-//    cmds << cmd;
-//    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"event_pattern\",\"\",names(eN[\"Table_1\"]))";
-//    cmd.replace("Table_1",displayTableName);
-//    cmds << cmd;
-//    cmd = QString("R << names(eN[\"Table_1\"])<-gsub(\"") + currentTrial;
-//    cmd += QString("\",\"\",names(eN[\"Table_1\"]))");
-//    cmd.replace("Table_1",displayTableName);
-//    cmds << cmd;
-//    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"^\\\\s+|\\\\s+$\",\"\",names(eN[\"Table_1\"]))";
-//    cmd.replace("Table_1",displayTableName);
-//    cmds << cmd;
-////    cmd = "R << print(names(eN[\"Table_1\"]))";
-////    cmds << cmd;
+    job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])")
+            .arg(displayTableName)
+            .arg(tableName);
 
     // display table of means after running set
-    cmd = QString("xml " + displayTableName + " get");
-    cmds << cmd;
-    job->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-    job->cmdList = cmds;
-
+    job->cmdList << QString("xml %1 get").arg(displayTableName);
+    job->setAnswerReceiver(tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+    job->appendEndOfJobReceiver(tablesWindow, SLOT(setPrettyHeaderFromJob()));
     job->appendEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
+
+    QMap<QString, QVariant> headerReplace;
+    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
+    headerReplace.insert("event_pattern", "");
+    headerReplace.insert("\\(", "");
+    headerReplace.insert("\\)", "");
+    job->data = headerReplace;
+
     SessionManager::instance()->submitJobs(job);
 
-//    resultsDock->raise();
-//    resultsPanel->setCurrentIndex(outputTablesTabIdx);
     tablesWindow->switchTab(displayTableName);
 }
 
-
-void EasyNetMainWindow::runAllTrial()
+void EasyNetMainWindow::runTrialList()
 {
-    QString currentTrial = trialComboBox->currentText();
-    QString currentModel = modelComboBox->currentText();
-//    QString stimulusSet = setComboBox->currentText();
-
-    // check that above strings are in order
-    if (currentTrial.isEmpty())
-    {
-        msgBox("Choose which type of trial to run");
-        return;
-    }
-    if (currentModel.isEmpty())
-    {
-        QMessageBox::warning(this, "Help", "Choose which model to run");
-        return;
-    }
-
-    QString stepCmd  = " run_set "; // " run_trials ";
-//    QString modelArg = currentModel + QString(" ");
-    QString stimArg = trialWidget->getStimulusSet(); // stimulusSet;
-
-//    QString cmd = quietMode + stimArg + stepCmd + modelArg + currentTrial;
-    // andrews run_trials iam ldt
-
-    // new version doesn't specify model
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
-    QStringList cmds;
-    QString cmd;
-    QString tableName = "((" + currentTrial + " default_observer) default_dataframe)";
-    cmd = QString("xml " + tableName + " clear"); // clear the dataframe before running a new set
-    cmds << cmd;
-    cmd = QString("set ") + trialWidget->getTrialCmd();
-    cmds << cmd;
-    cmd = quietMode + currentTrial + stepCmd  + stimArg;
-    cmds << cmd;
-    cmd = QString("unset ") + trialWidget->getArguments().join(" ");
-    cmds << cmd;
+    QString tableName = QString("((%1 default_observer) default_dataframe)")
+            .arg(SessionManager::instance()->currentTrial());
+    job->cmdList << QString("%1 clear").arg(tableName);
+    job->cmdList << QString("set %1").arg(trialWidget->getTrialCmd());
+    job->cmdList << QString("%1 %2 run_set %3")
+            .arg(quietMode)
+            .arg(SessionManager::instance()->currentTrial())
+            .arg(trialWidget->getStimulusSet());
+    job->cmdList << QString("unset %1").arg(trialWidget->getArguments().join(" "));
     QString displayTableName = tablesWindow->addTable();
-    cmd = tableName + " copy " + displayTableName;
-    cmds << cmd;
-
-    // rename headers
-    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"[\\\\(\\\\)]\",\"\",names(eN[\"Table_1\"]))";
-    cmd.replace("Table_1",displayTableName);
-    cmds << cmd;
-    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"event_pattern\",\"\",names(eN[\"Table_1\"]))";
-    cmd.replace("Table_1",displayTableName);
-    cmds << cmd;
-    cmd = QString("R << names(eN[\"Table_1\"])<-gsub(\"") + currentTrial;
-    cmd += QString("\",\"\",names(eN[\"Table_1\"]))");
-    cmd.replace("Table_1",displayTableName);
-    cmds << cmd;
-    cmd = "R << names(eN[\"Table_1\"])<-gsub(\"^\\\\s+|\\\\s+$\",\"\",names(eN[\"Table_1\"]))";
-    cmd.replace("Table_1",displayTableName);
-    cmds << cmd;
-//    cmd = "R << print(names(eN[\"Table_1\"]))";
-//    cmds << cmd;
-
-    // display table of means after running set
-    cmd = QString("xml " + displayTableName + " get");
-    cmds << cmd;
-    job->setAnswerReceiver(tablesWindow, SLOT(addDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-    job->cmdList = cmds;
+    job->cmdList << QString("%1 copy %2").arg(tableName).arg(displayTableName);
+      // display table of means after running set
+    job->cmdList << QString("xml %1 get").arg(displayTableName);
+    job->setAnswerReceiver(tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+    job->appendEndOfJobReceiver(tablesWindow, SLOT(setPrettyHeaderFromJob()));
     job->appendEndOfJobReceiver(this, SIGNAL(runAllTrialEnded()));
+
+    QMap<QString, QVariant> headerReplace;
+    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
+    headerReplace.insert("event_pattern", "");
+    headerReplace.insert("\\(", "");
+    headerReplace.insert("\\)", "");
+    job->data = headerReplace;
+
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->updateObjectCatalogueJobs();
@@ -678,6 +627,14 @@ void EasyNetMainWindow::runAllTrial()
 
     resultsDock->raise();
     resultsPanel->setCurrentIndex(outputTablesTabIdx);
+}
+
+
+void EasyNetMainWindow::runAllTrial()
+{
+
+
+
 
 }
 
