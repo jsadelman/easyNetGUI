@@ -102,10 +102,10 @@ void PlotSettingsWindow::createPlotControlPanel()
 
 //    drawAct = new QAction(tr("&Draw"), this);
 //    connect(drawAct, SIGNAL(triggered()), this, SLOT(draw()));
-    QToolBar *plotToolbar = addToolBar("");
+//    QToolBar *plotToolbar = addToolBar("");
 //    plotToolbar->addAction(drawAct);
     plotControlPanelScrollArea = new QScrollArea;
-    plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     plotControlPanelScrollArea->setWidgetResizable(true);
     setCentralWidget(plotControlPanelScrollArea);
 
