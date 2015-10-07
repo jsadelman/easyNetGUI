@@ -49,7 +49,7 @@ class DiagramWindow;
 
 QT_END_NAMESPACE
 
-class EasyNetMainWindow : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -67,15 +67,17 @@ public:
         Code,
         ViewMode_END
     };
-    EasyNetMainWindow(QWidget *parent = 0);
+    static MainWindow* instance(); // singleton
+
 //    SessionManager *sessionManager;
 
 public slots:
-    void setRunAllMode(bool mode);
+//    void setRunAllMode(bool mode);
     void loadTrial();
     void loadAddOn();
     void showPlotViewer();
     void importDataFrame();
+      void msgBox(QString msg);
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -100,12 +102,10 @@ private slots:
     void loadModel();
     void loadStimulusSet();
     void currentStimulusChanged(QString stim);
-    void msgBox(QString msg);
-    void runTrial();
-    void runSingleTrial();
-    void runTrialList();
 
-    void runAllTrial();
+//    void runTrial();
+//    void runSingleTrial();
+//    void runTrialList();
 
     void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
     void clearErrorOnStatusBar();
@@ -125,12 +125,10 @@ private slots:
 
     void showDocumentation();
     void explorerTabChanged(int idx);
-    void setParamDataFrame(QString name);
     void setParam(QString paramDataFrame, QString newParamValue);
 
-    void setSmallFont();
-    void setMediumFont();
-    void setLargerFont();
+
+    void setFontSize(const QString &size);
     void afterModelLoaded();
     void diagramSceneTabChanged(int index);
     void runScript();
@@ -142,12 +140,17 @@ private slots:
     void showPlotSettings();
     void updateDFComboBox();
 
-    void test_dumpJobData();
 
 protected:
     void closeEvent(QCloseEvent *event);
 
 private:
+    MainWindow(QWidget *parent = 0);
+    MainWindow(MainWindow const&){}
+    MainWindow& operator=(MainWindow const&){}
+    static MainWindow* mainWindow;
+
+
     void checkLazyNut();
     void constructForms();
     void checkScreens();
@@ -159,6 +162,7 @@ private:
     void createMenus();
     void createToolBars();
     void createStatusBar();
+    void connectSignalsAndSlots();
 //    bool maybeSave();
     void newFile(EditWindow*);
     void loadFile(const QString &fileName);
@@ -171,6 +175,7 @@ private:
 
     void hideAllDocks();
 
+public:
 
     QString         lazyNutBat= "";
 //    QString         curFile;
@@ -285,6 +290,7 @@ private:
     int             explorerTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
+    QSignalMapper   *setFontSignalMapper;
     QList<QToolButton*> viewModeButtons;
     QMenu           *fileMenu;
     QMenu           *fileSubMenu;
@@ -329,6 +335,7 @@ private:
     QAction         *restartInterpreterAct;
     QAction         *viewSettingsAct;
     QAction         *setEasyNetHomeAct;
+    QActionGroup    *setFontActGrouop;
     QAction         *setSmallFontAct;
     QAction         *setMediumFontAct;
     QAction         *setLargeFontAct;
@@ -344,10 +351,10 @@ private:
     QAction *quitAct;
 
     bool trialComboEventSwitch = false;
-    bool runAllMode;
+
 //    enum runMode {RunSingle, RunAll};
 
-    void connectSignalsAndSlots();
+
 };
 
 #endif // NMCONSOLE_H

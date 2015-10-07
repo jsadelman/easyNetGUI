@@ -8,14 +8,14 @@ class QAction;
 class QMenu;
 class QPlainTextEdit;
 class CodeEditor;
-class EasyNetMainWindow;
+class MainWindow;
 class InputCmdLine;
 QT_END_NAMESPACE
 
 class Console : public EditWindow
 {
     Q_OBJECT
-    friend class EasyNetMainWindow;
+    friend class MainWindow;
 
 public:
     Console(QWidget *parent = 0);

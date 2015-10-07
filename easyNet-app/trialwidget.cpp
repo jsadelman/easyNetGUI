@@ -4,6 +4,10 @@
 #include "xmlelement.h"
 #include "mycombobox.h"
 #include "sessionmanager.h"
+#include "easyNetMainWindow.h"
+#include "lazynutjob.h"
+#include "tableviewer2.h"
+#include "plotviewer.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -16,7 +20,8 @@
 #include <QLineEdit>
 
 
-TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
+TrialWidget::TrialWidget(QWidget *parent)
+    : runAllMode(false), QWidget(parent)
 {
     layout = new QHBoxLayout;
     layout1 = new QHBoxLayout;
@@ -26,7 +31,6 @@ TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
 
 
     trialFilter = new ObjectCatalogueFilter(this);
-//    trialFilter->setName(""); // ADD THIS LINE TO AVOID SEGFAULT ERROR
     trialDescriptionUpdater = new DescriptionUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
@@ -37,7 +41,7 @@ TrialWidget::TrialWidget(QWidget *parent) : QWidget(parent)
 
     runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
     runAction->setStatusTip(tr("Run"));
-    connect(runAction,SIGNAL(triggered()),parent,SLOT(runTrial()));
+    connect(runAction,SIGNAL(triggered()),this,SLOT(runTrial()));
     runButton = new QToolButton(this);
     runButton->hide();
 
@@ -192,6 +196,107 @@ QStringList TrialWidget::getArguments()
     return(argumentMap.keys());
 }
 
+void TrialWidget::runTrial()
+{
+    if (SessionManager::instance()->currentTrial().isEmpty())
+    {
+        MainWindow::instance()->msgBox("Choose which type of trial to run");
+        return;
+    }
+    if (SessionManager::instance()->currentModel().isEmpty())
+    {
+        QMessageBox::warning(this, "Help", "Choose which model to run");
+        return;
+    }
+
+    if (runAllMode)
+        runTrialList();
+    else
+        runSingleTrial();
+}
+
+void TrialWidget::runSingleTrial()
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+
+    QString tableName = QString("((%1 default_observer) default_dataframe)")
+            .arg(SessionManager::instance()->currentTrial());
+    job->cmdList << QString("%1 clear").arg(tableName);
+
+    // case hack to avoid problems with UPPERCASE!!!
+    QString trialString = getTrialCmd().toLower();
+    job->cmdList << QString("%1 %2 step %3")
+            .arg(MainWindow::instance()->quietMode)
+            .arg(SessionManager::instance()->currentTrial())
+            .arg(trialString);
+
+    QString displayTableName = SessionManager::instance()->currentTrial();
+    displayTableName.append(".table");
+
+    // now rbind the data to existing trial table
+    job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])")
+            .arg(displayTableName)
+            .arg(tableName);
+
+    // display table of means after running set
+    job->cmdList << QString("xml %1 get").arg(displayTableName);
+    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+    job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
+    job->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(updateActivePlots()));
+
+    QMap<QString, QVariant> headerReplace;
+    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
+    headerReplace.insert("event_pattern", "");
+    headerReplace.insert("\\(", "");
+    headerReplace.insert("\\)", "");
+    job->data = headerReplace;
+
+    SessionManager::instance()->submitJobs(job);
+
+    MainWindow::instance()->tablesWindow->switchTab(displayTableName);
+}
+
+void TrialWidget::runTrialList()
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    QString tableName = QString("((%1 default_observer) default_dataframe)")
+            .arg(SessionManager::instance()->currentTrial());
+    job->cmdList << QString("%1 clear").arg(tableName);
+    job->cmdList << QString("set %1").arg(getTrialCmd());
+    job->cmdList << QString("%1 %2 run_set %3")
+            .arg(MainWindow::instance()->quietMode)
+            .arg(SessionManager::instance()->currentTrial())
+            .arg(getStimulusSet());
+    job->cmdList << QString("unset %1").arg(getArguments().join(" "));
+    QString displayTableName = MainWindow::instance()->tablesWindow->addTable();
+    job->cmdList << QString("%1 copy %2").arg(tableName).arg(displayTableName);
+      // display table of means after running set
+    job->cmdList << QString("xml %1 get").arg(displayTableName);
+    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+    job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
+    job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
+
+    QMap<QString, QVariant> headerReplace;
+    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
+    headerReplace.insert("event_pattern", "");
+    headerReplace.insert("\\(", "");
+    headerReplace.insert("\\)", "");
+    job->data = headerReplace;
+
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCatalogueJobs();
+
+    SessionManager::instance()->submitJobs(jobs);
+
+    MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
+
+    MainWindow::instance()->resultsDock->raise();
+    MainWindow::instance()->resultsPanel->setCurrentIndex(MainWindow::instance()->outputTablesTabIdx);
+}
+
 bool TrialWidget::checkIfReadyToRun()
 {
     QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
@@ -253,7 +358,8 @@ void TrialWidget::hideSetComboBox()
     setCancelButton->hide();
 //    clearArgumentBoxes();
     clearDollarArgumentBoxes();
-    emit runAllModeChanged(false);
+    runAllMode = false;
+//    emit runAllModeChanged(false);
 
 }
 
@@ -261,7 +367,8 @@ void TrialWidget::showSetComboBox()
 {
     setComboBox->show();
     setCancelButton->show();
-    emit runAllModeChanged(true);
+    runAllMode = true;
+//    emit runAllModeChanged(true);
 }
 
 void TrialWidget::showSetLabel(QString set)

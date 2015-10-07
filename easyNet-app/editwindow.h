@@ -9,7 +9,7 @@ class QAction;
 class QMenu;
 class QPlainTextEdit;
 class CodeEditor;
-class EasyNetMainWindow;
+class MainWindow;
 class FindDialog;
 
 class QFlag;
@@ -18,7 +18,7 @@ QT_END_NAMESPACE
 class EditWindow : public QMainWindow
 {
     Q_OBJECT
-    friend class EasyNetMainWindow;
+    friend class MainWindow;
 public:
     EditWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool isReadOnly = false);
     CodeEditor      *textEdit;

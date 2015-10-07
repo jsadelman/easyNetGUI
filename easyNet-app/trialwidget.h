@@ -34,6 +34,11 @@ signals:
     void trialDescriptionUpdated(QDomDocument*);
 
 private slots:
+
+    void runTrial();
+    void runSingleTrial();
+    void runTrialList();
+
     void update(QString trialName);
     void buildComboBoxes(QDomDocument* domDoc);
 
@@ -66,6 +71,7 @@ private:
     QString         argChanged;
 
     QMap<QString,QString>     defs;
+    bool runAllMode;
 
 
 

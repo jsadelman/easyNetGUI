@@ -8,13 +8,13 @@ class QAction;
 class QMenu;
 class QPlainTextEdit;
 class CodeEditor;
-class EasyNetMainWindow;
+class MainWindow;
 QT_END_NAMESPACE
 
 class ScriptEditor : public EditWindow
 {
     Q_OBJECT
-    friend class EasyNetMainWindow;
+    friend class MainWindow;
 
 public:
     ScriptEditor(QString _startDir, QWidget *parent = 0);
