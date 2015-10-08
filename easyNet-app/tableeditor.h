@@ -106,11 +106,6 @@ private:
     void createActions();
     void init(const QString &tableName, QWidget *parent);
     void setViewToStringList();
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dragMoveEvent(QDragMoveEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-
-    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 };
 
 

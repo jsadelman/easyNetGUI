@@ -19,7 +19,7 @@
 
 
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)
-    : QMainWindow(parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
+    : dfModel(nullptr), QMainWindow(parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
 {
     tableBox=nullptr;
     thisIsParamWindow=false;
@@ -59,7 +59,7 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
 }
 
 TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &tableName, QWidget *parent)
-    : QMainWindow (parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
+    : dfModel(nullptr), QMainWindow (parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
 {
     // this style of constructor is used for dataframes in the Tables tab
     tableBox=nullptr;
@@ -99,66 +99,7 @@ void TableEditor::init(const QString &tableName, QWidget *parent)
 //    layout->addWidget(objectListView);
     widget->setLayout(layout);
 
-//    objectListView->setMaximumWidth(200);
-//    listTitle = new QLabel("Sets");
-//    tableTitle = new QLabel("Title");
 
-//    QVBoxLayout* layout1 = new QVBoxLayout;
-//    layout1->addWidget(listTitle);
-//    layout1->addWidget(objectListView);
-
-//    QVBoxLayout* layout2 = new QVBoxLayout;
-//    layout2->addWidget(tableTitle);
-//    layout2->addWidget(view);
-
-//    QHBoxLayout* layout = new QHBoxLayout;
-//    layout->addLayout(layout1);
-//    layout->addLayout(layout2);
-//    setLayout(layout);
-
-//    QSplitter *splitter = new QSplitter;
-//    splitter->setOrientation(Qt::Horizontal);
-//    splitter->addWidget(objectListView);
-//    splitter->addWidget(view);
-//    setCentralWidget(splitter);
-
-
-
-    // other appearance stuff here
-
-
-/*
-    model = new QSqlTableModel(this);
-    model->setTable(tableName);
-    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    model->select();
-
-    model->setHeaderData(0, Qt::Horizontal, tr("ID"));
-    model->setHeaderData(1, Qt::Horizontal, tr("First name"));
-    model->setHeaderData(2, Qt::Horizontal, tr("Last name"));
-
-    QTableView *view = new QTableView;
-    view->setModel(model);
-    view->resizeColumnsToContents();
-    submitButton = new QPushButton(tr("Submit"));
-    submitButton->setDefault(true);
-    revertButton = new QPushButton(tr("&Revert"));
-    quitButton = new QPushButton(tr("Quit"));
-
-    buttonBox = new QDialogButtonBox(Qt::Vertical);
-    buttonBox->addButton(submitButton, QDialogButtonBox::ActionRole);
-    buttonBox->addButton(revertButton, QDialogButtonBox::ActionRole);
-    buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
-    connect(submitButton, SIGNAL(clicked()), this, SLOT(submit()));
-    connect(revertButton, SIGNAL(clicked()), model, SLOT(revertAll()));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
-    QHBoxLayout *mainLayout = new QHBoxLayout;
-    mainLayout->addWidget(view);
-    mainLayout->addWidget(buttonBox);
-    setLayout(mainLayout);
-
-    setWindowTitle(tr("Cached Table"));
-*/
 }
 
 void TableEditor::setTableText(QString text)
@@ -172,11 +113,6 @@ void TableEditor::setTableText(QString text)
 
 }
 
-//void TableEditor::setParamSetName(QString text)
-//{
-
-
-//}
 
 void TableEditor::selectTable(QString text)
 {
@@ -194,22 +130,6 @@ void TableEditor::setFilter(QString type)
     objectListFilter = new ObjectCatalogueFilter(this);
     objectListFilter->setType(type);
     tableBox->setModel(objectListFilter);
-//    tableBox->setModelColumn(0);
-//    tableBox->setSelectionMode(QAbstractItemView::SingleSelection);
-
-
-//    objectListFilter = new ObjectCatalogueFilter(this);
-//    objectListFilter->setType(type);
-//    objectListView->setModel(objectListFilter);
-//    objectListView->setModelColumn(0);
-//    objectListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-//    objectListView->setSelectionMode(QAbstractItemView::SingleSelection);
-
-//    connect(objectListView, &QListView::clicked, [=](const QModelIndex & index)
-//    {
-//        setView(objectListFilter->data(index).toString());
-//    });
-
 
 }
 
@@ -225,30 +145,10 @@ void TableEditor::createActions()
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SIGNAL(openFileRequest()));
 
-
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
-
-//     saveAsAct = new QAction(tr("Save &As..."), this);
-//    saveAsAct->setShortcuts(QKeySequence::SaveAs);
-//    saveAsAct->setStatusTip(tr("Save the document under a new name"));
-//    connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
-
-
-//    if (!isReadOnly)
-//    {
-//    cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
-//    cutAct->setShortcuts(QKeySequence::Cut);
-////    cutAct->setStatusTip(tr("Cut the current selection's contents to the "
-////                            "clipboard"));
-//    connect(cutAct, SIGNAL(triggered()), textEdit, SLOT(cut()));
-//    cutAct->setEnabled(false);
-//    connect(textEdit, SIGNAL(copyAvailable(bool)),
-//            cutAct, SLOT(setEnabled(bool)));
-
-//    }
 
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
@@ -262,18 +162,6 @@ void TableEditor::createActions()
     connect(copyDFAct, SIGNAL(triggered()), this, SLOT(on_copy_DF_clicked()));
     copyDFAct->setEnabled(true);
 
-
-
-//    if (!isReadOnly)
-//    {
-//    pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste"), this);
-//    pasteAct->setShortcuts(QKeySequence::Paste);
-////    pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
-////                              "selection"));
-//    connect(pasteAct, SIGNAL(triggered()), textEdit, SLOT(paste()));
-//    }
-
-
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
     findAct->setToolTip(tr("Find text in this table"));
@@ -284,14 +172,10 @@ void TableEditor::createActions()
 
 void TableEditor::refresh()
 {
-    qDebug() << "Entered refresh(), currentTable is " << currentTable;
-    if (tableBox)
-        qDebug() << " and tableBox->currentText is " << tableBox->currentText();
     if (thisIsParamWindow)
         updateTableView(currentTable);
     else
         updateTableView(tableBox->currentText());
-
 }
 
 void TableEditor::save()
@@ -336,18 +220,6 @@ void TableEditor::createToolBars()
 }
 
 
-//void TableEditor::submit()
-//{
-//    model->database().transaction();
-//    if (model->submitAll()) {
-//        model->database().commit();
-//    } else {
-//        model->database().rollback();
-//        QMessageBox::warning(this, tr("Cached Table"),
-//                             tr("The database reported an error: %1")
-//                             .arg(model->lastError().text()));
-//    }
-//}
 
 void TableEditor::setView(QString name)
 {
@@ -357,6 +229,7 @@ void TableEditor::setView(QString name)
 
 void TableEditor::addDataFrameToWidget(QDomDocument* domDoc)
 {
+    delete dfModel;
     dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
     dfModel->setTableName(currentTable);
     connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
@@ -375,16 +248,12 @@ void TableEditor::addDataFrameToWidget(QDomDocument* domDoc)
 void TableEditor::setViewToStringList()
 {
     model = new QStandardItemModel();
-//    list = new QStringList;
-
     model->setHorizontalHeaderLabels({"Index","Command","Time"});
 
     QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(this);
-
     proxyModel->setSourceModel(model);
 
     view->setModel(proxyModel);
-//    view->setModel(model);
     view->resizeColumnsToContents();
     view->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
     view->show();
@@ -396,7 +265,6 @@ void TableEditor::setViewToStringList()
 void TableEditor::rowChangedSlot( const QModelIndex& selected, const QModelIndex& deselected )
 {
     QString key = (view->model()->data(selected.sibling(selected.row(), 0) ,0)).toString();
-//    qDebug() << key;
     emit currentKeyChanged(key);
 
 }
@@ -423,8 +291,7 @@ void TableEditor::on_copy_clicked()
 {
     // a different approach -- get R to copy the df to the clipboard
 
-    QString cmd = "R << write.table(eN[\"THEDATAFRAME\"], \"clipboard\", sep=\"\t\", row.names=FALSE)";
-    cmd.replace("THEDATAFRAME",currentTable);
+    QString cmd = QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)").arg(currentTable);
     SessionManager::instance()->runCmd(cmd);
     return;
 
@@ -479,99 +346,10 @@ void TableEditor::on_copy_clicked()
 
 void TableEditor::on_copy_DF_clicked()
 {
-    QString cmd = currentTable + " copy " + "new_df";
+    QString cmd = QString("%1 copy new_df").arg(currentTable);
     SessionManager::instance()->runCmd(cmd);
 }
 
-
-void TableEditor::dragEnterEvent(QDragEnterEvent *event)
-{
-    qDebug() << "drageenterevent";
-    if (event->mimeData()->hasFormat("application/x-dnditemdata"))
-    {
-        if (event->source() == this)
-        {
-            event->setDropAction(Qt::MoveAction);
-            event->accept();
-        }
-        else
-        {
-            event->acceptProposedAction();
-        }
-    }
-    else
-    {
-        event->ignore();
-    }
-}
-
-void TableEditor::dragMoveEvent(QDragMoveEvent *event)
-{
-//if (event->mimeData()->hasFormat("application/x-dnditemdata"))
-{
-    if (event->source() == this) {
-        event->setDropAction(Qt::MoveAction);
-        event->accept();
-    } else {
-        event->acceptProposedAction();
-    }
-}
-//else {
-//    event->ignore();
-//}
-}
-
-//! [1]
-void TableEditor::mousePressEvent(QMouseEvent *event)
-{
-QTableView *child = static_cast<QTableView*>(childAt(event->pos()));
-if (!child)
-    return;
-
-qDebug("child name %s", child->objectName().toLatin1().data());
-
-//if (!child->text().isEmpty())
-//{
-//    draggedText = child->text();
-//    qDebug() << "draggedText" << draggedText;
-//}
-
-QByteArray itemData;
-QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-//dataStream << pixmap << QPoint(event->pos() - child->pos());
-//! [1]
-
-//! [2]
-QMimeData *mimeData = new QMimeData;
-mimeData->setData("application/x-dnditemdata", itemData);
-//! [2]
-
-//! [3]
-QDrag *drag = new QDrag(this);
-drag->setMimeData(mimeData);
-drag->setHotSpot(event->pos() - child->pos());
-//! [3]
-
-
-if (drag->exec(Qt::CopyAction | Qt::MoveAction, Qt::CopyAction) == Qt::MoveAction)
-    child->close();
-else
-    child->show();
-}
-
-bool TableEditor::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
-{
-  QStringList formats = data->formats();
-  QByteArray encodedData = data->data(formats[0]);
-  QDataStream stream(&encodedData, QIODevice::ReadOnly);
-
-//  int row, column;
-  stream >> row >> column;
-
-  qDebug() << "row: " << row << " column:" << column;
-
-  return false;
-}
 
 void TableEditor::updateTableView(QString text)
 {
@@ -587,7 +365,7 @@ void TableEditor::updateTableView(QString text)
 
     currentTable = text;
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("xml " + text + " get 1-80 1-20")}); // just enough to fill the screen
+    job->cmdList = QStringList({QString("xml %1 get 1-80 1-20").arg(text)}); // just enough to fill the screen
     job->setAnswerReceiver(this, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
     SessionManager::instance()->submitJobs(job);
 }

@@ -268,34 +268,6 @@ void TableViewer::prepareToAddDataFrameToWidget(QDomDocument *domDoc, QString cm
     lastAddedModel = new DataFrameModel(domDoc, this);
 }
 
-void TableViewer::replaceHeaders(QTableView* view)
-{
-    QStringList headers, newHeaders;
-    for(int i = 0; i < view->model()->columnCount(); i++)
-        headers.append(view->model()->headerData(i, Qt::Horizontal).toString());
-
-//    qDebug() << "Here are the original headers" << headers;
-
-    QString trial = "ldt"; // for example
-    int col=0;
-    foreach(QString header,headers)
-    {
-        header.replace("(","");
-        header.replace(")","");
-        header.replace("event_pattern","");
-        header.replace(trial,"");
-        newHeaders.append(header.simplified());
-        QVariant qv(header.simplified());
-
-        /* DOESN'T WORK */
-        view->model()->setHeaderData(col, Qt::Horizontal,qv);
-        col++;
-
-    }
-//    qDebug() << "Here are the replaced headers" << newHeaders;
-
-}
-
 void TableViewer::setModelAtTableIdx(QAbstractItemModel *model, int idx)
 {
     QItemSelectionModel *m = tables[idx]->selectionModel();

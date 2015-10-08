@@ -114,7 +114,6 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
         argumentMap[args[i]]->setEditable(true);
         argumentMap[args[i]]->setSizeAdjustPolicy(QComboBox::AdjustToContents);
         argumentMap[args[i]]->setMinimumSize(100, argumentMap[args[i]]->minimumHeight());
-        argumentMap[args[i]]->acceptDrops();
         connect(argumentMap[args[i]], SIGNAL(editTextChanged(QString)),this,SLOT(setRunButtonIcon()));
         connect(argumentMap[args[i]], SIGNAL(argWasChanged(QString)),this,SLOT(argWasChanged(QString)));
 

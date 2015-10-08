@@ -255,8 +255,6 @@ public:
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
     TableEditor     *dataframesWindow;
-    TableEditor     *oldTablesWindow;
-//    TableViewer     *tablesWindow;
     TableViewer     *tablesWindow;
     TableEditor     *paramEdit;
     DebugLog        *debugLog;

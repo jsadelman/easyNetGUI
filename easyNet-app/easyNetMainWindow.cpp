@@ -195,7 +195,6 @@ void MainWindow::constructForms()
 
     plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
     outputTablesTabIdx = resultsPanel->addTab(tablesWindow, tr("Tables"));
-//    outputTablesTabIdx = resultsPanel->addTab(oldTablesWindow, tr("Tables"));
 
     // perhaps use this code for detachable tabs?
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs

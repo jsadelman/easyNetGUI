@@ -190,7 +190,7 @@ void DataFrameHeader::performDrag()
     QDrag *drag = new QDrag(this);
     QMimeData *mimeData = new QMimeData;
     qDebug() << "performDrag, text = " << text;
-    mimeData->setText(QString("$")+text);
+    mimeData->setText(QString("$%1").arg(text));
 
     drag->setMimeData(mimeData);
     qDebug() << "performDrag, mimeData = " << mimeData;

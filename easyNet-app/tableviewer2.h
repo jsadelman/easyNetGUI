@@ -126,7 +126,6 @@ private:
     void mousePressEvent(QMouseEvent *event);
 
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
-    void replaceHeaders(QTableView *view);
     void setModelAtTableIdx(QAbstractItemModel *model, int idx);
 };
 
