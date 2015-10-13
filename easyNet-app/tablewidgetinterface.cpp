@@ -1,5 +1,5 @@
 #include "tablewidgetinterface.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 #include "dataframemodel.h"
 #include "trialdataframemodel.h"
 //#include "lazynutjob.h"

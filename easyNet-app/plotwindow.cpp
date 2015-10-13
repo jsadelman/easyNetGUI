@@ -13,7 +13,7 @@
 #include "plotsettingsform.h"
 #include "xmlelement.h"
 #include "plotviewer.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 #include "xmlaccessor.h"
 
 

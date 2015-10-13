@@ -1,6 +1,6 @@
 #include "trialwidget.h"
-#include "objectcataloguefilter.h"
-#include "descriptionupdater.h"
+#include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "xmlelement.h"
 #include "mycombobox.h"
 #include "sessionmanager.h"
@@ -31,11 +31,11 @@ TrialWidget::TrialWidget(QWidget *parent)
 
 
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    trialDescriptionUpdater = new DescriptionUpdater(this);
+    trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
-    connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
             this,SLOT(buildComboBoxes(QDomDocument*)));
-    connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
             this,SIGNAL(trialDescriptionUpdated(QDomDocument*)));
 
 

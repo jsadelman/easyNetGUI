@@ -66,7 +66,7 @@ class QColor;
 class AsLazyNutObject;
 class ObjectCache;
 class ObjectCacheFilter;
-class DescriptionUpdater;
+class ObjectUpdater;
 class QDomDocument;
 
 class Box;
@@ -171,11 +171,11 @@ private:
     ObjectCache *objectCatalogue;
     QHash<QString, dunnart::CanvasItem*> itemHash;
 //    ObjectCatalogueFilter *objectFilter;
-    DescriptionUpdater *descriptionUpdater;
+    ObjectUpdater *descriptionUpdater;
     ObjectCacheFilter *boxFilter;
     ObjectCacheFilter *arrowFilter;
-    DescriptionUpdater *arrowDescriptionUpdater;
-    DescriptionUpdater *boxDescriptionUpdater;
+    ObjectUpdater *arrowDescriptionUpdater;
+    ObjectUpdater *boxDescriptionUpdater;
     QList<QDomDocument*> renderList;
 
     QAction* enableObserverAction;

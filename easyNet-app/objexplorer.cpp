@@ -15,15 +15,14 @@
 #include "objexplorer.h"
 #include "lazynutobject.h"
 #include "lazynutobjectmodel.h"
-#include "lazynutobjtablemodel.h"
 #include "sessionmanager.h"
 #include "lazynutjob.h"
 #include "xmlelement.h"
 #include "expandtofillbutton.h"
 #include "lazynutlistwidget.h"
 #include "objectcache.h"
-#include "objectcataloguefilter.h"
-#include "descriptionupdater.h"
+#include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "domitem.h"
 
 ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
@@ -62,7 +61,7 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
     });
 
     descriptionFilter->setName("<no name>");
-    descriptionUpdater = new DescriptionUpdater(this);
+    descriptionUpdater = new ObjectUpdater(this);
     descriptionUpdater->setProxyModel(descriptionFilter);
 
     objectModel = new LazyNutObjectModel(nullptr, this);
@@ -70,7 +69,7 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
             objectModel, SLOT(setDescription(QString, QString, QDomDocument*)));
     connect(descriptionFilter, SIGNAL(objectDestroyed(QString)),
             objectModel, SLOT(removeDescription(QString)));
-    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
             objectModel, SLOT(updateDescription(QDomDocument*)));
 
 

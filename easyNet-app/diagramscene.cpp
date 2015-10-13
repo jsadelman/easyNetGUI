@@ -41,8 +41,8 @@
 #include "diagramscene.h"
 #include "arrow.h"
 #include "lazynutobject.h"
-#include "objectcataloguefilter.h"
-#include "descriptionupdater.h"
+#include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "sessionmanager.h"
 #include "objectcache.h"
 
@@ -118,16 +118,16 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     arrowFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     arrowFilter->setType(m_arrowType);
 
-    boxDescriptionUpdater = new DescriptionUpdater(this);
+    boxDescriptionUpdater = new ObjectUpdater(this);
     boxDescriptionUpdater->setProxyModel(boxFilter);
 
-    arrowDescriptionUpdater = new DescriptionUpdater(this);
+    arrowDescriptionUpdater = new ObjectUpdater(this);
     arrowDescriptionUpdater->setProxyModel(arrowFilter);
 
-    connect(boxDescriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+    connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
             this, SLOT(renderObject(QDomDocument*)));
 
-    connect(arrowDescriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+    connect(arrowDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
             this, SLOT(renderObject(QDomDocument*)));
     connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 
@@ -252,7 +252,7 @@ bool DiagramScene::validForAlignment(QList<dunnart::CanvasItem *> items)
 void DiagramScene::prepareToLoadLayout(QString fileName)
 {
     savedLayout = fileName;
-//    connect(descriptionUpdater, SIGNAL(descriptionUpdated(QDomDocument*)),
+//    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
 //            this, SLOT(loadLayout()));
 }
 #endif
@@ -532,7 +532,7 @@ void DiagramScene::syncToObjCatalogue()
             QVariant v = boxFilter->data(boxFilter->index(row, ObjectCache::DomDocCol));
             if (v.canConvert<QDomDocument *>())
                 renderList.append(v.value<QDomDocument *>());
-            boxDescriptionUpdater->requestDescription(name);
+            boxDescriptionUpdater->requestObject(name);
         }
 //        else if ((boxFilter->data(boxFilter->index(row,1)).toString() == m_arrowType))
 //            &&   (!itemHash.contains(name)))
@@ -549,7 +549,7 @@ void DiagramScene::syncToObjCatalogue()
             QVariant v = arrowFilter->data(arrowFilter->index(row, ObjectCache::DomDocCol));
             if (v.canConvert<QDomDocument *>())
                 renderList.append(v.value<QDomDocument *>());
-            arrowDescriptionUpdater->requestDescription(name);
+            arrowDescriptionUpdater->requestObject(name);
         }
     }
 
@@ -561,7 +561,7 @@ void DiagramScene::syncToObjCatalogue()
         QVariant v = objectFilter->data(objectFilter->index(matchedIndexList.at(0).row(),3));
         if (v.canConvert<QDomDocument *>())
             renderList.append(v.value<QDomDocument *>());
-        arrowDescriptionUpdater->requestDescription(name);
+        arrowDescriptionUpdater->requestObject(name);
     }
 #endif
     // remove destroyed objects

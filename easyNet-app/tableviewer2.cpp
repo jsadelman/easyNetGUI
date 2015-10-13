@@ -13,7 +13,7 @@
 #include "dataframemodel.h"
 #include "trialdataframemodel.h"
 #include "objectcache.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "finddialog.h"

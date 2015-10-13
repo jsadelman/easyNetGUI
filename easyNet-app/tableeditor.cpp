@@ -12,7 +12,7 @@
 #include "tableeditor.h"
 #include "dataframemodel.h"
 #include "objectcache.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "finddialog.h"

@@ -4,7 +4,7 @@
 #include <QScrollArea>
 
 class ObjectCacheFilter;
-class DescriptionUpdater;
+class ObjectUpdater;
 class QDomDocument;
 class QVBoxLayout;
 class TrialXML;
@@ -24,7 +24,7 @@ private slots:
 
 private:
     ObjectCacheFilter* trialFilter;
-    DescriptionUpdater* trialDescriptionUpdater;
+    ObjectUpdater* trialDescriptionUpdater;
     TrialXML* form;
     QVBoxLayout *layout;
 };

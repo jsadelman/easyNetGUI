@@ -7,7 +7,7 @@
 #include "bracketedparser.h"
 #include "simplelistmodel.h"
 #include "selectfromlistmodel.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 #include "objectcache.h"
 #include "proxymodelextrarows.h"
 #include "xmlaccessor.h"

@@ -1,6 +1,6 @@
 #include "trialeditor.h"
-#include "objectcataloguefilter.h"
-#include "descriptionupdater.h"
+#include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "trialxml.h"
 #include "sessionmanager.h"
 
@@ -13,9 +13,9 @@ TrialEditor::TrialEditor(QWidget *parent)
     : QScrollArea(parent)
 {
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    trialDescriptionUpdater = new DescriptionUpdater(this);
+    trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
-    connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
             this,SLOT(buildForm(QDomDocument*)));
 }
 

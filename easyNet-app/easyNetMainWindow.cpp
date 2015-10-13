@@ -29,7 +29,7 @@
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "objectcache.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 #include "lazynutconsole.h"
 //#include "lazynutscripteditor.h"
 #include "maxminpanel.h"

@@ -66,8 +66,8 @@ SOURCES +=  \
  #   objectcatalogue.cpp \
     lazynutobjectcacheelem.cpp \
     proxymodelextrarows.cpp \
-    descriptionupdater.cpp \
-    objectcataloguefilter.cpp \
+    objectupdater.cpp \
+    objectcachefilter.cpp \
     dataframewindow.cpp \
     tableeditor.cpp \
     inputcmdline.cpp \
@@ -149,8 +149,8 @@ HEADERS  += \
     expandtofillbutton.h \
     lazynutobjectcacheelem.h \
     proxymodelextrarows.h \
-    descriptionupdater.h \
-    objectcataloguefilter.h \
+    objectupdater.h \
+    objectcachefilter.h \
     dataframewindow.h \
     tableeditor.h \
     inputcmdline.h \

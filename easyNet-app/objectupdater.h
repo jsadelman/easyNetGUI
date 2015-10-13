@@ -8,31 +8,33 @@ class QSortFilterProxyModel;
 class ObjectCache;
 class QDomDocument;
 
-class DescriptionUpdater : public QObject
+class ObjectUpdater : public QObject
 {
     Q_OBJECT
 public:
-    explicit DescriptionUpdater(QObject *parent = 0);
+    explicit ObjectUpdater(QObject *parent = 0);
     void setProxyModel(QSortFilterProxyModel *proxy);
-    void requestDescription(QString name);
+    void requestObject(QString name);
 
 signals:
-    void descriptionUpdated(QDomDocument*);
+    void objectUpdated(QDomDocument*);
 
 public slots:
     void goToSleep();
     void wakeUpUpdate();
+    void setCommand(QString command) {m_command = command;}
 private slots:
-    void requestDescriptions(QModelIndex top, QModelIndex bottom);
-    void requestDescriptions(QModelIndex parent, int first, int last);
+    void requestObjects(QModelIndex top, QModelIndex bottom);
+    void requestObjects(QModelIndex parent, int first, int last);
     void errorHandler(QString cmd, QStringList errorList);
 
 private:
-    void requestDescriptions(int first, int last);
+    void requestObjects(int first, int last);
     QStringList getObjectNames(int first, int last);
 
     QSortFilterProxyModel *proxyModel;
     ObjectCache *objectCache;
+    QString m_command;
 };
 
 #endif // DESCRIPTIONUPDATER_H

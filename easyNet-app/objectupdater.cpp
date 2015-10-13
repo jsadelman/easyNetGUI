@@ -1,4 +1,4 @@
-#include "descriptionupdater.h"
+#include "objectupdater.h"
 #include "objectcache.h"
 #include "lazynutobject.h"
 #include "sessionmanager.h"
@@ -8,18 +8,18 @@
 #include <QSortFilterProxyModel>
 #include <QDebug>
 
-DescriptionUpdater::DescriptionUpdater(QObject *parent)
-    : QObject(parent)
+ObjectUpdater::ObjectUpdater(QObject *parent)
+    : m_command(""), QObject(parent)
 {
 
 }
 
-void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
+void ObjectUpdater::setProxyModel(QSortFilterProxyModel *proxy)
 {
     objectCache = qobject_cast<ObjectCache*>(proxy->sourceModel());
     if (!objectCache)
     {
-        qDebug() << "ERROR: DescriptionUpdater: proxy model not compatible with ObjectCache";
+        qDebug() << "ERROR: ObjectUpdater: proxy model not compatible with ObjectCache";
         return;
     }
     proxyModel = proxy;
@@ -28,36 +28,36 @@ void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
 
 }
 
-void DescriptionUpdater::wakeUpUpdate()
+void ObjectUpdater::wakeUpUpdate()
 {
 //    qDebug() << this << "wakeUpUpdate";
     connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(requestDescriptions(QModelIndex,QModelIndex)));
+            this, SLOT(requestObjects(QModelIndex,QModelIndex)));
     connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(requestDescriptions(QModelIndex,int,int)));
+            this, SLOT(requestObjects(QModelIndex,int,int)));
 }
 
-void DescriptionUpdater::goToSleep()
+void ObjectUpdater::goToSleep()
 {
 //    qDebug() << this << "go to sleep ";
     disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(requestDescriptions(QModelIndex,QModelIndex)));
+            this, SLOT(requestObjects(QModelIndex,QModelIndex)));
     disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(requestDescriptions(QModelIndex,int,int)));
+            this, SLOT(requestObjects(QModelIndex,int,int)));
 }
 
-void DescriptionUpdater::requestDescriptions(QModelIndex top, QModelIndex bottom)
+void ObjectUpdater::requestObjects(QModelIndex top, QModelIndex bottom)
 {
-    requestDescriptions(top.row(), bottom.row());
+    requestObjects(top.row(), bottom.row());
 }
 
-void DescriptionUpdater::requestDescriptions(QModelIndex parent, int first, int last)
+void ObjectUpdater::requestObjects(QModelIndex parent, int first, int last)
 {
     Q_UNUSED(parent)
-    requestDescriptions(first, last);
+    requestObjects(first, last);
 }
 
-void DescriptionUpdater::errorHandler(QString cmd, QStringList errorList)
+void ObjectUpdater::errorHandler(QString cmd, QStringList errorList)
 {
     QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
     if (errorList.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
@@ -66,18 +66,18 @@ void DescriptionUpdater::errorHandler(QString cmd, QStringList errorList)
     }
 }
 
-void DescriptionUpdater::requestDescriptions(int first, int last)
+void ObjectUpdater::requestObjects(int first, int last)
 {
     foreach (QString name, getObjectNames(first, last))
-            requestDescription(name);
+            requestObject(name);
 }
 
-QStringList DescriptionUpdater::getObjectNames(int first, int last)
+QStringList ObjectUpdater::getObjectNames(int first, int last)
 {
     QStringList names;
     for (int row = first; row <= last; ++row)
     {
-        QString name = proxyModel->data(proxyModel->index(row,0)).toString();
+        QString name = proxyModel->data(proxyModel->index(row,ObjectCache::NameCol)).toString();
         // this is a workaround
         // QSortFilterProxyModel behaves differently when its QRegExp is all-pass (even if not empty, like ".*".)
         // (probably) signals directly from the source model are used instead of the proxy ones.
@@ -90,22 +90,21 @@ QStringList DescriptionUpdater::getObjectNames(int first, int last)
     return names;
 }
 
-void DescriptionUpdater::requestDescription(QString name)
+void ObjectUpdater::requestObject(QString name)
 {
     if (name.isEmpty())
         return;
     if (objectCache->isInvalid(name) && objectCache->isPending(name))
     {
-
         objectCache->setPending(name, false);
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList = QStringList({QString("xml %1").arg(name)});
+        job->cmdList = QStringList({QString("xml %1 %2").arg(name).arg(m_command)});
         job->setAnswerReceiver(objectCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
         job->appendErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
         SessionManager::instance()->submitJobs(job);
     }
     else if (!objectCache->isInvalid(name) && !objectCache->isPending(name))
     {
-        emit descriptionUpdated(objectCache->getDomDoc(name));
+        emit objectUpdated(objectCache->getDomDoc(name));
     }
 }

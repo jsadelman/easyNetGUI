@@ -18,7 +18,7 @@ class ObjectCache;
 class AsLazyNutObject;
 class QDomDocument;
 class ExpandToFillButton;
-class DescriptionUpdater;
+class ObjectUpdater;
 //typedef QHash<QString,LazyNutObject*> LazyNutObjectCatalogue;
 
 class LazyNutObjectModel;
@@ -92,7 +92,7 @@ private:
     QListView *objectListView;
     //--------- Description ----------//
     ObjectCacheFilter *descriptionFilter;
-    DescriptionUpdater *descriptionUpdater;
+    ObjectUpdater *descriptionUpdater;
     LazyNutObjectModel *objectModel;
     ExpandToFillButton *expandToFillButton;
     QTreeView *objectView;

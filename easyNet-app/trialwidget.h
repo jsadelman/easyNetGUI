@@ -9,7 +9,7 @@ class QLabel;
 class QHBoxLayout;
 class QVBoxLayout;
 class ObjectCacheFilter;
-class DescriptionUpdater;
+class ObjectUpdater;
 class QDomDocument;
 class QAction;
 class QToolButton;
@@ -54,7 +54,7 @@ private slots:
 private:
 
     ObjectCacheFilter* trialFilter;
-    DescriptionUpdater* trialDescriptionUpdater;
+    ObjectUpdater* trialDescriptionUpdater;
     QMap <QString, myComboBox*> argumentMap;
     QVector <QLabel*> labelList;
 

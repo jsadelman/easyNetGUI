@@ -1,4 +1,4 @@
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 #include "objectcache.h"
 
 #include <QDebug>

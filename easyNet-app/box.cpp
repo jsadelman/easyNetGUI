@@ -2,7 +2,7 @@
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
 #include "libdunnartcanvas/limitstring.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 
 
 #include <QPainter>

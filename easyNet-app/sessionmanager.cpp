@@ -8,7 +8,7 @@
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
 #include "objectcache.h"
-#include "objectcataloguefilter.h"
+#include "objectcachefilter.h"
 
 
 #include <QtGlobal>
