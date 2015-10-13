@@ -8,6 +8,8 @@
 #include <QWidget>
 
 class QMimeData;
+class QTableView;
+
 
 
 class DataFrameModel : public QAbstractTableModel
@@ -40,7 +42,9 @@ class DataFrameModel : public QAbstractTableModel
      * Assumes that tabel headers always exist for rows and cols.
      *
     */
-Q_OBJECT
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+
 public:
     DataFrameModel(QDomDocument *domDoc, QObject *parent=0);
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -51,11 +55,15 @@ public:
     QStringList colNames();
     QStringList mimeTypes() const;
     QMimeData *mimeData(const QModelIndexList &indexes) const;
+    QString name() {return m_name;}
+    QTableView *view() {return m_view;}
+
 
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
 public slots:
-    void setTableName(QString name);
+    void setName(QString name) {m_name = name;}
+    void setView(QTableView *view) {m_view = view;}
 signals:
     void newParamValueSig (QString,QString);
 
@@ -65,7 +73,9 @@ private:
     QDomNode tBody() const {return domDoc->firstChild().firstChild();}
     QDomDocument *domDoc;
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    QString tableName;
+    QString m_name;
+    QTableView *m_view;
+
 };
 
 class DataFrameHeader : public QHeaderView

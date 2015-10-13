@@ -105,7 +105,11 @@ SOURCES +=  \
     xmlaccessor.cpp \
     objectnamevalidator.cpp \
     lazynutjob.cpp \
-    trialdataframemodel.cpp
+    trialdataframemodel.cpp \
+    tablewindow.cpp \
+    tablewidgetinterface.cpp \
+    tabstablewidget.cpp \
+    combotablewidget.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -185,7 +189,11 @@ HEADERS  += \
     objectnamevalidator.h \
     lazynutjob.h \
     jobqueue.h \
-    trialdataframemodel.h
+    trialdataframemodel.h \
+    tablewindow.h \
+    tablewidgetinterface.h \
+    tabstablewidget.h \
+    combotablewidget.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

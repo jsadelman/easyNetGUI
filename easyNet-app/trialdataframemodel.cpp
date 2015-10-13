@@ -32,3 +32,21 @@ void TrialDataFrameModel::addHeaderReplace(Qt::Orientation orientation, QString 
 {
     headerReplace[orientation].append(QPair<QString, QString>(from, to));
 }
+
+QString TrialDataFrameModel::name()
+{
+    DataFrameModel *dfModel = qobject_cast<DataFrameModel *>(sourceModel());
+    if (dfModel)
+        return dfModel->name();
+    else
+        return QString();
+}
+
+QTableView *TrialDataFrameModel::view()
+{
+    DataFrameModel *dfModel = qobject_cast<DataFrameModel *>(sourceModel());
+    if (dfModel)
+        return dfModel->view();
+    else
+        return nullptr;
+}

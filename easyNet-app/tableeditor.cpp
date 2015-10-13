@@ -36,8 +36,7 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     // but can edit parameter sets
     if (thisIsParamWindow)
         view->setEditTriggers(QAbstractItemView::AllEditTriggers);
-    else if (tableName=="Debug_log")
-        setViewToStringList(); // temp!!!
+
     else
     {
         // stimulus set allows a column to be dragged
@@ -231,7 +230,7 @@ void TableEditor::addDataFrameToWidget(QDomDocument* domDoc)
 {
     delete dfModel;
     dfModel = new DataFrameModel(domDoc, this); // you only need this line to load in the entire XML table
-    dfModel->setTableName(currentTable);
+    dfModel->setName(currentTable);
     connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
             this,SIGNAL(newParamValueSig(QString,QString)));
 
@@ -245,20 +244,6 @@ void TableEditor::addDataFrameToWidget(QDomDocument* domDoc)
             this,SLOT(rowChangedSlot( const QModelIndex& , const QModelIndex& )));
 }
 
-void TableEditor::setViewToStringList()
-{
-    model = new QStandardItemModel();
-    model->setHorizontalHeaderLabels({"Index","Command","Time"});
-
-    QSortFilterProxyModel *proxyModel = new QSortFilterProxyModel(this);
-    proxyModel->setSourceModel(model);
-
-    view->setModel(proxyModel);
-    view->resizeColumnsToContents();
-    view->verticalHeader()->hide(); // hideColumn(0); // 1st column contains rownames, which user doesn't need
-    view->show();
-    view->setSortingEnabled(true);
-}
 
 
 

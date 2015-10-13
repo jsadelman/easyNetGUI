@@ -105,7 +105,6 @@ private:
     void createToolBars();
     void createActions();
     void init(const QString &tableName, QWidget *parent);
-    void setViewToStringList();
 };
 
 

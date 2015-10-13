@@ -5,7 +5,7 @@
 
 
 DataFrameModel::DataFrameModel(QDomDocument *domDoc, QObject *parent)
-    :domDoc(domDoc), QAbstractTableModel(parent)
+    :domDoc(domDoc), m_name(), m_view(nullptr), QAbstractTableModel(parent)
 {
 }
 
@@ -75,15 +75,10 @@ bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, 
         tBody().childNodes().at(index.row() + 1).childNodes().at(index.column() +1).firstChild().setNodeValue(value.toString());
         QString newParamValue = tBody().childNodes().at(index.row() + 1).childNodes().at(index.column()).toElement().text() +
                 " " + value.toString();
-        emit newParamValueSig(tableName,newParamValue);
+        emit newParamValueSig(m_name,newParamValue);
 
     }
     return true;
-}
-
-void DataFrameModel::setTableName(QString name)
-{
-    tableName = name;
 }
 
 
