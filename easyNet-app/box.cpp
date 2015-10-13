@@ -131,7 +131,7 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         for (int row = 0; row < defaultDataframesFilter->rowCount(); ++row)
         {
 
-            QString dataframe = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+            QString dataframe = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCache::NameCol)).toString();
             QString observer = dataframe;
             observer.remove(QRegExp("^\\(| default_dataframe\\)"));
             QMap <QString, QVariant> plotData; // QMap <QString, QString> is not allowed
@@ -162,14 +162,14 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
             }
 
 
-//            QString plotName = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+//            QString plotName = defaultDataframesFilter->data(defaultDataframesFilter->index(row, ObjectCache::NameCol)).toString();
 //            plotName.remove(QRegExp("\\(|_observer|\\).*"));
 //            plotName.replace(" ", ".");
 //            plotName.prepend(QString("%1.").arg(SessionManager::instance()->currentModel()));
 //            plotName.append(".plot");
             actionList.append(plotMenu->addAction(plotData["prettyName"].toString()));
             actionList.at(row)->setCheckable(true);
-            actionList.at(row)->setChecked(ObjectCatalogue::instance()->exists(plotData["rplotName"].toString()));
+            actionList.at(row)->setChecked(SessionManager::instance()->descriptionCache->exists(plotData["rplotName"].toString()));
             actionList.at(row)->setData(plotData);
         }
 
@@ -188,7 +188,7 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
             if (action == actionList.at(row))
             {
 //                QString dataframe = defaultDataframesFilter->data(
-//                            defaultDataframesFilter->index(row, ObjectCatalogue::NameCol)).toString();
+//                            defaultDataframesFilter->index(row, ObjectCache::NameCol)).toString();
 //                QString observer = dataframe;
 //                observer.remove(QRegExp("^\\(| default_dataframe\\)"));
                 QMap <QString, QVariant> plotData = action->data().toMap();
@@ -255,10 +255,10 @@ void Box::setupDefaultDataframesFilter()
     if (m_lazyNutType == "layer")
     {
 //        qDebug() << "in setupDefaultDataframesFilter";
-        defaultDataframesFilter = new ObjectCatalogueFilter(this);
+        defaultDataframesFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
         QRegExp rex(QString("^\\(\\(%1 .*observer.*default_dataframe\\)$").arg(m_name));
         defaultDataframesFilter->setFilterRegExp(rex);
-        defaultDataframesFilter->setFilterKeyColumn(ObjectCatalogue::NameCol);
+        defaultDataframesFilter->setFilterKeyColumn(ObjectCache::NameCol);
     }
 }
 

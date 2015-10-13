@@ -65,7 +65,7 @@ DataFrameModel *TableWidgetInterface::getDataFrameModel(QAbstractItemModel *mode
     return dFmodel;
 }
 
-void TableWidgetInterface::setFilter(ObjectCatalogueFilter *filter)
+void TableWidgetInterface::setFilter(ObjectCacheFilter *filter)
 {
     m_filter = filter;
     setFilter_impl();

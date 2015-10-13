@@ -44,6 +44,7 @@
 #include "objectcataloguefilter.h"
 #include "descriptionupdater.h"
 #include "sessionmanager.h"
+#include "objectcache.h"
 
 #include "box.h"
 #include "arrow.h"
@@ -112,9 +113,9 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     itemOffset = QPointF(0,50) ; // 150);
     arrowOffset = QPointF(50,0);
 
-    boxFilter = new ObjectCatalogueFilter(this);
+    boxFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     boxFilter->setType(m_boxType);
-    arrowFilter = new ObjectCatalogueFilter(this);
+    arrowFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     arrowFilter->setType(m_arrowType);
 
     boxDescriptionUpdater = new DescriptionUpdater(this);
@@ -528,7 +529,7 @@ void DiagramScene::syncToObjCatalogue()
         if (!itemHash.contains(name))
         {
             positionObject(name, m_boxType, nullptr);
-            QVariant v = boxFilter->data(boxFilter->index(row, ObjectCatalogue::DescriptionCol));
+            QVariant v = boxFilter->data(boxFilter->index(row, ObjectCache::DomDocCol));
             if (v.canConvert<QDomDocument *>())
                 renderList.append(v.value<QDomDocument *>());
             boxDescriptionUpdater->requestDescription(name);
@@ -545,7 +546,7 @@ void DiagramScene::syncToObjCatalogue()
         if (!itemHash.contains(name))
         {
             connections.append(name); // OBSOLETE
-            QVariant v = arrowFilter->data(arrowFilter->index(row, ObjectCatalogue::DescriptionCol));
+            QVariant v = arrowFilter->data(arrowFilter->index(row, ObjectCache::DomDocCol));
             if (v.canConvert<QDomDocument *>())
                 renderList.append(v.value<QDomDocument *>());
             arrowDescriptionUpdater->requestDescription(name);

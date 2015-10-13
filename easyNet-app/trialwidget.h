@@ -8,7 +8,7 @@ class QComboBox;
 class QLabel;
 class QHBoxLayout;
 class QVBoxLayout;
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 class DescriptionUpdater;
 class QDomDocument;
 class QAction;
@@ -53,7 +53,7 @@ private slots:
     void clearDollarArgumentBoxes();
 private:
 
-    ObjectCatalogueFilter* trialFilter;
+    ObjectCacheFilter* trialFilter;
     DescriptionUpdater* trialDescriptionUpdater;
     QMap <QString, myComboBox*> argumentMap;
     QVector <QLabel*> labelList;

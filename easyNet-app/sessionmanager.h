@@ -24,6 +24,8 @@ class ObjExplorer;
 class DesignWindow;
 class LazyNut;
 class CommandSequencer;
+class ObjectCache;
+class ObjectCacheFilter;
 
 
 class SessionManager: public QObject
@@ -49,6 +51,9 @@ public:
     LazyNutJob* recentlyModifiedJob();
     LazyNutJob* recentlyDestroyedJob();
     QList<LazyNutJob*> updateObjectCatalogueJobs();
+
+    ObjectCache *descriptionCache;
+    ObjectCache *dataframeCache;
 
 
 signals:

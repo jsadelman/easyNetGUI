@@ -3,7 +3,7 @@
 
 #include <QScrollArea>
 
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 class DescriptionUpdater;
 class QDomDocument;
 class QVBoxLayout;
@@ -23,7 +23,7 @@ private slots:
     void buildForm(QDomDocument* domDoc);
 
 private:
-    ObjectCatalogueFilter* trialFilter;
+    ObjectCacheFilter* trialFilter;
     DescriptionUpdater* trialDescriptionUpdater;
     TrialXML* form;
     QVBoxLayout *layout;

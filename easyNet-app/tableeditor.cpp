@@ -11,7 +11,7 @@
 
 #include "tableeditor.h"
 #include "dataframemodel.h"
-#include "objectcatalogue.h"
+#include "objectcache.h"
 #include "objectcataloguefilter.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
@@ -57,8 +57,8 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
 
 }
 
-TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &tableName, QWidget *parent)
-    : dfModel(nullptr), QMainWindow (parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
+TableEditor::TableEditor(ObjectCache *objectCache, const QString &tableName, QWidget *parent)
+    : dfModel(nullptr), objectCache(objectCache), QMainWindow (parent)//,fileToolBar(0),editToolBar(0),tableBox(0)
 {
     // this style of constructor is used for dataframes in the Tables tab
     tableBox=nullptr;
@@ -67,7 +67,6 @@ TableEditor::TableEditor(ObjectCatalogue *_objectCatalogue, const QString &table
         thisIsParamWindow=true;
 
     init(tableName, parent);
-    objectCatalogue = _objectCatalogue;
     setFilter("dataframe");
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
@@ -126,7 +125,7 @@ void TableEditor::selectTable(QString text)
 void TableEditor::setFilter(QString type)
 {
     qDebug() << "Entered setFilter with type: " << type << "; tableBox = " << tableBox;
-    objectListFilter = new ObjectCatalogueFilter(this);
+    objectListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     objectListFilter->setType(type);
     tableBox->setModel(objectListFilter);
 

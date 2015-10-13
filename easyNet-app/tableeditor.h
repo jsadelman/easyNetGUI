@@ -21,9 +21,9 @@ class QStandardItemModel;
 class QMimeData;
 class QComboBox;
 
-class ObjectCatalogue;
+class ObjectCache;
 class DataFrameModel;
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 class FindDialog;
 
 QT_END_NAMESPACE
@@ -34,7 +34,7 @@ class TableEditor : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit TableEditor(ObjectCatalogue *objectCatalogue, const QString &tableName, QWidget *parent = 0);
+    explicit TableEditor(ObjectCache *objectCache, const QString &tableName, QWidget *parent = 0);
     explicit TableEditor(const QString &tableName, QWidget *parent = 0);
     void setFilter(QString type);
     QStringList mimeTypes() const;
@@ -81,8 +81,8 @@ private:
     QAction *findAct;
     QAction *refreshAct;
 
-    ObjectCatalogue  *objectCatalogue;
-    ObjectCatalogueFilter *objectListFilter;
+    ObjectCache  *objectCache;
+    ObjectCacheFilter *objectListFilter;
     QListView *objectListView;
 
     QPushButton *submitButton;

@@ -30,7 +30,7 @@ TrialWidget::TrialWidget(QWidget *parent)
 
 
 
-    trialFilter = new ObjectCatalogueFilter(this);
+    trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     trialDescriptionUpdater = new DescriptionUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),

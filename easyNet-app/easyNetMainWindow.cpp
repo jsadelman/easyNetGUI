@@ -28,7 +28,7 @@
 #include "plotwindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
-#include "objectcatalogue.h"
+#include "objectcache.h"
 #include "objectcataloguefilter.h"
 #include "lazynutconsole.h"
 //#include "lazynutscripteditor.h"
@@ -148,7 +148,7 @@ void MainWindow::constructForms()
     lazyNutConsole2 = new Console(this);
 
     plotSettingsWindow = new PlotSettingsWindow(this);
-    objExplorer = new ObjExplorer(ObjectCatalogue::instance(),this);
+    objExplorer = new ObjExplorer(SessionManager::instance()->descriptionCache,this);
     scriptEdit = new ScriptEditor(scriptsDir, this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
@@ -159,9 +159,9 @@ void MainWindow::constructForms()
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
     stimSetForm = new TableEditor ("Stimuli",this);
-//    tablesWindow = new TableEditor (ObjectCatalogue::instance(),"Tables",this);
+//    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
     tablesWindow = new TableViewer("Tables",this);
-    dataframesWindow = new TableEditor (ObjectCatalogue::instance(),"Dataframes",this);
+    dataframesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Dataframes",this);
     paramEdit = new TableEditor ("Parameters",this);
     plotViewer = new PlotViewer(easyNetHome, this);
     diagramWindow = new DiagramWindow(diagramPanel, this);
@@ -257,12 +257,12 @@ void MainWindow::connectSignalsAndSlots()
     connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     /* signals & slots */
-    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
-            ObjectCatalogue::instance(), SLOT(create(QDomDocument*)));
-    connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
-            ObjectCatalogue::instance(), SLOT(invalidateCache(QStringList)));
-    connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
-            ObjectCatalogue::instance(), SLOT(destroy(QStringList)));
+//    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
+//          SessionManager::instance()->descriptionCache(), SLOT(create(QDomDocument*)));
+//    connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
+//          SessionManager::instance()->descriptionCache(), SLOT(invalidateCache(QStringList)));
+//    connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
+//          SessionManager::instance()->descriptionCache(), SLOT(destroy(QStringList)));
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
@@ -395,14 +395,14 @@ void MainWindow::initialiseToolBar()
     connect(trialButton, SIGNAL(clicked()),
               this, SLOT(loadAddOn()));
 
-      modelListFilter = new ObjectCatalogueFilter(this);
+      modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
       modelComboBox->setModel(modelListFilter);
       modelComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       modelListFilter->setType("grouping");
 
 
-      trialListFilter = new ObjectCatalogueFilter(this);
+      trialListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
       trialComboBox->setModel(trialListFilter);
       trialComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);

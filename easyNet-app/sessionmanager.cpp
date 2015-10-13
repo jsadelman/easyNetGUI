@@ -7,7 +7,8 @@
 #include "lazynutjobparam.h"
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
-#include "objectcatalogue.h"
+#include "objectcache.h"
+#include "objectcataloguefilter.h"
 
 
 #include <QtGlobal>
@@ -34,6 +35,27 @@ SessionManager::SessionManager()
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     jobQueue = new LazyNutJobQueue;
+
+    descriptionCache = new ObjectCache(this);
+    connect(this, SIGNAL(recentlyCreated(QDomDocument*)),
+            descriptionCache, SLOT(create(QDomDocument*)));
+    connect(this,  SIGNAL(recentlyModified(QStringList)),
+            descriptionCache,  SLOT(invalidateCache(QStringList)));
+    connect(this, SIGNAL(recentlyDestroyed(QStringList)),
+            descriptionCache,  SLOT(destroy(QStringList)));
+
+    ObjectCacheFilter *dfFilter = new ObjectCacheFilter(descriptionCache, this);
+    dfFilter->setType("dataframe");
+
+    dataframeCache = new ObjectCache(this);
+    connect(dfFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+            dataframeCache, SLOT(create(QString,QString)));
+    connect(dfFilter, SIGNAL(objectModified(QString)),
+            dataframeCache, SLOT(invalidateCache(QString)));
+    connect(dfFilter, SIGNAL(objectDestroyed(QString)),
+            dataframeCache, SLOT(destroy(QString)));
+
+
 }
 
 
@@ -69,8 +91,8 @@ void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitSta
 
 void SessionManager::restartLazyNut(QString lazyNutBat)
 {
-//    ObjectCatalogue::instance()->removeRows(0, ObjectCatalogue::instance()->rowCount());
-    ObjectCatalogue::instance()->clear();
+//    SessionManager::instance()->descriptionCache->removeRows(0, SessionManager::instance()->descriptionCache->rowCount());
+    SessionManager::instance()->descriptionCache->clear();
 
     killLazyNut();
     lazyNut->waitForFinished();

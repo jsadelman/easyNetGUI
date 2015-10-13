@@ -64,8 +64,8 @@ class QGraphicsTextItem;
 class QGraphicsItem;
 class QColor;
 class AsLazyNutObject;
-class ObjectCatalogue;
-class ObjectCatalogueFilter;
+class ObjectCache;
+class ObjectCacheFilter;
 class DescriptionUpdater;
 class QDomDocument;
 
@@ -90,7 +90,7 @@ public:
     explicit DiagramScene(QString box_type, QString arrow_type);
     QString boxType() {return m_boxType;}
     QString arrowType() {return m_arrowType;}
-//    void setObjCatalogue(ObjectCatalogue *catalogue);
+//    void setObjCatalogue(ObjectCache *catalogue);
 //    QFont font() const { return myFont; }
 //    QColor textColor() const { return myTextColor; }
 //    QColor itemColor() const { return myItemColor; }
@@ -168,12 +168,12 @@ private:
 
     bool awake;
 
-    ObjectCatalogue *objectCatalogue;
+    ObjectCache *objectCatalogue;
     QHash<QString, dunnart::CanvasItem*> itemHash;
 //    ObjectCatalogueFilter *objectFilter;
     DescriptionUpdater *descriptionUpdater;
-    ObjectCatalogueFilter *boxFilter;
-    ObjectCatalogueFilter *arrowFilter;
+    ObjectCacheFilter *boxFilter;
+    ObjectCacheFilter *arrowFilter;
     DescriptionUpdater *arrowDescriptionUpdater;
     DescriptionUpdater *boxDescriptionUpdater;
     QList<QDomDocument*> renderList;

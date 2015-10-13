@@ -3,7 +3,7 @@
 
 #include "libdunnartcanvas/shape.h"
 
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 
 
 class Box: public dunnart::ShapeObj
@@ -72,7 +72,7 @@ private:
     qreal m_widthMarginProportionToLongestLabel;
     qreal m_widthOverHeight;
 
-    ObjectCatalogueFilter *defaultDataframesFilter;
+    ObjectCacheFilter *defaultDataframesFilter;
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
 

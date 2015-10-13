@@ -12,7 +12,7 @@
 #include "tableviewer2.h"
 #include "dataframemodel.h"
 #include "trialdataframemodel.h"
-#include "objectcatalogue.h"
+#include "objectcache.h"
 #include "objectcataloguefilter.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"

@@ -8,6 +8,7 @@
 #include "simplelistmodel.h"
 #include "selectfromlistmodel.h"
 #include "objectcataloguefilter.h"
+#include "objectcache.h"
 #include "proxymodelextrarows.h"
 #include "xmlaccessor.h"
 #include <QMetaObject>
@@ -128,14 +129,14 @@ void PlotSettingsBaseWidget::createLevelsListModel()
         return;
     else if (levelsElement.tagName() == "parameter")
     {
-        levelsListModel = new ObjectCatalogueFilter(this);
-        static_cast<ObjectCatalogueFilter*>(levelsListModel)->setType(XMLAccessor::type(levelsElement));
+        levelsListModel = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+        static_cast<ObjectCacheFilter*>(levelsListModel)->setType(XMLAccessor::type(levelsElement));
 
     }
     else if (levelsElement.tagName() == "command")
     {
         levelsListModel = new StringListModel(QStringList(), this);
-        levelsCmdObjectWatcher = new ObjectCatalogueFilter(this);
+        levelsCmdObjectWatcher = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
         QStringList objectsInCmd;
         QDomElement cmdElement = levelsElement.firstChildElement("object");
         while (!cmdElement.isNull())
@@ -146,7 +147,7 @@ void PlotSettingsBaseWidget::createLevelsListModel()
         levelsCmdObjectWatcher->setNameList(objectsInCmd);
         connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
                 this, SLOT(getLevels()));
-        connect(levelsCmdObjectWatcher, &ObjectCatalogueFilter::objectDestroyed, [=]()
+        connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
         {
             static_cast<StringListModel*>(levelsListModel)->updateList(QStringList());
         });

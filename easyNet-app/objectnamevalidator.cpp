@@ -1,5 +1,6 @@
 #include "objectnamevalidator.h"
-#include "objectcatalogue.h"
+#include "objectcache.h"
+#include "sessionmanager.h"
 
 ObjectNameValidator::ObjectNameValidator(QObject *parent)
 {
@@ -53,8 +54,8 @@ QValidator::State ObjectNameValidator::validate(QString &input, int &pos) const
 {
     Q_UNUSED(pos)
     QRegExp forbiddenRex(QString("^(%1)$").arg(forbiddenNames.join("|")));
-    QModelIndexList objectMatchList = ObjectCatalogue::instance()->match(
-                ObjectCatalogue::instance()->index(0,0),
+    QModelIndexList objectMatchList = SessionManager::instance()->descriptionCache->match(
+                SessionManager::instance()->descriptionCache->index(0,0),
                 Qt::DisplayRole,
                 input,
                 1,

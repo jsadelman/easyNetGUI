@@ -14,7 +14,7 @@
 #include "enumclasses.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
-class ObjectCatalogue;
+class ObjectCache;
 class AsLazyNutObject;
 class QDomDocument;
 class ExpandToFillButton;
@@ -23,7 +23,7 @@ class DescriptionUpdater;
 
 class LazyNutObjectModel;
 class LazyNutObjectListModel;
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 class LazyNutObjTableModel;
 //class LazyNutObjTableProxyModel;
 class QSortFilterProxyModel;
@@ -45,7 +45,7 @@ class ObjExplorer: public QMainWindow
     Q_OBJECT
 
 public:
-    ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent = 0);
+    ObjExplorer(ObjectCache *objectCache, QWidget *parent = 0);
 // should be private:
 
 
@@ -83,15 +83,15 @@ public slots:
 
 
 private:
-    ObjectCatalogue  *objectCatalogue;
+    ObjectCache  *objectCache;
     //---------- Type list ---------//
     QListWidget *typeList;
     QString allObjectsString;
     //---------- Object list ---------//
-    ObjectCatalogueFilter *objectListFilter;
+    ObjectCacheFilter *objectListFilter;
     QListView *objectListView;
     //--------- Description ----------//
-    ObjectCatalogueFilter *descriptionFilter;
+    ObjectCacheFilter *descriptionFilter;
     DescriptionUpdater *descriptionUpdater;
     LazyNutObjectModel *objectModel;
     ExpandToFillButton *expandToFillButton;

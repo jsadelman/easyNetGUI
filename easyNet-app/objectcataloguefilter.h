@@ -1,15 +1,16 @@
 #ifndef OBJECTCATALOGUEFILTER_H
 #define OBJECTCATALOGUEFILTER_H
 
+#include "objectcache.h"
+
 #include <QSortFilterProxyModel>
-#include "objectcatalogue.h"
 class QDomDocument;
 
-class ObjectCatalogueFilter : public QSortFilterProxyModel
+class ObjectCacheFilter : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    ObjectCatalogueFilter(QObject * parent = 0);
+    ObjectCacheFilter(ObjectCache *objectCache, QObject * parent = 0);
     bool isAllValid();
 
 public slots:

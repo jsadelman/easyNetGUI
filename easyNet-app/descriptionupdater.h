@@ -5,7 +5,7 @@
 #include <QModelIndex>
 
 class QSortFilterProxyModel;
-class ObjectCatalogue;
+class ObjectCache;
 class QDomDocument;
 
 class DescriptionUpdater : public QObject
@@ -32,7 +32,7 @@ private:
     QStringList getObjectNames(int first, int last);
 
     QSortFilterProxyModel *proxyModel;
-    ObjectCatalogue *objectCatalogue;
+    ObjectCache *objectCache;
 };
 
 #endif // DESCRIPTIONUPDATER_H

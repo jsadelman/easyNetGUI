@@ -2,6 +2,7 @@
 #include "objectcataloguefilter.h"
 #include "descriptionupdater.h"
 #include "trialxml.h"
+#include "sessionmanager.h"
 
 #include <QDebug>
 #include <QVBoxLayout>
@@ -11,7 +12,7 @@
 TrialEditor::TrialEditor(QWidget *parent)
     : QScrollArea(parent)
 {
-    trialFilter = new ObjectCatalogueFilter(this);
+    trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     trialDescriptionUpdater = new DescriptionUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (descriptionUpdated(QDomDocument*)),

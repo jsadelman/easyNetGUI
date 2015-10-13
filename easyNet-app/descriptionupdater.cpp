@@ -1,5 +1,5 @@
 #include "descriptionupdater.h"
-#include "objectcatalogue.h"
+#include "objectcache.h"
 #include "lazynutobject.h"
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
@@ -16,10 +16,10 @@ DescriptionUpdater::DescriptionUpdater(QObject *parent)
 
 void DescriptionUpdater::setProxyModel(QSortFilterProxyModel *proxy)
 {
-    objectCatalogue = qobject_cast<ObjectCatalogue*>(proxy->sourceModel());
-    if (!objectCatalogue)
+    objectCache = qobject_cast<ObjectCache*>(proxy->sourceModel());
+    if (!objectCache)
     {
-        qDebug() << "ERROR: DescriptionUpdater: proxy model not compatible with ObjectCatalogue";
+        qDebug() << "ERROR: DescriptionUpdater: proxy model not compatible with ObjectCache";
         return;
     }
     proxyModel = proxy;
@@ -62,7 +62,7 @@ void DescriptionUpdater::errorHandler(QString cmd, QStringList errorList)
     QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
     if (errorList.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
     {
-        objectCatalogue->destroy(nameInCmd);
+        objectCache->destroy(nameInCmd);
     }
 }
 
@@ -94,18 +94,18 @@ void DescriptionUpdater::requestDescription(QString name)
 {
     if (name.isEmpty())
         return;
-    if (objectCatalogue->isInvalid(name) && objectCatalogue->isPending(name))
+    if (objectCache->isInvalid(name) && objectCache->isPending(name))
     {
 
-        objectCatalogue->setPending(name, false);
+        objectCache->setPending(name, false);
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({QString("xml %1").arg(name)});
-        job->setAnswerReceiver(objectCatalogue, SLOT(setDescriptionAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+        job->setAnswerReceiver(objectCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
         job->appendErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
         SessionManager::instance()->submitJobs(job);
     }
-    else if (!objectCatalogue->isInvalid(name) && !objectCatalogue->isPending(name))
+    else if (!objectCache->isInvalid(name) && !objectCache->isPending(name))
     {
-        emit descriptionUpdated(objectCatalogue->description(name));
+        emit descriptionUpdated(objectCache->getDomDoc(name));
     }
 }

@@ -63,7 +63,7 @@ SOURCES +=  \
     lazynutobjectmodel.cpp \
     lazynutobject.cpp \
     expandtofillbutton.cpp \
-    objectcatalogue.cpp \
+ #   objectcatalogue.cpp \
     lazynutobjectcacheelem.cpp \
     proxymodelextrarows.cpp \
     descriptionupdater.cpp \
@@ -109,7 +109,8 @@ SOURCES +=  \
     tablewindow.cpp \
     tablewidgetinterface.cpp \
     tabstablewidget.cpp \
-    combotablewidget.cpp
+    combotablewidget.cpp \
+    objectcache.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -146,7 +147,6 @@ HEADERS  += \
     lazynutobjectmodel.h \
     lazynutobject.h \
     expandtofillbutton.h \
-    objectcatalogue.h \
     lazynutobjectcacheelem.h \
     proxymodelextrarows.h \
     descriptionupdater.h \
@@ -193,7 +193,8 @@ HEADERS  += \
     tablewindow.h \
     tablewidgetinterface.h \
     tabstablewidget.h \
-    combotablewidget.h
+    combotablewidget.h \
+    objectcache.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

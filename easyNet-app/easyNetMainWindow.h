@@ -23,13 +23,13 @@ class LazyNut;
 class SessionManager;
 class AsLazyNutObject;
 typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
-class ObjectCatalogue;
+class ObjectCache;
 class EditWindow;
 class CommandLog;
 class ScriptEditor;
 class Highlighter;
 class PlotSettingsWindow;
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 //class LazyNutListComboBox;
 //class LazyNutScriptEditor;
 class MaxMinPanel;
@@ -267,8 +267,8 @@ public:
     QPushButton     * trialButton;
     QPushButton     * modelButton;
     QWidget         *spacer;
-    ObjectCatalogueFilter* modelListFilter;
-    ObjectCatalogueFilter* trialListFilter;
+    ObjectCacheFilter* modelListFilter;
+    ObjectCacheFilter* trialListFilter;
     QAction         * runAllTrialMsgAct;
 
     Assistant       *assistant;

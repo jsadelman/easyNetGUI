@@ -23,7 +23,7 @@ class QComboBox;
 class QAbstractItemModel;
 class QIdentityProxyModel;
 
-//class ObjectCatalogue;
+//class ObjectCache;
 class DataFrameModel;
 class DataFrameHeader;
 //class ObjectCatalogueFilter;

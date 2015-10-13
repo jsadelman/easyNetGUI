@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QMap>
 
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 class QDomDocument;
 class QAbstractItemModel;
 class DataFrameModel;
@@ -17,8 +17,8 @@ public:
     virtual ~TableWidgetInterface();
     virtual QString currentTable()=0;
 
-    void setFilter(ObjectCatalogueFilter *filter);
-    ObjectCatalogueFilter * getFilter() {return m_filter;} // for direct manipulation
+    void setFilter(ObjectCacheFilter *filter);
+    ObjectCacheFilter * getFilter() {return m_filter;} // for direct manipulation
 
 public slots:
     void updateTable(QDomDocument *domDoc, QString cmd);
@@ -39,7 +39,7 @@ protected:
 
 
     QString nameFromCmd(QString cmd);
-    ObjectCatalogueFilter *m_filter;
+    ObjectCacheFilter *m_filter;
     DataFrameModel *lastModel;
     QString lastName;
     QMap<QString, QAbstractItemModel*> modelMap;

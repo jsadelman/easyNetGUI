@@ -25,7 +25,7 @@ class QListWidgetItem;
 class LazyNutListWidget;
 class PairedListWidget;
 class QAbstractItemModel;
-class ObjectCatalogueFilter;
+class ObjectCacheFilter;
 
 class PlotSettingsAbstractBaseWidget
 {
@@ -90,7 +90,7 @@ protected:
     bool valueSet;
     QString currentValue;
     QAbstractItemModel *levelsListModel;
-    ObjectCatalogueFilter *levelsCmdObjectWatcher;
+    ObjectCacheFilter *levelsCmdObjectWatcher;
 
     QVBoxLayout *vboxLayout;
     QGridLayout *gridLayout;

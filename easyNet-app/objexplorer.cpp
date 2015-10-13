@@ -21,13 +21,13 @@
 #include "xmlelement.h"
 #include "expandtofillbutton.h"
 #include "lazynutlistwidget.h"
-#include "objectcatalogue.h"
+#include "objectcache.h"
 #include "objectcataloguefilter.h"
 #include "descriptionupdater.h"
 #include "domitem.h"
 
-ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
-    : objectCatalogue(objectCatalogue), QMainWindow(parent)
+ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
+    : objectCache(objectCache), QMainWindow(parent)
 {
 
     //---------- Type list ---------//
@@ -40,7 +40,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
     //---------- Object list ---------//
 
-    objectListFilter = new ObjectCatalogueFilter(this);
+    objectListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
 
     connect(typeList, SIGNAL(currentTextChanged(QString)), this, SLOT(selectType(QString)));
 
@@ -54,7 +54,7 @@ ObjExplorer::ObjExplorer(ObjectCatalogue *objectCatalogue, QWidget *parent)
 
     //--------- Description ----------//
 
-    descriptionFilter = new ObjectCatalogueFilter(this);
+    descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
 
     connect(objectListView->selectionModel(), &QItemSelectionModel::currentChanged, [=](const QModelIndex & index)
     {
