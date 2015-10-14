@@ -20,6 +20,9 @@
 #include <QLineEdit>
 
 
+Q_DECLARE_METATYPE(QDomDocument*)
+
+
 TrialWidget::TrialWidget(QWidget *parent)
     : runAllMode(false), QWidget(parent)
 {
@@ -287,6 +290,29 @@ void TrialWidget::runTrialList()
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->updateObjectCatalogueJobs();
+
+    // write info XML and append it to the last job, append receivers
+    QDomDocument *trialRunInfo = new QDomDocument();
+    QDomElement rootElem = trialRunInfo->createElement("string");
+    rootElem.setAttribute("value", "Trial run info");
+    trialRunInfo->appendChild(rootElem);
+    QDomElement trialElem = trialRunInfo->createElement("string");
+    trialElem.setAttribute("label", "Trial");
+    trialElem.setAttribute("value", SessionManager::instance()->currentTrial());
+    rootElem.appendChild(trialElem);
+    QDomElement modeElem = trialRunInfo->createElement("string");
+    modeElem.setAttribute("label", "Run mode");
+    modeElem.setAttribute("value", "list");
+    rootElem.appendChild(modeElem);
+    QDomElement dataframeElem = trialRunInfo->createElement("object");
+    dataframeElem.setAttribute("label", "Results");
+    dataframeElem.setAttribute("value", tableName);
+    rootElem.appendChild(dataframeElem);
+//    qDebug() << trialRunInfo->toString();
+    // append to last job
+    jobs.last()->data = QVariant::fromValue(trialRunInfo);
+
+
 
     SessionManager::instance()->submitJobs(jobs);
 
