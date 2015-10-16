@@ -133,6 +133,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
 #endif
 
                 answer = answer.remove("ANSWER: ");
+//                qDebug() << currentCmd;
+//                qDebug() << answer;
                 emit answerReady(answer, currentCmd);
 //                if (commandList.first().contains("25"))
 //                    qDebug() << answer;

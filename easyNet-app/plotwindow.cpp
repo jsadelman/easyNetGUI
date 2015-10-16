@@ -336,6 +336,7 @@ void PlotSettingsWindow::getSettingsXML()
 
 void PlotSettingsWindow::buildSettingsForm(QDomDocument *settingsList)
 {
+//    qDebug() << settingsList->toString();
     PlotSettingsForm *plotSettingsForm = new PlotSettingsForm(settingsList, this);
     plotSettingsForm->setPlotName(currentPlot);
     plotSettingsForm->setDefaultSettings(defaultSettings);
