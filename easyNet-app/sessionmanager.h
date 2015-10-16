@@ -83,7 +83,7 @@ signals:
     // convenient signals for the implementation of updateRecentlyModified()
     void updateObjectCatalogue(QDomDocument*);
     void updateDiagramScene();
-    void currentModelChanged();
+    void currentModelChanged(QString);
 
     void lazyNutCrash();
 
@@ -109,7 +109,7 @@ public slots:
 
     void restartLazyNut(QString lazyNutBat);
 
-    void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged();}
+    void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
     void setCurrentTrial(QString s) {m_currentTrial = s;}
     void setCurrentSet(QString s) {m_currentSet = s;}
 

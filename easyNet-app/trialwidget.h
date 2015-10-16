@@ -25,6 +25,7 @@ public:
     ~TrialWidget();
 
     QString getTrialCmd();
+    QString getStochasticCmd();
     bool checkIfReadyToRun();
     QString getStimulusSet();
 public slots:
@@ -51,15 +52,24 @@ private slots:
     void argWasChanged(QString arg);
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
+    void updateModelStochasticity(QDomDocument* modelDescription);
 private:
+
+    void setStochasticityVisible(bool isVisible);
 
     ObjectCacheFilter* trialFilter;
     ObjectUpdater* trialDescriptionUpdater;
+    ObjectCacheFilter* modelFilter;
+    ObjectUpdater* modelDescriptionUpdater;
     QMap <QString, myComboBox*> argumentMap;
     QVector <QLabel*> labelList;
 
     QComboBox*      setComboBox;
     QToolButton*    setCancelButton;
+    QLabel*         repetitionsLabel;
+    QComboBox*      repetitionsBox;
+    QLabel*         strategyLabel;
+    QComboBox*      strategyBox;
 
     QHBoxLayout*    layout1;
     QHBoxLayout*    layout2;
@@ -72,6 +82,7 @@ private:
 
     QMap<QString,QString>     defs;
     bool runAllMode;
+    bool isStochastic;
 
 
 

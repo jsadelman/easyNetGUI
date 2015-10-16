@@ -58,8 +58,6 @@ SessionManager::SessionManager()
             dataframeCache, SLOT(invalidateCache(QString)));
     connect(dfFilter, SIGNAL(objectDestroyed(QString)),
             dataframeCache, SLOT(destroy(QString)));
-
-
 }
 
 

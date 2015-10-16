@@ -8,6 +8,7 @@
 #include "lazynutjob.h"
 #include "tableviewer2.h"
 #include "plotviewer.h"
+#include "xmlaccessor.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -18,6 +19,7 @@
 #include <QToolButton>
 #include <QAction>
 #include <QLineEdit>
+#include <QIntValidator>
 
 
 TrialWidget::TrialWidget(QWidget *parent)
@@ -37,6 +39,15 @@ TrialWidget::TrialWidget(QWidget *parent)
             this,SLOT(buildComboBoxes(QDomDocument*)));
     connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
             this,SIGNAL(trialDescriptionUpdated(QDomDocument*)));
+
+    modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
+            modelFilter, SLOT(setName(QString)));
+
+    modelDescriptionUpdater = new ObjectUpdater(this);
+    modelDescriptionUpdater->setProxyModel(modelFilter);
+    connect(modelDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*)),
+           this, SLOT(updateModelStochasticity(QDomDocument*)));
 
 
     runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
@@ -97,12 +108,29 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     argumentMap.clear();
     labelList.clear();
 
+
     setComboBox = new QComboBox(this);
     setComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     setCancelButton = new QToolButton(this);
     setCancelButton->setIcon(QIcon(":/images/icon_dismiss.png"));
     setCancelButton->setAutoRaise(true);
     setCancelButton->setDefaultAction(hideSetComboBoxAction);
+
+    // Widget for stochastic models
+    repetitionsLabel = new QLabel("Repetitions");
+    repetitionsBox = new QComboBox(this);
+    repetitionsBox->setEditable(true);
+    repetitionsBox->setValidator(new QIntValidator(this));
+    strategyLabel = new QLabel("Strategy");
+    strategyBox = new QComboBox(this);
+    strategyBox->addItems(QStringList({"ABAB", "AABB"}));
+    strategyBox->setEditable(false);
+
+    layout1->addWidget(repetitionsLabel);
+    layout1->addWidget(repetitionsBox);
+    layout1->addWidget(strategyLabel);
+    layout1->addWidget(strategyBox);
+
     layout1->addWidget(setComboBox);
     layout1->addWidget(setCancelButton);
 
@@ -190,6 +218,13 @@ QString TrialWidget::getTrialCmd()
 
 }
 
+QString TrialWidget::getStochasticCmd()
+{
+    return QString("%1 %2")
+            .arg(strategyBox->currentText())
+            .arg(repetitionsBox->currentText().isEmpty() ? "1" : repetitionsBox->currentText());
+}
+
 QStringList TrialWidget::getArguments()
 {
     return(argumentMap.keys());
@@ -264,10 +299,21 @@ void TrialWidget::runTrialList()
             .arg(SessionManager::instance()->currentTrial());
     job->cmdList << QString("%1 clear").arg(tableName);
     job->cmdList << QString("set %1").arg(getTrialCmd());
-    job->cmdList << QString("%1 %2 run_set %3")
-            .arg(MainWindow::instance()->quietMode)
-            .arg(SessionManager::instance()->currentTrial())
-            .arg(getStimulusSet());
+    if (isStochastic)
+    {
+        job->cmdList << QString("%1 %2 run_set_multiple %3 %4")
+                        .arg(MainWindow::instance()->quietMode)
+                        .arg(SessionManager::instance()->currentTrial())
+                        .arg(getStochasticCmd())
+                        .arg(getStimulusSet());
+    }
+    else
+    {
+        job->cmdList << QString("%1 %2 run_set %3")
+                        .arg(MainWindow::instance()->quietMode)
+                        .arg(SessionManager::instance()->currentTrial())
+                        .arg(getStimulusSet());
+    }
     job->cmdList << QString("unset %1").arg(getArguments().join(" "));
     QString displayTableName = MainWindow::instance()->tablesWindow->addTable();
     job->cmdList << QString("%1 copy %2").arg(tableName).arg(displayTableName);
@@ -336,6 +382,37 @@ void TrialWidget::clearDollarArgumentBoxes()
     }
 }
 
+void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
+{
+    QDomElement rootElement = modelDescription->documentElement();
+    QDomElement stochasticityElement = XMLAccessor::childElement(rootElement, "stochastic?");
+    QString stochasticity = XMLAccessor::value(stochasticityElement);
+    if (stochasticity == "1")
+        isStochastic = true;
+    else
+        isStochastic = false;
+
+    setStochasticityVisible(runAllMode && isStochastic);
+}
+
+void TrialWidget::setStochasticityVisible(bool isVisible)
+{
+    if (isVisible)
+    {
+        repetitionsLabel->show();
+        repetitionsBox->show();
+        strategyLabel->show();
+        strategyBox->show();
+    }
+    else
+    {
+        repetitionsLabel->hide();
+        repetitionsBox->hide();
+        strategyLabel->hide();
+        strategyBox->hide();
+    }
+}
+
 void TrialWidget::setRunButtonIcon()
 {
     if (checkIfReadyToRun())
@@ -355,6 +432,8 @@ void TrialWidget::hideSetComboBox()
 {
     setComboBox->hide();
     setCancelButton->hide();
+    setStochasticityVisible(false);
+
 //    clearArgumentBoxes();
     clearDollarArgumentBoxes();
     runAllMode = false;
@@ -366,6 +445,7 @@ void TrialWidget::showSetComboBox()
 {
     setComboBox->show();
     setCancelButton->show();
+    setStochasticityVisible(isStochastic);
     runAllMode = true;
 //    emit runAllModeChanged(true);
 }
