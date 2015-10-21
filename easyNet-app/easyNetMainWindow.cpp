@@ -636,7 +636,7 @@ void MainWindow::loadStimulusSet()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
                                                     stimDir,
                                                     tr("Database Files (*.eNd)"));
-    fileName = QDir(easyNetHome).relativeFilePath(fileName);
+    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
         // create db
