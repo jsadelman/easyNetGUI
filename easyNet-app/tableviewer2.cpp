@@ -183,7 +183,7 @@ void TableViewer::preparePlot()
 void TableViewer::save()
 {
     QSettings settings("QtEasyNet", "nmConsole");
-    QString workingDir = settings.value("easyNetHome").toString();
+    QString workingDir = settings.value("easyNetDataHome").toString();
     QString currFilename = workingDir + "/Output_files/.";
     qDebug() << "df currFilename" << currFilename;
     QString fileName = QFileDialog::getSaveFileName(this,

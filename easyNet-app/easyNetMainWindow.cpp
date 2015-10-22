@@ -170,7 +170,7 @@ void MainWindow::constructForms()
     trialEditor = new TrialEditor(this);
 
     infoWindow = new HelpWindow;
-    assistant = new Assistant(easyNetHome + "/documentation/easyNetDemo.qhc");
+    assistant = new Assistant(easyNetDataHome + "/documentation/easyNetDemo.qhc");
     infoWindow->show();
 
 
@@ -682,7 +682,7 @@ void MainWindow::importDataFrame()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
                                                     stimDir,
                                                     tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
-    fileName = QDir(easyNetHome).relativeFilePath(fileName);
+    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
         // create db
