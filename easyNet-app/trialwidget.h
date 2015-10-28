@@ -14,6 +14,7 @@ class QDomDocument;
 class QAction;
 class QToolButton;
 class myComboBox;
+class LazyNutJob;
 
 class TrialWidget : public QWidget
 {
@@ -27,6 +28,7 @@ public:
     QString getTrialCmd();
     bool checkIfReadyToRun();
     QString getStimulusSet();
+    QString defaultDataframe();
 public slots:
     QStringList getArguments();
 signals:
@@ -36,8 +38,7 @@ signals:
 private slots:
 
     void runTrial();
-    void runSingleTrial();
-    void runTrialList();
+
 
     void update(QString trialName);
     void buildComboBoxes(QDomDocument* domDoc);
@@ -51,7 +52,13 @@ private slots:
     void argWasChanged(QString arg);
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
+
 private:
+
+    QDomDocument * createTrialRunInfo();
+    void clearLayout(QLayout *layout);
+    void runSingleTrial(LazyNutJob *job);
+    void runTrialList(LazyNutJob *job);
 
     ObjectCacheFilter* trialFilter;
     ObjectUpdater* trialDescriptionUpdater;
@@ -74,8 +81,6 @@ private:
     bool runAllMode;
 
 
-
-    void clearLayout(QLayout *layout);
 };
 
 #endif // TRIALWIDGET_H

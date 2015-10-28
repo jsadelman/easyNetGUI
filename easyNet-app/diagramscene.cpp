@@ -124,10 +124,10 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     arrowDescriptionUpdater = new ObjectUpdater(this);
     arrowDescriptionUpdater->setProxyModel(arrowFilter);
 
-    connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
+    connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
             this, SLOT(renderObject(QDomDocument*)));
 
-    connect(arrowDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
+    connect(arrowDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
             this, SLOT(renderObject(QDomDocument*)));
     connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 

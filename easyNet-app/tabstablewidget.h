@@ -12,6 +12,7 @@ class TabsTableWidget : public TableWidgetInterface
 public:
     TabsTableWidget(QWidget *parent);
     virtual QString currentTable() Q_DECL_OVERRIDE;
+    QString tableAt(int index);
 
 public slots:
    virtual void setCurrentTable(QString name) Q_DECL_OVERRIDE;
@@ -19,9 +20,9 @@ public slots:
 
 
 protected:
+    virtual void addTable_impl(QString name) Q_DECL_OVERRIDE;
     virtual void updateTable_impl(QAbstractItemModel *model) Q_DECL_OVERRIDE;
     virtual void deleteTable_impl(QString name) Q_DECL_OVERRIDE;
-    virtual void setFilter_impl() Q_DECL_OVERRIDE {}
 
 private:
     void buildWidget();

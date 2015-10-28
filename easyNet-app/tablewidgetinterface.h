@@ -8,6 +8,7 @@ class ObjectCacheFilter;
 class QDomDocument;
 class QAbstractItemModel;
 class DataFrameModel;
+class ObjectUpdater;
 
 class TableWidgetInterface : public QWidget
 {
@@ -17,32 +18,38 @@ public:
     virtual ~TableWidgetInterface();
     virtual QString currentTable()=0;
 
-    void setFilter(ObjectCacheFilter *filter);
-    ObjectCacheFilter * getFilter() {return m_filter;} // for direct manipulation
-
 public slots:
+
+    void addTable(QString name);
     void updateTable(QDomDocument *domDoc, QString cmd);
     void deleteTable(QString name);
     void prepareToUpdateTable(QDomDocument *domDoc, QString cmd);
     void setPrettyHeaderFromJob();
     virtual void setCurrentTable(QString name)=0;
 
+signals:
+    void currentTableChanged(QString);
+    void tableDeleted(QString);
 
+protected slots:
+    //
 
 protected:
+    virtual void addTable_impl(QString name)=0;
     virtual void updateTable_impl(QAbstractItemModel *model)=0;
     virtual void deleteTable_impl(QString name)=0;
-    virtual void setFilter_impl()=0; // setup signals and slots
     DataFrameModel * getDataFrameModel(QAbstractItemModel *model);
 
 
 
 
     QString nameFromCmd(QString cmd);
-    ObjectCacheFilter *m_filter;
+    ObjectCacheFilter *dataframeFilter;
+    ObjectUpdater *dataframeUpdater;
     DataFrameModel *lastModel;
     QString lastName;
     QMap<QString, QAbstractItemModel*> modelMap;
+
 
 };
 

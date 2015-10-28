@@ -15,7 +15,7 @@ TrialEditor::TrialEditor(QWidget *parent)
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
-    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
             this,SLOT(buildForm(QDomDocument*)));
 }
 

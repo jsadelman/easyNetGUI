@@ -69,7 +69,7 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
             objectModel, SLOT(setDescription(QString, QString, QDomDocument*)));
     connect(descriptionFilter, SIGNAL(objectDestroyed(QString)),
             objectModel, SLOT(removeDescription(QString)));
-    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
+    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
             objectModel, SLOT(updateDescription(QDomDocument*)));
 
 

@@ -1,29 +1,45 @@
 #include "tablewidgetinterface.h"
 #include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "dataframemodel.h"
 #include "trialdataframemodel.h"
-//#include "lazynutjob.h"
+#include "lazynutjob.h"
+#include "sessionmanager.h"
+
+#include <QDebug>
 
 
 TableWidgetInterface::TableWidgetInterface(QWidget *parent)
-    : m_filter(nullptr), QWidget(parent)
+    : QWidget(parent)
 {
-
+    dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
+    dataframeUpdater = new ObjectUpdater(this);
+    dataframeUpdater->setCommand("get");
+    dataframeUpdater->setProxyModel(dataframeFilter);
+    connect(this, SIGNAL(currentTableChanged(QString)),
+            dataframeFilter, SLOT(setName(QString)));
+    connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
+            this, SLOT(updateTable(QDomDocument*,QString)));
 }
 
 TableWidgetInterface::~TableWidgetInterface()
 {
-    delete m_filter;
+    delete dataframeFilter;
+}
+
+void TableWidgetInterface::addTable(QString name)
+{
+    if (modelMap.contains(name))
+    {
+        qDebug() << "ERROR: TableWidgetInterface::addTable attempt to create existing tab" << name;
+        return;
+    }
+    modelMap.insert(name, nullptr);
+    addTable_impl(name);
 }
 
 void TableWidgetInterface::prepareToUpdateTable(QDomDocument *domDoc, QString cmd)
 {
-    if (m_filter)
-    {
-        delete domDoc;
-        return;
-    }
-
     lastName = nameFromCmd(cmd);
     lastModel = new DataFrameModel(domDoc, this);
     lastModel->setName(lastName);
@@ -31,11 +47,7 @@ void TableWidgetInterface::prepareToUpdateTable(QDomDocument *domDoc, QString cm
 
 void TableWidgetInterface::setPrettyHeaderFromJob()
 {
-#if 0
-    if (m_filter)
-        return;
-
-    LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+   LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
     TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
     if (job)
     {
@@ -53,7 +65,6 @@ void TableWidgetInterface::setPrettyHeaderFromJob()
     trialDataFrameModel->setSourceModel(lastModel);
     modelMap[lastName] = trialDataFrameModel;
     updateTable_impl(trialDataFrameModel);
-#endif
 }
 
 DataFrameModel *TableWidgetInterface::getDataFrameModel(QAbstractItemModel *model)
@@ -65,29 +76,16 @@ DataFrameModel *TableWidgetInterface::getDataFrameModel(QAbstractItemModel *mode
     return dFmodel;
 }
 
-void TableWidgetInterface::setFilter(ObjectCacheFilter *filter)
-{
-    m_filter = filter;
-    setFilter_impl();
-}
 
 void TableWidgetInterface::updateTable(QDomDocument *domDoc, QString cmd)
 {
-    if (m_filter)
-    {
-        delete domDoc;
-        return;
-    }
     prepareToUpdateTable(domDoc, cmd);
     updateTable_impl(lastModel);
 }
 
 void TableWidgetInterface::deleteTable(QString name)
 {
-    if (m_filter)
-        return;
-
-    deleteTable_impl(name);
+     deleteTable_impl(name);
 }
 
 QString TableWidgetInterface::nameFromCmd(QString cmd)

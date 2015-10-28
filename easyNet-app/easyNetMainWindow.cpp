@@ -51,6 +51,7 @@
 #include "tableviewer2.h"
 #include "trialdataframemodel.h"
 #include "enumclasses.h"
+#include "tablewindow.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -160,7 +161,8 @@ void MainWindow::constructForms()
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
     stimSetForm = new TableEditor ("Stimuli",this);
 //    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
-    tablesWindow = new TableViewer("Tables",this);
+//    tableWindow = new TableViewer("Tables",this);
+    tableWindow = new TableWindow(this);
     dataframesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Dataframes",this);
     paramEdit = new TableEditor ("Parameters",this);
     plotViewer = new PlotViewer(easyNetHome, this);
@@ -194,7 +196,7 @@ void MainWindow::constructForms()
     dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
 
     plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
-    outputTablesTabIdx = resultsPanel->addTab(tablesWindow, tr("Tables"));
+    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
 
     // perhaps use this code for detachable tabs?
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs
@@ -208,7 +210,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentModel(QString)));
-    connect(this,SIGNAL(newTableSelection(QString)),tablesWindow,SLOT(updateTableView(QString)));
+//    connect(this,SIGNAL(newTableSelection(QString)),tableWindow,SLOT(updateTableView(QString)));
     connect(paramEdit, SIGNAL(newParamValueSig(QString,QString)),
             this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
@@ -219,7 +221,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
-    connect(tablesWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
+//    connect(tableWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
     connect(plotViewer,SIGNAL(setPlot(QString)), plotSettingsWindow, SLOT(setPlot(QString)));
 //    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
     connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
@@ -242,8 +244,8 @@ void MainWindow::connectSignalsAndSlots()
             trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
-    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
-            tablesWindow,SLOT(addTrialTable(QString)));
+//    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
+//            tableWindow,SLOT(addTrialTable(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
@@ -252,8 +254,8 @@ void MainWindow::connectSignalsAndSlots()
     connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(makeSnapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
 //            this,SLOT(showPlotViewer()));
-    connect(tablesWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
-            plotSettingsWindow, SLOT(createNewPlotOfType(QString, QString, QMap<QString, QString>)));
+//    connect(tableWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
+//            plotSettingsWindow, SLOT(createNewPlotOfType(QString, QString, QMap<QString, QString>)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     /* signals & slots */

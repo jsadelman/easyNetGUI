@@ -20,9 +20,9 @@ public slots:
 
 
 protected:
+    virtual void addTable_impl(QString name) Q_DECL_OVERRIDE;
     virtual void updateTable_impl(QAbstractItemModel *model) Q_DECL_OVERRIDE;
     virtual void deleteTable_impl(QString name) Q_DECL_OVERRIDE;
-    virtual void setFilter_impl() Q_DECL_OVERRIDE {}
 
 private slots:
     void setModel(QString name);

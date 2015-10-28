@@ -110,7 +110,8 @@ SOURCES +=  \
     tablewidgetinterface.cpp \
     tabstablewidget.cpp \
     combotablewidget.cpp \
-    objectcache.cpp
+    objectcache.cpp \
+    resultswindow_if.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -194,7 +195,8 @@ HEADERS  += \
     tablewidgetinterface.h \
     tabstablewidget.h \
     combotablewidget.h \
-    objectcache.h
+    objectcache.h \
+    resultswindow_if.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

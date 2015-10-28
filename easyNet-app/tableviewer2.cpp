@@ -60,7 +60,10 @@ QString TableViewer::addTable(QString name, bool chooseNewName)
 {
 //    qDebug() << "addTable(" << name << ")";
     if (name.isEmpty())
+    {
         name = tr("Table_")+QString::number(numTables);
+        qDebug() << "TableViewer::addTable" << name;
+    }
     else if (chooseNewName)
         name.append(".table");
 //    qDebug() << "current list: " << tableMap.values();

@@ -172,7 +172,10 @@ bool ObjectCache::setDomDocAndValidCache(QDomDocument *domDoc, QString cmd)
 {
     QString name = nameFromCmd(cmd);
     if (!exists(name))
+    {
+        qDebug() << "ERROR: ObjectCache::setDomDocAndValidCache non-existing name" << name;
         return false;
+    }
 
     int row = rowFromName(name);
     if (!setData(index(row, DomDocCol), QVariant::fromValue(domDoc)))
@@ -184,10 +187,27 @@ bool ObjectCache::setDomDocAndValidCache(QDomDocument *domDoc, QString cmd)
 bool ObjectCache::invalidateCache(const QString &name)
 {
     if (rowFromName(name) == -1)
+    {
+        // this can happen any time an object is listed both in recently_created and recently_modified
+        // then the latter tries to invalidate cache of an object that is not yet in the cache,
+        // since the XML has not beed received yet from lazyNut.
+        //qDebug() << "WARNING: ObjectCache::invalidateCache no row corresponding to" << name;
         return false;
+    }
+    // FIRST set pending, THEN invalid, since only the latter triggers signals to filters
+    // If reversed the signal would reach a filter still with the pendinf bit false,
+    // thus preventing updaters to request updates.
+    if (!setPending(name, true))
+    {
+        qDebug() << "ERROR: ObjectCache::invalidateCache cannot set pending " << name;
+        return false;
+    }
     if (!setInvalid(name, true))
+    {
+        qDebug() << "ERROR: ObjectCache::invalidateCache cannot invalidate " << name;
         return false;
-    return setPending(name, true);
+    }
+    return true;
 }
 
 QDomDocument *ObjectCache::getDomDoc(const QString &name)
@@ -196,7 +216,10 @@ QDomDocument *ObjectCache::getDomDoc(const QString &name)
     if (v.canConvert<QDomDocument *>())
         return v.value<QDomDocument *>();
     else
+    {
+        qDebug() << "ERROR: ObjectCache::getDomDoc cannot get QDomDocument for" << name;
         return nullptr;
+    }
 }
 
 bool ObjectCache::setInvalid(const QString &name, bool invalid)

@@ -44,16 +44,35 @@ SessionManager::SessionManager()
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             descriptionCache,  SLOT(destroy(QStringList)));
 
-    ObjectCacheFilter *dfFilter = new ObjectCacheFilter(descriptionCache, this);
-    dfFilter->setType("dataframe");
-
     dataframeCache = new ObjectCache(this);
-    connect(dfFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-            dataframeCache, SLOT(create(QString,QString)));
-    connect(dfFilter, SIGNAL(objectModified(QString)),
-            dataframeCache, SLOT(invalidateCache(QString)));
-    connect(dfFilter, SIGNAL(objectDestroyed(QString)),
-            dataframeCache, SLOT(destroy(QString)));
+    connect(this, SIGNAL(recentlyCreated(QDomDocument*)),
+            dataframeCache, SLOT(create(QDomDocument*)));
+    connect(this,  SIGNAL(recentlyModified(QStringList)),
+            dataframeCache,  SLOT(invalidateCache(QStringList)));
+
+    connect(this, SIGNAL(recentlyDestroyed(QStringList)),
+            dataframeCache,  SLOT(destroy(QStringList)));
+
+//    ObjectCacheFilter *dfFilter = new ObjectCacheFilter(descriptionCache, this);
+//    dfFilter->setType("dataframe");
+
+//    dataframeCache = new ObjectCache(this);
+//    connect(dfFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+//            dataframeCache, SLOT(create(QString,QString)));
+//    connect(dfFilter, &ObjectCacheFilter::objectCreated, [=] (QString name)
+//    {
+//        qDebug() << "ObjectCacheFilter::objectCreated" << name;
+//    });
+//    connect(dfFilter, SIGNAL(objectModified(QString)),
+//            dataframeCache, SLOT(invalidateCache(QString)));
+//    connect(dfFilter, &ObjectCacheFilter::objectModified, [=] (QString name)
+//    {
+//        qDebug() << "ObjectCacheFilter::objectModified" << name;
+//    });
+//    connect(dfFilter, SIGNAL(objectDestroyed(QString)),
+//            dataframeCache, SLOT(destroy(QString)));
+
+//    connect(dataframeCache, &ObjectCache::dataChanged, [](){qDebug() << "dataframeCache dataChanged";});
 
 
 }

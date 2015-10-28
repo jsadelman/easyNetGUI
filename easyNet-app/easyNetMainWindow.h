@@ -46,6 +46,7 @@ class DebugLog;
 class DiagramSceneTabWidget;
 class DiagramScene;
 class DiagramWindow;
+class TableWindow;
 
 QT_END_NAMESPACE
 
@@ -255,7 +256,8 @@ public:
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
     TableEditor     *dataframesWindow;
-    TableViewer     *tablesWindow;
+//    TableViewer     *tableWindow;
+    TableWindow     *tableWindow;
     TableEditor     *paramEdit;
     DebugLog        *debugLog;
     QToolBar        *infoToolBar;

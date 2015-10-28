@@ -8,6 +8,7 @@
 #include "lazynutjob.h"
 #include "tableviewer2.h"
 #include "plotviewer.h"
+#include "tablewindow.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -18,6 +19,8 @@
 #include <QToolButton>
 #include <QAction>
 #include <QLineEdit>
+
+#include <memory>
 
 
 Q_DECLARE_METATYPE(QDomDocument*)
@@ -34,11 +37,12 @@ TrialWidget::TrialWidget(QWidget *parent)
 
 
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    trialFilter->setType("trial");
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
-    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
             this,SLOT(buildComboBoxes(QDomDocument*)));
-    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
             this,SIGNAL(trialDescriptionUpdated(QDomDocument*)));
 
 
@@ -210,21 +214,41 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which model to run");
         return;
     }
-
-    if (runAllMode)
-        runTrialList();
-    else
-        runSingleTrial();
-}
-
-void TrialWidget::runSingleTrial()
-{
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
+    if (runAllMode)
+        runTrialList(job);
+    else
+        runSingleTrial(job);
 
-    QString tableName = QString("((%1 default_observer) default_dataframe)")
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCatalogueJobs();
+    QDomDocument *trialRunInfo = createTrialRunInfo(); // will be a smart pointer
+    QMap<QString, QVariant> data;
+    data.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
+    jobs.last()->data = data;
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->tableWindow, SLOT(dispatch()));
+//    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
+
+    if (runAllMode)
+    {
+        MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
+        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
+    }
+    SessionManager::instance()->submitJobs(jobs);
+}
+
+QString TrialWidget::defaultDataframe()
+{
+    return QString("((%1 default_observer) default_dataframe)")
             .arg(SessionManager::instance()->currentTrial());
-    job->cmdList << QString("%1 clear").arg(tableName);
+}
+
+void TrialWidget::runSingleTrial(LazyNutJob *job)
+{
+
+    job->cmdList << QString("%1 clear").arg(defaultDataframe());
 
     // case hack to avoid problems with UPPERCASE!!!
     QString trialString = getTrialCmd().toLower();
@@ -233,65 +257,34 @@ void TrialWidget::runSingleTrial()
             .arg(SessionManager::instance()->currentTrial())
             .arg(trialString);
 
-    QString displayTableName = SessionManager::instance()->currentTrial();
-    displayTableName.append(".table");
+
+//    QString displayTableName = SessionManager::instance()->currentTrial();
+//    displayTableName.append(".table");
 
     // now rbind the data to existing trial table
-    job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])")
-            .arg(displayTableName)
-            .arg(tableName);
+//    job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])")
+//            .arg(displayTableName)
+//            .arg(tableName);
 
     // display table of means after running set
-    job->cmdList << QString("xml %1 get").arg(displayTableName);
-    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-    job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
-    job->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(updateActivePlots()));
+//    job->cmdList << QString("xml %1 get").arg(displayTableName);
+//    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
 
-    QMap<QString, QVariant> headerReplace;
-    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
-    headerReplace.insert("event_pattern", "");
-    headerReplace.insert("\\(", "");
-    headerReplace.insert("\\)", "");
-    job->data = headerReplace;
 
-    SessionManager::instance()->submitJobs(job);
 
-    MainWindow::instance()->tablesWindow->switchTab(displayTableName);
+//    QMap<QString, QVariant> headerReplace;
+//    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
+//    headerReplace.insert("event_pattern", "");
+//    headerReplace.insert("\\(", "");
+//    headerReplace.insert("\\)", "");
+//    job->data = headerReplace;
+
+
+//    MainWindow::instance()->tablesWindow->switchTab(displayTableName);
 }
 
-void TrialWidget::runTrialList()
+QDomDocument * TrialWidget::createTrialRunInfo()
 {
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    QString tableName = QString("((%1 default_observer) default_dataframe)")
-            .arg(SessionManager::instance()->currentTrial());
-    job->cmdList << QString("%1 clear").arg(tableName);
-    job->cmdList << QString("set %1").arg(getTrialCmd());
-    job->cmdList << QString("%1 %2 run_set %3")
-            .arg(MainWindow::instance()->quietMode)
-            .arg(SessionManager::instance()->currentTrial())
-            .arg(getStimulusSet());
-    job->cmdList << QString("unset %1").arg(getArguments().join(" "));
-    QString displayTableName = MainWindow::instance()->tablesWindow->addTable();
-    job->cmdList << QString("%1 copy %2").arg(tableName).arg(displayTableName);
-      // display table of means after running set
-    job->cmdList << QString("xml %1 get").arg(displayTableName);
-    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-    job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
-    job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
-
-    QMap<QString, QVariant> headerReplace;
-    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
-    headerReplace.insert("event_pattern", "");
-    headerReplace.insert("\\(", "");
-    headerReplace.insert("\\)", "");
-    job->data = headerReplace;
-
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << SessionManager::instance()->updateObjectCatalogueJobs();
-
-    // write info XML and append it to the last job, append receivers
     QDomDocument *trialRunInfo = new QDomDocument();
     QDomElement rootElem = trialRunInfo->createElement("string");
     rootElem.setAttribute("value", "Trial run info");
@@ -302,24 +295,60 @@ void TrialWidget::runTrialList()
     rootElem.appendChild(trialElem);
     QDomElement modeElem = trialRunInfo->createElement("string");
     modeElem.setAttribute("label", "Run mode");
-    modeElem.setAttribute("value", "list");
+    modeElem.setAttribute("value", runAllMode ? "list" : "single");
     rootElem.appendChild(modeElem);
     QDomElement dataframeElem = trialRunInfo->createElement("object");
     dataframeElem.setAttribute("label", "Results");
-    dataframeElem.setAttribute("value", tableName);
+    dataframeElem.setAttribute("value", QString("((%1 default_observer) default_dataframe)")
+                               .arg(SessionManager::instance()->currentTrial()
+                               ));
     rootElem.appendChild(dataframeElem);
-//    qDebug() << trialRunInfo->toString();
-    // append to last job
-    jobs.last()->data = QVariant::fromValue(trialRunInfo);
+
+    return trialRunInfo; // will be a smart pointer
+}
+
+void TrialWidget::runTrialList(LazyNutJob *job)
+{
+
+    job->cmdList << QString("%1 clear").arg(defaultDataframe());
+    job->cmdList << QString("set %1").arg(getTrialCmd());
+    job->cmdList << QString("%1 %2 run_set %3")
+            .arg(MainWindow::instance()->quietMode)
+            .arg(SessionManager::instance()->currentTrial())
+            .arg(getStimulusSet());
+    job->cmdList << QString("unset %1").arg(getArguments().join(" "));
+//    QString displayTableName = MainWindow::instance()->tablesWindow->addTable();
+//    job->cmdList << QString("%1 copy %2").arg(tableName).arg(displayTableName);
+//      // display table of means after running set
+//    job->cmdList << QString("xml %1 get").arg(displayTableName);
+//    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+//    job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
+//    job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
+
+//    QMap<QString, QVariant> headerReplace;
+//    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
+//    headerReplace.insert("event_pattern", "");
+//    headerReplace.insert("\\(", "");
+//    headerReplace.insert("\\)", "");
+//    job->data = headerReplace;
+
+//    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+//            << job
+//            << SessionManager::instance()->updateObjectCatalogueJobs();
+
+//    // write info XML and append it to the last job, append receivers
+//    QDomDocument *trialRunInfo = createTrialRunInfo();
+////    qDebug() << trialRunInfo->toString();
+//    // append to last job
+//    jobs.last()->data = QVariant::fromValue(trialRunInfo);
 
 
 
-    SessionManager::instance()->submitJobs(jobs);
+//    SessionManager::instance()->submitJobs(jobs);
 
-    MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
 
-    MainWindow::instance()->resultsDock->raise();
-    MainWindow::instance()->resultsPanel->setCurrentIndex(MainWindow::instance()->outputTablesTabIdx);
+//    MainWindow::instance()->resultsDock->raise();
+//    MainWindow::instance()->resultsPanel->setCurrentIndex(MainWindow::instance()->outputTablesTabIdx);
 }
 
 bool TrialWidget::checkIfReadyToRun()

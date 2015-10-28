@@ -1,10 +1,12 @@
 #include "combotablewidget.h"
 #include "dataframemodel.h"
 #include "trialdataframemodel.h"
+#include "objectcachefilter.h"
 
 #include <QVBoxLayout>
 #include <QTableView>
 #include <QComboBox>
+#include <QDebug>
 
 
 ComboTableWidget::ComboTableWidget(QWidget *parent)
@@ -22,19 +24,37 @@ QString ComboTableWidget::currentTable()
 void ComboTableWidget::setCurrentTable(QString name)
 {
     comboBox->setCurrentText(name);
+    emit currentTableChanged(name);
+}
+
+void ComboTableWidget::addTable_impl(QString name)
+{
+    dataframeFilter->setName(name);
 }
 
 void ComboTableWidget::updateTable_impl(QAbstractItemModel *model)
 {
     DataFrameModel *dFmodel = getDataFrameModel(model);
     if (!dFmodel)
+    {
+        qDebug() << "ERROR: ComboTableWidget::updateTable_impl cannot extract DataFrameModel from argument";
         return;
+    }
 
     QString name = dFmodel->name();
     if (name.isEmpty())
+    {
+        qDebug() << "ERROR: ComboTableWidget::updateTable_impl empty DataFrameModel name";
         return;
+    }
 
-    bool isNewModel = !modelMap.contains(name);
+    if (!modelMap.contains(name))
+    {
+        qDebug() << "ERROR: ComboTableWidget::updateTable_impl model name unknown" << name;
+        return;
+    }
+
+    bool isNewModel = (modelMap.value(name) == nullptr);
     if (isNewModel)
         comboBox->addItem(name);
     else
@@ -74,6 +94,7 @@ void ComboTableWidget::deleteTable_impl(QString name)
     delete dFmodel;
     modelMap.remove(name);
     comboBox->removeItem(comboBox->findText(name));
+    emit tableDeleted(name);
 }
 
 void ComboTableWidget::buildWidget()

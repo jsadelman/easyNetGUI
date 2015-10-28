@@ -1,5 +1,6 @@
 #include "objectupdater.h"
 #include "objectcache.h"
+#include "objectcachefilter.h"
 #include "lazynutobject.h"
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
@@ -28,22 +29,54 @@ void ObjectUpdater::setProxyModel(QSortFilterProxyModel *proxy)
 
 }
 
+void ObjectUpdater::setFilter(ObjectCacheFilter *filter)
+{
+    if (!filter)
+    {
+        qDebug() << "ERROR: ObjectUpdater::setFilter invalid filter";
+        return;
+    }
+    proxyModel = filter;
+    wakeUpUpdate();
+
+}
+
 void ObjectUpdater::wakeUpUpdate()
 {
-//    qDebug() << this << "wakeUpUpdate";
-    connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(requestObjects(QModelIndex,QModelIndex)));
-    connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(requestObjects(QModelIndex,int,int)));
+//    ObjectCacheFilter *filter = qobject_cast<ObjectCacheFilter *>(proxyModel);
+//    if (filter)
+//    {
+//        connect(filter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+//                this, SLOT(requestObject(QString)));
+//        connect(filter, SIGNAL(objectModified(QString)),
+//                this, SLOT(requestObject(QString)));
+//    }
+//    else
+//    {
+        connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+                this, SLOT(requestObjects(QModelIndex,QModelIndex)));
+        connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                this, SLOT(requestObjects(QModelIndex,int,int)));
+//    }
 }
 
 void ObjectUpdater::goToSleep()
 {
-//    qDebug() << this << "go to sleep ";
-    disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT(requestObjects(QModelIndex,QModelIndex)));
-    disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(requestObjects(QModelIndex,int,int)));
+//    ObjectCacheFilter *filter = qobject_cast<ObjectCacheFilter *>(proxyModel);
+//    if (filter)
+//    {
+//        disconnect(filter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+//                this, SLOT(requestObject(QString)));
+//        disconnect(filter, SIGNAL(objectModified(QString)),
+//                this, SLOT(requestObject(QString)));
+//    }
+//    else
+//    {
+        disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+                   this, SLOT(requestObjects(QModelIndex,QModelIndex)));
+        disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                   this, SLOT(requestObjects(QModelIndex,int,int)));
+//    }
 }
 
 void ObjectUpdater::requestObjects(QModelIndex top, QModelIndex bottom)
@@ -86,6 +119,9 @@ QStringList ObjectUpdater::getObjectNames(int first, int last)
         // THis does not happen when the QRegExp does actual filetering.
         if (!name.isEmpty())
             names.append(name);
+        else
+            qDebug() << "WARNING: ObjectUpdater::getObjectNames name not found at row" << row;
+
     }
     return names;
 }
@@ -93,7 +129,11 @@ QStringList ObjectUpdater::getObjectNames(int first, int last)
 void ObjectUpdater::requestObject(QString name)
 {
     if (name.isEmpty())
+    {
+        qDebug() << "ERROR: ObjectUpdater::requestObject for empty name";
         return;
+    }
+
     if (objectCache->isInvalid(name) && objectCache->isPending(name))
     {
         objectCache->setPending(name, false);
@@ -105,6 +145,6 @@ void ObjectUpdater::requestObject(QString name)
     }
     else if (!objectCache->isInvalid(name) && !objectCache->isPending(name))
     {
-        emit objectUpdated(objectCache->getDomDoc(name));
+        emit objectUpdated(objectCache->getDomDoc(name), name);
     }
 }
