@@ -9,6 +9,7 @@ class QDomDocument;
 class QAbstractItemModel;
 class DataFrameModel;
 class ObjectUpdater;
+class TrialDataFrameModel;
 
 class TableWidgetInterface : public QWidget
 {
@@ -17,6 +18,9 @@ public:
     TableWidgetInterface(QWidget *parent);
     virtual ~TableWidgetInterface();
     virtual QString currentTable()=0;
+    void addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to);
+
+
 
 public slots:
 
@@ -49,6 +53,7 @@ protected:
     DataFrameModel *lastModel;
     QString lastName;
     QMap<QString, QAbstractItemModel*> modelMap;
+    QMap<Qt::Orientation , QList<QPair<QString, QString> > > headerReplaceRules;
 
 
 };

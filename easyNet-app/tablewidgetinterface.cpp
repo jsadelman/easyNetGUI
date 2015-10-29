@@ -10,7 +10,7 @@
 
 
 TableWidgetInterface::TableWidgetInterface(QWidget *parent)
-    : QWidget(parent)
+    : headerReplaceRules(), QWidget(parent)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
@@ -27,6 +27,11 @@ TableWidgetInterface::~TableWidgetInterface()
     delete dataframeFilter;
 }
 
+void TableWidgetInterface::addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to)
+{
+    headerReplaceRules[orientation].append(QPair<QString, QString>(from, to));
+}
+
 void TableWidgetInterface::addTable(QString name)
 {
     if (modelMap.contains(name))
@@ -40,6 +45,7 @@ void TableWidgetInterface::addTable(QString name)
 
 void TableWidgetInterface::prepareToUpdateTable(QDomDocument *domDoc, QString cmd)
 {
+    // to be deleted
     lastName = nameFromCmd(cmd);
     lastModel = new DataFrameModel(domDoc, this);
     lastModel->setName(lastName);
@@ -47,6 +53,7 @@ void TableWidgetInterface::prepareToUpdateTable(QDomDocument *domDoc, QString cm
 
 void TableWidgetInterface::setPrettyHeaderFromJob()
 {
+    // to be deleted
    LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
     TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
     if (job)
@@ -55,7 +62,7 @@ void TableWidgetInterface::setPrettyHeaderFromJob()
         while (headerReplaceHorizontalIt.hasNext())
         {
             headerReplaceHorizontalIt.next();
-            trialDataFrameModel->addHeaderReplace(
+            trialDataFrameModel->addHeaderReplaceRules(
                         Qt::Horizontal,
                         headerReplaceHorizontalIt.key(),
                         headerReplaceHorizontalIt.value().toString());
@@ -79,8 +86,20 @@ DataFrameModel *TableWidgetInterface::getDataFrameModel(QAbstractItemModel *mode
 
 void TableWidgetInterface::updateTable(QDomDocument *domDoc, QString cmd)
 {
-    prepareToUpdateTable(domDoc, cmd);
-    updateTable_impl(lastModel);
+    DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
+    dfModel->setName(nameFromCmd(cmd));
+    TrialDataFrameModel *trialDataFrameModel = nullptr;
+    if (!headerReplaceRules.isEmpty())
+    {
+        trialDataFrameModel = new TrialDataFrameModel(this);
+        trialDataFrameModel->setHeadeReplaceRules(headerReplaceRules);
+        trialDataFrameModel->setSourceModel(dfModel);
+    }
+//    prepareToUpdateTable(domDoc, cmd);
+    if (trialDataFrameModel)
+        updateTable_impl(trialDataFrameModel);
+    else
+        updateTable_impl(dfModel);
 }
 
 void TableWidgetInterface::deleteTable(QString name)

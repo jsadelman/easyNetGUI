@@ -247,7 +247,7 @@ void TableViewer::setPrettyHeaderFromJob()
         while (headerReplaceHorizontalIt.hasNext())
         {
             headerReplaceHorizontalIt.next();
-            trialDataFrameModel->addHeaderReplace(
+            trialDataFrameModel->addHeaderReplaceRules(
                         Qt::Horizontal,
                         headerReplaceHorizontalIt.key(),
                         headerReplaceHorizontalIt.value().toString());

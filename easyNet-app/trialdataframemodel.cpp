@@ -3,10 +3,10 @@
 #include <QDebug>
 
 TrialDataFrameModel::TrialDataFrameModel(QObject *parent)
-    : QIdentityProxyModel(parent)
+    : headerReplaceRules(), QIdentityProxyModel(parent)
 {
-    headerReplace[Qt::Horizontal] = QList<QPair<QString, QString> > ();
-    headerReplace[Qt::Vertical] = QList<QPair<QString, QString> > ();
+//    headerReplace[Qt::Horizontal] = QList<QPair<QString, QString> > ();
+//    headerReplace[Qt::Vertical] = QList<QPair<QString, QString> > ();
 }
 
 QVariant TrialDataFrameModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -19,7 +19,7 @@ QVariant TrialDataFrameModel::headerData(int section, Qt::Orientation orientatio
     {
         QString header = dfModel->headerData(section, orientation, role).toString();
         QPair<QString, QString> replacePair;
-        foreach(replacePair, headerReplace.value(orientation))
+        foreach(replacePair, headerReplaceRules.value(orientation))
             header.replace(QRegExp(replacePair.first), replacePair.second);
 
         return header;
@@ -28,9 +28,14 @@ QVariant TrialDataFrameModel::headerData(int section, Qt::Orientation orientatio
         return QIdentityProxyModel::headerData(section, orientation, role);
 }
 
-void TrialDataFrameModel::addHeaderReplace(Qt::Orientation orientation, QString from, QString to)
+void TrialDataFrameModel::addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to)
 {
-    headerReplace[orientation].append(QPair<QString, QString>(from, to));
+    headerReplaceRules[orientation].append(QPair<QString, QString>(from, to));
+}
+
+void TrialDataFrameModel::setHeadeReplaceRules(QMap<Qt::Orientation, QList<QPair<QString, QString> > > rules)
+{
+    headerReplaceRules = rules;
 }
 
 QString TrialDataFrameModel::name()

@@ -12,12 +12,14 @@ class TrialDataFrameModel : public QIdentityProxyModel
 public:
     TrialDataFrameModel(QObject *parent=0);
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
-    void addHeaderReplace(Qt::Orientation orientation, QString from, QString to);
+    void addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to);
+    void setHeadeReplaceRules(QMap<Qt::Orientation , QList<QPair<QString, QString> > > rules);
     QString name();
     QTableView *view();
+    bool hasHeaderReplaceRules() {return !headerReplaceRules.isEmpty();}
 
 private:
-    QMap<Qt::Orientation , QList<QPair<QString, QString> > > headerReplace;
+    QMap<Qt::Orientation , QList<QPair<QString, QString> > > headerReplaceRules;
 };
 
 #endif // TRIALDATAFRAMEMODEL_H

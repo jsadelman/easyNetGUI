@@ -26,9 +26,10 @@ public slots:
 
 protected slots:
 
-    void setSingleTrialMode(int mode) {singleTrialDispatchMode = mode; qDebug()
-                << "setSingleTrialMode" << singleTrialDispatchMode;}
+    void setSingleTrialMode(int mode) {singleTrialDispatchMode = mode;}
     void setTrialListMode(int mode) {trialListDispatchMode = mode;}
+    void setDispatchModeOverride(int mode);
+    void setDispatchModeAuto(bool isAuto);
     virtual void open()=0;
     virtual void save()=0;
     virtual void copy()=0;
@@ -44,10 +45,17 @@ protected:
 
     QList<QAction *> setSingleTrialDispatchModeActs;
     QList<QAction *> setTrialListDispatchModeActs;
+    QList<QAction *> setDispatchModeOverrideActs;
     QSignalMapper *setSignleTrialDispatchModeMapper;
     QSignalMapper *setTrialListDispatchModeMapper;
+    QSignalMapper *setDispatchModeOverrideMapper;
     QActionGroup *setSignleTrialDispatchModeActGrouop;
     QActionGroup *setTrialListDispatchModeActGrouop;
+    QActionGroup *setDispatchModeOverrideActGroup;
+    QAction *setDispatchModeAutoAct;
+
+    int dispatchModeOverride;
+    bool dispatchModeAuto;
 
     QMap<int, QString> dispatchModeName;
     int singleTrialDispatchMode;
@@ -61,6 +69,7 @@ protected:
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
+    QMenu   *dispatchModeOverrideMenu;
     QMenu   *fileMenu;
     QMenu   *editMenu;
     QMenu   *settingsMenu;

@@ -5,6 +5,7 @@
 #include "tabstablewidget.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
+#include "trialdataframemodel.h"
 
 #include <QMenu>
 #include <QSignalMapper>
@@ -24,10 +25,16 @@ TableWindow::TableWindow(QWidget *parent)
     setSingleTrialDispatchModeActs.at(Append)->setChecked(true);
     setTrialListMode(New);
     setTrialListDispatchModeActs.at(New)->setChecked(true);
+    setDispatchModeAuto(true);
+    setDispatchModeAutoAct->setChecked(true);
 
     // instantiate main widget
     tableWidget = new TabsTableWidget(this);
     setCentralWidget(tableWidget);
+    // setup pretty headers (not the right place here, it should be customisable from this class
+    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"event_pattern", "");
+    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
+    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
 
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeFilter->setType("dataframe");
@@ -155,7 +162,9 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     QString results = XMLAccessor::value(resultsElement);
 
     int currentDispatchMode;
-    if (runMode == "single")
+    if (!dispatchModeAuto)
+        currentDispatchMode = dispatchModeOverride;
+    else if (runMode == "single")
         currentDispatchMode = singleTrialDispatchMode;
     else if (runMode == "list")
         currentDispatchMode = trialListDispatchMode;
@@ -164,13 +173,13 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
         qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
         return;
     }
-    // if auto mode then
-    int action = dispatchFST.value(qMakePair(dispatchModeMap.value(results, New), currentDispatchMode));
-//    qDebug() << "TableWindow::dispatch_Impl action:"
-//             << dispatchModeMap.value(results, New)
-//             << currentDispatchMode
-//             << action;
-    // else action = overridden action indicated by the user
+    int action;
+    if (!dispatchMap.contains(results))
+        action = New;
+    else if (!dispatchModeAuto)
+        action = currentDispatchMode;
+    else
+        action = dispatchFST.value(qMakePair(dispatchModeMap.value(results, New), currentDispatchMode));
     QString dispatchDestination;
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;

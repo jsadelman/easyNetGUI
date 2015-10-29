@@ -86,6 +86,7 @@ void TabsTableWidget::updateTable_impl(QAbstractItemModel *model)
         dFmodel->setView(new QTableView(this));
         dFmodel->view()->setModel(model);
         tabWidget->addTab(dFmodel->view(), name);
+        dFmodel->view()->verticalHeader()->hide();
     }
     else
     {
@@ -103,6 +104,8 @@ void TabsTableWidget::updateTable_impl(QAbstractItemModel *model)
 
         view->setModel(model);
     }
+    dFmodel->view()->resizeColumnsToContents();
+
     modelMap[name] = model;
     if (isNewModel)
         setCurrentTable(name);

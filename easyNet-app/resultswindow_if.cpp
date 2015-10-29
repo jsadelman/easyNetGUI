@@ -12,7 +12,7 @@
 Q_DECLARE_METATYPE(QDomDocument*)
 
 ResultsWindow_If::ResultsWindow_If(QWidget *parent)
-   : QMainWindow(parent)
+   :  dispatchModeOverride(-1), dispatchModeAuto(true), QMainWindow(parent)
 {
     dispatchModeName.insert(New, "New");
     dispatchModeName.insert(Overwrite, "Overwrite");
@@ -56,6 +56,20 @@ void ResultsWindow_If::dispatch()
     dispatch_Impl(data.value("trialRunInfo").value<QDomDocument*>());
 }
 
+void ResultsWindow_If::setDispatchModeOverride(int mode)
+{
+    dispatchModeOverride = mode;
+    if (mode > -1)
+        setDispatchModeAuto(false);
+}
+
+void ResultsWindow_If::setDispatchModeAuto(bool isAuto)
+{
+    dispatchModeAuto = isAuto;
+    if (dispatchModeAuto)
+        setDispatchModeOverride(-1);
+}
+
 void ResultsWindow_If::createActions()
 {
     // single trial
@@ -88,6 +102,25 @@ void ResultsWindow_If::createActions()
     connect(setTrialListDispatchModeMapper, SIGNAL(mapped(int)),
             this, SLOT(setTrialListMode(int)));
 
+    setDispatchModeOverrideMapper = new QSignalMapper(this);
+    setDispatchModeOverrideActGroup = new QActionGroup(this);
+    for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
+    {
+        setDispatchModeOverrideActs.insert(mode, new QAction(dispatchModeName.value(mode), this));
+        setDispatchModeOverrideActs.at(mode)->setCheckable(true);
+        setDispatchModeOverrideMapper->setMapping(setDispatchModeOverrideActs.at(mode), mode);
+        connect(setDispatchModeOverrideActs.at(mode), SIGNAL(triggered()),
+                setDispatchModeOverrideMapper, SLOT(map()));
+        setDispatchModeOverrideActGroup->addAction(setDispatchModeOverrideActs.at(mode));
+    }
+    connect(setDispatchModeOverrideMapper, SIGNAL(mapped(int)),
+            this, SLOT(setDispatchModeOverride(int)));
+
+    setDispatchModeAutoAct = new QAction("Auto", this);
+    setDispatchModeAutoAct->setCheckable(true);
+    setDispatchModeOverrideActGroup->addAction(setDispatchModeAutoAct);
+    connect(setDispatchModeAutoAct, &QAction::triggered, [=](){setDispatchModeAuto(true);});
+
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
@@ -111,13 +144,18 @@ void ResultsWindow_If::createMenus()
     editMenu->addAction(copyAct);
 
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
-    setSingleTrialDispatchModeMenu = settingsMenu->addMenu(tr("Single trial run"));
+    setSingleTrialDispatchModeMenu = settingsMenu->addMenu(tr("Dispatch single trial"));
     for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
         setSingleTrialDispatchModeMenu->addAction(setSingleTrialDispatchModeActs.at(mode));
 
-    setTrialListDispatchModeMenu = settingsMenu->addMenu(tr("Trial list run"));
+    setTrialListDispatchModeMenu = settingsMenu->addMenu(tr("Dispatch trial list"));
     for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
         setTrialListDispatchModeMenu->addAction(setTrialListDispatchModeActs.at(mode));
+
+    dispatchModeOverrideMenu = settingsMenu->addMenu(tr("Override dispatch mode"));
+    dispatchModeOverrideMenu->addAction(setDispatchModeAutoAct);
+    for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
+        dispatchModeOverrideMenu->addAction(setDispatchModeOverrideActs.at(mode));
 }
 
 void ResultsWindow_If::createToolBars()
@@ -128,5 +166,6 @@ void ResultsWindow_If::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
+
 }
 
