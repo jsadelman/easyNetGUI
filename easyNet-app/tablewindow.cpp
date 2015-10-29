@@ -6,17 +6,45 @@
 #include "objectcache.h"
 #include "objectcachefilter.h"
 #include "trialdataframemodel.h"
+#include "xmlform.h"
 
 #include <QMenu>
 #include <QSignalMapper>
 #include <QDomDocument>
 #include <QToolBar>
 #include <QDebug>
+#include <QDockWidget>
+#include <QScrollArea>
 
 
 TableWindow::TableWindow(QWidget *parent)
     : tableCounter(0), ResultsWindow_If(parent)
 {
+    // instantiate main widget
+    tableWidget = new TabsTableWidget(this);
+    setCentralWidget(tableWidget);
+    // setup pretty headers (not the right place here, it should be customisable from this class
+    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"event_pattern", "");
+    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
+    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
+    connect(tableWidget, &TabsTableWidget::currentTableChanged, [=](QString name)
+    {
+       if (infoVisible)
+           showInfo(name);
+    });
+
+    // info
+    infoDock = new QDockWidget("Info",this);
+    infoScroll = new QScrollArea(this);
+    infoScroll->setWidgetResizable(true);
+    infoDock->setWidget(infoScroll);
+    addDockWidget(Qt::RightDockWidgetArea, infoDock);
+    infoDock->setFeatures(QDockWidget::DockWidgetClosable);
+
+    dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
+    dataframeFilter->setType("dataframe");
+    connect(dataframeFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeTable(QString)));
+
     createActions();
     createMenus();
     createToolBars();
@@ -27,18 +55,10 @@ TableWindow::TableWindow(QWidget *parent)
     setTrialListDispatchModeActs.at(New)->setChecked(true);
     setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
+//    infoAct->setChecked(false);
 
-    // instantiate main widget
-    tableWidget = new TabsTableWidget(this);
-    setCentralWidget(tableWidget);
-    // setup pretty headers (not the right place here, it should be customisable from this class
-    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"event_pattern", "");
-    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
-    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
-
-    dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
-    dataframeFilter->setType("dataframe");
-    connect(dataframeFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeTable(QString)));
+    infoVisible = false;
+    infoDock->close();
 }
 
 TableWindow::~TableWindow()
@@ -102,6 +122,17 @@ void TableWindow::removeTable(QString name)
             dispatchMapIt.remove();
     }
     trialRunInfoMap.remove(name);
+    if (tableWidget->currentTable().isEmpty())
+        delete infoScroll->takeWidget();
+}
+
+void TableWindow::setInfoVisible(bool visible)
+{
+    infoVisible = visible;
+    if (infoVisible)
+        showInfo(tableWidget->currentTable());
+    else
+        hideInfo();
 }
 
 
@@ -130,6 +161,13 @@ void TableWindow::createActions()
     plotAct->setToolTip(tr("Create a plot based on these data"));
 //    connect(plotAct, SIGNAL(triggered()), this, SLOT(preparePlot()));
 
+    infoAct = infoDock->toggleViewAction();
+    infoAct->setIcon(QIcon(":/images/Information-icon.png"));
+    infoAct->setText(tr("&Info"));
+    infoAct->setToolTip(tr("Show/hide info about this table"));
+//    infoAct->setCheckable(true);
+    connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(setInfoVisible(bool)));
+
 }
 
 void TableWindow::createMenus()
@@ -151,6 +189,9 @@ void TableWindow::createToolBars()
     editToolBar->addAction(mergeDFAct);
     editToolBar->addAction(findAct);
     editToolBar->addAction(plotAct);
+
+    infoToolBar = addToolBar(tr("Info"));
+    infoToolBar->addAction(infoAct);
 }
 
 void TableWindow::dispatch_Impl(QDomDocument *info)
@@ -223,6 +264,24 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     dispatchMap[results] = dispatchDestination;
     dispatchModeMap[results] = currentDispatchMode;
     trialRunInfoMap[dispatchDestination].append(info);
+}
+
+void TableWindow::showInfo(QString name)
+{
+    if (!trialRunInfoMap.contains(name) || trialRunInfoMap.value(name).isEmpty())
+    {
+//        qDebug () << "ERROR: TableWindow::showInfo no info available for table" << name;
+        return;
+    }
+    XMLForm *infoForm = new XMLForm(trialRunInfoMap[name].last()->documentElement());
+    infoForm->build();
+    infoScroll->setWidget(infoForm);
+    infoForm->show();
+}
+
+void TableWindow::hideInfo()
+{
+
 }
 
 QString TableWindow::newTableName()

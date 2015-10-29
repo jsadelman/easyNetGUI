@@ -69,6 +69,7 @@ protected:
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
+    QToolBar *infoToolBar;
     QMenu   *dispatchModeOverrideMenu;
     QMenu   *fileMenu;
     QMenu   *editMenu;

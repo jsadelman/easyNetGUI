@@ -7,6 +7,7 @@ class QSignalMapper;
 class QActionGroup;
 class TabsTableWidget;
 class ObjectCacheFilter;
+class QScrollArea;
 
 
 class TableWindow: public ResultsWindow_If
@@ -23,12 +24,15 @@ protected slots:
     virtual void copy() Q_DECL_OVERRIDE;
     void addTable();
     void removeTable(QString name);
+    void setInfoVisible(bool visible);
 
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
     virtual void createMenus() Q_DECL_OVERRIDE;
     virtual void createToolBars() Q_DECL_OVERRIDE;
     virtual void dispatch_Impl(QDomDocument *info) Q_DECL_OVERRIDE;
+    void showInfo(QString name);
+    void hideInfo();
     QString newTableName();
 
     QMap <QString, int> dispatchModeMap;
@@ -39,11 +43,16 @@ protected:
     QAction *mergeDFAct;
     QAction *findAct;
     QAction *plotAct;
+    QAction *infoAct;
+
     QAction *refreshAct;
 
     TabsTableWidget *tableWidget;
+    QDockWidget  *infoDock;
+    QScrollArea  *infoScroll;
     int tableCounter;
     ObjectCacheFilter *dataframeFilter;
+    bool infoVisible;
 };
 
 #endif // TABLEWINDOW_H

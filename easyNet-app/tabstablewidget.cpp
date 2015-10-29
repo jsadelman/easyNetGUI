@@ -26,8 +26,8 @@ QString TabsTableWidget::tableAt(int index)
     QTableView *view = qobject_cast<QTableView*>(tabWidget->widget(index));
     if (!view)
     {
-        qDebug() << QString("ERROR: TabsTableWidget::tableAt index %1 does not correspond to any view")
-                    .arg(index);
+//        qDebug() << QString("ERROR: TabsTableWidget::tableAt index %1 does not correspond to any view")
+//                    .arg(index);
         return QString();
     }
     DataFrameModel *dFmodel = getDataFrameModel(view->model());
