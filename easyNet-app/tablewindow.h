@@ -25,19 +25,19 @@ protected slots:
     void addTable();
     void removeTable(QString name);
     void setInfoVisible(bool visible);
+    void refreshInfo();
 
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
-    virtual void createMenus() Q_DECL_OVERRIDE;
     virtual void createToolBars() Q_DECL_OVERRIDE;
     virtual void dispatch_Impl(QDomDocument *info) Q_DECL_OVERRIDE;
     void showInfo(QString name);
     void hideInfo();
     QString newTableName();
 
-    QMap <QString, int> dispatchModeMap;
-    QMap <QString, QString> dispatchMap;
-    QMap <QString, QList<QDomDocument*> > trialRunInfoMap;
+    QMap <QString, int> dispatchModeMap; // <Table, Mode>
+    QMap <QString, QSet<QString> > dispatchMap; // <results df, set of Tables>
+    QMap <QString, QList<QDomDocument*> > trialRunInfoMap; // <Table, list of info XML>
 
     QAction *copyDFAct;
     QAction *mergeDFAct;

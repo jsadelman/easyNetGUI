@@ -38,7 +38,6 @@ protected slots:
 protected:
     enum {New=0, Overwrite, Append, MAX_DISPATCH_MODE};
     virtual void createActions();
-    virtual void createMenus();
     virtual void createToolBars();
     virtual void dispatch_Impl(QDomDocument *info)=0;
 
@@ -69,6 +68,7 @@ protected:
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
+    QToolBar *dispatchToolBar;
     QToolBar *infoToolBar;
     QMenu   *dispatchModeOverrideMenu;
     QMenu   *fileMenu;

@@ -38,7 +38,7 @@ TableWindow::TableWindow(QWidget *parent)
     infoScroll = new QScrollArea(this);
     infoScroll->setWidgetResizable(true);
     infoDock->setWidget(infoScroll);
-    addDockWidget(Qt::RightDockWidgetArea, infoDock);
+    addDockWidget(Qt::BottomDockWidgetArea, infoDock);
     infoDock->setFeatures(QDockWidget::DockWidgetClosable);
 
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
@@ -46,13 +46,10 @@ TableWindow::TableWindow(QWidget *parent)
     connect(dataframeFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeTable(QString)));
 
     createActions();
-    createMenus();
     createToolBars();
     // trial dispatch defaults
     setSingleTrialMode(Append);
-    setSingleTrialDispatchModeActs.at(Append)->setChecked(true);
     setTrialListMode(New);
-    setTrialListDispatchModeActs.at(New)->setChecked(true);
     setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
 //    infoAct->setChecked(false);
@@ -114,11 +111,12 @@ void TableWindow::removeTable(QString name)
     // assumes that name is the name of a destination table deleted by the user,
     // not of a results dataframe
     // e.g. Table_1, as opposed to ((ldt default_observer) default_dataframe)
-    QMutableMapIterator<QString, QString> dispatchMapIt(dispatchMap);
+    QMutableMapIterator<QString, QSet<QString> > dispatchMapIt(dispatchMap);
     while (dispatchMapIt.hasNext())
     {
         dispatchMapIt.next();
-        if (dispatchMapIt.value() == name)
+        dispatchMapIt.value().remove(name);
+        if (dispatchMapIt.value().isEmpty())
             dispatchMapIt.remove();
     }
     trialRunInfoMap.remove(name);
@@ -133,6 +131,12 @@ void TableWindow::setInfoVisible(bool visible)
         showInfo(tableWidget->currentTable());
     else
         hideInfo();
+}
+
+void TableWindow::refreshInfo()
+{
+    if (infoVisible)
+        showInfo(tableWidget->currentTable());
 }
 
 
@@ -170,16 +174,6 @@ void TableWindow::createActions()
 
 }
 
-void TableWindow::createMenus()
-{
-    ResultsWindow_If::createMenus();
-
-    editMenu->addAction(copyDFAct);
-    editMenu->addAction(mergeDFAct);
-    editMenu->addAction(findAct);
-    editMenu->addAction(plotAct);
-
-}
 
 void TableWindow::createToolBars()
 {
@@ -214,24 +208,56 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
         qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
         return;
     }
-    int action;
-    if (!dispatchMap.contains(results))
-        action = New;
-    else if (!dispatchModeAuto)
-        action = currentDispatchMode;
-    else
-        action = dispatchFST.value(qMakePair(dispatchModeMap.value(results, New), currentDispatchMode));
-    QString dispatchDestination;
+    int action = dispatchMap.contains(results) ? currentDispatchMode : New;
+
+    QString dispatchDestination = QString(); // if not assigned, it will be newTableName();
+    switch(action)
+    {
+    case New:
+    {
+        // new table
+        break;
+    }
+    case Append:
+    case Overwrite:
+    {
+        if (dispatchModeAuto)
+        {
+            // destination is a table in Append or Overwrite mode if it's there,
+            // otherwise a new one
+            foreach(QString table, dispatchMap[results])
+            {
+                if (dispatchModeMap.value(table) == Append ||
+                    dispatchModeMap.value(table) == Overwrite)
+                {
+                    dispatchDestination = table;
+                    break;
+                }
+            }
+        }
+        else
+            dispatchDestination = tableWidget->currentTable();
+        break;
+    }
+    default:
+    {
+        qDebug() << "TableWindow::dispatch_Impl computed action was unrecognised";
+        return;
+    }
+    }
+    if (dispatchDestination.isEmpty())
+        dispatchDestination = newTableName();
+
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->updateObjectCatalogueJobs();
+    jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
     switch(action)
     {
     case New:
     {
-        dispatchDestination = newTableName();
         job->cmdList << QString("%1 copy %2").arg(results).arg(dispatchDestination);
         QMap<QString, QVariant> data;
         data.insert("addTable", dispatchDestination);
@@ -241,13 +267,11 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     }
     case Overwrite:
     {
-        dispatchDestination = dispatchMap.value(results);
         job->cmdList << QString("R << eN[\"%1\"] <- eN[\"%2\"]").arg(dispatchDestination).arg(results);
         break;
     }
     case Append:
     {
-        dispatchDestination = dispatchMap.value(results);
         job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])").arg(dispatchDestination).arg(results);
         break;
     }
@@ -261,8 +285,8 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     }
     SessionManager::instance()->submitJobs(jobs);
     // update maps
-    dispatchMap[results] = dispatchDestination;
-    dispatchModeMap[results] = currentDispatchMode;
+    dispatchMap[results].insert(dispatchDestination);
+    dispatchModeMap[dispatchDestination] = currentDispatchMode;
     trialRunInfoMap[dispatchDestination].append(info);
 }
 
