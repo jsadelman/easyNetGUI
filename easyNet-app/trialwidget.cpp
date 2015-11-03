@@ -229,7 +229,7 @@ void TrialWidget::runTrial()
     data.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
     jobs.last()->data = data;
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->tableWindow, SLOT(dispatch()));
-//    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
 
     if (runAllMode)
     {

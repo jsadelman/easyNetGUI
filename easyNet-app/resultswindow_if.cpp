@@ -18,15 +18,7 @@ ResultsWindow_If::ResultsWindow_If(QWidget *parent)
     dispatchModeName.insert(Overwrite, "Overwrite");
     dispatchModeName.insert(Append, "Append");
 
-    dispatchFST.insert(qMakePair(Overwrite, Overwrite), Overwrite);
-    dispatchFST.insert(qMakePair(Overwrite, Append), Overwrite);
-    dispatchFST.insert(qMakePair(Overwrite, New), Overwrite);
-    dispatchFST.insert(qMakePair(Append, Overwrite), New);
-    dispatchFST.insert(qMakePair(Append, Append), Append);
-    dispatchFST.insert(qMakePair(Append, New), New);
-    dispatchFST.insert(qMakePair(New, Overwrite), New);
-    dispatchFST.insert(qMakePair(New, Append), New);
-    dispatchFST.insert(qMakePair(New, New), New);
+
 
 }
 

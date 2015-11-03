@@ -59,7 +59,6 @@ protected:
     QMap<int, QString> dispatchModeName;
     int singleTrialDispatchMode;
     int trialListDispatchMode;
-    QMap<QPair<int,int>, int> dispatchFST;
 
     QAction *openAct;
     QAction *saveAct;

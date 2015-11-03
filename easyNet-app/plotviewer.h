@@ -1,7 +1,8 @@
 #ifndef PLOTVIEWER_H
 #define PLOTVIEWER_H
 
-#include <QMainWindow>
+#include "resultswindow_if.h"
+
 #include <QMap>
 #include <QTimer>
 
@@ -11,8 +12,10 @@ class QAction;
 class QLabel;
 class QByteArray;
 
+class ObjectCacheFilter;
 
-class PlotViewer: public QMainWindow
+
+class PlotViewer: public ResultsWindow_If
 {
     Q_OBJECT
 
@@ -24,8 +27,9 @@ public:
     QSvgWidget *currentSvgWidget();
 
 
+
 public slots:
-    void updateActivePlots();
+    void updateAllActivePlots();
 signals:
     void sendDrawCmd(QString);
     void showPlotSettings();
@@ -33,12 +37,19 @@ signals:
     void resized(QSize);
     void hidePlotSettings();
 
+protected slots:
+    virtual void open() Q_DECL_OVERRIDE;
+    virtual void save() Q_DECL_OVERRIDE;
+    virtual void copy() Q_DECL_OVERRIDE;
+
+protected:
+    virtual void createActions() Q_DECL_OVERRIDE;
+    virtual void createToolBars() Q_DECL_OVERRIDE;
+    virtual void dispatch_Impl(QDomDocument *info) Q_DECL_OVERRIDE;
+
 private slots:
-    void loadSVGFile();
     void loadByteArray(QString name, QByteArray byteArray);
-    void save();
-    void copySVGToClipboard();
-    void addPlot(QString name);
+    void addPlot(QString name, QString sourceDataframe="");
     void resizeTimeout();
     void snapshot();
     void currentTabChanged(int index);
@@ -49,11 +60,12 @@ private slots:
 
 
 private:
-    void createToolBars();
-    void createActions();
     void paintEvent(QPaintEvent * event);
     void resizeEvent(QResizeEvent*);
     void setPlotActive(bool isActive, QSvgWidget *svg = nullptr);
+    void updateActivePlots();
+    QSvgWidget * newSvg(QString name);
+    QSvgWidget *snapshot(QSvgWidget *svg);
 
     QToolBar*       fileToolBar;
     QToolBar*       editToolBar;
@@ -62,9 +74,6 @@ private:
     QAction *       refreshAct;
     QAction *       snapshotAct;
     QAction *       renameAct;
-    QAction *       openAct;
-    QAction *       saveAct;
-    QAction *       copyAct;
     QAction *       deleteAct;
 
     QString         easyNetHome;
@@ -74,8 +83,14 @@ private:
     QMap <QSvgWidget*, bool> plotIsActive;
     QMap <QSvgWidget*, QByteArray> byteArray;
     QMap <QSvgWidget*, bool> plotIsUpToDate;
+    QMap <QSvgWidget*, bool> plotSourceModified;
+    QMap <QSvgWidget*, QList<QDomDocument*> > trialRunInfoMap; // <svg, list of info XML>
+    QMap <QSvgWidget*, int> dispatchModeMap;
+    QMap <QString, QSet<QString> > plotDataframeMap; // <dataframe, set of rplots>
     QTimer*         resizeTimer;
     bool            pend;
+    ObjectCacheFilter *dataframeFilter;
+
 };
 
 #endif // PLOTVIEWER_H

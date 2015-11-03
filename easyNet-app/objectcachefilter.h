@@ -17,8 +17,12 @@ public slots:
     void setNoFilter() {setFilterRegExp(QString());}
     void setName(QString txt);
     void setNameList(QStringList list);
+    void addName(QString txt);
+    void removeName(QString txt);
     void setType(QString txt);
     void setTypeList(QStringList list);
+    void addType(QString txt);
+    void removeType(QString txt);
 
 signals:
     void objectCreated(QString, QString, QDomDocument*);
@@ -32,6 +36,8 @@ private slots:
 
 private:
     void setList(QStringList list);
+    QStringList nameList;
+    QStringList typeList;
 };
 
 #endif // OBJECTCATALOGUEFILTER_H

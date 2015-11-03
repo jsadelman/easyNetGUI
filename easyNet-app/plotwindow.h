@@ -65,11 +65,12 @@ public:
     void setDefaultModelSetting(QString setting, QString value);
 signals:
         void plot(QString, QByteArray);
-        void newPlotSignal(QString);
+        void newPlotSignal(QString, QString= QString());
         void showPlotViewer();
 public slots:
         void createNewPlotOfType(QString name, QString type,
-                                 QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
+                                 QMap<QString, QString> _defaultSettings=QMap<QString,QString>(),
+                                 QString sourceDataframe=QString());
         void sendGetCmd(QString plotName);
         void sendGetCmd();
         void setPlot(QString name);

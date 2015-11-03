@@ -289,7 +289,7 @@ void PlotSettingsWindow::createNewPlot(QString name)
 }
 
 void PlotSettingsWindow::createNewPlotOfType(QString name, QString rScript,
-                                     QMap <QString,QString> _defaultSettings)
+                                     QMap <QString,QString> _defaultSettings, QString sourceDataframe)
 {
     defaultSettings = _defaultSettings;
     LazyNutJob *job = new LazyNutJob;
@@ -307,7 +307,7 @@ void PlotSettingsWindow::createNewPlotOfType(QString name, QString rScript,
     currentPlot = name;
     currentPlotType = rScript;
     plotTypes[name] = rScript;
-    emit newPlotSignal(name);
+    emit newPlotSignal(name, sourceDataframe);
     plotNameBox->setText(name);
     plotTypeBox->setText(rScript);
 

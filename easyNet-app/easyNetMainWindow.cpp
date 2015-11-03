@@ -215,8 +215,8 @@ void MainWindow::connectSignalsAndSlots()
             this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
             plotViewer,SLOT(loadByteArray(QString,QByteArray)));
-    connect(plotSettingsWindow, SIGNAL(newPlotSignal(QString)),
-            plotViewer,SLOT(addPlot(QString)));
+    connect(plotSettingsWindow, SIGNAL(newPlotSignal(QString, QString)),
+            plotViewer,SLOT(addPlot(QString, QString)));
 
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
@@ -248,8 +248,8 @@ void MainWindow::connectSignalsAndSlots()
 //            tableWindow,SLOT(addTrialTable(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
-            plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
+    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>, QString)),
+            plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>, QString)));
     connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
     connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(makeSnapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),

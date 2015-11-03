@@ -238,7 +238,7 @@ void Box::defaultPlot(QString plotName, QString dataframe)
 {
     QMap<QString,QString> settings;
     settings["df"] = dataframe;
-    emit createNewPlotOfType(plotName, QString("%1.R").arg(defaultPlotType()), settings);
+    emit createNewPlotOfType(plotName, QString("%1.R").arg(defaultPlotType()), settings, dataframe);
 }
 
 //void Box::sendCreateNewPlotOfType()

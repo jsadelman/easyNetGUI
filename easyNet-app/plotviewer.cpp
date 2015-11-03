@@ -1,4 +1,8 @@
 #include "plotviewer.h"
+#include "objectcachefilter.h"
+#include "sessionmanager.h"
+#include "xmlaccessor.h"
+
 #include <QSvgWidget>
 #include <QToolBar>
 #include <QAction>
@@ -9,15 +13,14 @@
 #include <QApplication>
 #include <QPixmap>
 #include <QInputDialog>
+#include <QDomDocument>
 #include <QDebug>
 
 PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
-    : easyNetHome(easyNetHome), progressiveTabIdx(0), QMainWindow(parent),pend(false)
+    : easyNetHome(easyNetHome), progressiveTabIdx(0), pend(false), ResultsWindow_If(parent)
 {
     plotPanel = new QTabWidget;
-
     setCentralWidget(plotPanel);
-
     createActions();
     createToolBars();
 
@@ -25,6 +28,21 @@ PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
 
     resizeTimer = new QTimer(this);
     connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
+
+    dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
+    connect(dataframeFilter, &ObjectCacheFilter::objectModified, [=](QString df)
+    {
+        foreach (QString plot, plotDataframeMap.value(df))
+        {
+            QSvgWidget* svg = plotName.key(plot);
+            if (plotIsActive.value(svg))
+            {
+                plotSourceModified[svg] = true;
+            }
+        }
+    });
+    setSingleTrialMode(Overwrite);
+    setTrialListMode(New);
 }
 
 PlotViewer::~PlotViewer()
@@ -57,8 +75,68 @@ void PlotViewer::createToolBars()
     navigationToolBar->addWidget(titleLabel);
 }
 
+void PlotViewer::dispatch_Impl(QDomDocument *info)
+{
+    QDomElement rootElement = info->documentElement();
+    QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
+    QString runMode = XMLAccessor::value(runModeElement);
+
+    int currentDispatchMode;
+    if (!dispatchModeAuto)
+        currentDispatchMode = dispatchModeOverride;
+    else if (runMode == "single")
+        currentDispatchMode = singleTrialDispatchMode;
+    else if (runMode == "list")
+        currentDispatchMode = trialListDispatchMode;
+    else
+    {
+        qDebug() << "ERROR: PlotViewer::dispatch_Impl cannot read trial run info XML.";
+        return;
+    }
+    int action = currentDispatchMode;
+    QMutableMapIterator<QSvgWidget*, bool> plotSourceModified_it(plotSourceModified);
+    while (plotSourceModified_it.hasNext())
+    {
+        plotSourceModified_it.next();
+        if (plotSourceModified_it.value())
+        {
+            plotSourceModified_it.setValue(false);
+            QSvgWidget* svg = plotSourceModified_it.key();
+            switch(action)
+            {
+            case New:
+            {
+                QSvgWidget* new_svg = snapshot(svg);
+                trialRunInfoMap[new_svg].append(info);
+                break;
+            }
+            case Append: // not implemented for the moment, take it as overwrite
+            case Overwrite:
+            {
+                plotIsUpToDate[svg] = false;
+                trialRunInfoMap[svg].append(info);
+                break;
+            }
+            default:
+            {
+                qDebug() << "PlotViewer::dispatch_Impl computed action was unrecognised";
+                return;
+            }
+            }
+        }
+    }
+    updateActivePlots();
+}
+
 void PlotViewer::createActions()
 {
+    ResultsWindow_If::createActions();
+
+    openAct->setStatusTip(tr("Load plot"));
+    saveAct->setStatusTip(tr("Save plot"));
+    copyAct->setStatusTip(tr("Copy plot to clipboard"));
+
+
     settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
     settingsAct->setShortcut(QKeySequence::Refresh);
     settingsAct->setStatusTip(tr("Plot settings"));
@@ -79,25 +157,13 @@ void PlotViewer::createActions()
     renameAct->setStatusTip(tr("Rename"));
     connect(renameAct, SIGNAL(triggered()), this, SLOT(renamePlot()));
 
-    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open"), this);
-    openAct->setStatusTip(tr("Load plot"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(loadSVGFile()));
-
-    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
-    saveAct->setStatusTip(tr("Save plot"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
-
-    copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy"), this);
-    copyAct->setStatusTip(tr("Copy plot to clipboard"));
-    connect(copyAct, SIGNAL(triggered()), this, SLOT(copySVGToClipboard()));
-
     deleteAct = new QAction(QIcon(":/images/delete-icon.png"), tr("&Delete"), this);
     deleteAct->setShortcut(QKeySequence::Delete);
     deleteAct->setStatusTip(tr("Delete plot"));
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(deletePlot()));
 }
 
-void PlotViewer::loadSVGFile()
+void PlotViewer::open()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load SVG File"),
@@ -122,11 +188,11 @@ void PlotViewer::loadByteArray(QString name, QByteArray _byteArray)
     if (svg)
     {
 //        if(byteArray[svg]) delete(byeArray[svg]);
+        plotIsUpToDate[svg]=true;
         byteArray[svg] = _byteArray;
         svg->load(byteArray.value(svg));
         plotPanel->setCurrentWidget(svg);
         titleLabel->setText(name);
-        plotIsUpToDate[svg]=true;
     }
 }
 
@@ -145,7 +211,7 @@ void PlotViewer::save()
     }
 }
 
-void PlotViewer::copySVGToClipboard()
+void PlotViewer::copy()
 {
     QPixmap* currPixmap = new QPixmap(currentSvgWidget()->width(),
                                       currentSvgWidget()->height());
@@ -154,17 +220,44 @@ void PlotViewer::copySVGToClipboard()
     p_Clipboard->setPixmap(*currPixmap);
 }
 
-void PlotViewer::addPlot(QString name)
+void PlotViewer::addPlot(QString name, QString sourceDataframe)
 {
-    QSvgWidget *svg = new QSvgWidget;
-    plotName[svg] = name;
-    plotPanel->addTab(svg, QString("Plot %1").arg(++progressiveTabIdx));
-    setPlotActive(true, svg);
-    plotPanel->setCurrentWidget(svg);
-    currentTabChanged(plotPanel->currentIndex());
+//    QSvgWidget *svg = new QSvgWidget;
+//    plotName[svg] = name;
+    if (!sourceDataframe.isEmpty() && !plotDataframeMap.contains(sourceDataframe))
+        dataframeFilter->addName(sourceDataframe);
+
+    if (!sourceDataframe.isEmpty())
+        plotDataframeMap[sourceDataframe].insert(name);
+
+    newSvg(name);
+
+//    plotPanel->addTab(svg, QString("Plot %1").arg(++progressiveTabIdx));
+//    setPlotActive(true, svg);
+//    plotIsUpToDate[svg] = false;
+//    plotPanel->setCurrentWidget(svg);
+//    currentTabChanged(plotPanel->currentIndex());
+//    return svg;
 }
 
 void PlotViewer::updateActivePlots()
+{
+    if(plotPanel->currentIndex()>-1 &&
+            plotIsActive[currentSvgWidget()] &&
+            !plotIsUpToDate[currentSvgWidget()])
+    {
+        if(visibleRegion().isEmpty())
+        {
+            pend=true;
+        }
+        else
+        {
+            emit sendDrawCmd(plotName.value(currentSvgWidget()));
+        }
+    }
+}
+
+void PlotViewer::updateAllActivePlots()
 {
     QMapIterator<QSvgWidget*, bool> plotIsActiveIt(plotIsActive);
     while (plotIsActiveIt.hasNext()) {
@@ -172,20 +265,7 @@ void PlotViewer::updateActivePlots()
         if (plotIsActiveIt.value())
             plotIsUpToDate[plotIsActiveIt.key()]=false;
     }
-    if(plotPanel->currentIndex()>-1)
-    {
-      if(plotIsActive[currentSvgWidget()])
-      {
-          if(visibleRegion().isEmpty())
-          {
-              pend=true;
-          }
-              else
-          {
-              emit sendDrawCmd(plotName.value(currentSvgWidget()));
-          }
-      }
-    }
+    updateActivePlots();
 }
 
 void PlotViewer::paintEvent(QPaintEvent * event)
@@ -214,12 +294,26 @@ void PlotViewer::setPlotActive(bool isActive, QSvgWidget *svg)
                                      QIcon(":/images/snapshot-icon.png"));
 }
 
+QSvgWidget *PlotViewer::newSvg(QString name)
+{
+    QSvgWidget* svg = new QSvgWidget;
+    plotName[svg] = name;
+//    plotPanel->addTab(svg, QString("Plot %1").arg(++progressiveTabIdx));
+//    setPlotActive(true, svg);
+    plotIsUpToDate[svg] = false;
+    plotSourceModified[svg] = false;
+//    dispatchModeMap[svg] = Overwrite;
+    return svg;
+}
+
+
+
 
 void PlotViewer::resizeTimeout()
 {
    resizeTimer->stop();
    emit resized(plotPanel->size());
-   updateActivePlots();
+   updateAllActivePlots();
 }
 
 
@@ -275,13 +369,22 @@ void PlotViewer::snapshot()
     plotIsUpToDate[currentSVG]=true;
 }
 
+QSvgWidget* PlotViewer::snapshot(QSvgWidget* svg)
+{
+    QString name = plotName.value(svg);
+    freeze(svg);
+    plotName[svg] = QString("%1_SNAPSHOT").arg(name);
+    return newSvg(name);
+}
+
 void PlotViewer::currentTabChanged(int index)
 {
     QSvgWidget* svg = static_cast<QSvgWidget*>(plotPanel->widget(index));
     if (plotIsActive.value(svg))
     {
         emit setPlot(plotName.value(svg));
-        if(!plotIsUpToDate[svg]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(svg));
+        updateActivePlots();
+//        if(!plotIsUpToDate[svg]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(svg));
     }
     settingsAct->setEnabled(plotIsActive.value(svg));
     refreshAct->setEnabled(plotIsActive.value(svg));

@@ -46,7 +46,7 @@ public:
     QString defaultPlotType();
 
 signals:
-    void createNewPlotOfType(QString, QString, QMap<QString, QString>);
+    void createNewPlotOfType(QString, QString, QMap<QString, QString>, QString);
     void lazyNutTypeChanged();
     void plotDestroyed(QString name);
 

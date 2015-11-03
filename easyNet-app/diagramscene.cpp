@@ -370,8 +370,8 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
       if (type == m_boxType)
     {
         Box *box = new Box();
-        connect(box, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString, QString>)),
-                this, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
+        connect(box, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString, QString>, QString)),
+                this, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>, QString)));
 
         addItem(box);
         box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers
