@@ -49,11 +49,13 @@ void Box::setLabelPointSize(int labelPointSize)
 }
 
 
-void Box::read(const QJsonObject &json)
+void Box::read(const QJsonObject &json, qreal boxWidth)
 {
     m_name = json["name"].toString();
     m_lazyNutType = json["lazyNutType"].toString();
     QPointF position(json["x"].toDouble(),json["y"].toDouble());
+    if (boxWidth != 0)
+        position *= (autoWidth() / boxWidth);
     if (!position.isNull())
         setCentrePos(position);
 }
@@ -67,12 +69,18 @@ void Box::write(QJsonObject &json) const
     json["y"] = position.y();
 }
 
+qreal Box::autoWidth()
+{
+    QFontMetrics fm(labelFont);
+    return (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
+}
+
 void Box::autoSize()
 {
-   QFontMetrics fm(labelFont);
-   qreal autoWidth = (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
-   qreal autoHeigth = autoWidth / m_widthOverHeight;
-   cmd_setSize(QSizeF(autoWidth, autoHeigth));
+//   QFontMetrics fm(labelFont);
+//   qreal autoWidth = (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
+   qreal autoHeigth = autoWidth() / m_widthOverHeight;
+   cmd_setSize(QSizeF(autoWidth(), autoHeigth));
 }
 
 void Box::paintLabel(QPainter *painter)
