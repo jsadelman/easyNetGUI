@@ -3,6 +3,7 @@
 #include "lazynutjobparam.h"
 #include "libdunnartcanvas/limitstring.h"
 #include "objectcachefilter.h"
+#include "enumclasses.h"
 
 
 #include <QPainter>
@@ -238,7 +239,7 @@ void Box::defaultPlot(QString plotName, QString dataframe)
 {
     QMap<QString,QString> settings;
     settings["df"] = dataframe;
-    emit createNewPlotOfType(plotName, QString("%1.R").arg(defaultPlotType()), settings, dataframe);
+    emit createNewRPlot(plotName, QString("%1.R").arg(defaultPlotType()), settings, settings, Dispatch_Overwrite);
 }
 
 //void Box::sendCreateNewPlotOfType()

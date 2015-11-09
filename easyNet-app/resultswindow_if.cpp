@@ -1,5 +1,6 @@
 #include "resultswindow_if.h"
 #include "lazynutjob.h"
+#include "enumclasses.h"
 
 #include <QDomDocument>
 #include <QAction>
@@ -8,15 +9,28 @@
 #include <QDebug>
 #include <QToolBar>
 #include <QMenuBar>
+#include <QDockWidget>
+#include <QScrollArea>
 
 Q_DECLARE_METATYPE(QDomDocument*)
 
 ResultsWindow_If::ResultsWindow_If(QWidget *parent)
    :  dispatchModeOverride(-1), dispatchModeAuto(true), QMainWindow(parent)
 {
-    dispatchModeName.insert(New, "New");
-    dispatchModeName.insert(Overwrite, "Overwrite");
-    dispatchModeName.insert(Append, "Append");
+    dispatchModeName.insert(Dispatch_New, "New Tab");
+    dispatchModeName.insert(Dispatch_Overwrite, "Overwrite");
+    dispatchModeName.insert(Dispatch_Append, "Append");
+
+    // info
+    infoDock = new QDockWidget("Info",this);
+    infoScroll = new QScrollArea(this);
+    infoScroll->setWidgetResizable(true);
+    infoDock->setWidget(infoScroll);
+    addDockWidget(Qt::BottomDockWidgetArea, infoDock);
+    infoDock->setFeatures(QDockWidget::DockWidgetClosable);
+
+    infoVisible = false;
+    infoDock->close();
 
 
 
@@ -111,6 +125,9 @@ void ResultsWindow_If::createActions()
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             this, SLOT(setDispatchModeAuto(bool)));
 
+    setDispatchModeAuto(true);
+    setDispatchModeAutoAct->setChecked(true);
+
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
@@ -122,6 +139,13 @@ void ResultsWindow_If::createActions()
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
+
+    infoAct = infoDock->toggleViewAction();
+    infoAct->setIcon(QIcon(":/images/Information-icon.png"));
+    infoAct->setText(tr("&Info"));
+    infoAct->setToolTip(tr("Show/hide trial run info"));
+    connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(setInfoVisible(bool)));
+
 }
 
 //void ResultsWindow_If::createMenus()
@@ -161,6 +185,7 @@ void ResultsWindow_If::createToolBars()
     dispatchToolBar->addActions(setDispatchModeOverrideActs);
     dispatchToolBar->addAction(setDispatchModeAutoAct);
 
-
+    infoToolBar = addToolBar(tr("Info"));
+    infoToolBar->addAction(infoAct);
 }
 

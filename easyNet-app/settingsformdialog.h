@@ -23,6 +23,7 @@ public slots:
 signals:
     void cmdListReady(QStringList);
     void dfNameReady(QString);
+    void dataframeMergeSettingsReady(QStringList, QString, QString, QString);
 
 private slots:
     void validateName();

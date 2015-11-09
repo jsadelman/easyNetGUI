@@ -39,8 +39,9 @@ void SettingsFormDialog::accept()
 //    qDebug() << cmdList;
 
     // order matters, first cmdListReady then dfNameReady
-    emit cmdListReady(cmdList);
-    emit dfNameReady(dfName);
+//    emit cmdListReady(cmdList);
+//    emit dfNameReady(dfName);
+    emit dataframeMergeSettingsReady(cmdList, dfName, form->value("x"), form->value("y"));
 
     QDialog::accept();
 }

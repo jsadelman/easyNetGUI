@@ -97,6 +97,16 @@ QStringList PlotSettingsForm::getSettingsCmdList()
     return cmdList;
 }
 
+QMap<QString, QString> PlotSettingsForm::getSettings()
+{
+    QMap<QString, QString> settings;
+    foreach (QString setting, widgetMap.keys())
+    {
+        settings.insert(setting, widgetMap[setting]->value());
+    }
+    return settings;
+}
+
 QString PlotSettingsForm::value(QString label)
 {
     return widgetMap[label]->value();
@@ -141,8 +151,10 @@ void PlotSettingsForm::checkDependencies()
     if (widget && dependersSet.contains(widget->name()))
     {
         dependerOnUpdate = widget->name();
+        qDebug() << "PlotSettingsForm::checkDependencies dependerOnUpdate" <<dependerOnUpdate << m_plotName;
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = getSettingsCmdList();
+        qDebug() << job->cmdList;
         job->cmdList.append(QString("xml %1 list_settings").arg(m_plotName));
         job->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)), AnswerFormatterType::XML);
         SessionManager::instance()->submitJobs(job);
@@ -153,6 +165,7 @@ void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
 {
     delete domDoc;
     domDoc = newDomDoc;
+    qDebug() << newDomDoc->toString();
     rootElement = domDoc->documentElement();
     if (dependerOnUpdate.isEmpty())
         return; // just safety
@@ -196,6 +209,7 @@ QString PlotSettingsForm::getSettingCmdLine(QString setting)
 
 void PlotSettingsForm::setDefaultModelSetting(QString setting, QString value)
 {
+    qDebug() << "PlotSettingsForm::setDefaultModelSetting"  << m_plotName << setting << value;
     widgetMap[setting]->setValue(value);
     widgetMap[setting]->setValueSetTrue();
 }

@@ -22,6 +22,7 @@ public:
     ~PlotSettingsForm();
     void build();
     QStringList getSettingsCmdList();
+    QMap<QString, QString> getSettings();
     QString value(QString label);
     QStringList listLabels() {return XMLAccessor::listLabels(rootElement);}
     void setDefaultModelSetting(QString setting, QString value);

@@ -85,13 +85,13 @@ void PlotSettingsWindow::createPlotControlPanel()
 //    selectRScriptAct->setStatusTip(tr("Select an existing R script"));
 //    connect(selectRScriptAct, SIGNAL(triggered()), this, SLOT(selectRScript()));
 
-    for (int i = 0; i < MaxRecentRScripts; ++i)
-    {
-        recentRScriptsActs[i] = new QAction(this);
-        recentRScriptsActs[i]->setVisible(false);
-        connect(recentRScriptsActs[i], SIGNAL(triggered()),
-                this, SLOT(selectRecentRScript()));
-    }
+//    for (int i = 0; i < MaxRecentRScripts; ++i)
+//    {
+//        recentRScriptsActs[i] = new QAction(this);
+//        recentRScriptsActs[i]->setVisible(false);
+//        connect(recentRScriptsActs[i], SIGNAL(triggered()),
+//                this, SLOT(selectRecentRScript()));
+//    }
 
 //    typeMenu = menuBar()->addMenu(tr("Plot &type"));
 //    typeMenu->addAction(selectRScriptAct);
@@ -137,7 +137,7 @@ void PlotSettingsWindow::loadSettings(QString fileName)
         return;
     }
     file.close();
-    buildSettingsForm(domDoc);
+    buildSettingsForm(currentPlotName, domDoc);
     // ...
 }
 
@@ -246,9 +246,9 @@ void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
 void PlotSettingsWindow::setPlot(QString name)
 {
     // in case name does not match an existing plot all will be set blank
-    currentPlot = name;
+    currentPlotName = name;
     plotControlPanelScrollArea->takeWidget();
-    plotControlPanelScrollArea->setWidget(plotForms[currentPlot]);
+    plotControlPanelScrollArea->setWidget(plotForms[currentPlotName]);
     plotNameBox->setText(name);
     plotTypeBox->setText(plotTypes[name]);
 
@@ -272,77 +272,129 @@ void PlotSettingsWindow::newPlot()
 //        currentPlot = name;
 //    }
     NewPlotWizard *plotWizard = new NewPlotWizard(this);
-    connect(plotWizard, SIGNAL(createNewPlotOfType(QString,QString)),
-            this, SLOT(createNewPlotOfType(QString,QString)));
+    connect(plotWizard, SIGNAL(createNewRPlot(QString,QString)),
+            this, SLOT(newRPlot(QString,QString)));
+    connect(plotWizard, &NewPlotWizard::createNewRPlot, [=](QString name, QString type)
+    {
+       emit createNewRPlot(name, type, QMap<QString,QString>(),QMap<QString,QString>(), -1);
+    });
     plotWizard->show();
 }
 
-void PlotSettingsWindow::createNewPlot(QString name)
-{
-    setCurrentPlotType(QString());
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER; // debug purpose
-    job->cmdList = QStringList({QString("create rplot %1").arg(name)});
-    SessionManager::instance()->submitJobs(job);
-    emit newPlotSignal(name);
-    getSettingsXML();
-}
 
-void PlotSettingsWindow::createNewPlotOfType(QString name, QString rScript,
-                                     QMap <QString,QString> _defaultSettings, QString sourceDataframe)
+//void PlotSettingsWindow::createNewRPlot(QString name)
+//{
+//    setCurrentPlotType(QString());
+//    LazyNutJob *job = new LazyNutJob;
+//    job->logMode |= ECHO_INTERPRETER; // debug purpose
+//    job->cmdList = QStringList({QString("create rplot %1").arg(name)});
+//    SessionManager::instance()->submitJobs(job);
+//    emit newPlotSignal(name);
+//    getSettingsXML(name);
+//}
+
+void PlotSettingsWindow::newRPlot(QString name, QString rScript,
+                                     QMap <QString,QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, int dispatchOverride)
 {
-    defaultSettings = _defaultSettings;
+    Q_UNUSED(sourceDataframeSettings)
+    Q_UNUSED(dispatchOverride)
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({
-                                     QString("create rplot %1").arg(name),
-                                     QString("%1 set_type %2").arg(name).arg(rScript)
-                                 });
+                                QString("create rplot %1").arg(name),
+                                QString("%1 set_type %2").arg(name).arg(rScript),
+                                QString("xml %1 list_settings").arg(name)
+                                });
+    QMap<QString, QVariant> data;
+    data.insert("plotName", name);
+    if (!defaultSettings.isEmpty())
+        data.insert("defaultSettings", QVariant::fromValue(defaultSettings));
+
+    job->data = data;
+    job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
+    job->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
-            << SessionManager::instance()->updateObjectCatalogueJobs();
-
+            << SessionManager::instance()->recentlyCreatedJob();
     SessionManager::instance()->submitJobs(jobs);
 
-    currentPlot = name;
+    currentPlotName = name;
     currentPlotType = rScript;
     plotTypes[name] = rScript;
-    emit newPlotSignal(name, sourceDataframe);
     plotNameBox->setText(name);
     plotTypeBox->setText(rScript);
 
-    getSettingsXML();
+//    getSettingsXML(currentPlotName);
 
 }
 
-void PlotSettingsWindow::setType(QString rScript)
+//void PlotSettingsWindow::setType(QString rScript)
+//{
+//    setCurrentPlotType(rScript);
+//    LazyNutJob *job = new LazyNutJob;
+//    job->logMode |= ECHO_INTERPRETER; // debug purpose
+//    job->cmdList = QStringList({QString("%1 set_type %2").arg(currentPlotName).arg(rScript)});
+//    SessionManager::instance()->submitJobs(job);
+//    getSettingsXML(currentPlotName);
+//}
+
+void PlotSettingsWindow::getSettingsXML(QString plotName)
 {
-    setCurrentPlotType(rScript);
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER; // debug purpose
-    job->cmdList = QStringList({QString("%1 set_type %2").arg(currentPlot).arg(rScript)});
-    SessionManager::instance()->submitJobs(job);
-    getSettingsXML();
-}
-
-void PlotSettingsWindow::getSettingsXML()
-{
-    LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("xml %1 list_settings").arg(currentPlot)});
-    job->setAnswerReceiver(this, SLOT(buildSettingsForm(QDomDocument*)), AnswerFormatterType::XML);
+    job->cmdList = QStringList({QString("xml %1 list_settings").arg(plotName)});
+    job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
+    QMap<QString, QVariant> data;
+    data.insert("plotName", plotName);
+    job->data = data;
+    job->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
     SessionManager::instance()->submitJobs(job);
 }
 
+//void PlotSettingsWindow::buildSettingsForm(QDomDocument *domDoc)
+//{
+//    buildSettingsForm(currentPlotName, domDoc);
+//}
 
-void PlotSettingsWindow::buildSettingsForm(QDomDocument *settingsList)
+//void PlotSettingsWindow::buildSettingsForm(QString plotName)
+//{
+//    buildSettingsForm(plotName, currentSettings);
+//}
+
+void PlotSettingsWindow::buildSettingsForm()
 {
-    PlotSettingsForm *plotSettingsForm = new PlotSettingsForm(settingsList, this);
-    plotSettingsForm->setPlotName(currentPlot);
+    LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+    if (!job)
+    {
+        qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() cannot extract LazyNutJob from sender";
+        return;
+    }
+    QMap<QString, QVariant> data = job->data.toMap();
+    if (!data.contains("plotName"))
+    {
+        qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() LazyNutJob->data does not contain plotName entry";
+        return;
+    }
+    QString plotName = data.value("plotName").toString();
+    if (plotName.isEmpty())
+    {
+        qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() LazyNutJob->data contains an empty plotName entry";
+        return;
+    }
+    QMap<QString, QString> defaultSettings;
+    if (data.contains("defaultSettings"))
+        defaultSettings = data.value("defaultSettings").value<QMap<QString, QString>>();
+    buildSettingsForm(plotName, currentSettings, defaultSettings);
+}
+
+
+
+void PlotSettingsWindow::buildSettingsForm(QString plotName, QDomDocument *domDoc, QMap<QString, QString> defaultSettings)
+{
+    PlotSettingsForm *plotSettingsForm = new PlotSettingsForm(domDoc, this);
+    plotSettingsForm->setPlotName(plotName);
     plotSettingsForm->setDefaultSettings(defaultSettings);
     plotSettingsForm->build();
-
-    defaultSettings.clear();
-    plotForms[currentPlot] = plotSettingsForm;
+    plotForms[currentPlotName] = plotSettingsForm;
 
 
 //    QVBoxLayout *vboxLayout = new QVBoxLayout;
@@ -492,7 +544,7 @@ void PlotSettingsWindow::sendSettings(QString name)
 void PlotSettingsWindow::getPlotType()
 {
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("xml %1 description").arg(currentPlot)});
+    job->cmdList = QStringList({QString("xml %1 description").arg(currentPlotName)});
     job->setAnswerReceiver(this, SLOT(extractPlotType(QDomDocument*)), AnswerFormatterType::XML);
     SessionManager::instance()->submitJobs(job);
 }
@@ -521,22 +573,22 @@ void PlotSettingsWindow::extractPlotType(QDomDocument *description)
 
 
 
-void PlotSettingsWindow::selectRScript()
-{
-    QSettings settings("QtEasyNet", "nmConsole");
-    QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
-    QString rScript = QFileDialog::getOpenFileName(this,tr("Please select an R script"),
-                                                   rScriptsHome,"*.R");
-    if (!rScript.isEmpty())
-        setType(QFileInfo(rScript).fileName());
-}
+//void PlotSettingsWindow::selectRScript()
+//{
+//    QSettings settings("QtEasyNet", "nmConsole");
+//    QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
+//    QString rScript = QFileDialog::getOpenFileName(this,tr("Please select an R script"),
+//                                                   rScriptsHome,"*.R");
+//    if (!rScript.isEmpty())
+//        setType(QFileInfo(rScript).fileName());
+//}
 
-void PlotSettingsWindow::selectRecentRScript()
-{
-    QAction *action = qobject_cast<QAction *>(sender());
-    if (action)
-        setType(action->data().toString());
-}
+//void PlotSettingsWindow::selectRecentRScript()
+//{
+//    QAction *action = qobject_cast<QAction *>(sender());
+//    if (action)
+//        setType(action->data().toString());
+//}
 
 void PlotSettingsWindow::setCurrentPlotType(QString rScript)
 {
@@ -569,7 +621,7 @@ NewPlotWizard::NewPlotWizard(QWidget *parent)
 
 void NewPlotWizard::accept()
 {
-    emit createNewPlotOfType(field("name").toString(), field("type").toString());
+    emit createNewRPlot(field("name").toString(), field("type").toString());
     QDialog::accept();
 }
 
@@ -612,6 +664,16 @@ void PlotSettingsWindow::setDefaultModelSetting(QString setting, QString value)
     PlotSettingsForm * form = qobject_cast<PlotSettingsForm*>(plotControlPanelScrollArea->widget());
     if (form)
         form->setDefaultModelSetting(setting, value);
+}
+
+QMap<QString, QString> PlotSettingsWindow::getSettings(QString plotName)
+{
+    if (!plotForms.contains(plotName))
+    {
+        qDebug() << "ERROR: PlotSettingsWindow::getSettings plotName does not match any settings form widget";
+        return QMap<QString, QString>();
+    }
+    return plotForms[plotName]->getSettings();
 }
 
 void PlotSettingsWindow::newAspectRatio(QSize size)

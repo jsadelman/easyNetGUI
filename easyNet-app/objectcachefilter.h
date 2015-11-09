@@ -14,7 +14,7 @@ public:
     bool isAllValid();
 
 public slots:
-    void setNoFilter() {setFilterRegExp(QString());}
+    void setNoFilter();
     void setName(QString txt);
     void setNameList(QStringList list);
     void addName(QString txt);

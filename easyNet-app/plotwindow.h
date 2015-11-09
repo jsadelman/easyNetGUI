@@ -31,7 +31,7 @@ public:
     void accept() Q_DECL_OVERRIDE;
 
 signals:
-    void createNewPlotOfType(QString, QString);
+    void createNewRPlot(QString, QString);
 
 };
 
@@ -63,14 +63,16 @@ public:
     int getValueFromByteArray(QByteArray ba, QString key);
 
     void setDefaultModelSetting(QString setting, QString value);
+    QMap<QString, QString> getSettings(QString plotName);
 signals:
         void plot(QString, QByteArray);
-        void newPlotSignal(QString, QString= QString());
         void showPlotViewer();
+        void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
 public slots:
-        void createNewPlotOfType(QString name, QString type,
-                                 QMap<QString, QString> _defaultSettings=QMap<QString,QString>(),
-                                 QString sourceDataframe=QString());
+        void newRPlot(QString name, QString type,
+                                 QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
+                                 QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
+                                 int dispatchOverride=-1);
         void sendGetCmd(QString plotName);
         void sendGetCmd();
         void setPlot(QString name);
@@ -84,20 +86,26 @@ public slots:
 private slots:
     void displaySVG(QByteArray plotByteArray, QString cmd);
     void newPlot();
-    void createNewPlot(QString name);
-    void setType(QString rScript);
-    void getSettingsXML();
-    void buildSettingsForm(QDomDocument* settingsList);
+//    void setType(QString rScript);
+    void getSettingsXML(QString plotName);
+    void buildSettingsForm(QString plotName, QDomDocument *domDoc,
+                           QMap<QString, QString> defaultSettings=QMap<QString, QString>());
+//    void buildSettingsForm(QDomDocument* domDoc);
+//    void buildSettingsForm(QString plotName);
+    void buildSettingsForm();
+
+
     void getPlotType();
     void extractPlotType(QDomDocument* description);
 //    void updateSettingsForm();
-    void selectRScript();
-    void selectRecentRScript();
+//    void selectRScript();
+//    void selectRecentRScript();
     void setCurrentPlotType(QString rScript);
 //    void draw();
     void newAspectRatio(QSize);
     void removePlot(QString name);
-
+    void setCurrentSettings(QDomDocument *settingsList) {currentSettings = settingsList;}
+    void setCurrentPlotName(QString name) {currentPlotName = name;}
     void buildWindow();
 private:
 
@@ -135,12 +143,13 @@ private:
 //    ObjectCatalogueFilter* plotListFilter;
     QString currentPlotType;
     QString currentOutput;
-    QString currentPlot;
+    QString currentPlotName;
+    QDomDocument * currentSettings;
     QString createNewPlotText;
     QString openPlotSettingsText;
     QString savePlotSettingsText;
     QString savePlotSettingsAsText;
-    QMap <QString,QString> defaultSettings;
+//    QMap <QString,QString> defaultSettings;
     QGridLayout *gridLayout;
 //    QVBoxLayout* vlayout;
 

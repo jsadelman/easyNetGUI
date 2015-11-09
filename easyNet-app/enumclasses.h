@@ -25,6 +25,9 @@ enum class AnswerFormatterType
     SVG
 };
 
+enum {Dispatch_New=0, Dispatch_Overwrite, Dispatch_Append, MAX_DISPATCH_MODE};
+
+
 
 #ifdef __APPLE__
   #define EN_FONT "Helvetica Neue"

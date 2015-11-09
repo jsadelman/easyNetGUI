@@ -9,6 +9,7 @@ class QDomDocument;
 
 class QSignalMapper;
 class QActionGroup;
+class QScrollArea;
 
 
 
@@ -33,10 +34,10 @@ protected slots:
     virtual void open()=0;
     virtual void save()=0;
     virtual void copy()=0;
-
+    virtual void setInfoVisible(bool visible)=0;
+    virtual void refreshInfo()=0;
 
 protected:
-    enum {New=0, Overwrite, Append, MAX_DISPATCH_MODE};
     virtual void createActions();
     virtual void createToolBars();
     virtual void dispatch_Impl(QDomDocument *info)=0;
@@ -64,6 +65,7 @@ protected:
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *copyAct;
+    QAction *infoAct;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
@@ -75,6 +77,10 @@ protected:
     QMenu   *settingsMenu;
     QMenu   *setSingleTrialDispatchModeMenu;
     QMenu   *setTrialListDispatchModeMenu;
+
+    QDockWidget  *infoDock;
+    QScrollArea  *infoScroll;
+    bool infoVisible;
 
 
 };

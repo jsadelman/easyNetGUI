@@ -193,8 +193,6 @@ QString TrialWidget::getTrialCmd()
         ++i;
     }
     return (cmd);
-
-
 }
 
 QStringList TrialWidget::getArguments()
@@ -303,6 +301,18 @@ QDomDocument * TrialWidget::createTrialRunInfo()
                                .arg(SessionManager::instance()->currentTrial()
                                ));
     rootElem.appendChild(dataframeElem);
+    QDomElement valuesElem = trialRunInfo->createElement("map");
+    trialElem.setAttribute("label", "Values");
+    QMapIterator<QString, myComboBox*> argumentMap_it(argumentMap);
+    while(argumentMap_it.hasNext())
+    {
+        argumentMap_it.next();
+        QDomElement valueElem = trialRunInfo->createElement("string");
+        valueElem.setAttribute("label", argumentMap_it.key());
+        valueElem.setAttribute("value", static_cast<myComboBox*>(argumentMap[argumentMap_it.key()])->currentText());
+        valuesElem.appendChild(valueElem);
+    }
+    rootElem.appendChild(valuesElem);
 
     return trialRunInfo; // will be a smart pointer
 }

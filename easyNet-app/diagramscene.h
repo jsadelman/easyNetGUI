@@ -138,7 +138,7 @@ signals:
 //    void layoutSaveAttempted();
 
     void animationFinished();
-    void createNewPlotOfType(QString, QString, QMap<QString, QString>, QString);
+    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
     void plotDestroyed(QString name);
 
 

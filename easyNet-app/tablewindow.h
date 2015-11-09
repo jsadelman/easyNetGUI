@@ -22,10 +22,16 @@ protected slots:
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
+    void preparePlot();
+    void dataframeMerge();
     void addTable();
     void removeTable(QString name);
-    void setInfoVisible(bool visible);
-    void refreshInfo();
+    virtual void setInfoVisible(bool visible) Q_DECL_OVERRIDE;
+    virtual void refreshInfo() Q_DECL_OVERRIDE;
+
+signals:
+    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
+    void showPlotSettings();
 
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
@@ -40,19 +46,18 @@ protected:
     QMap <QString, QList<QDomDocument*> > trialRunInfoMap; // <Table, list of info XML>
 
     QAction *copyDFAct;
-    QAction *mergeDFAct;
+    QAction *dataframeMergeAct;
     QAction *findAct;
     QAction *plotAct;
-    QAction *infoAct;
+
 
     QAction *refreshAct;
 
     TabsTableWidget *tableWidget;
-    QDockWidget  *infoDock;
-    QScrollArea  *infoScroll;
+
     int tableCounter;
     ObjectCacheFilter *dataframeFilter;
-    bool infoVisible;
+
 };
 
 #endif // TABLEWINDOW_H

@@ -23,11 +23,12 @@ public:
     PlotViewer(QString easyNetHome, QWidget *parent=0);
     ~PlotViewer();
 
-    QTabWidget*     plotPanel;
+
     QSvgWidget *currentSvgWidget();
 
 
 
+    void updateActionEnabledState(QSvgWidget* svg);
 public slots:
     void updateAllActivePlots();
 signals:
@@ -36,20 +37,31 @@ signals:
     void setPlot(QString);
     void resized(QSize);
     void hidePlotSettings();
+    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
+
 
 protected slots:
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
+    virtual void setInfoVisible(bool visible) Q_DECL_OVERRIDE;
+    virtual void refreshInfo() Q_DECL_OVERRIDE;
+    void newRPlot(QString name, QString type,
+                             QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
+                             QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
+                             int dispatchOverride=-1);
+
 
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
     virtual void createToolBars() Q_DECL_OVERRIDE;
     virtual void dispatch_Impl(QDomDocument *info) Q_DECL_OVERRIDE;
+    void showInfo(QSvgWidget* svg);
+    void hideInfo();
 
 private slots:
     void loadByteArray(QString name, QByteArray byteArray);
-    void addPlot(QString name, QString sourceDataframe="");
+//    void addPlot(QString name, QString sourceDataframeOfPlots="");
     void resizeTimeout();
     void snapshot();
     void currentTabChanged(int index);
@@ -57,15 +69,21 @@ private slots:
     void renamePlot();
     void deletePlot();
     void makeSnapshot(QString name);
+    void triggerPlotUpdate(QString name=QString());
 
 
 private:
     void paintEvent(QPaintEvent * event);
     void resizeEvent(QResizeEvent*);
-    void setPlotActive(bool isActive, QSvgWidget *svg = nullptr);
+    void setSvgActive(bool isActive, QSvgWidget *svg = nullptr);
     void updateActivePlots();
+    QString plotCloneName(QString name);
+    QString normalisedName(QString name);
+    void renamePlot(QString oldName, QString newName = QString());
+
+
+    QString cloneRPlot(QString name, QString newName=QString());
     QSvgWidget * newSvg(QString name);
-    QSvgWidget *snapshot(QSvgWidget *svg);
 
     QToolBar*       fileToolBar;
     QToolBar*       editToolBar;
@@ -79,17 +97,23 @@ private:
     QString         easyNetHome;
     QLabel*         titleLabel;
     int             progressiveTabIdx;
-    QMap <QSvgWidget*, QString> plotName;
-    QMap <QSvgWidget*, bool> plotIsActive;
-    QMap <QSvgWidget*, QByteArray> byteArray;
-    QMap <QSvgWidget*, bool> plotIsUpToDate;
-    QMap <QSvgWidget*, bool> plotSourceModified;
-    QMap <QSvgWidget*, QList<QDomDocument*> > trialRunInfoMap; // <svg, list of info XML>
-    QMap <QSvgWidget*, int> dispatchModeMap;
-    QMap <QString, QSet<QString> > plotDataframeMap; // <dataframe, set of rplots>
+    QMap <QString, QSvgWidget*> plotSvg;
+    QMap <QString, QString> plotType;
+    QMap <QString, QMap<QString, QString> > plotSourceDataframeSettings; // <rplot <key, val> >
+    QMap <QString, int> plotCloneCount;
+    QMap <QSvgWidget*, bool> svgIsActive;
+    QMap <QSvgWidget*, QByteArray> svgByteArray;
+    QMap <QSvgWidget*, bool> svgIsUpToDate;
+    QMap <QSvgWidget*, bool> svgSourceModified;
+    QMap <QSvgWidget*, QList<QDomDocument*> > svgTrialRunInfo; // <svg, list of info XML>
+    QMap <QSvgWidget*, int> svgDispatchOverride;
+    QMultiMap <QString, QString> sourceDataframeOfPlots; // <dataframe, rplots>
+    QMap <QString, int> dataframeCloneCount;
+
     QTimer*         resizeTimer;
     bool            pend;
     ObjectCacheFilter *dataframeFilter;
+    QTabWidget*     plotPanel;
 
 };
 

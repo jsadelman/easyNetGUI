@@ -15,7 +15,7 @@ ObjectCacheFilter::ObjectCacheFilter(ObjectCache *objectCache, QObject *parent)
             this, SLOT(sendObjectDestroyed(QModelIndex,int,int)));
     connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(sendObjectModified(QModelIndex,QModelIndex,QVector<int>)));
-    setName(""); // initialise with a no-pass filter
+    setNoFilter(); // initialise with a no-pass filter
 
 }
 
@@ -27,6 +27,13 @@ bool ObjectCacheFilter::isAllValid()
         invalid |= data(index(row,ObjectCache::InvalidCol)).toBool();
     }
     return !invalid;
+}
+
+void ObjectCacheFilter::setNoFilter()
+{
+    setFilterRegExp("^$");
+    nameList.clear();
+    typeList.clear();
 }
 
 void ObjectCacheFilter::setName(QString txt)
@@ -45,8 +52,11 @@ void ObjectCacheFilter::setNameList(QStringList list)
 
 void ObjectCacheFilter::addName(QString txt)
 {
-    nameList.append(txt);
-    setList(nameList);
+    if (!nameList.contains(txt))
+    {
+        nameList.append(txt);
+        setList(nameList);
+    }
     setFilterKeyColumn(ObjectCache::NameCol);
 }
 
@@ -73,8 +83,11 @@ void ObjectCacheFilter::setTypeList(QStringList list)
 
 void ObjectCacheFilter::addType(QString txt)
 {
-    typeList.append(txt);
-    setList(typeList);
+    if (!typeList.contains(txt))
+    {
+        typeList.append(txt);
+        setList(typeList);
+    }
     setFilterKeyColumn(ObjectCache::TypeCol);
 }
 

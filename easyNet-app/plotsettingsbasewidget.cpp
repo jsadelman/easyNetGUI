@@ -145,8 +145,8 @@ void PlotSettingsBaseWidget::createLevelsListModel()
             cmdElement = cmdElement.nextSiblingElement("object");
         }
         levelsCmdObjectWatcher->setNameList(objectsInCmd);
-        connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
-                this, SLOT(getLevels()));
+//        connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
+//                this, SLOT(getLevels()));
         connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
         {
             static_cast<StringListModel*>(levelsListModel)->updateList(QStringList());
@@ -173,20 +173,18 @@ void PlotSettingsBaseWidget::setValue(QString val)
 {
     //settingsElement["value"].setValue(val);
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-    qDebug() << "setValue element is null" <<  valueElement.isNull();
     XMLAccessor::setValue(valueElement, val);
-
-
-//    qDebug() << "setValue:" << val << "check" << XMLAccessor::value(valueElement);
 
     switch(editMode)
     {
     case RawEditMode:
     {
+        qDebug() << "RawEditMode set value" << val;
         rawEdit->setText(val);
         break;
     }
     case WidgetEditMode:
+        qDebug() << "WidgetEditMode set value" << val;
         setWidgetValue(raw2widgetValue(val));
     }
 }
@@ -301,9 +299,9 @@ void PlotSettingsBaseWidget::emitValueChanged()
         // write on XML
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
         XMLAccessor::setValue(valueElement, currentValue);
+        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
 
         emit valueChanged();
-//        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
 
     }
 }
@@ -551,7 +549,8 @@ void PlotSettingsMultipleChoiceWidget::buildEditWidget()
     vboxLayout->addWidget(editExtraWidget);
 
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-    currentValue = XMLAccessor::value(valueElement);
+    currentValue = value();
+    currentValue = currentValue.isEmpty() ? XMLAccessor::value(valueElement) : currentValue;
     setWidgetValue(raw2widgetValue(currentValue));
     updateEditDisplayWidget();
 

@@ -7,6 +7,8 @@
 #include "objectcachefilter.h"
 #include "trialdataframemodel.h"
 #include "xmlform.h"
+#include "settingsform.h"
+#include "settingsformdialog.h"
 
 #include <QMenu>
 #include <QSignalMapper>
@@ -15,6 +17,8 @@
 #include <QDebug>
 #include <QDockWidget>
 #include <QScrollArea>
+#include <QSettings>
+#include <QFile>
 
 
 TableWindow::TableWindow(QWidget *parent)
@@ -33,13 +37,7 @@ TableWindow::TableWindow(QWidget *parent)
            showInfo(name);
     });
 
-    // info
-    infoDock = new QDockWidget("Info",this);
-    infoScroll = new QScrollArea(this);
-    infoScroll->setWidgetResizable(true);
-    infoDock->setWidget(infoScroll);
-    addDockWidget(Qt::BottomDockWidgetArea, infoDock);
-    infoDock->setFeatures(QDockWidget::DockWidgetClosable);
+
 
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeFilter->setType("dataframe");
@@ -48,14 +46,12 @@ TableWindow::TableWindow(QWidget *parent)
     createActions();
     createToolBars();
     // trial dispatch defaults
-    setSingleTrialMode(Append);
-    setTrialListMode(New);
-    setDispatchModeAuto(true);
-    setDispatchModeAutoAct->setChecked(true);
+    setSingleTrialMode(Dispatch_Append);
+    setTrialListMode(Dispatch_New);
+
 //    infoAct->setChecked(false);
 
-    infoVisible = false;
-    infoDock->close();
+
 }
 
 TableWindow::~TableWindow()
@@ -75,6 +71,70 @@ void TableWindow::save()
 void TableWindow::copy()
 {
 
+}
+
+void TableWindow::preparePlot()
+{
+    if (tableWidget->currentTable().isEmpty())
+        return;
+    QMap<QString,QString> settings;
+    settings["df"] = tableWidget->currentTable();
+    QString plotName = tableWidget->currentTable().append(".plot");
+    QString plotType = "plot_mean_bars.R"; // testing!!!
+    emit createNewRPlot(plotName, plotType, settings, settings, -1);
+    emit showPlotSettings();
+}
+
+void TableWindow::dataframeMerge()
+{
+    // load XML
+    QDomDocument* domDoc = new QDomDocument;
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString easyNetHome = settings.value("easyNetHome","../..").toString();
+    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(easyNetHome));
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+    if (!domDoc->setContent(&file)) {
+        file.close();
+        return;
+    }
+    file.close();
+    // setup form
+    SettingsForm *form = new SettingsForm(domDoc, this);
+    form->setUseRFormat(false);
+    QMap<QString, QString> preFilledSettings;
+    preFilledSettings["x"] = tableWidget->currentTable();
+    preFilledSettings["y"] = SessionManager::instance()->currentSet();
+    form->setDefaultSettings(preFilledSettings);
+    // setup dialog
+    QString info("Select two dataframes you want to merge into one. Their key columns should match.");
+    SettingsFormDialog dialog(domDoc, form, info, this);
+
+
+    connect(&dialog, &SettingsFormDialog::dataframeMergeSettingsReady,
+            [=](QStringList cmdList, QString dfName, QString x, QString y)
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->logMode |= ECHO_INTERPRETER;
+
+        job->cmdList = cmdList;
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << SessionManager::instance()->recentlyCreatedJob();
+        QMap<QString, QVariant> data;
+        data.insert("addTable", dfName);
+        jobs.last()->data = data;
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
+        SessionManager::instance()->submitJobs(jobs);
+        // pass info over, assume only one of the two source df is a result
+        if (trialRunInfoMap.contains(x))
+            trialRunInfoMap[dfName].append(trialRunInfoMap[x]);
+        else if (trialRunInfoMap.contains(y))
+            trialRunInfoMap[dfName].append(trialRunInfoMap[y]);
+    });
+
+    dialog.exec();
 }
 
 void TableWindow::addTable()
@@ -152,9 +212,9 @@ void TableWindow::createActions()
     copyDFAct->setStatusTip(tr("Copy contents to a new dataframe "));
 //    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(on_copy_DF_clicked()));
 
-    mergeDFAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
-    mergeDFAct->setStatusTip(tr("Merge two dataframes"));
-//    connect(mergeDFAct, SIGNAL(triggered()), this, SLOT(mergeFD()));
+    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
+    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
+    connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
 
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
@@ -163,14 +223,8 @@ void TableWindow::createActions()
 
     plotAct = new QAction(QIcon(":/images/barchart2.png"), tr("&Plot"), this);
     plotAct->setToolTip(tr("Create a plot based on these data"));
-//    connect(plotAct, SIGNAL(triggered()), this, SLOT(preparePlot()));
+    connect(plotAct, SIGNAL(triggered()), this, SLOT(preparePlot()));
 
-    infoAct = infoDock->toggleViewAction();
-    infoAct->setIcon(QIcon(":/images/Information-icon.png"));
-    infoAct->setText(tr("&Info"));
-    infoAct->setToolTip(tr("Show/hide info about this table"));
-//    infoAct->setCheckable(true);
-    connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(setInfoVisible(bool)));
 
 }
 
@@ -180,12 +234,10 @@ void TableWindow::createToolBars()
     ResultsWindow_If::createToolBars();
 
     editToolBar->addAction(copyDFAct);
-    editToolBar->addAction(mergeDFAct);
+    editToolBar->addAction(dataframeMergeAct);
     editToolBar->addAction(findAct);
     editToolBar->addAction(plotAct);
 
-    infoToolBar = addToolBar(tr("Info"));
-    infoToolBar->addAction(infoAct);
 }
 
 void TableWindow::dispatch_Impl(QDomDocument *info)
@@ -197,9 +249,7 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     QString results = XMLAccessor::value(resultsElement);
 
     int currentDispatchMode;
-    if (!dispatchModeAuto)
-        currentDispatchMode = dispatchModeOverride;
-    else if (runMode == "single")
+    if (runMode == "single")
         currentDispatchMode = singleTrialDispatchMode;
     else if (runMode == "list")
         currentDispatchMode = trialListDispatchMode;
@@ -208,18 +258,21 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
         qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
         return;
     }
-    int action = dispatchMap.contains(results) ? currentDispatchMode : New;
+    if (!dispatchModeAuto)
+        currentDispatchMode = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
+
+    int action = dispatchMap.contains(results) ? currentDispatchMode : Dispatch_New;
 
     QString dispatchDestination = QString(); // if not assigned, it will be newTableName();
     switch(action)
     {
-    case New:
+    case Dispatch_New:
     {
         // new table
         break;
     }
-    case Append:
-    case Overwrite:
+    case Dispatch_Append:
+    case Dispatch_Overwrite:
     {
         if (dispatchModeAuto)
         {
@@ -227,8 +280,8 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
             // otherwise a new one
             foreach(QString table, dispatchMap[results])
             {
-                if (dispatchModeMap.value(table) == Append ||
-                    dispatchModeMap.value(table) == Overwrite)
+                if (dispatchModeMap.value(table) == Dispatch_Append ||
+                    dispatchModeMap.value(table) == Dispatch_Overwrite)
                 {
                     dispatchDestination = table;
                     break;
@@ -256,7 +309,7 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
     switch(action)
     {
-    case New:
+    case Dispatch_New:
     {
         job->cmdList << QString("%1 copy %2").arg(results).arg(dispatchDestination);
         QMap<QString, QVariant> data;
@@ -265,12 +318,12 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
         break;
     }
-    case Overwrite:
+    case Dispatch_Overwrite:
     {
         job->cmdList << QString("R << eN[\"%1\"] <- eN[\"%2\"]").arg(dispatchDestination).arg(results);
         break;
     }
-    case Append:
+    case Dispatch_Append:
     {
         job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])").arg(dispatchDestination).arg(results);
         break;
@@ -301,6 +354,7 @@ void TableWindow::showInfo(QString name)
     infoForm->build();
     infoScroll->setWidget(infoForm);
     infoForm->show();
+    // leakage
 }
 
 void TableWindow::hideInfo()
