@@ -393,7 +393,7 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
         box->setProperty("longNameToDisplayIntact", boxLongNameToDisplayIntact);
         box->setProperty("widthMarginProportionToLongestLabel", boxWidthMarginProportionToLongestLabel);
         box->setProperty("widthOverHeight", boxWidthOverHeight);
-        box->setLabelPointSize(14);
+//        box->setLabelPointSize(14);
         box->autoSize();
         box->setLabel(name);
         box->setToolTip(name);
