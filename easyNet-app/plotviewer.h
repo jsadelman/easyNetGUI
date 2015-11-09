@@ -52,6 +52,7 @@ protected slots:
                              int dispatchOverride=-1);
 
 
+    void preDispatch(QDomDocument *info);
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
     virtual void createToolBars() Q_DECL_OVERRIDE;
@@ -59,6 +60,7 @@ protected:
     void showInfo(QSvgWidget* svg);
     void hideInfo();
 
+    void dispatch_private(QDomDocument *info, bool preDispatch);
 private slots:
     void loadByteArray(QString name, QByteArray byteArray);
 //    void addPlot(QString name, QString sourceDataframeOfPlots="");
@@ -70,6 +72,7 @@ private slots:
     void deletePlot();
     void makeSnapshot(QString name);
     void triggerPlotUpdate(QString name=QString());
+    void addDataframeMerge(QString df, QString dfm);
 
 
 private:
@@ -109,6 +112,7 @@ private:
     QMap <QSvgWidget*, int> svgDispatchOverride;
     QMultiMap <QString, QString> sourceDataframeOfPlots; // <dataframe, rplots>
     QMap <QString, int> dataframeCloneCount;
+    QMultiMap <QString, QString> dataframeMergeOfSource; // <dataframe, dataframe_merges>
 
     QTimer*         resizeTimer;
     bool            pend;

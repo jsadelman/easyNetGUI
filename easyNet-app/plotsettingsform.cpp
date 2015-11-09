@@ -151,10 +151,10 @@ void PlotSettingsForm::checkDependencies()
     if (widget && dependersSet.contains(widget->name()))
     {
         dependerOnUpdate = widget->name();
-        qDebug() << "PlotSettingsForm::checkDependencies dependerOnUpdate" <<dependerOnUpdate << m_plotName;
+//        qDebug() << "PlotSettingsForm::checkDependencies dependerOnUpdate" <<dependerOnUpdate << m_plotName;
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = getSettingsCmdList();
-        qDebug() << job->cmdList;
+//        qDebug() << job->cmdList;
         job->cmdList.append(QString("xml %1 list_settings").arg(m_plotName));
         job->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)), AnswerFormatterType::XML);
         SessionManager::instance()->submitJobs(job);
@@ -165,7 +165,7 @@ void PlotSettingsForm::updateDependees(QDomDocument* newDomDoc)
 {
     delete domDoc;
     domDoc = newDomDoc;
-    qDebug() << newDomDoc->toString();
+//    qDebug() << newDomDoc->toString();
     rootElement = domDoc->documentElement();
     if (dependerOnUpdate.isEmpty())
         return; // just safety

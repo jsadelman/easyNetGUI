@@ -32,6 +32,7 @@ protected slots:
 signals:
     void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
     void showPlotSettings();
+    void addDataframeMerge(QString, QString);
 
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
@@ -44,6 +45,7 @@ protected:
     QMap <QString, int> dispatchModeMap; // <Table, Mode>
     QMap <QString, QSet<QString> > dispatchMap; // <results df, set of Tables>
     QMap <QString, QList<QDomDocument*> > trialRunInfoMap; // <Table, list of info XML>
+    QMap <QString, QString> sourceDfMap; // reverse of dispatchMap
 
     QAction *copyDFAct;
     QAction *dataframeMergeAct;

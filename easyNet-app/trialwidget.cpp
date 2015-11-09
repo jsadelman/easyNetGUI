@@ -223,6 +223,7 @@ void TrialWidget::runTrial()
             << job
             << SessionManager::instance()->updateObjectCatalogueJobs();
     QDomDocument *trialRunInfo = createTrialRunInfo(); // will be a smart pointer
+    emit aboutToRunTrial(trialRunInfo);
     QMap<QString, QVariant> data;
     data.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
     jobs.last()->data = data;

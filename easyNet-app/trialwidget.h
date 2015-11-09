@@ -34,6 +34,7 @@ public slots:
 signals:
     void runAllModeChanged(bool);
     void trialDescriptionUpdated(QDomDocument*);
+    void aboutToRunTrial(QDomDocument*);
 
 private slots:
 

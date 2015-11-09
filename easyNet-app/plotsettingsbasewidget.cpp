@@ -179,12 +179,12 @@ void PlotSettingsBaseWidget::setValue(QString val)
     {
     case RawEditMode:
     {
-        qDebug() << "RawEditMode set value" << val;
+//        qDebug() << "RawEditMode set value" << val;
         rawEdit->setText(val);
         break;
     }
     case WidgetEditMode:
-        qDebug() << "WidgetEditMode set value" << val;
+//        qDebug() << "WidgetEditMode set value" << val;
         setWidgetValue(raw2widgetValue(val));
     }
 }
@@ -299,7 +299,7 @@ void PlotSettingsBaseWidget::emitValueChanged()
         // write on XML
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
         XMLAccessor::setValue(valueElement, currentValue);
-        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
+//        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
 
         emit valueChanged();
 

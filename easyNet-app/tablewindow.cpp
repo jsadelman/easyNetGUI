@@ -103,7 +103,7 @@ void TableWindow::dataframeMerge()
     SettingsForm *form = new SettingsForm(domDoc, this);
     form->setUseRFormat(false);
     QMap<QString, QString> preFilledSettings;
-    preFilledSettings["x"] = tableWidget->currentTable();
+    preFilledSettings["x"] = sourceDfMap[tableWidget->currentTable()];
     preFilledSettings["y"] = SessionManager::instance()->currentSet();
     form->setDefaultSettings(preFilledSettings);
     // setup dialog
@@ -129,9 +129,15 @@ void TableWindow::dataframeMerge()
         SessionManager::instance()->submitJobs(jobs);
         // pass info over, assume only one of the two source df is a result
         if (trialRunInfoMap.contains(x))
+        {
             trialRunInfoMap[dfName].append(trialRunInfoMap[x]);
+        }
         else if (trialRunInfoMap.contains(y))
+        {
             trialRunInfoMap[dfName].append(trialRunInfoMap[y]);
+        }
+        emit addDataframeMerge(x, dfName);
+        emit addDataframeMerge(y, dfName);
     });
 
     dialog.exec();
@@ -180,6 +186,7 @@ void TableWindow::removeTable(QString name)
             dispatchMapIt.remove();
     }
     trialRunInfoMap.remove(name);
+    sourceDfMap.remove(name);
     if (tableWidget->currentTable().isEmpty())
         delete infoScroll->takeWidget();
 }
@@ -341,6 +348,7 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     dispatchMap[results].insert(dispatchDestination);
     dispatchModeMap[dispatchDestination] = currentDispatchMode;
     trialRunInfoMap[dispatchDestination].append(info);
+    sourceDfMap[dispatchDestination] = results;
 }
 
 void TableWindow::showInfo(QString name)

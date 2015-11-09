@@ -88,6 +88,72 @@ void PlotViewer::createToolBars()
 
 void PlotViewer::dispatch_Impl(QDomDocument *info)
 {
+    Q_UNUSED(info)
+    QMutableMapIterator<QSvgWidget*, bool> svgSourceModified_it(svgSourceModified);
+    while (svgSourceModified_it.hasNext())
+    {
+        svgSourceModified_it.next();
+        if (svgSourceModified_it.value())
+        {
+            svgSourceModified_it.setValue(false);
+            QSvgWidget* svg = svgSourceModified_it.key();
+            svgIsUpToDate[svg] = false;
+            svgTrialRunInfo[svg].append(info);
+        }
+    }
+    updateActivePlots();
+    refreshInfo();
+}
+
+void PlotViewer::preDispatch(QDomDocument *info)
+{
+    QDomElement rootElement = info->documentElement();
+    QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
+    QString runMode = XMLAccessor::value(runModeElement);
+    QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
+    QString results = XMLAccessor::value(resultsElement);
+
+    int currentDispatchMode;
+    if (runMode == "single")
+        currentDispatchMode = singleTrialDispatchMode;
+    else if (runMode == "list")
+        currentDispatchMode = trialListDispatchMode;
+    else
+    {
+        qDebug() << "ERROR: PlotViewer::dispatch_private cannot read trial run info XML.";
+        return;
+    }
+    int action;
+    QStringList sourceDfs({results});
+    if (!dataframeMergeOfSource.values(results).isEmpty())
+        sourceDfs.append(dataframeMergeOfSource.values(results));
+    qDebug() << " PlotViewer::preDispatch sourceDfs" << sourceDfs;
+    foreach (QString df, sourceDfs)
+    {
+        foreach (QString rplot, sourceDataframeOfPlots.values(df))
+        {
+            QSvgWidget* svg = plotSvg[rplot];
+            if (!dispatchModeAuto && svg == currentSvgWidget()) // apply manual override only to visible tab
+                action = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
+            else
+                action = svgDispatchOverride.value(svg) > -1 ? svgDispatchOverride.value(svg) : currentDispatchMode;
+            action = svgByteArray.contains(svg) ? action : Dispatch_Overwrite; // if tab is empty, write on it anyway
+            qDebug() << " PlotViewer::preDispatch rplot action" << rplot << action;
+            if (action == Dispatch_New)
+            {
+                QString newName = cloneRPlot(plotSvg.key(svg));
+                svgIsUpToDate[plotSvg[newName]] = false;
+            }
+        }
+    }
+    updateActivePlots();
+    refreshInfo();
+}
+
+
+void PlotViewer::dispatch_private(QDomDocument *info, bool preDispatch)
+{
+    // not used
     QDomElement rootElement = info->documentElement();
     QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
     QString runMode = XMLAccessor::value(runModeElement);
@@ -99,7 +165,7 @@ void PlotViewer::dispatch_Impl(QDomDocument *info)
         currentDispatchMode = trialListDispatchMode;
     else
     {
-        qDebug() << "ERROR: PlotViewer::dispatch_Impl cannot read trial run info XML.";
+        qDebug() << "ERROR: PlotViewer::dispatch_private cannot read trial run info XML.";
         return;
     }
     int action;
@@ -116,29 +182,40 @@ void PlotViewer::dispatch_Impl(QDomDocument *info)
             else
                 action = svgDispatchOverride.value(svg) > -1 ? svgDispatchOverride.value(svg) : currentDispatchMode;
             action = svgByteArray.contains(svg) ? action : Dispatch_Overwrite; // if tab is empty, write on it anyway
-            switch(action)
+
+            if (preDispatch && action == Dispatch_New)
             {
-            case Dispatch_New:
-            {
-                cloneRPlot(plotSvg.key(svg));
-                // same as Dispatch_Overwrite
-                svgIsUpToDate[svg] = false;
-                svgTrialRunInfo[svg].append(info);
-                break;
+                QString newName = cloneRPlot(plotSvg.key(svg));
+                svgIsUpToDate[plotSvg[newName]] = false;
             }
-            case Dispatch_Append: // not implemented for the moment, take it as overwrite
-            case Dispatch_Overwrite:
+            else
             {
                 svgIsUpToDate[svg] = false;
                 svgTrialRunInfo[svg].append(info);
-                break;
             }
-            default:
-            {
-                qDebug() << "PlotViewer::dispatch_Impl computed action was unrecognised";
-                return;
-            }
-            }
+//            switch(action)
+//            {
+//            case Dispatch_New:
+//            {
+//                cloneRPlot(plotSvg.key(svg));
+//                // same as Dispatch_Overwrite
+//                svgIsUpToDate[svg] = false;
+//                svgTrialRunInfo[svg].append(info);
+//                break;
+//            }
+//            case Dispatch_Append: // not implemented for the moment, take it as overwrite
+//            case Dispatch_Overwrite:
+//            {
+//                svgIsUpToDate[svg] = false;
+//                svgTrialRunInfo[svg].append(info);
+//                break;
+//            }
+//            default:
+//            {
+//                qDebug() << "PlotViewer::dispatch_Impl computed action was unrecognised";
+//                return;
+//            }
+//            }
         }
     }
     updateActivePlots();
@@ -543,6 +620,7 @@ void PlotViewer::triggerPlotUpdate(QString name)
 
     if (svg)
     {
+        qDebug() << "PlotViewer::triggerPlotUpdate" << name;
         svgIsUpToDate[svg] = false;
         updateActivePlots();
     }
@@ -551,6 +629,13 @@ void PlotViewer::triggerPlotUpdate(QString name)
         qDebug() << "ERROR: PlotViewer::triggerPlotUpdate could not find a valid svg; name was:" << name;
         return;
     }
+}
+
+void PlotViewer::addDataframeMerge(QString df, QString dfm)
+{
+    qDebug() << "addDataframeMerge" << df << dfm;
+    if (!dataframeMergeOfSource.contains(df, dfm))
+        dataframeMergeOfSource.insert(df, dfm);
 }
 
 void PlotViewer::snapshot()
