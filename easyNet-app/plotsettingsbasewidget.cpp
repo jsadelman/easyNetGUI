@@ -173,11 +173,7 @@ void PlotSettingsBaseWidget::setValue(QString val)
 {
     //settingsElement["value"].setValue(val);
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-    qDebug() << "setValue element is null" <<  valueElement.isNull();
     XMLAccessor::setValue(valueElement, val);
-
-
-//    qDebug() << "setValue:" << val << "check" << XMLAccessor::value(valueElement);
 
     switch(editMode)
     {

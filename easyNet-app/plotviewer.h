@@ -4,12 +4,28 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QTimer>
+#include <QDialog>
 
 class QSvgWidget;
 class QToolBar;
 class QAction;
 class QLabel;
 class QByteArray;
+class QScrollArea;
+
+
+class FullScreenSvgDialog: public QDialog
+{
+    Q_OBJECT
+public:
+    FullScreenSvgDialog(QWidget *parent = 0);
+    void loadByteArray(QByteArray byteArray);
+    void clearSvg();
+
+private:
+    QSvgWidget *svg;
+};
+
 
 
 class PlotViewer: public QMainWindow
@@ -33,6 +49,8 @@ signals:
     void resized(QSize);
     void hidePlotSettings();
 
+
+
 private slots:
     void loadSVGFile();
     void loadByteArray(QString name, QByteArray byteArray);
@@ -46,6 +64,7 @@ private slots:
     void renamePlot();
     void deletePlot();
     void makeSnapshot(QString name);
+    void setupFullScreen();
 
 
 private:
@@ -54,6 +73,8 @@ private:
     void paintEvent(QPaintEvent * event);
     void resizeEvent(QResizeEvent*);
     void setPlotActive(bool isActive, QSvgWidget *svg = nullptr);
+
+    FullScreenSvgDialog *fullScreenSvgDialog;
 
     QToolBar*       fileToolBar;
     QToolBar*       editToolBar;
@@ -66,6 +87,7 @@ private:
     QAction *       saveAct;
     QAction *       copyAct;
     QAction *       deleteAct;
+    QAction *       fullScreenAct;
 
     QString         easyNetHome;
     QLabel*         titleLabel;
@@ -76,6 +98,8 @@ private:
     QMap <QSvgWidget*, bool> plotIsUpToDate;
     QTimer*         resizeTimer;
     bool            pend;
+    bool            fullScreen;
+    QSize           fullScreenSize;
 };
 
 #endif // PLOTVIEWER_H

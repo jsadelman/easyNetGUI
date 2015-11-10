@@ -10,11 +10,42 @@
 #include <QPixmap>
 #include <QInputDialog>
 #include <QDebug>
+#include <QKeyEvent>
+
+#include <QVBoxLayout>
+#include <QScrollArea>
+
+
+FullScreenSvgDialog::FullScreenSvgDialog(QWidget *parent)
+    :QDialog(parent, Qt::FramelessWindowHint)
+{
+    svg = new QSvgWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(svg);
+    setLayout(layout);
+}
+
+void FullScreenSvgDialog::loadByteArray(QByteArray byteArray)
+{
+    svg->load(byteArray);
+}
+
+void FullScreenSvgDialog::clearSvg()
+{
+    QByteArray byteArray;
+    loadByteArray(byteArray);
+}
+
+
 
 PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
-    : easyNetHome(easyNetHome), progressiveTabIdx(0), QMainWindow(parent),pend(false)
+    : easyNetHome(easyNetHome), progressiveTabIdx(0), fullScreen(false), QMainWindow(parent),pend(false)
 {
     plotPanel = new QTabWidget;
+    fullScreenSvgDialog = new FullScreenSvgDialog(this);
+    fullScreenSvgDialog->setWindowState(Qt::WindowFullScreen);
+    fullScreenSize = fullScreenSvgDialog->size();
+    qDebug() << " fullScreenSize" << fullScreenSize;
 
     setCentralWidget(plotPanel);
 
@@ -25,6 +56,8 @@ PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
 
     resizeTimer = new QTimer(this);
     connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
+
+
 }
 
 PlotViewer::~PlotViewer()
@@ -43,6 +76,7 @@ void PlotViewer::createToolBars()
     editToolBar->addAction(refreshAct);
     editToolBar->addAction(snapshotAct);
     editToolBar->addAction(settingsAct);
+    editToolBar->addAction(fullScreenAct);
 
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(renameAct);
@@ -95,6 +129,12 @@ void PlotViewer::createActions()
     deleteAct->setShortcut(QKeySequence::Delete);
     deleteAct->setStatusTip(tr("Delete plot"));
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(deletePlot()));
+
+    fullScreenAct = new QAction(QIcon("://images/Full_screen_view.png"), "Full Screen", this);
+    connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
+
+
+
 }
 
 void PlotViewer::loadSVGFile()
@@ -118,15 +158,20 @@ void PlotViewer::loadSVGFile()
 
 void PlotViewer::loadByteArray(QString name, QByteArray _byteArray)
 {
-    QSvgWidget* svg = plotName.key(name);
-    if (svg)
+    if (fullScreen)
+        fullScreenSvgDialog->loadByteArray(_byteArray);
+    else
     {
-//        if(byteArray[svg]) delete(byeArray[svg]);
-        byteArray[svg] = _byteArray;
-        svg->load(byteArray.value(svg));
-        plotPanel->setCurrentWidget(svg);
-        titleLabel->setText(name);
-        plotIsUpToDate[svg]=true;
+        QSvgWidget* svg = plotName.key(name);
+        if (svg)
+        {
+            //        if(byteArray[svg]) delete(byeArray[svg]);
+            byteArray[svg] = _byteArray;
+            svg->load(byteArray.value(svg));
+            plotPanel->setCurrentWidget(svg);
+            titleLabel->setText(name);
+            plotIsUpToDate[svg]=true;
+        }
     }
 }
 
@@ -187,6 +232,7 @@ void PlotViewer::updateActivePlots()
       }
     }
 }
+
 
 void PlotViewer::paintEvent(QPaintEvent * event)
 {
@@ -263,6 +309,17 @@ void PlotViewer::makeSnapshot(QString name)
     plotName[svg] = QString("%1_SNAPSHOT").arg(name);
     if (svg == static_cast<QSvgWidget*>(plotPanel->currentWidget()))
         currentTabChanged(plotPanel->currentIndex());
+}
+
+
+void PlotViewer::setupFullScreen()
+{
+    fullScreen = true;
+    emit resized(fullScreenSize);
+    emit sendDrawCmd(plotName[currentSvgWidget()]);
+    fullScreenSvgDialog->clearSvg();
+    fullScreenSvgDialog->exec();
+    fullScreen = false;
 }
 
 void PlotViewer::snapshot()
