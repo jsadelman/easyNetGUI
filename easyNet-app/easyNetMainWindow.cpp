@@ -635,8 +635,8 @@ void MainWindow::loadStimulusSet()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
-                                                    stimDir);
-//                                                    tr("Database Files (*.eNd)"));
+                                                    stimDir,
+                                                    tr("Database Files (*.eNd);;Text files (*.txt *.csv);;All files (*.*)"));
     fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
