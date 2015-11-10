@@ -11,7 +11,9 @@
 #include <QInputDialog>
 #include <QDebug>
 #include <QKeyEvent>
-
+#include <QPushButton>
+#include <QGridLayout>
+#include <QSpacerItem>
 #include <QVBoxLayout>
 #include <QScrollArea>
 
@@ -21,8 +23,21 @@ FullScreenSvgDialog::FullScreenSvgDialog(QWidget *parent)
 {
     svg = new QSvgWidget(this);
     QVBoxLayout *layout = new QVBoxLayout;
+    QGridLayout *glayout = new QGridLayout;
+    QPushButton *closeBtn = new QPushButton("Close");
+//    glayout->addSpacerItem();
+//    glayout->addWidget(new QSpacerItem(), 0, 0, 0, 9);
+//    glayout->addWidget(closeBtn, 0, 9, 0, 10);
+
+    QHBoxLayout *hlayout = new QHBoxLayout;
+    QSpacerItem *item = new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+    hlayout->addSpacerItem(item);
+    hlayout->addWidget(closeBtn);
+
+    layout->addLayout(hlayout);
     layout->addWidget(svg);
     setLayout(layout);
+    connect (closeBtn, SIGNAL(clicked()),this,SLOT(close()));
 }
 
 void FullScreenSvgDialog::loadByteArray(QByteArray byteArray)
