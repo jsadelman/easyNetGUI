@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QDebug>
+#include <QLineEdit>
 
 PairedListWidget::PairedListWidget(QAbstractItemModel *listModel, int relevantColumn, QWidget *parent)
     : listModel(listModel), relevantColumn(relevantColumn), QFrame(parent)
@@ -106,16 +107,31 @@ void PairedListWidget::buildWidget()
     notSelectedView->setModelColumn(0);
     notSelectedView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 //    notSelectedView->setResizeMode(QListView::Adjust);
+    searchEdit = new QLineEdit(this);
+    connect(searchEdit, &QLineEdit::textEdited, [=](QString text)
+    {
+        QModelIndexList indexList = notSelectedModel->match(notSelectedModel->index(0,0), Qt::DisplayRole, text);
+        if (!indexList.isEmpty())
+            notSelectedView->setCurrentIndex(indexList.at(0));
+    });
+    QHBoxLayout *searchLayout = new QHBoxLayout;
+    QLabel *searchLabel = new QLabel("Search:");
+    searchLayout->addWidget(searchLabel);
+    searchLayout->addWidget(searchEdit);
+
 
     addButton = new QPushButton("==>", this);
     addButton->setToolTip("Add to selected factors");
     connect(addButton, SIGNAL(clicked()), this, SLOT(addSelected()));
+    connect(notSelectedView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(addSelected()));
     removeButton = new QPushButton("<==", this);
     removeButton->setToolTip("Remove from selected factors");
     connect(removeButton, SIGNAL(clicked()), this, SLOT(removeSelected()));
+    connect(selectedView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(removeSelected()));
     notSelectedLabel = new QLabel("Available factors");
     selectedLabel = new QLabel("Selected factors");
-    gridLayout->addWidget(notSelectedLabel, 0,0,Qt::AlignHCenter);
+//    gridLayout->addWidget(notSelectedLabel, 0,0,Qt::AlignHCenter);
+    gridLayout->addLayout(searchLayout, 0,0,Qt::AlignHCenter);
     gridLayout->addWidget(selectedLabel, 0,2,Qt::AlignHCenter);
     gridLayout->addWidget(notSelectedView, 1,0,3,1);
     gridLayout->addWidget(selectedView, 1,2,3,1);
