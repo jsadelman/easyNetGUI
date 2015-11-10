@@ -259,11 +259,11 @@ void TrialWidget::runSingleTrial()
     job->cmdList << QString("%1 clear").arg(tableName);
 
     // case hack to avoid problems with UPPERCASE!!!
-    QString trialString = getTrialCmd().toLower();
+//    QString trialString = getTrialCmd().toLower();
     job->cmdList << QString("%1 %2 step %3")
             .arg(MainWindow::instance()->quietMode)
             .arg(SessionManager::instance()->currentTrial())
-            .arg(trialString);
+            .arg(getTrialCmd());
 
     QString displayTableName = SessionManager::instance()->currentTrial();
     displayTableName.append(".table");

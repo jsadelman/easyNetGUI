@@ -522,6 +522,7 @@ void MainWindow::loadModel()
         QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
         modelScene->setBaseName(base);
         conversionScene->setBaseName(base);
+        setWindowTitle(QFileInfo(fileName).completeBaseName());
 
 
         // set up signal - slots so that loadLayout will be called
@@ -634,8 +635,8 @@ void MainWindow::loadStimulusSet()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
-                                                    stimDir,
-                                                    tr("Database Files (*.eNd)"));
+                                                    stimDir);
+//                                                    tr("Database Files (*.eNd)"));
     fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
