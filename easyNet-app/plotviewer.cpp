@@ -11,7 +11,7 @@
 #include <QInputDialog>
 #include <QDebug>
 #include <QKeyEvent>
-
+#include <QDesktopWidget>
 #include <QVBoxLayout>
 #include <QScrollArea>
 
@@ -38,13 +38,14 @@ void FullScreenSvgDialog::clearSvg()
 
 
 
-PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
-    : easyNetHome(easyNetHome), progressiveTabIdx(0), fullScreen(false), QMainWindow(parent),pend(false)
+PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
+    : easyNetHome(easyNetHomei), progressiveTabIdx(0), fullScreen(false), QMainWindow(parent),pend(false)
 {
     plotPanel = new QTabWidget;
     fullScreenSvgDialog = new FullScreenSvgDialog(this);
-    fullScreenSvgDialog->setWindowState(Qt::WindowFullScreen);
-    fullScreenSize = fullScreenSvgDialog->size();
+    auto temp=QApplication::desktop()->availableGeometry();
+    fullScreenSize = QSize(temp.width(),temp.height());
+    fullScreenSvgDialog->resize(fullScreenSize);
     qDebug() << " fullScreenSize" << fullScreenSize;
 
     setCentralWidget(plotPanel);
