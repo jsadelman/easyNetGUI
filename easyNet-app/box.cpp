@@ -183,6 +183,11 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
 
 
         menu.addMenu(plotMenu);
+        QAction *lesionAct = menu.addAction(tr("Lesion layer"));
+        lesionAct->setVisible(true);
+        QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
+        unlesionAct->setVisible(true);
+
 
 //        QMenu *enableObserverMenu = new QMenu("Observer");
 //        QAction *enableObserverAct = enableObserverMenu->addAction(tr("Enable default observer"));
@@ -224,6 +229,14 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 }
             }
         }
+
+        if (action == lesionAct)
+            lesion();
+
+        else if (action == unlesionAct)
+            unlesion();
+
+        return action;
 
 //        else if (action == enableObserverAct)
 //            enableObserver();
@@ -280,5 +293,21 @@ void Box::disableObserver(QString observer)
 {
     QString cmd = QString("%1 disable").arg(observer);
     SessionManager::instance()->runCmd(cmd);
+}
+
+void Box::lesion()
+{
+    QString cmd = QString("%1 lesion").arg(m_name);
+    SessionManager::instance()->runCmd(cmd);
+    // basic version (should check if cmd was executed succesfully)
+    setDashedStroke(true);
+}
+
+void Box::unlesion()
+{
+    QString cmd = QString("%1 unlesion").arg(m_name);
+    SessionManager::instance()->runCmd(cmd);
+    // basic version (should check if cmd was executed succesfully)
+    setDashedStroke(false);
 }
 

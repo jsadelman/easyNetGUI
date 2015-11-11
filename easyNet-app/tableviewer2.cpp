@@ -20,6 +20,8 @@
 #include "settingsform.h"
 #include "settingsformdialog.h"
 
+typedef QPair<QString, QString> PairOfStrings;
+
 TableViewer::TableViewer(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
 {
@@ -255,6 +257,21 @@ void TableViewer::setPrettyHeaderFromJob()
     setModelAtTableIdx(trialDataFrameModel, lastAddedDataFrameIdx);
 }
 
+void TableViewer::setPrettyHeaderFromTables(QStringList tableList)
+{
+    TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
+    foreach(QString table, tableList)
+    {
+        int idx = tableMap.key(table);
+        TrialDataFrameModel *sourceTrialDataFrameModel = qobject_cast<TrialDataFrameModel *>(tables[idx]);
+        if (sourceTrialDataFrameModel)
+            foreach(Qt::Orientation o, sourceTrialDataFrameModel->getHeaderReplace().keys())
+                trialDataFrameModel->addHeaderReplace(o, sourceTrialDataFrameModel->getHeaderReplace().value(o));
+    }
+    trialDataFrameModel->setSourceModel(lastAddedModel);
+    setModelAtTableIdx(trialDataFrameModel, lastAddedDataFrameIdx);
+}
+
 void TableViewer::addDataFrameToWidget(QDomDocument* domDoc, QString cmd)
 {
     prepareToAddDataFrameToWidget(domDoc, cmd);
@@ -405,10 +422,30 @@ void TableViewer::mergeFD()
     {
         SessionManager::instance()->runCmd(cmdList);
     });
-    connect(&dialog, &SettingsFormDialog::dfNameReady, [=](QString dfName)
+    connect(&dialog, &SettingsFormDialog::dfNameReady, [=](QString dfName, QString x, QString y)
     {
        addTableWithThisName(dfName);
-       updateTableView(dfName);
+       currentTable = dfName;
+       LazyNutJob *job = new LazyNutJob;
+       job->cmdList = QStringList({QString("xml " + dfName + " get")});
+       job->setAnswerReceiver(this, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+       QMap<QString, QVariant> headerReplace;
+       foreach(QString sourceTable, QStringList({x,y}))
+       {
+           int idx = tableMap.key(sourceTable);
+           TrialDataFrameModel *sourceTrialDataFrameModel = qobject_cast<TrialDataFrameModel *>(tables[idx]->model());
+           if (sourceTrialDataFrameModel)
+           {
+               QList<QPair<QString, QString> > horizontalHeaderReplaceList = sourceTrialDataFrameModel->getHeaderReplace().value(Qt::Horizontal);
+               foreach(PairOfStrings replacePair, horizontalHeaderReplaceList)
+                   headerReplace.insert(replacePair.first, replacePair.second);
+           }
+       }
+       job->data = headerReplace;
+       job->appendEndOfJobReceiver(this, SLOT(setPrettyHeaderFromJob()));
+
+       SessionManager::instance()->submitJobs(job);
+//       updateTableView(dfName);
     });
 
     dialog.exec();

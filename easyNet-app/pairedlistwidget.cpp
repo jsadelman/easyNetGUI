@@ -114,6 +114,12 @@ void PairedListWidget::buildWidget()
         if (!indexList.isEmpty())
             notSelectedView->setCurrentIndex(indexList.at(0));
     });
+    connect(searchEdit, &QLineEdit::editingFinished, [=]()
+    {
+        addSelected();
+        searchEdit->clear();
+    });
+
     QHBoxLayout *searchLayout = new QHBoxLayout;
     QLabel *searchLabel = new QLabel("Search:");
     searchLayout->addWidget(searchLabel);

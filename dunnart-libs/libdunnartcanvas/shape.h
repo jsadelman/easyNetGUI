@@ -100,6 +100,7 @@ class ShapeObj: public CanvasItem
     Q_PROPERTY (QColor strokeColour READ strokeColour WRITE setStrokeColour)
     Q_PROPERTY (bool sizeLocked READ sizeLocked WRITE setSizeLocked)
     Q_PROPERTY (bool pinned READ isPinned WRITE setPinned)
+    Q_PROPERTY (bool dashedStroke READ dashedStroke WRITE setDashedStroke)
 
     // QMarginsF not handled by qtpropertybrowser.
     //Q_PROPERTY (QMarginsF containmentPadding READ containmentPadding() WRITE setContainmentPadding())
@@ -138,6 +139,10 @@ class ShapeObj: public CanvasItem
         //! @param label  A QString with the new label.
         //!
         virtual void setLabel(const QString& label);
+
+        // MG: copied from Connector
+        bool dashedStroke(void) const;
+        void setDashedStroke(bool dashed);
 
 
         virtual int maxLabelLength() {return m_maxLabelLength;}
@@ -294,6 +299,7 @@ class ShapeObj: public CanvasItem
         uint m_detail_level;
         bool m_being_resized;
         QMarginsF m_containment_padding;
+        bool m_dashed_stroke;
 
         friend class Cluster;
 };

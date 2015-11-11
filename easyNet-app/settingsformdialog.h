@@ -22,7 +22,7 @@ public slots:
 
 signals:
     void cmdListReady(QStringList);
-    void dfNameReady(QString);
+    void dfNameReady(QString, QString, QString);
 
 private slots:
     void validateName();
