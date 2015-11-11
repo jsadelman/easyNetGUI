@@ -64,6 +64,8 @@ private:
     void defaultPlot(QString plotName, QString dataframe);
     void enableObserver(QString observer);
     void disableObserver(QString observer);
+    void lesion();
+    void unlesion();
 
     QString m_name;
     QString m_lazyNutType;
