@@ -70,6 +70,7 @@ private slots:
     void resizeColumns();
     void setView(QString name);
     void setPrettyHeaderFromJob();
+    void setPrettyHeaderFromTables(QStringList tableList);
 
     void on_copy_clicked();
     void updateTableView(QString text);

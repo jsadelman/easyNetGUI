@@ -40,7 +40,7 @@ void SettingsFormDialog::accept()
 
     // order matters, first cmdListReady then dfNameReady
     emit cmdListReady(cmdList);
-    emit dfNameReady(dfName);
+    emit dfNameReady(dfName, form->value("x"), form->value("y"));
 
     QDialog::accept();
 }
