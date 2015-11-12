@@ -3,6 +3,10 @@
 #include "lazynutjobparam.h"
 #include "libdunnartcanvas/limitstring.h"
 #include "objectcachefilter.h"
+#include "lazynutjob.h"
+#include "easyNetMainWindow.h"
+#include "trialwidget.h"
+
 
 
 #include <QPainter>
@@ -285,15 +289,28 @@ void Box::setupDefaultDataframesFilter()
 
 void Box::enableObserver(QString observer)
 {
-    QString cmd = QString("%1 enable").arg(observer);
-    SessionManager::instance()->runCmd(cmd);
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 enable").arg(observer);
+    QMap<QString, QVariant> data;
+    data.insert("observer", observer);
+    job->data = data;
+    job->appendEndOfJobReceiver(MainWindow::instance()->trialWidget, SLOT(observerEnabled()));
+    SessionManager::instance()->submitJobs(job);
 }
 
 void Box::disableObserver(QString observer)
 {
-    QString cmd = QString("%1 disable").arg(observer);
-    SessionManager::instance()->runCmd(cmd);
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 disable").arg(observer);
+    QMap<QString, QVariant> data;
+    data.insert("observer", observer);
+    job->data = data;
+    job->appendEndOfJobReceiver(MainWindow::instance()->trialWidget, SLOT(observerDisabled()));
+    SessionManager::instance()->submitJobs(job);
 }
+
 
 void Box::lesion()
 {
