@@ -749,17 +749,23 @@ void MainWindow::loadFile(const QString &fileName)
 
 void MainWindow::readSettings()
 {
-//    easyNetHome = qEnvironmentVariableIsSet("EASYNET_HOME") ?
-//                QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_HOME"))) :
-//                "../..";
-//    easyNetDataHome = qEnvironmentVariableIsSet("EASYNET_DATA_HOME") ?
-//                QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_DATA_HOME"))) :
-//                easyNetHome;
-
-
     QSettings settings("QtEasyNet", "nmConsole");
-    easyNetHome = settings.value("easyNetHome","../..").toString();
-    easyNetDataHome = settings.value("easyNetDataHome",easyNetHome).toString();
+    if(qEnvironmentVariableIsSet("EASYNET_HOME"))
+    {
+       easyNetHome=QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_HOME")));
+    }
+    else
+    {
+       easyNetHome = settings.value("easyNetHome","../..").toString();
+    }
+    if(qEnvironmentVariableIsSet("EASYNET_DATA_HOME"))
+    {
+       easyNetDataHome=QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_DATA_HOME")));
+    }
+    else
+    {
+       easyNetDataHome = settings.value("easyNetDataHome",easyNetHome).toString();
+    }
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
 
