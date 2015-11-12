@@ -1,10 +1,12 @@
 #include "easyNetMainWindow.h"
 #include <QApplication>
 #include <QFont>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
 
     MainWindow* mainWindow = MainWindow::instance();
     mainWindow->showMaximized();
