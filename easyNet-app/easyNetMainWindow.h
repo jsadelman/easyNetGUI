@@ -247,6 +247,7 @@ public:
 //    CodeEditor      *commandLog;
 //    EditWindow       *commandLog;
     CommandLog       *commandLog;
+    CommandLog       *errorLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
     Highlighter     *highlighter3;

@@ -6,7 +6,7 @@
 #include <QDebug>
 
 CommandLog::CommandLog(QWidget *parent)
-    : EditWindow(parent)
+    : EditWindow(parent, true)
 {
     fileToolBar->removeAction(newAct);
     fileToolBar->removeAction(openAct);

@@ -20,7 +20,7 @@ class EditWindow : public QMainWindow
     Q_OBJECT
     friend class MainWindow;
 public:
-    EditWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool isReadOnly = false);
+    EditWindow(QWidget *parent = 0, bool isReadOnly = false);
     CodeEditor      *textEdit;
 //    QPlainTextEdit      *textEdit;
     QMenu *fileMenu;
