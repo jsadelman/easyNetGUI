@@ -64,6 +64,8 @@ MainWindow* MainWindow::instance()
 MainWindow::MainWindow(QWidget *parent)
     : easyNetHome(""), easyNetDataHome(""), QMainWindow(parent)
 {
+
+
     readSettings();
     setDefaultLocations();
     SessionManager::instance()->startLazyNut(lazyNutBat);
@@ -111,8 +113,10 @@ MainWindow::MainWindow(QWidget *parent)
     setFontSize("medium");
     setMediumFontAct->setChecked(true);
 
-
-
+    #ifdef WIN32
+    if (qApp->arguments().count() > 1)
+        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)));
+    #endif
 }
 
 void MainWindow::checkLazyNut()
@@ -501,57 +505,71 @@ void MainWindow::runScript()
     scriptEdit->runScript();
 }
 
+void MainWindow::loadModel(QString fileName)
+{
+    if (fileName.isEmpty())
+        return;
+#ifdef WIN32
+    if (!SessionManager::instance()->currentModel().isEmpty())
+    {
+        QProcess::startDetached(
+                    QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
+                    QStringList({fileName}),
+                    qApp->applicationDirPath());
+        return;
+    }
+#endif
+    modelScene->goToSleep();
+    conversionScene->goToSleep();
+
+    // load and run script
+    loadFile(fileName);
+
+    // the /path/basename is used by DiagramScene objects to load JSON files
+    QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+    modelScene->setBaseName(base);
+    conversionScene->setBaseName(base);
+    setWindowTitle(QFileInfo(fileName).completeBaseName());
+
+
+    // set up signal - slots so that loadLayout will be called
+    // once all of the layers/connections have descriptions
+    //        designWindow->prepareToLoadLayout(base);
+    //        conversionWindow->prepareToLoadLayout(base);
+
+    // show info page, if there is one
+    QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+    page.append(".html");
+    qDebug() << "page = " << page;
+    if (QFileInfo(page).exists())
+        infoWindow->showInfo(page);
+
+    // note: this synch is wrong, yet it works fine if one loads just one model while
+    // no other jobs run. In general commandsCompleted() might be sent from a previous job.
+    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
+    runScript();
+    //        SessionManager::instance()->setCurrentModel(currentModel);
+    // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
+    // should then call getList() and choose the appropriate model
+
+    trialButton->setEnabled(true);
+    loadAddOnAct->setEnabled(true);
+
+    #ifndef WIN32
+            loadModelAct->setEnabled(false);
+            modelButton->setEnabled(false);
+    #endif
+
+
+}
+
 void MainWindow::loadModel()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     scriptsDir,
                                                     tr("easyNet Model Files (*.eNm)"));
-    if (!fileName.isEmpty())
-    {
-         modelScene->goToSleep();
-         conversionScene->goToSleep();
-
-
-
-
-        // load and run script
-        loadFile(fileName);
-
-        // the /path/basename is used by DiagramScene objects to load JSON files
-        QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-        modelScene->setBaseName(base);
-        conversionScene->setBaseName(base);
-        setWindowTitle(QFileInfo(fileName).completeBaseName());
-
-
-        // set up signal - slots so that loadLayout will be called
-        // once all of the layers/connections have descriptions
-//        designWindow->prepareToLoadLayout(base);
-//        conversionWindow->prepareToLoadLayout(base);
-
-        // show info page, if there is one
-        QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-        page.append(".html");
-        qDebug() << "page = " << page;
-        if (QFileInfo(page).exists())
-            infoWindow->showInfo(page);
-
-        // note: this synch is wrong, yet it works fine if one loads just one model while
-        // no other jobs run. In general commandsCompleted() might be sent from a previous job.
-        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
-        runScript();
-//        SessionManager::instance()->setCurrentModel(currentModel);
-        // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
-        // should then call getList() and choose the appropriate model
-
-        trialButton->setEnabled(true);
-        loadAddOnAct->setEnabled(true);
-
-        loadModelAct->setEnabled(false);
-        modelButton->setEnabled(false);
-
-    }
+    loadModel(fileName);
 }
 
 void MainWindow::afterModelLoaded()

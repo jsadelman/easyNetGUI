@@ -177,6 +177,8 @@ private:
 
     void hideAllDocks();
     bool proceedWithRestart();
+    void loadModel(QString fileName);
+
 
 public:
 
