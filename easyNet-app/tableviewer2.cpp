@@ -31,7 +31,7 @@ TableViewer::TableViewer(const QString &tableName, QWidget *parent)
     createToolBars();
 
     tablePanel = new QTabWidget;
-    numTables = 0;
+    numTables = 1;
     currentTableIdx = 0;
 //    widget = new QWidget(this);
 //    setCentralWidget(widget);
@@ -62,7 +62,7 @@ QString TableViewer::addTable(QString name, bool chooseNewName)
 {
 //    qDebug() << "addTable(" << name << ")";
     if (name.isEmpty())
-        name = tr("Table_")+QString::number(numTables);
+        name = tr("Table_")+QString::number(numTables++);
     else if (chooseNewName)
         name.append(".table");
 //    qDebug() << "current list: " << tableMap.values();
@@ -71,9 +71,9 @@ QString TableViewer::addTable(QString name, bool chooseNewName)
 //    qDebug() << "going to add a new one";
     tables.push_back(new QTableView(this));
     myHeaders.push_back(new DataFrameHeader(tables.back()));
-    numTables++;
-    currentTableIdx = numTables-1;
-    int idx = tablePanel->addTab(tables[numTables-1], name);
+//    numTables++;
+//    currentTableIdx = numTables-1;
+    int idx = tablePanel->addTab(tables.last(), name);
 //    qDebug() << "adding table to panel. New numTables = " << numTables;
     tablePanel->setCurrentIndex(idx);
     tableMap[idx] = name;
