@@ -257,7 +257,7 @@ public:
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
-    DiagramScene    *conversionScene;
+//    DiagramScene    *conversionScene;
     PlotSettingsWindow      *plotSettingsWindow;
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
@@ -287,7 +287,7 @@ public:
     int             plotTabIdx;
     int             plotSettingsTabIdx;
     int             modelTabIdx;
-    int             conversionTabIdx;
+//    int             conversionTabIdx;
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
