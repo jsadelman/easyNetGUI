@@ -12,6 +12,8 @@
 #include <QtCore/QLibraryInfo>
 #include <QMessageBox>
 #include <QDir>
+#include <QFontMetrics>
+#include <QFont>
 
 
 #include <iostream>
@@ -83,13 +85,18 @@ MainWindow::MainWindow(QWidget *parent)
     setUnifiedTitleAndToolBarOnMac(true);
 
     createActions();
+
     createMenus();
-    createStatusBar();
+
 
     initialiseToolBar(); // this constructs the trialWidget
 
     constructForms();
     createDockWindows();
+
+    setFontSize("medium");
+    setMediumFontAct->setChecked(true);
+    createStatusBar();
 
     QWidget *dummyWidget = new QWidget;
     dummyWidget->hide();
@@ -110,8 +117,8 @@ MainWindow::MainWindow(QWidget *parent)
     diagramSceneTabChanged(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
     setQuietMode();
-    setFontSize("medium");
-    setMediumFontAct->setChecked(true);
+
+
 
     #ifdef WIN32
     if (qApp->arguments().count() > 1)
@@ -160,7 +167,8 @@ void MainWindow::constructForms()
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
     commandLog = new CommandLog(this);
     highlighter2 = new Highlighter(commandLog->textEdit->document());
-//    highlighter3 = new Highlighter(lazyNutConsole2->textEdit->document());
+    errorLog = new CommandLog(this);
+    highlighter3 = new Highlighter(errorLog->textEdit->document());
     debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
@@ -192,6 +200,7 @@ void MainWindow::constructForms()
 
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
+    lazynutPanel->addTab(errorLog, tr("Errors"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
@@ -273,6 +282,11 @@ void MainWindow::connectSignalsAndSlots()
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             debugLog, SLOT(addRowToTable(QString,QString)));
+    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
+    {
+       foreach(QString error, errorList)
+           errorLog->addText(error);
+    });
 
 }
 
@@ -1019,6 +1033,7 @@ void MainWindow::setFontSize(const QString & size)
 
     QApplication::setFont(QFont(EN_FONT, fontSize));
     lazyNutConsole2->setConsoleFontSize(fontSize);
+
 }
 
 //void EasyNetMainWindow::showPauseState(bool isPaused)
@@ -1223,7 +1238,7 @@ void MainWindow::createStatusBar()
     lazyNutProgressBar = new QProgressBar;
     lazyNutProgressBar->setTextVisible(false);
     lazyNutProgressBar->setMinimum(0);
-    statusBar()->addPermanentWidget(lazyNutProgressBar, 1);
+    statusBar()->addPermanentWidget(lazyNutProgressBar, 0.5);
     connect(SessionManager::instance(), SIGNAL(commandsInJob(int)),
             lazyNutProgressBar, SLOT(setMaximum(int)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
@@ -1263,7 +1278,7 @@ void MainWindow::createStatusBar()
     lazyNutStatusWidget->setCurrentWidget(offLabel);
     lazyNutStatusWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     lazyNutStatusWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    statusBar()->addPermanentWidget(lazyNutStatusWidget, 1);
+    statusBar()->addPermanentWidget(lazyNutStatusWidget, 0);
     connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));
     connect(SessionManager::instance(), &SessionManager::lazyNutNotRunning,[=](){
         lazyNutStatusWidget->setCurrentWidget(offLabel);
@@ -1274,10 +1289,17 @@ void MainWindow::createStatusBar()
 
     lazyNutCmdLabel = new QLabel;
     lazyNutCmdLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+
+    lazyNutCmdLabel->setFixedWidth(qApp->fontMetrics().width("LAST COMMAND: a very very very very long lazyNut command"));
+    lazyNutCmdLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     statusBar()->addWidget(lazyNutCmdLabel, 1);
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             this, SLOT(showCmdOnStatusBar(QString)));
 
+//     connect(SessionManager::instance(), &SessionManager::commandExecuted, [=](QString cmd, QString /*timString*/)
+//     {
+//        statusBar()->showMessage(QString("LAST EXEC COMMAND: %1").arg(cmd));
+//     });
 //    lazyNutErrorLabel = new QLabel;
 //    lazyNutErrorLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 //    lazyNutErrorLabel->setStyleSheet("QLabel {"
@@ -1286,21 +1308,35 @@ void MainWindow::createStatusBar()
 //                                 "}");
 //    statusBar()->addWidget(lazyNutErrorLabel, 1);
 
-    lazyNutErrorBox = new QComboBox;
-    lazyNutErrorBox->setToolTip("list of lazyNut ERRORs");
-    lazyNutErrorBox->addItem("");
-    lazyNutErrorBox->setStyleSheet("QComboBox {"
-                                 "font-weight: bold;"
-                                 "color: red"
-                                 "}");
-    lazyNutErrorBox->setEditable(false);
-    statusBar()->addWidget(lazyNutErrorBox, 1);
-    connect(lazyNutErrorBox,SIGNAL(activated(int)),this,SLOT(showMostRecentError()));
+//    lazyNutErrorBox = new QComboBox;
+//    lazyNutErrorBox->setToolTip("list of lazyNut ERRORs");
+//    lazyNutErrorBox->addItem("");
+//    lazyNutErrorBox->setStyleSheet("QComboBox {"
+//                                 "font-weight: bold;"
+//                                 "color: red"
+//                                 "}");
+//    lazyNutErrorBox->setEditable(false);
+//    statusBar()->addWidget(lazyNutErrorBox, 1);
+//    connect(lazyNutErrorBox,SIGNAL(activated(int)),this,SLOT(showMostRecentError()));
 
-    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
-            this, SLOT(showErrorOnStatusBar(QString,QStringList)));
-    connect(SessionManager::instance(), SIGNAL(lazyNutMacroStarted()),
-            this, SLOT(clearErrorOnStatusBar()));
+    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
+    {
+       if (!errorList.isEmpty())
+           statusBar()->showMessage(errorList.last(), 4000);
+    });
+    connect(statusBar(), &QStatusBar::messageChanged, [=](QString msg)
+    {
+       if (msg.startsWith("ERROR"))
+           statusBar()->setStyleSheet("color: red");
+       else
+           statusBar()->setStyleSheet("color: black");
+    });
+
+
+//    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
+//            this, SLOT(showErrorOnStatusBar(QString,QStringList)));
+//    connect(SessionManager::instance(), SIGNAL(lazyNutMacroStarted()),
+//            this, SLOT(clearErrorOnStatusBar()));
 }
 
 void MainWindow::showMostRecentError()
@@ -1337,7 +1373,7 @@ void MainWindow::clearErrorOnStatusBar()
 
 void MainWindow::showCmdOnStatusBar(QString cmd)
 {
-    lazyNutCmdLabel->setText(QString("LAST EXEC COMMAND: %1").arg(cmd));
+    lazyNutCmdLabel->setText(QString("LAST COMMAND: %1").arg(cmd));
 }
 
 void MainWindow::addOneToLazyNutProgressBar()
