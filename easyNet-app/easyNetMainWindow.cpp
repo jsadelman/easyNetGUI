@@ -1166,15 +1166,24 @@ void MainWindow::createActions()
     assistantAct->setShortcut(QKeySequence::HelpContents);
     connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
 
-    aboutAct = new QAction(tr("About easyNet toolkit"), this);
+    aboutAct = new QAction(tr("About easyNet"), this);
     connect(aboutAct, &QAction::triggered, [=]()
     {
-         QMessageBox::about(this, "easyNet toolkit",QString(
-                                "<i>easyNet</i> is a software toolkit for computational modelling of cognitive processes.<br>"
-                                "Authors: James Adelman, Colin Davis, Michele Gubian<br>"
-                                "The GUI is primarily maintained by M. Gubian, the underlying simulator by J. Adelman.<br>"
+         QMessageBox::about(this, "easyNet",QString(
+                                "<i>easyNet</i> is a software package for computational modelling of cognitive processes.<br>"
+                                "<br>"
+                                "Authors: James Adelman, Colin Davis, & Michele Gubian<br>"
+                                "<br>"
+                                "Chief Architect and Programmer of Simulator Engine:<br>James Adelman<br>"
+                                "<br>"
+                                "Chief Architect of GUI:<br>Colin Davis<br>"
+                                "<br>"
+                                "Chief Programmer of GUI:<br>Michele Gubian<br>"
+                                "<br>"
                                 "<i>easyNet</i> is free software licensed under GPLv3<br>"
+                                "<br>"
                                 "Visit <i>easyNet</i> <a href=\"http://adelmanlab.org/easyNet/\">homepage</a> for more information and latest downloads."));
+
     });
 
     setQuietModeAct = new QAction(tr("Quiet mode"), this);
