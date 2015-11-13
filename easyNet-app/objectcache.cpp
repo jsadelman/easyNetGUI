@@ -177,7 +177,6 @@ bool ObjectCache::setDomDocAndValidCache(QDomDocument *domDoc, QString cmd)
     int row = rowFromName(name);
     if (!setData(index(row, DomDocCol), QVariant::fromValue(domDoc)))
         return false;
-
     return setInvalid(name, false);
 }
 

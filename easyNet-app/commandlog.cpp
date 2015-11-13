@@ -10,8 +10,11 @@ CommandLog::CommandLog(QWidget *parent)
 {
     fileToolBar->removeAction(newAct);
     fileToolBar->removeAction(openAct);
-    editToolBar->removeAction(cutAct);
-    editToolBar->removeAction(pasteAct);
+    if (!isReadOnly)
+    {
+        editToolBar->removeAction(cutAct);
+        editToolBar->removeAction(pasteAct);
+    }
 }
 
 CommandLog::~CommandLog()

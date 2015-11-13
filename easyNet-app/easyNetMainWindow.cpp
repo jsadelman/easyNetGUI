@@ -314,7 +314,7 @@ void MainWindow::showPlotViewer()
 
 void MainWindow::diagramSceneTabChanged(int index)
 {
-     modelScene->goToSleep();
+//     modelScene->goToSleep();
      conversionScene->goToSleep();
     if (index == modelTabIdx)
          modelScene->wakeUp();
@@ -591,7 +591,7 @@ void MainWindow::afterModelLoaded()
     modelScene->setNewModelLoaded(true);
     conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
-//    modelScene->wakeUp();
+    modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
 }
 
