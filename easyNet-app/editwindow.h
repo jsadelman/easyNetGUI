@@ -53,7 +53,7 @@ signals:
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
-private slots:
+protected slots:
     void newFile();
     void open();
     bool save();
@@ -61,7 +61,7 @@ private slots:
     void documentWasModified();
     void showFindDialog();
 
-private:
+protected:
     void createActions();
     void createMenus();
     void createToolBars();

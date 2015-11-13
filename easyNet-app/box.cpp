@@ -6,6 +6,7 @@
 #include "lazynutjob.h"
 #include "easyNetMainWindow.h"
 #include "trialwidget.h"
+#include "xmlelement.h"
 
 
 
@@ -119,14 +120,28 @@ QRectF Box::labelBoundingRect() const
 QString Box::defaultPlotType()
 {
     if (m_lazyNutType == "layer")
+    {
+        QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
+        QString subtype;
+        if (domDoc)
+            subtype = XMLelement(*domDoc)["subtype"]();
+
         if (m_name == "spatial_code") //quick and dirty hack!!!
             return "spactivity-3";
         else if (m_name.startsWith("feature"))
             return "plot_features";
+        else if (subtype == "string_layer")
+            return "string_layer";
+        else if (subtype == "wtstring_layer")
+            return "wtstring_layer";
         else
             return "activity";
+    }
     else
         return "";
+
+    // subtype wtstring_layer
+    //
 }
 
 
@@ -184,14 +199,19 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
             actionList.at(row)->setChecked(SessionManager::instance()->descriptionCache->exists(plotData["rplotName"].toString()));
             actionList.at(row)->setData(plotData);
         }
+        QString layerTransfer;
+        QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
+        if (domDoc)
+            layerTransfer =  XMLelement(*domDoc)["subtype"]["layer_transfer"]();
 
 
         menu.addMenu(plotMenu);
         QAction *lesionAct = menu.addAction(tr("Lesion layer"));
-        lesionAct->setVisible(true);
+//        lesionAct->setVisible(layerTransfer != "lesion_transfer");
+        lesionAct->setVisible(!dashedStroke()); // hack, because object updaters don't do their job, have to find out why
         QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
-        unlesionAct->setVisible(true);
-
+//        unlesionAct->setVisible(layerTransfer == "lesion_transfer");
+        unlesionAct->setVisible(dashedStroke());
 
 //        QMenu *enableObserverMenu = new QMenu("Observer");
 //        QAction *enableObserverAct = enableObserverMenu->addAction(tr("Enable default observer"));
