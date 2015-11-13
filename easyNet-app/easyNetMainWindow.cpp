@@ -399,7 +399,7 @@ void MainWindow::initialiseToolBar()
     connect(modelButton, SIGNAL(clicked()),
               this, SLOT(loadModel()));
     connect(trialButton, SIGNAL(clicked()),
-              this, SLOT(loadAddOn()));
+              this, SLOT(loadTrial()));
 
       modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
       modelComboBox->setModel(modelListFilter);
