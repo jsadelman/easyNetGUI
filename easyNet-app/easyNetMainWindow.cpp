@@ -189,9 +189,9 @@ void MainWindow::constructForms()
     /* ADD TABS */
     infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+//    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetForm, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
@@ -269,8 +269,8 @@ void MainWindow::connectSignalsAndSlots()
 //            this,SLOT(showPlotViewer()));
     connect(tablesWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
             plotSettingsWindow, SLOT(createNewPlotOfType(QString, QString, QMap<QString, QString>)));
-    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+//    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+//    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     /* signals & slots */
 //    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
 //          SessionManager::instance()->descriptionCache(), SLOT(create(QDomDocument*)));
@@ -315,11 +315,11 @@ void MainWindow::showPlotViewer()
 void MainWindow::diagramSceneTabChanged(int index)
 {
 //     modelScene->goToSleep();
-     conversionScene->goToSleep();
+//     conversionScene->goToSleep();
     if (index == modelTabIdx)
          modelScene->wakeUp();
-    else if (index == conversionTabIdx)
-         conversionScene->wakeUp();
+//    else if (index == conversionTabIdx)
+//         conversionScene->wakeUp();
 }
 
 
@@ -534,7 +534,7 @@ void MainWindow::loadModel(QString fileName)
     }
 #endif
     modelScene->goToSleep();
-    conversionScene->goToSleep();
+//    conversionScene->goToSleep();
 
     // load and run script
     loadFile(fileName);
@@ -542,7 +542,7 @@ void MainWindow::loadModel(QString fileName)
     // the /path/basename is used by DiagramScene objects to load JSON files
     QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
     modelScene->setBaseName(base);
-    conversionScene->setBaseName(base);
+//    conversionScene->setBaseName(base);
     setWindowTitle(QFileInfo(fileName).completeBaseName());
 
 
@@ -554,7 +554,6 @@ void MainWindow::loadModel(QString fileName)
     // show info page, if there is one
     QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
     page.append(".html");
-    qDebug() << "page = " << page;
     if (QFileInfo(page).exists())
         infoWindow->showInfo(page);
 
@@ -589,7 +588,7 @@ void MainWindow::loadModel()
 void MainWindow::afterModelLoaded()
 {
     modelScene->setNewModelLoaded(true);
-    conversionScene->setNewModelLoaded(true);
+//    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
     modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
@@ -1167,6 +1166,17 @@ void MainWindow::createActions()
     assistantAct->setShortcut(QKeySequence::HelpContents);
     connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
 
+    aboutAct = new QAction(tr("About easyNet toolkit"), this);
+    connect(aboutAct, &QAction::triggered, [=]()
+    {
+         QMessageBox::about(this, "easyNet toolkit",QString(
+                                "<i>easyNet</i> is a software toolkit for computational modelling of cognitive processes.<br>"
+                                "Authors: James Adelman, Colin Davis, Michele Gubian<br>"
+                                "The GUI is primarily maintained by M. Gubian, the underlying simulator by J. Adelman.<br>"
+                                "<i>easyNet</i> is free software licensed under GPLv3<br>"
+                                "Visit <i>easyNet</i> <a href=\"http://adelmanlab.org/easyNet/\">homepage</a> for more information and latest downloads."));
+    });
+
     setQuietModeAct = new QAction(tr("Quiet mode"), this);
     setQuietModeAct->setCheckable(true);
     connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
@@ -1224,6 +1234,7 @@ void MainWindow::createMenus()
 
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(assistantAct);
+    helpMenu->addAction(aboutAct);
 //    helpMenu->addSeparator();
 //    helpMenu->addAction(versionAct);
 
