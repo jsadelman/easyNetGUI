@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QMap>
+#include <QSet>
 
 class QComboBox;
 class QLabel;
@@ -14,6 +15,8 @@ class QDomDocument;
 class QAction;
 class QToolButton;
 class myComboBox;
+class QMessageBox;
+class QCheckBox;
 
 class TrialWidget : public QWidget
 {
@@ -53,6 +56,10 @@ private slots:
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
     void updateModelStochasticity(QDomDocument* modelDescription);
+    void observerEnabled(QString name= QString());
+    void observerDisabled(QString name= QString());
+    void suspendObservers();
+    void restoreObservers();
 private:
 
     void setStochasticityVisible(bool isVisible);
@@ -79,6 +86,12 @@ private:
     QToolButton*    runButton;
     QAction*        hideSetComboBoxAction;
     QString         argChanged;
+    QSet<QString>   enabledObservers;
+    QMessageBox *disableObserversMsg;
+    QCheckBox *dontAskAgainDisableObserverCheckBox;
+    bool        askDisableObserver;
+    bool        suspendingObservers;
+
 
     QMap<QString,QString>     defs;
     bool runAllMode;

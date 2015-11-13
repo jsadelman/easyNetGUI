@@ -177,6 +177,8 @@ private:
 
     void hideAllDocks();
     bool proceedWithRestart();
+    void loadModel(QString fileName);
+
 
 public:
 
@@ -247,6 +249,7 @@ public:
 //    CodeEditor      *commandLog;
 //    EditWindow       *commandLog;
     CommandLog       *commandLog;
+    CommandLog       *errorLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
     Highlighter     *highlighter3;

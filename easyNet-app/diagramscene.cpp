@@ -115,6 +115,9 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
     boxFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     boxFilter->setType(m_boxType);
+
+
+
     arrowFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     arrowFilter->setType(m_arrowType);
 

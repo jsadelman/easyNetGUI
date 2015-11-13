@@ -20,10 +20,12 @@
 #include <QAction>
 #include <QLineEdit>
 #include <QIntValidator>
+#include <QMessageBox>
+#include <QCheckBox>
 
 
 TrialWidget::TrialWidget(QWidget *parent)
-    : runAllMode(false), QWidget(parent)
+    : runAllMode(false), askDisableObserver(true), suspendingObservers(true), QWidget(parent)
 {
     layout = new QHBoxLayout;
     layout1 = new QHBoxLayout;
@@ -61,6 +63,18 @@ TrialWidget::TrialWidget(QWidget *parent)
     connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
 
     buildComboBoxesTest(QStringList());
+    enabledObservers.clear();
+
+    disableObserversMsg = new QMessageBox(
+                QMessageBox::Question,
+                "Suspend layer activity recording",
+                "You are about to run a list of trials while layer activity is being recorded and displayed in plots. "
+                "This may slow down the simulation.\n"
+                "Do you want to suspend activity recording while running a list of trials?",
+                QMessageBox::Yes | QMessageBox::No,
+                this);
+    dontAskAgainDisableObserverCheckBox = new QCheckBox("don't show this message again");
+    disableObserversMsg->setCheckBox(dontAskAgainDisableObserverCheckBox);
 }
 
 TrialWidget::~TrialWidget()
@@ -293,6 +307,15 @@ void TrialWidget::runSingleTrial()
 
 void TrialWidget::runTrialList()
 {
+    if (askDisableObserver)
+    {
+        int answer = disableObserversMsg->exec();
+        suspendingObservers = answer == QMessageBox::Yes;
+        askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
+    }
+    if (suspendingObservers)
+        suspendObservers();
+
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     QString tableName = QString("((%1 default_observer) default_dataframe)")
@@ -322,6 +345,8 @@ void TrialWidget::runTrialList()
     job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
     job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
     job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
+    if (suspendingObservers)
+        job->appendEndOfJobReceiver(this, SLOT(restoreObservers()));
 
     QMap<QString, QVariant> headerReplace;
     headerReplace.insert(SessionManager::instance()->currentTrial(), "");
@@ -393,6 +418,66 @@ void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
         isStochastic = false;
 
     setStochasticityVisible(runAllMode && isStochastic);
+}
+
+void TrialWidget::observerEnabled(QString name)
+{
+    if (name.isEmpty())
+    {
+        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+        if (!job)
+        {
+            qDebug() << "TrialWidget::observerEnabled sender not a LazyNutJob";
+            return;
+        }
+        name = job->data.toMap().value("observer").toString();
+        if (name.isEmpty())
+        {
+            qDebug() << "TrialWidget::observerEnabled LazyNutJob does not contain an observer name";
+            return;
+        }
+    }
+    enabledObservers.insert(name);
+}
+
+void TrialWidget::observerDisabled(QString name)
+{
+    if (name.isEmpty())
+    {
+        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+        if (!job)
+        {
+            qDebug() << "TrialWidget::observerDisabled sender not a LazyNutJob";
+            return;
+        }
+        name = job->data.toMap().value("observer").toString();
+        if (name.isEmpty())
+        {
+            qDebug() << "TrialWidget::observerDisabled LazyNutJob does not contain an observer name";
+            return;
+        }
+    }
+    enabledObservers.remove(name);
+}
+
+void TrialWidget::suspendObservers()
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    foreach(QString observer, enabledObservers)
+        job->cmdList << QString("%1 disable").arg(observer);
+
+    SessionManager::instance()->submitJobs(job);
+}
+
+void TrialWidget::restoreObservers()
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    foreach(QString observer, enabledObservers)
+        job->cmdList << QString("%1 enable").arg(observer);
+
+    SessionManager::instance()->submitJobs(job);
 }
 
 void TrialWidget::setStochasticityVisible(bool isVisible)

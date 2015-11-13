@@ -1,5 +1,7 @@
 #include "arrow.h"
 #include "sessionmanager.h"
+#include "xmlelement.h"
+#include "objectcache.h"
 
 #include <QDebug>
 
@@ -13,10 +15,18 @@ QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &
     {
         menu.addSeparator();
     }
+    QString subtype;
+    QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
+    if (domDoc)
+        subtype =  XMLelement(*domDoc)["subtype"]();
+
+
     QAction *lesionAct = menu.addAction(tr("Lesion connection"));
-    lesionAct->setVisible(m_lazyNutType == "connection");
+//    lesionAct->setVisible(m_lazyNutType == "connection" && subtype != "lesioned_connection");
+    lesionAct->setVisible(m_lazyNutType == "connection" && !dashedStroke());
     QAction *unlesionAct = menu.addAction(tr("Unlesion connection"));
-    unlesionAct->setVisible(m_lazyNutType == "connection");
+//    unlesionAct->setVisible(m_lazyNutType == "connection" && subtype == "lesioned_connection");
+     unlesionAct->setVisible(m_lazyNutType == "connection" && dashedStroke());
 
     QAction *action = Connector::buildAndExecContextMenu(event, menu);
 
