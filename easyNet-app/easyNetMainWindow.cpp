@@ -554,7 +554,6 @@ void MainWindow::loadModel(QString fileName)
     // show info page, if there is one
     QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
     page.append(".html");
-    qDebug() << "page = " << page;
     if (QFileInfo(page).exists())
         infoWindow->showInfo(page);
 
@@ -1167,6 +1166,17 @@ void MainWindow::createActions()
     assistantAct->setShortcut(QKeySequence::HelpContents);
     connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
 
+    aboutAct = new QAction(tr("About easyNet toolkit"), this);
+    connect(aboutAct, &QAction::triggered, [=]()
+    {
+         QMessageBox::about(this, "easyNet toolkit",QString(
+                                "<i>easyNet</i> is a software toolkit for computational modelling of cognitive processes.<br>"
+                                "Authors: James Adelman, Colin Davis, Michele Gubian<br>"
+                                "The GUI is primarily maintained by M. Gubian, the underlying simulator by J. Adelman.<br>"
+                                "<i>easyNet</i> is free software licensed under GPLv3<br>"
+                                "Visit <i>easyNet</i> <a href=\"http://adelmanlab.org/easyNet/\">homepage</a> for more information and latest downloads."));
+    });
+
     setQuietModeAct = new QAction(tr("Quiet mode"), this);
     setQuietModeAct->setCheckable(true);
     connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
@@ -1224,6 +1234,7 @@ void MainWindow::createMenus()
 
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(assistantAct);
+    helpMenu->addAction(aboutAct);
 //    helpMenu->addSeparator();
 //    helpMenu->addAction(versionAct);
 
