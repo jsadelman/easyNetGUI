@@ -209,7 +209,6 @@ QString PlotSettingsForm::getSettingCmdLine(QString setting)
 
 void PlotSettingsForm::setDefaultModelSetting(QString setting, QString value)
 {
-    qDebug() << "PlotSettingsForm::setDefaultModelSetting"  << m_plotName << setting << value;
     widgetMap[setting]->setValue(value);
     widgetMap[setting]->setValueSetTrue();
 }

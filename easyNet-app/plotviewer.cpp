@@ -95,7 +95,7 @@ void PlotViewer::dispatch_Impl(QDomDocument *info)
             svgSourceModified_it.setValue(false);
             QSvgWidget* svg = svgSourceModified_it.key();
             svgIsUpToDate[svg] = false;
-            svgTrialRunInfo[svg].append(info);
+            svgTrialRunInfo[svg] = info;
         }
     }
     updateActivePlots();
@@ -188,7 +188,7 @@ void PlotViewer::dispatch_private(QDomDocument *info, bool preDispatch)
             else
             {
                 svgIsUpToDate[svg] = false;
-                svgTrialRunInfo[svg].append(info);
+                svgTrialRunInfo[svg] = info;
             }
 //            switch(action)
 //            {
@@ -221,11 +221,11 @@ void PlotViewer::dispatch_private(QDomDocument *info, bool preDispatch)
 
 void PlotViewer::showInfo(QSvgWidget *svg)
 {
-    if (!svgTrialRunInfo.contains(svg) || svgTrialRunInfo.value(svg).isEmpty())
+    if (!svgTrialRunInfo.contains(svg))
     {
         return;
     }
-    XMLForm *infoForm = new XMLForm(svgTrialRunInfo[svg].last()->documentElement());
+    XMLForm *infoForm = new XMLForm(svgTrialRunInfo[svg]->documentElement());
     infoForm->build();
     infoScroll->setWidget(infoForm);
     infoForm->show();
@@ -338,7 +338,7 @@ void PlotViewer::refreshInfo()
         showInfo(currentSvgWidget());
 }
 
-void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, int dispatchOverride)
+void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, int dispatchOverride, QDomDocument *info)
 {
     Q_UNUSED(defaultSettings)
 
@@ -355,6 +355,7 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
     plotCloneCount.insert(name, 0);
     QSvgWidget* svg = newSvg(name);
     svgDispatchOverride.insert(svg, dispatchOverride);
+    svgTrialRunInfo.insert(svg, info);
 
 }
 

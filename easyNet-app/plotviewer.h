@@ -49,7 +49,8 @@ protected slots:
     void newRPlot(QString name, QString type,
                              QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
                              QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
-                             int dispatchOverride=-1);
+                             int dispatchOverride=-1,
+                             QDomDocument *info=nullptr);
 
 
     virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
@@ -108,7 +109,7 @@ private:
     QMap <QSvgWidget*, QByteArray> svgByteArray;
     QMap <QSvgWidget*, bool> svgIsUpToDate;
     QMap <QSvgWidget*, bool> svgSourceModified;
-    QMap <QSvgWidget*, QList<QDomDocument*> > svgTrialRunInfo; // <svg, list of info XML>
+    QMap <QSvgWidget*, QDomDocument*> svgTrialRunInfo; // <svg, info XML>
     QMap <QSvgWidget*, int> svgDispatchOverride;
     QMultiMap <QString, QString> sourceDataframeOfPlots; // <dataframe, rplots>
     QMap <QString, int> dataframeCloneCount;

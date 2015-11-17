@@ -151,7 +151,7 @@ void TableWindow::preparePlot()
     settings["df"] = tableWidget->currentTable();
     QString plotName = tableWidget->currentTable().append(".plot");
     QString plotType = "plot_mean_bars.R"; // testing!!!
-    emit createNewRPlot(plotName, plotType, settings, settings, -1);
+    emit createNewRPlot(plotName, plotType, settings, settings, -1, trialRunInfoMap.value(tableWidget->currentTable()));
     emit showPlotSettings();
 }
 
@@ -173,7 +173,7 @@ void TableWindow::dataframeMerge()
     SettingsForm *form = new SettingsForm(domDoc, this);
     form->setUseRFormat(false);
     QMap<QString, QString> preFilledSettings;
-    preFilledSettings["x"] = sourceDfMap[tableWidget->currentTable()];
+    preFilledSettings["x"] = tableWidget->currentTable();
     preFilledSettings["y"] = SessionManager::instance()->currentSet();
     form->setDefaultSettings(preFilledSettings);
     // setup dialog
@@ -204,7 +204,7 @@ void TableWindow::dataframeMerge()
         }
         else if (trialRunInfoMap.contains(y))
         {
-            trialRunInfoMap[dfName] =trialRunInfoMap[y];
+            trialRunInfoMap[dfName] = trialRunInfoMap[y];
         }
         emit addDataframeMerge(x, dfName);
         emit addDataframeMerge(y, dfName);
