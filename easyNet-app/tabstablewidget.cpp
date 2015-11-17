@@ -90,10 +90,10 @@ void TabsTableWidget::updateTable_impl(QAbstractItemModel *model)
     }
     else
     {
-        DataFrameModel *oldDFmodel = getDataFrameModel(modelMap.value(name));
-        TrialDataFrameModel *oldTDFmodel = qobject_cast<TrialDataFrameModel *>(modelMap.value(name));
-        if (oldTDFmodel)
-            delete oldTDFmodel;
+        DataFrameModel *oldDFmodel = modelMap.value(name);
+//        TrialDataFrameModel *oldTDFmodel = qobject_cast<TrialDataFrameModel *>(modelMap.value(name));
+//        if (oldTDFmodel)
+//            delete oldTDFmodel;
 
         QTableView *view = oldDFmodel->view();
         dFmodel->setView(view);
@@ -106,7 +106,7 @@ void TabsTableWidget::updateTable_impl(QAbstractItemModel *model)
     }
     dFmodel->view()->resizeColumnsToContents();
 
-    modelMap[name] = model;
+    modelMap[name] = dFmodel;
     if (isNewModel)
         setCurrentTable(name);
 }

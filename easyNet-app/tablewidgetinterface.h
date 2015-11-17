@@ -20,6 +20,7 @@ public:
     virtual QString currentTable()=0;
     void addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to);
     bool contains(QString table);
+    void setPrettyHeaders(QString tableName, TrialDataFrameModel *prettyHeadersModel);
 
 
 public slots:
@@ -28,7 +29,7 @@ public slots:
     void updateTable(QDomDocument *domDoc, QString cmd);
     void deleteTable(QString name);
     void prepareToUpdateTable(QDomDocument *domDoc, QString cmd);
-    void setPrettyHeaderFromJob();
+//    void setPrettyHeaderFromJob();
     virtual void setCurrentTable(QString name)=0;
 
 signals:
@@ -52,8 +53,9 @@ protected:
     ObjectUpdater *dataframeUpdater;
     DataFrameModel *lastModel;
     QString lastName;
-    QMap<QString, QAbstractItemModel*> modelMap;
+    QMap<QString, DataFrameModel*> modelMap;
     QMap<Qt::Orientation , QList<QPair<QString, QString> > > headerReplaceRules;
+    QMap<QString, TrialDataFrameModel*> prettyHeadersModelMap;
 
 
 };

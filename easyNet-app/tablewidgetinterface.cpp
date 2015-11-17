@@ -37,6 +37,11 @@ bool TableWidgetInterface::contains(QString table)
     return modelMap.contains(table);
 }
 
+void TableWidgetInterface::setPrettyHeaders(QString tableName, TrialDataFrameModel* prettyHeadersModel)
+{
+    prettyHeadersModelMap.insert(tableName, prettyHeadersModel);
+}
+
 void TableWidgetInterface::addTable(QString name)
 {
     if (modelMap.contains(name))
@@ -56,28 +61,28 @@ void TableWidgetInterface::prepareToUpdateTable(QDomDocument *domDoc, QString cm
     lastModel->setName(lastName);
 }
 
-void TableWidgetInterface::setPrettyHeaderFromJob()
-{
-    // to be deleted
-   LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-    TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
-    if (job)
-    {
-        QMapIterator<QString, QVariant> headerReplaceHorizontalIt(job->data.toMap());
-        while (headerReplaceHorizontalIt.hasNext())
-        {
-            headerReplaceHorizontalIt.next();
-            trialDataFrameModel->addHeaderReplaceRules(
-                        Qt::Horizontal,
-                        headerReplaceHorizontalIt.key(),
-                        headerReplaceHorizontalIt.value().toString());
-        }
-    }
+//void TableWidgetInterface::setPrettyHeaderFromJob()
+//{
+//    // to be deleted
+//   LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+//    TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
+//    if (job)
+//    {
+//        QMapIterator<QString, QVariant> headerReplaceHorizontalIt(job->data.toMap());
+//        while (headerReplaceHorizontalIt.hasNext())
+//        {
+//            headerReplaceHorizontalIt.next();
+//            trialDataFrameModel->addHeaderReplaceRules(
+//                        Qt::Horizontal,
+//                        headerReplaceHorizontalIt.key(),
+//                        headerReplaceHorizontalIt.value().toString());
+//        }
+//    }
 
-    trialDataFrameModel->setSourceModel(lastModel);
-    modelMap[lastName] = trialDataFrameModel;
-    updateTable_impl(trialDataFrameModel);
-}
+//    trialDataFrameModel->setSourceModel(lastModel);
+//    modelMap[lastName] = trialDataFrameModel;
+//    updateTable_impl(trialDataFrameModel);
+//}
 
 DataFrameModel *TableWidgetInterface::getDataFrameModel(QAbstractItemModel *model)
 {
@@ -92,17 +97,16 @@ DataFrameModel *TableWidgetInterface::getDataFrameModel(QAbstractItemModel *mode
 void TableWidgetInterface::updateTable(QDomDocument *domDoc, QString cmd)
 {
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
-    dfModel->setName(nameFromCmd(cmd));
-    TrialDataFrameModel *trialDataFrameModel = nullptr;
-    if (!headerReplaceRules.isEmpty())
+    QString name = nameFromCmd(cmd);
+    dfModel->setName(name);
+    TrialDataFrameModel *prettyHeadersModel = nullptr;
+    if (prettyHeadersModelMap.contains(name))
     {
-        trialDataFrameModel = new TrialDataFrameModel(this);
-        trialDataFrameModel->setHeadeReplaceRules(headerReplaceRules);
-        trialDataFrameModel->setSourceModel(dfModel);
+        prettyHeadersModel = prettyHeadersModelMap.value(name);
+        prettyHeadersModel->setSourceModel(dfModel);
     }
-//    prepareToUpdateTable(domDoc, cmd);
-    if (trialDataFrameModel)
-        updateTable_impl(trialDataFrameModel);
+    if (prettyHeadersModel)
+        updateTable_impl(prettyHeadersModel);
     else
         updateTable_impl(dfModel);
 }

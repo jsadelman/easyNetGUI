@@ -59,7 +59,7 @@ void ComboTableWidget::updateTable_impl(QAbstractItemModel *model)
         comboBox->addItem(name);
     else
     {
-        DataFrameModel *oldDFmodel = getDataFrameModel(modelMap.value(name));
+        DataFrameModel *oldDFmodel = modelMap.value(name);
         if (!oldDFmodel)
             return;
 
@@ -69,7 +69,7 @@ void ComboTableWidget::updateTable_impl(QAbstractItemModel *model)
 
         delete oldDFmodel;
     }
-    modelMap[name] = model;
+    modelMap[name] = dFmodel;
 
     if (name == currentTable() || isNewModel)
     {

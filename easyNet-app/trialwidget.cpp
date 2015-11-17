@@ -349,7 +349,7 @@ QDomDocument * TrialWidget::createTrialRunInfo()
                                ));
     rootElem.appendChild(dataframeElem);
     QDomElement valuesElem = trialRunInfo->createElement("map");
-    trialElem.setAttribute("label", "Values");
+    valuesElem.setAttribute("label", "Values");
     QMapIterator<QString, myComboBox*> argumentMap_it(argumentMap);
     while(argumentMap_it.hasNext())
     {

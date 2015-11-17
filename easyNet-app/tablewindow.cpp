@@ -63,6 +63,9 @@ void TableWindow::preDispatch(QDomDocument *info)
     QDomElement rootElement = info->documentElement();
     QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
     QString results = XMLAccessor::value(resultsElement);
+    QDomElement trialElement = XMLAccessor::childElement(rootElement, "Trial");
+    QString trial = XMLAccessor::value(trialElement);
+
 
     int action;
     if (!tableWidget->contains(results))
@@ -105,6 +108,12 @@ void TableWindow::preDispatch(QDomDocument *info)
         jobs.last()->data = data;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
         trialRunInfoMap[backupTable] = trialRunInfoMap[results];
+        TrialDataFrameModel *prettyHeadersModel = new TrialDataFrameModel(this);
+        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
+        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
+        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
+        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
+        tableWidget->setPrettyHeaders(backupTable, prettyHeadersModel);
         break;
     }
     case Dispatch_Overwrite:
@@ -112,6 +121,12 @@ void TableWindow::preDispatch(QDomDocument *info)
         if (!tableWidget->contains(results))
         {
             tableWidget->addTable(results);
+            TrialDataFrameModel *prettyHeadersModel = new TrialDataFrameModel(this);
+            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
+            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
+            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
+            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
+            tableWidget->setPrettyHeaders(results, prettyHeadersModel);
         }
         // make sure you clear results
         break;
