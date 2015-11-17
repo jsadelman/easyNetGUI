@@ -20,6 +20,8 @@
 #include "settingsform.h"
 #include "settingsformdialog.h"
 
+typedef QPair<QString, QString> PairOfStrings;
+
 TableViewer::TableViewer(const QString &tableName, QWidget *parent)
     : QMainWindow(parent)
 {
@@ -29,7 +31,7 @@ TableViewer::TableViewer(const QString &tableName, QWidget *parent)
     createToolBars();
 
     tablePanel = new QTabWidget;
-    numTables = 0;
+    numTables = 1;
     currentTableIdx = 0;
 //    widget = new QWidget(this);
 //    setCentralWidget(widget);
@@ -60,10 +62,7 @@ QString TableViewer::addTable(QString name, bool chooseNewName)
 {
 //    qDebug() << "addTable(" << name << ")";
     if (name.isEmpty())
-    {
-        name = tr("Table_")+QString::number(numTables);
-        qDebug() << "TableViewer::addTable" << name;
-    }
+        name = tr("Table_")+QString::number(numTables++);
     else if (chooseNewName)
         name.append(".table");
 //    qDebug() << "current list: " << tableMap.values();
@@ -72,9 +71,9 @@ QString TableViewer::addTable(QString name, bool chooseNewName)
 //    qDebug() << "going to add a new one";
     tables.push_back(new QTableView(this));
     myHeaders.push_back(new DataFrameHeader(tables.back()));
-    numTables++;
-    currentTableIdx = numTables-1;
-    int idx = tablePanel->addTab(tables[numTables-1], name);
+//    numTables++;
+//    currentTableIdx = numTables-1;
+    int idx = tablePanel->addTab(tables.last(), name);
 //    qDebug() << "adding table to panel. New numTables = " << numTables;
     tablePanel->setCurrentIndex(idx);
     tableMap[idx] = name;
@@ -186,7 +185,7 @@ void TableViewer::preparePlot()
 void TableViewer::save()
 {
     QSettings settings("QtEasyNet", "nmConsole");
-    QString workingDir = settings.value("easyNetHome").toString();
+    QString workingDir = settings.value("easyNetDataHome").toString();
     QString currFilename = workingDir + "/Output_files/.";
     qDebug() << "df currFilename" << currFilename;
     QString fileName = QFileDialog::getSaveFileName(this,
@@ -254,6 +253,21 @@ void TableViewer::setPrettyHeaderFromJob()
         }
     }
 
+    trialDataFrameModel->setSourceModel(lastAddedModel);
+    setModelAtTableIdx(trialDataFrameModel, lastAddedDataFrameIdx);
+}
+
+void TableViewer::setPrettyHeaderFromTables(QStringList tableList)
+{
+    TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
+    foreach(QString table, tableList)
+    {
+        int idx = tableMap.key(table);
+        TrialDataFrameModel *sourceTrialDataFrameModel = qobject_cast<TrialDataFrameModel *>(tables[idx]);
+        if (sourceTrialDataFrameModel)
+            foreach(Qt::Orientation o, sourceTrialDataFrameModel->getHeaderReplace().keys())
+                trialDataFrameModel->addHeaderReplace(o, sourceTrialDataFrameModel->getHeaderReplace().value(o));
+    }
     trialDataFrameModel->setSourceModel(lastAddedModel);
     setModelAtTableIdx(trialDataFrameModel, lastAddedDataFrameIdx);
 }
@@ -408,10 +422,30 @@ void TableViewer::mergeFD()
     {
         SessionManager::instance()->runCmd(cmdList);
     });
-    connect(&dialog, &SettingsFormDialog::dfNameReady, [=](QString dfName)
+    connect(&dialog, &SettingsFormDialog::dfNameReady, [=](QString dfName, QString x, QString y)
     {
        addTableWithThisName(dfName);
-       updateTableView(dfName);
+       currentTable = dfName;
+       LazyNutJob *job = new LazyNutJob;
+       job->cmdList = QStringList({QString("xml " + dfName + " get")});
+       job->setAnswerReceiver(this, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
+       QMap<QString, QVariant> headerReplace;
+       foreach(QString sourceTable, QStringList({x,y}))
+       {
+           int idx = tableMap.key(sourceTable);
+           TrialDataFrameModel *sourceTrialDataFrameModel = qobject_cast<TrialDataFrameModel *>(tables[idx]->model());
+           if (sourceTrialDataFrameModel)
+           {
+               QList<QPair<QString, QString> > horizontalHeaderReplaceList = sourceTrialDataFrameModel->getHeaderReplace().value(Qt::Horizontal);
+               foreach(PairOfStrings replacePair, horizontalHeaderReplaceList)
+                   headerReplace.insert(replacePair.first, replacePair.second);
+           }
+       }
+       job->data = headerReplace;
+       job->appendEndOfJobReceiver(this, SLOT(setPrettyHeaderFromJob()));
+
+       SessionManager::instance()->submitJobs(job);
+//       updateTableView(dfName);
     });
 
     dialog.exec();

@@ -21,11 +21,58 @@
 #include <QDomDocument>
 #include <QMessageBox>
 #include <QDebug>
+#include <QKeyEvent>
+#include <QPushButton>
+#include <QGridLayout>
+#include <QSpacerItem>
+#include <QDesktopWidget>
+#include <QVBoxLayout>
+#include <QScrollArea>
 
-PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
-    : easyNetHome(easyNetHome), progressiveTabIdx(0), pend(false), ResultsWindow_If(parent)
+
+FullScreenSvgDialog::FullScreenSvgDialog(QWidget *parent)
+    :QDialog(parent, Qt::FramelessWindowHint)
+{
+    svg = new QSvgWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout;
+    QGridLayout *glayout = new QGridLayout;
+    QPushButton *closeBtn = new QPushButton("Close");
+//    glayout->addSpacerItem();
+//    glayout->addWidget(new QSpacerItem(), 0, 0, 0, 9);
+//    glayout->addWidget(closeBtn, 0, 9, 0, 10);
+
+    QHBoxLayout *hlayout = new QHBoxLayout;
+    QSpacerItem *item = new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+    hlayout->addSpacerItem(item);
+    hlayout->addWidget(closeBtn);
+
+    layout->addLayout(hlayout);
+    layout->addWidget(svg);
+    setLayout(layout);
+    connect (closeBtn, SIGNAL(clicked()),this,SLOT(close()));
+}
+
+void FullScreenSvgDialog::loadByteArray(QByteArray byteArray)
+{
+    svg->load(byteArray);
+}
+
+void FullScreenSvgDialog::clearSvg()
+{
+    QByteArray byteArray;
+    loadByteArray(byteArray);
+}
+
+
+
+PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
+    : easyNetHome(easyNetHomei), progressiveTabIdx(0), fullScreen(false), QMainWindow(parent),pend(false)
 {
     plotPanel = new QTabWidget;
+    fullScreenSvgDialog = new FullScreenSvgDialog(this);
+    auto temp=QApplication::desktop()->availableGeometry();
+    fullScreenSize = QSize(temp.width(),temp.height());
+    fullScreenSvgDialog->resize(fullScreenSize);
     setCentralWidget(plotPanel);
     createActions();
     createToolBars();
@@ -70,6 +117,7 @@ void PlotViewer::createToolBars()
     editToolBar->addAction(refreshAct);
     editToolBar->addAction(snapshotAct);
     editToolBar->addAction(settingsAct);
+    editToolBar->addAction(fullScreenAct);
 
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(renameAct);
@@ -148,76 +196,6 @@ void PlotViewer::preDispatch(QDomDocument *info)
 }
 
 
-void PlotViewer::dispatch_private(QDomDocument *info, bool preDispatch)
-{
-    // not used
-    QDomElement rootElement = info->documentElement();
-    QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
-    QString runMode = XMLAccessor::value(runModeElement);
-
-    int currentDispatchMode;
-    if (runMode == "single")
-        currentDispatchMode = singleTrialDispatchMode;
-    else if (runMode == "list")
-        currentDispatchMode = trialListDispatchMode;
-    else
-    {
-        qDebug() << "ERROR: PlotViewer::dispatch_private cannot read trial run info XML.";
-        return;
-    }
-    int action;
-    QMutableMapIterator<QSvgWidget*, bool> svgSourceModified_it(svgSourceModified);
-    while (svgSourceModified_it.hasNext())
-    {
-        svgSourceModified_it.next();
-        if (svgSourceModified_it.value())
-        {
-            svgSourceModified_it.setValue(false);
-            QSvgWidget* svg = svgSourceModified_it.key();
-            if (!dispatchModeAuto && svg == currentSvgWidget()) // apply manual override only to visible tab
-                action = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
-            else
-                action = svgDispatchOverride.value(svg) > -1 ? svgDispatchOverride.value(svg) : currentDispatchMode;
-            action = svgByteArray.contains(svg) ? action : Dispatch_Overwrite; // if tab is empty, write on it anyway
-
-            if (preDispatch && action == Dispatch_New)
-            {
-                QString newName = cloneRPlot(plotSvg.key(svg));
-                svgIsUpToDate[plotSvg[newName]] = false;
-            }
-            else
-            {
-                svgIsUpToDate[svg] = false;
-                svgTrialRunInfo[svg] = info;
-            }
-//            switch(action)
-//            {
-//            case Dispatch_New:
-//            {
-//                cloneRPlot(plotSvg.key(svg));
-//                // same as Dispatch_Overwrite
-//                svgIsUpToDate[svg] = false;
-//                svgTrialRunInfo[svg].append(info);
-//                break;
-//            }
-//            case Dispatch_Append: // not implemented for the moment, take it as overwrite
-//            case Dispatch_Overwrite:
-//            {
-//                svgIsUpToDate[svg] = false;
-//                svgTrialRunInfo[svg].append(info);
-//                break;
-//            }
-//            default:
-//            {
-//                qDebug() << "PlotViewer::dispatch_Impl computed action was unrecognised";
-//                return;
-//            }
-//            }
-        }
-    }
-    updateActivePlots();
-    refreshInfo();
-}
 
 void PlotViewer::showInfo(QSvgWidget *svg)
 {
@@ -266,6 +244,12 @@ void PlotViewer::createActions()
     deleteAct->setShortcut(QKeySequence::Delete);
     deleteAct->setStatusTip(tr("Delete plot"));
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(deletePlot()));
+
+    fullScreenAct = new QAction(QIcon("://images/Full_screen_view.png"), "Full Screen", this);
+    connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
+
+
+
 }
 
 void PlotViewer::open()
@@ -290,14 +274,19 @@ void PlotViewer::open()
 
 void PlotViewer::loadByteArray(QString name, QByteArray byteArray)
 {
-    QSvgWidget* svg = plotSvg.value(name, nullptr);
-    if (svg)
+    if (fullScreen)
+        fullScreenSvgDialog->loadByteArray(byteArray);
+    else
     {
-        svgIsUpToDate[svg] = true;
-        svgByteArray[svg] = byteArray;
-        svg->load(byteArray);
-        plotPanel->setCurrentWidget(svg);
-        titleLabel->setText(name);
+        QSvgWidget* svg = plotSvg.value(name, nullptr);
+        if (svg)
+        {
+            svgIsUpToDate[svg] = true;
+            svgByteArray[svg] = byteArray;
+            svg->load(byteArray);
+            plotPanel->setCurrentWidget(svg);
+            titleLabel->setText(name);
+        }
     }
 }
 
@@ -359,25 +348,6 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
 
 }
 
-//void PlotViewer::addPlot(QString name, QString sourceDataframe)
-//{
-////    QSvgWidget *svg = new QSvgWidget;
-////    plotName[svg] = name;
-//    if (!sourceDataframe.isEmpty() && !plotDataframeMap.contains(sourceDataframe))
-//        dataframeFilter->addName(sourceDataframe);
-
-//    if (!sourceDataframe.isEmpty())
-//        plotDataframeMap[sourceDataframe].insert(name);
-
-//    newSvg(name);
-
-////    plotPanel->addTab(svg, QString("Plot %1").arg(++progressiveTabIdx));
-////    setPlotActive(true, svg);
-////    plotIsUpToDate[svg] = false;
-////    plotPanel->setCurrentWidget(svg);
-////    currentTabChanged(plotPanel->currentIndex());
-////    return svg;
-//}
 
 void PlotViewer::updateActivePlots()
 {
@@ -466,6 +436,7 @@ void PlotViewer::updateAllActivePlots()
     }
     updateActivePlots();
 }
+
 
 void PlotViewer::paintEvent(QPaintEvent * event)
 {
@@ -631,9 +602,19 @@ void PlotViewer::triggerPlotUpdate(QString name)
 
 void PlotViewer::addDataframeMerge(QString df, QString dfm)
 {
-    qDebug() << "addDataframeMerge" << df << dfm;
     if (!dataframeMergeOfSource.contains(df, dfm))
         dataframeMergeOfSource.insert(df, dfm);
+}
+
+
+void PlotViewer::setupFullScreen()
+{
+    fullScreen = true;
+    emit resized(fullScreenSize);
+    emit sendDrawCmd(plotName[currentSvgWidget()]);
+    fullScreenSvgDialog->clearSvg();
+    fullScreenSvgDialog->exec();
+    fullScreen = false;
 }
 
 void PlotViewer::snapshot()

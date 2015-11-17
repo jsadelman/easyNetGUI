@@ -11,12 +11,13 @@
 #include "codeeditor.h"
 #include "finddialog.h"
 
-EditWindow::EditWindow(QWidget *parent, QAction *p_newAct, QAction *p_openAct, bool isReadOnly)
+EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
     : QMainWindow(parent), isReadOnly(isReadOnly)
 
 {
 //    textEdit = new QPlainTextEdit;
     textEdit = new CodeEditor(this);
+    textEdit->setReadOnly(isReadOnly);
     setCentralWidget(textEdit);
     textEdit->setReadOnly(isReadOnly);
     setCurrentFile("Untitled");

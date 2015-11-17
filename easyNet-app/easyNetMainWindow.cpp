@@ -11,6 +11,9 @@
 #include <QDebug>
 #include <QtCore/QLibraryInfo>
 #include <QMessageBox>
+#include <QDir>
+#include <QFontMetrics>
+#include <QFont>
 
 
 #include <iostream>
@@ -62,15 +65,16 @@ MainWindow* MainWindow::instance()
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : easyNetHome(""), easyNetDataHome(""), QMainWindow(parent)
 {
+
+
     readSettings();
+    setDefaultLocations();
+    SessionManager::instance()->startLazyNut(lazyNutBat);
 
-    checkLazyNut();
+//    checkLazyNut();
 
-    scriptsDir = easyNetHome + "/Models";
-    trialsDir = easyNetHome + "/Trials";
-    stimDir = easyNetHome + "/Databases/Stimulus_files";
 
 
     setWindowTitle(tr("easyNet"));
@@ -82,13 +86,18 @@ MainWindow::MainWindow(QWidget *parent)
     setUnifiedTitleAndToolBarOnMac(true);
 
     createActions();
+
     createMenus();
-    createStatusBar();
+
 
     initialiseToolBar(); // this constructs the trialWidget
 
     constructForms();
     createDockWindows();
+
+    setFontSize("medium");
+    setMediumFontAct->setChecked(true);
+    createStatusBar();
 
     QWidget *dummyWidget = new QWidget;
     dummyWidget->hide();
@@ -109,25 +118,29 @@ MainWindow::MainWindow(QWidget *parent)
     diagramSceneTabChanged(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
     setQuietMode();
-    setFontSize("medium");
-    setMediumFontAct->setChecked(true);
 
+
+
+    #ifdef WIN32
+    if (qApp->arguments().count() > 1)
+        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)));
+    #endif
 }
 
 void MainWindow::checkLazyNut()
 {
     connect(SessionManager::instance(), SIGNAL(lazyNutNotRunning()),
             this, SLOT(lazyNutNotRunning()));
-    if (easyNetHome.isEmpty())
-    {
-        QMessageBox::warning(this, "warning",QString("Please select "
-                                                     "a valid easyNet home directory using"
-                                                     "the menu Settings -> Set easyNet home directory"));
-    }
-    else
-    {
-        lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
-    }
+//    if (easyNetHome.isEmpty())
+//    {
+//        QMessageBox::warning(this, "warning",QString("Please select "
+//                                                     "a valid easyNet home directory using"
+//                                                     "the menu Settings -> Set easyNet home directory"));
+//    }
+//    else
+//    {
+        lazyNutBat = QString("%1/%2/nm_files/%3").arg(easyNetHome).arg(binDir).arg(lazyNutBasename);
+//    }
     if (!lazyNutBat.isEmpty())
         SessionManager::instance()->startLazyNut(lazyNutBat);
 }
@@ -155,7 +168,8 @@ void MainWindow::constructForms()
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
     commandLog = new CommandLog(this);
     highlighter2 = new Highlighter(commandLog->textEdit->document());
-//    highlighter3 = new Highlighter(lazyNutConsole2->textEdit->document());
+    errorLog = new CommandLog(this);
+    highlighter3 = new Highlighter(errorLog->textEdit->document());
     debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
@@ -170,16 +184,16 @@ void MainWindow::constructForms()
     trialEditor = new TrialEditor(this);
 
     infoWindow = new HelpWindow;
-    assistant = new Assistant(easyNetHome + "/documentation/easyNetDemo.qhc");
+    assistant = new Assistant(easyNetDataHome + "/documentation/easyNetDemo.qhc");
     infoWindow->show();
 
 
     /* ADD TABS */
     infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+//    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetForm, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
@@ -188,6 +202,7 @@ void MainWindow::constructForms()
 
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
+    lazynutPanel->addTab(errorLog, tr("Errors"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
@@ -271,10 +286,9 @@ void MainWindow::connectSignalsAndSlots()
     connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(makeSnapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
 //            this,SLOT(showPlotViewer()));
-//    connect(tableWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
-//            plotSettingsWindow, SLOT(createNewPlotOfType(QString, QString, QMap<QString, QString>)));
-    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+
+//    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+//    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     /* signals & slots */
 //    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
 //          SessionManager::instance()->descriptionCache(), SLOT(create(QDomDocument*)));
@@ -286,6 +300,11 @@ void MainWindow::connectSignalsAndSlots()
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             debugLog, SLOT(addRowToTable(QString,QString)));
+    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
+    {
+       foreach(QString error, errorList)
+           errorLog->addText(error);
+    });
 
 }
 
@@ -313,12 +332,12 @@ void MainWindow::showPlotViewer()
 
 void MainWindow::diagramSceneTabChanged(int index)
 {
-     modelScene->goToSleep();
-     conversionScene->goToSleep();
+//     modelScene->goToSleep();
+//     conversionScene->goToSleep();
     if (index == modelTabIdx)
          modelScene->wakeUp();
-    else if (index == conversionTabIdx)
-         conversionScene->wakeUp();
+//    else if (index == conversionTabIdx)
+//         conversionScene->wakeUp();
 }
 
 
@@ -497,151 +516,6 @@ void MainWindow::updateTableView(QString text)
 }
 
 
-/*void EasyNetMainWindow::createActions()
-{
-    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);
-    saveAct->setShortcuts(QKeySequence::Save);
-    saveAct->setStatusTip(tr("Save the current form letter"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
-
-    quitAct = new QAction(tr("&Quit"), this);
-    quitAct->setShortcuts(QKeySequence::Quit);
-    quitAct->setStatusTip(tr("Quit the application"));
-    connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
-
-    aboutAct = new QAction(tr("&About"), this);
-    aboutAct->setStatusTip(tr("Show the application's About box"));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-
-}*/
-
-/*void EasyNetMainWindow::createMenus()
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(saveAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(quitAct);
-
-    editMenu = menuBar()->addMenu(tr("&Edit"));
-
-    viewMenu = menuBar()->addMenu(tr("&View"));
-
-    menuBar()->addSeparator();
-
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
-}*/
-
-//void MainWindow::runTrial()
-//{
-
-//    QString currentTrial = trialComboBox->currentText();
-//    QString currentModel = modelComboBox->currentText();
-
-//    // check that above strings are in order
-//    if (currentTrial.isEmpty())
-//    {
-//        msgBox("Choose which type of trial to run");
-//        return;
-//    }
-//    if (currentModel.isEmpty())
-//    {
-//        QMessageBox::warning(this, "Help", "Choose which model to run");
-//        return;
-//    }
-
-//    if (runAllMode)
-//        runTrialList();
-//    else
-//        runSingleTrial();
-
-
-//}
-
-//void MainWindow::runSingleTrial()
-//{
-//    LazyNutJob *job = new LazyNutJob;
-//    job->logMode |= ECHO_INTERPRETER;
-
-//    QString tableName = QString("((%1 default_observer) default_dataframe)")
-//            .arg(SessionManager::instance()->currentTrial());
-//    job->cmdList << QString("%1 clear").arg(tableName);
-
-//    // case hack to avoid problems with UPPERCASE!!!
-//    QString trialString = trialWidget->getTrialCmd().toLower();
-//    job->cmdList << QString("%1 %2 step %3")
-//            .arg(quietMode)
-//            .arg(SessionManager::instance()->currentTrial())
-//            .arg(trialString);
-
-//    QString displayTableName = SessionManager::instance()->currentTrial();
-//    displayTableName.append(".table");
-
-//    // now rbind the data to existing trial table
-//    job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])")
-//            .arg(displayTableName)
-//            .arg(tableName);
-
-//    // display table of means after running set
-//    job->cmdList << QString("xml %1 get").arg(displayTableName);
-//    job->setAnswerReceiver(tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-//    job->appendEndOfJobReceiver(tablesWindow, SLOT(setPrettyHeaderFromJob()));
-//    job->appendEndOfJobReceiver(plotViewer, SLOT(updateActivePlots()));
-
-//    QMap<QString, QVariant> headerReplace;
-//    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
-//    headerReplace.insert("event_pattern", "");
-//    headerReplace.insert("\\(", "");
-//    headerReplace.insert("\\)", "");
-//    job->data = headerReplace;
-
-//    SessionManager::instance()->submitJobs(job);
-
-//    tablesWindow->switchTab(displayTableName);
-//}
-
-//void MainWindow::runTrialList()
-//{
-//    LazyNutJob *job = new LazyNutJob;
-//    job->logMode |= ECHO_INTERPRETER;
-//    QString tableName = QString("((%1 default_observer) default_dataframe)")
-//            .arg(SessionManager::instance()->currentTrial());
-//    job->cmdList << QString("%1 clear").arg(tableName);
-//    job->cmdList << QString("set %1").arg(trialWidget->getTrialCmd());
-//    job->cmdList << QString("%1 %2 run_set %3")
-//            .arg(quietMode)
-//            .arg(SessionManager::instance()->currentTrial())
-//            .arg(trialWidget->getStimulusSet());
-//    job->cmdList << QString("unset %1").arg(trialWidget->getArguments().join(" "));
-//    QString displayTableName = tablesWindow->addTable();
-//    job->cmdList << QString("%1 copy %2").arg(tableName).arg(displayTableName);
-//      // display table of means after running set
-//    job->cmdList << QString("xml %1 get").arg(displayTableName);
-//    job->setAnswerReceiver(tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-//    job->appendEndOfJobReceiver(tablesWindow, SLOT(setPrettyHeaderFromJob()));
-//    job->appendEndOfJobReceiver(this, SIGNAL(runAllTrialEnded()));
-
-//    QMap<QString, QVariant> headerReplace;
-//    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
-//    headerReplace.insert("event_pattern", "");
-//    headerReplace.insert("\\(", "");
-//    headerReplace.insert("\\)", "");
-//    job->data = headerReplace;
-
-//    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-//            << job
-//            << SessionManager::instance()->updateObjectCatalogueJobs();
-
-//    SessionManager::instance()->submitJobs(jobs);
-
-//    runAllTrialMsgAct->setVisible(true);
-
-//    resultsDock->raise();
-//    resultsPanel->setCurrentIndex(outputTablesTabIdx);
-//}
-
-
-
 void MainWindow::setQuietMode()
 {
     if (setQuietModeAct->isChecked())
@@ -663,64 +537,78 @@ void MainWindow::runScript()
     scriptEdit->runScript();
 }
 
+void MainWindow::loadModel(QString fileName)
+{
+    if (fileName.isEmpty())
+        return;
+#ifdef WIN32
+    if (!SessionManager::instance()->currentModel().isEmpty())
+    {
+        QProcess::startDetached(
+                    QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
+                    QStringList({fileName}),
+                    qApp->applicationDirPath());
+        return;
+    }
+#endif
+    modelScene->goToSleep();
+//    conversionScene->goToSleep();
+
+    // load and run script
+    loadFile(fileName);
+
+    // the /path/basename is used by DiagramScene objects to load JSON files
+    QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+    modelScene->setBaseName(base);
+//    conversionScene->setBaseName(base);
+    setWindowTitle(QFileInfo(fileName).completeBaseName());
+
+
+    // set up signal - slots so that loadLayout will be called
+    // once all of the layers/connections have descriptions
+    //        designWindow->prepareToLoadLayout(base);
+    //        conversionWindow->prepareToLoadLayout(base);
+
+    // show info page, if there is one
+    QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+    page.append(".html");
+    if (QFileInfo(page).exists())
+        infoWindow->showInfo(page);
+
+    // note: this synch is wrong, yet it works fine if one loads just one model while
+    // no other jobs run. In general commandsCompleted() might be sent from a previous job.
+    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
+    runScript();
+    //        SessionManager::instance()->setCurrentModel(currentModel);
+    // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
+    // should then call getList() and choose the appropriate model
+
+    trialButton->setEnabled(true);
+    loadAddOnAct->setEnabled(true);
+
+    #ifndef WIN32
+            loadModelAct->setEnabled(false);
+            modelButton->setEnabled(false);
+    #endif
+
+
+}
+
 void MainWindow::loadModel()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     scriptsDir,
                                                     tr("easyNet Model Files (*.eNm)"));
-    if (!fileName.isEmpty())
-    {
-         modelScene->goToSleep();
-         conversionScene->goToSleep();
-
-
-
-
-        // load and run script
-        loadFile(fileName);
-
-        // the /path/basename is used by DiagramScene objects to load JSON files
-        QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-        modelScene->setBaseName(base);
-        conversionScene->setBaseName(base);
-
-
-        // set up signal - slots so that loadLayout will be called
-        // once all of the layers/connections have descriptions
-//        designWindow->prepareToLoadLayout(base);
-//        conversionWindow->prepareToLoadLayout(base);
-
-        // show info page, if there is one
-        QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-        page.append(".html");
-        qDebug() << "page = " << page;
-        if (QFileInfo(page).exists())
-            infoWindow->showInfo(page);
-
-        // note: this synch is wrong, yet it works fine if one loads just one model while
-        // no other jobs run. In general commandsCompleted() might be sent from a previous job.
-        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
-        runScript();
-//        SessionManager::instance()->setCurrentModel(currentModel);
-        // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
-        // should then call getList() and choose the appropriate model
-
-        trialButton->setEnabled(true);
-        loadAddOnAct->setEnabled(true);
-
-        loadModelAct->setEnabled(false);
-        modelButton->setEnabled(false);
-
-    }
+    loadModel(fileName);
 }
 
 void MainWindow::afterModelLoaded()
 {
     modelScene->setNewModelLoaded(true);
-    conversionScene->setNewModelLoaded(true);
+//    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
-//    modelScene->wakeUp();
+    modelScene->wakeUp();
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
 }
 
@@ -797,8 +685,8 @@ void MainWindow::loadStimulusSet()
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
                                                     stimDir,
-                                                    tr("Database Files (*.eNd)"));
-    fileName = QDir(easyNetHome).relativeFilePath(fileName);
+                                                    tr("Database Files (*.eNd);;Text files (*.txt *.csv);;All files (*.*)"));
+    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
         // create db
@@ -844,7 +732,7 @@ void MainWindow::importDataFrame()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
                                                     stimDir,
                                                     tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
-    fileName = QDir(easyNetHome).relativeFilePath(fileName);
+    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
     if (!fileName.isEmpty())
     {
         // create db
@@ -911,8 +799,22 @@ void MainWindow::loadFile(const QString &fileName)
 void MainWindow::readSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
-//    easyNetHome = settings.value("easyNetHome","../").toString();
-    easyNetHome = settings.value("easyNetHome","../..").toString();
+    if(qEnvironmentVariableIsSet("EASYNET_HOME"))
+    {
+       easyNetHome=QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_HOME")));
+    }
+    else
+    {
+       easyNetHome = settings.value("easyNetHome","../..").toString();
+    }
+    if(qEnvironmentVariableIsSet("EASYNET_DATA_HOME"))
+    {
+       easyNetDataHome=QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_DATA_HOME")));
+    }
+    else
+    {
+       easyNetDataHome = settings.value("easyNetDataHome",easyNetHome).toString();
+    }
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
 
@@ -927,10 +829,19 @@ void MainWindow::readSettings()
     // e.g. easyNetHome, since it's private to EasyNetMainWindow.
 }
 
+void MainWindow::setDefaultLocations()
+{
+    lazyNutBat = QString("%1/%2/nm_files/%3").arg(easyNetHome).arg(binDir).arg(lazyNutBasename);
+    scriptsDir = QString("%1/Models").arg(easyNetDataHome);
+    trialsDir = QString("%1/Trials").arg(easyNetDataHome);
+    stimDir = QString("%1/Databases/Stimulus_files").arg(easyNetDataHome);
+}
+
 void MainWindow::writeSettings()
 {
     QSettings settings("QtEasyNet", "nmConsole");
     settings.setValue("easyNetHome", easyNetHome);
+    settings.setValue("easyNetDataHome", easyNetDataHome);
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 
@@ -938,6 +849,22 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.endGroup();
+}
+
+bool MainWindow::proceedWithRestart()
+{
+    QMessageBox::StandardButton reply =
+            QMessageBox::warning(
+                this,
+                "Restart interpreter",
+                "The operation you have chosen requires to restart the interpreter."
+                "This will start a new session,  overwiting all data associated with the current session. Do you want to proceed?",
+                QMessageBox::Yes | QMessageBox::No,
+                QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return false;
+
+    return true;
 }
 
 
@@ -1072,13 +999,40 @@ void MainWindow::viewSettings()
 
 void MainWindow::setEasyNetHome()
 {
-    easyNetHome = QFileDialog::getExistingDirectory(this,tr("Please select your easyNet home directory.\n"));
+    if (!proceedWithRestart())
+        return;
+    QSettings settings("QtEasyNet", "nmConsole");
+    easyNetHome = QFileDialog::getExistingDirectory(
+                this,
+                tr("New easyNet home directory"),
+                settings.value("easyNetHome","../..").toString()
+                );
+    qDebug() << "easyNetHome "<< easyNetHome;
     if (easyNetHome.isEmpty())
         return;
-    lazyNutBat = easyNetHome + QString("/%1/nm_files/%2").arg(binDir).arg(lazyNutBasename);
-    SessionManager::instance()->restartLazyNut(lazyNutBat);
-    QSettings settings("QtEasyNet", "nmConsole");
+
     settings.setValue("easyNetHome", easyNetHome);
+    setDefaultLocations();
+    SessionManager::instance()->restartLazyNut(lazyNutBat);
+}
+
+void MainWindow::setEasyNetDataHome()
+{
+    if (!proceedWithRestart())
+        return;
+    QSettings settings("QtEasyNet", "nmConsole");
+    easyNetDataHome = QFileDialog::getExistingDirectory(
+                this,
+                tr("New easyNet data home directory"),
+                settings.value("easyNetDataHome",easyNetHome).toString());
+    qDebug() << "easyNetDataHome" << easyNetDataHome;
+
+    if (easyNetDataHome.isEmpty())
+        return;
+
+    settings.setValue("easyNetDataHome", easyNetDataHome);
+    setDefaultLocations();
+    SessionManager::instance()->restartLazyNut(lazyNutBat);
 }
 
 
@@ -1096,6 +1050,7 @@ void MainWindow::setFontSize(const QString & size)
 
     QApplication::setFont(QFont(EN_FONT, fontSize));
     lazyNutConsole2->setConsoleFontSize(fontSize);
+
 }
 
 //void EasyNetMainWindow::showPauseState(bool isPaused)
@@ -1189,6 +1144,12 @@ void MainWindow::createActions()
     setEasyNetHomeAct->setStatusTip(tr("Set easyNet home directory"));
     connect(setEasyNetHomeAct,SIGNAL(triggered()),this, SLOT(setEasyNetHome()));
 
+    setEasyNetDataHomeAct = new QAction(tr("Set easyNet data home directory"), this);
+    setEasyNetDataHomeAct->setStatusTip(tr("Set easyNet data home directory"));
+    connect(setEasyNetDataHomeAct,SIGNAL(triggered()),this, SLOT(setEasyNetDataHome()));
+
+
+
     setFontSignalMapper = new QSignalMapper(this);
     setFontActGrouop = new QActionGroup(this);
 
@@ -1223,6 +1184,26 @@ void MainWindow::createActions()
     assistantAct->setShortcut(QKeySequence::HelpContents);
     connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
 
+    aboutAct = new QAction(tr("About easyNet"), this);
+    connect(aboutAct, &QAction::triggered, [=]()
+    {
+         QMessageBox::about(this, "easyNet",QString(
+                                "<i>easyNet</i> is a software package for computational modelling of cognitive processes.<br>"
+                                "<br>"
+                                "Authors: James Adelman, Colin Davis, & Michele Gubian<br>"
+                                "<br>"
+                                "Chief Architect and Programmer of Simulator Engine:<br>James Adelman<br>"
+                                "<br>"
+                                "Chief Architect of GUI:<br>Colin Davis<br>"
+                                "<br>"
+                                "Chief Programmer of GUI:<br>Michele Gubian<br>"
+                                "<br>"
+                                "<i>easyNet</i> is free software licensed under GPLv3<br>"
+                                "<br>"
+                                "Visit <i>easyNet</i> <a href=\"http://adelmanlab.org/easyNet/\">homepage</a> for more information and latest downloads."));
+
+    });
+
     setQuietModeAct = new QAction(tr("Quiet mode"), this);
     setQuietModeAct->setCheckable(true);
     connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
@@ -1231,17 +1212,10 @@ void MainWindow::createActions()
 
 void MainWindow::restart()
 {
-    QMessageBox::StandardButton reply;
-      reply = QMessageBox::question(this,
-                           "Warning",
-                           tr("This will start a new session, "
-                           "overwiting all data associated with the "
-                           "current session. Continue?"),
-                           QMessageBox::Yes|QMessageBox::No);
-      if (reply == QMessageBox::Yes)
-        SessionManager::instance()->restartLazyNut(lazyNutBat);
-      else
+    if (!proceedWithRestart())
         return;
+
+    SessionManager::instance()->restartLazyNut(lazyNutBat);
 }
 
 void MainWindow::showDocumentation()
@@ -1272,6 +1246,7 @@ void MainWindow::createMenus()
     settingsMenu = menuBar()->addMenu(tr("&Settings"));
     settingsMenu->addAction(viewSettingsAct);
     settingsMenu->addAction(setEasyNetHomeAct);
+    settingsMenu->addAction(setEasyNetDataHomeAct);
     settingsSubMenu = settingsMenu->addMenu(tr("&Font size"));
     settingsSubMenu->addAction(setSmallFontAct);
     settingsSubMenu->addAction(setMediumFontAct);
@@ -1286,6 +1261,7 @@ void MainWindow::createMenus()
 
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(assistantAct);
+    helpMenu->addAction(aboutAct);
 //    helpMenu->addSeparator();
 //    helpMenu->addAction(versionAct);
 
@@ -1300,7 +1276,7 @@ void MainWindow::createStatusBar()
     lazyNutProgressBar = new QProgressBar;
     lazyNutProgressBar->setTextVisible(false);
     lazyNutProgressBar->setMinimum(0);
-    statusBar()->addPermanentWidget(lazyNutProgressBar, 1);
+    statusBar()->addPermanentWidget(lazyNutProgressBar, 0.5);
     connect(SessionManager::instance(), SIGNAL(commandsInJob(int)),
             lazyNutProgressBar, SLOT(setMaximum(int)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
@@ -1340,7 +1316,7 @@ void MainWindow::createStatusBar()
     lazyNutStatusWidget->setCurrentWidget(offLabel);
     lazyNutStatusWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     lazyNutStatusWidget->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    statusBar()->addPermanentWidget(lazyNutStatusWidget, 1);
+    statusBar()->addPermanentWidget(lazyNutStatusWidget, 0);
     connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));
     connect(SessionManager::instance(), &SessionManager::lazyNutNotRunning,[=](){
         lazyNutStatusWidget->setCurrentWidget(offLabel);
@@ -1351,33 +1327,31 @@ void MainWindow::createStatusBar()
 
     lazyNutCmdLabel = new QLabel;
     lazyNutCmdLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+
+    lazyNutCmdLabel->setFixedWidth(qApp->fontMetrics().width("LAST COMMAND: a very very very very long lazyNut command"));
+    lazyNutCmdLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     statusBar()->addWidget(lazyNutCmdLabel, 1);
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             this, SLOT(showCmdOnStatusBar(QString)));
 
-//    lazyNutErrorLabel = new QLabel;
-//    lazyNutErrorLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-//    lazyNutErrorLabel->setStyleSheet("QLabel {"
-//                                 "font-weight: bold;"
-//                                 "color: red"
-//                                 "}");
-//    statusBar()->addWidget(lazyNutErrorLabel, 1);
+    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
+    {
+       if (!errorList.isEmpty())
+           statusBar()->showMessage(errorList.last(), 4000);
+    });
+    connect(statusBar(), &QStatusBar::messageChanged, [=](QString msg)
+    {
+       if (msg.startsWith("ERROR"))
+           statusBar()->setStyleSheet("color: red");
+       else
+           statusBar()->setStyleSheet("color: black");
+    });
 
-    lazyNutErrorBox = new QComboBox;
-    lazyNutErrorBox->setToolTip("list of lazyNut ERRORs");
-    lazyNutErrorBox->addItem("");
-    lazyNutErrorBox->setStyleSheet("QComboBox {"
-                                 "font-weight: bold;"
-                                 "color: red"
-                                 "}");
-    lazyNutErrorBox->setEditable(false);
-    statusBar()->addWidget(lazyNutErrorBox, 1);
-    connect(lazyNutErrorBox,SIGNAL(activated(int)),this,SLOT(showMostRecentError()));
 
-    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
-            this, SLOT(showErrorOnStatusBar(QString,QStringList)));
-    connect(SessionManager::instance(), SIGNAL(lazyNutMacroStarted()),
-            this, SLOT(clearErrorOnStatusBar()));
+//    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
+//            this, SLOT(showErrorOnStatusBar(QString,QStringList)));
+//    connect(SessionManager::instance(), SIGNAL(lazyNutMacroStarted()),
+//            this, SLOT(clearErrorOnStatusBar()));
 }
 
 void MainWindow::showMostRecentError()
@@ -1414,185 +1388,13 @@ void MainWindow::clearErrorOnStatusBar()
 
 void MainWindow::showCmdOnStatusBar(QString cmd)
 {
-    lazyNutCmdLabel->setText(QString("LAST EXEC COMMAND: %1").arg(cmd));
+    lazyNutCmdLabel->setText(QString("LAST COMMAND: %1").arg(cmd));
 }
 
 void MainWindow::addOneToLazyNutProgressBar()
 {
     lazyNutProgressBar->setValue(lazyNutProgressBar->value()+1);
 }
-
-
-/*********************************************************
- * old view menu stuff here
- *
- */
-
-/*
-void EasyNetMainWindow::createToolBars()
-{
-    infoToolBar = new QToolBar(this);
-    infoToolBar->setStyleSheet("QToolButton::menu-indicator {image: url(myindicator.png); \
-                subcontrol-position: right center; subcontrol-origin: padding; left: -2px;}"
-    "QToolButton {font-size: 9pt; color: \"white\"; icon-size: 30px; min-width: 5em; padding: 3px;} "
-    "QToolButton:pressed {border: 2px solid #8f8f91; border-radius: 6px; background-color:red;}"
-    "QLabel { font-size: 8pt; color: \"white\"; icon-size: 30px; } "
-    "QToolBar { background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1, "
-    "stop: 0 #66e, stop: 1 #bbf); background: qlineargradient(x1: 0, y1: 0.2, x2: 1, y2: 1, "
-    "stop: 0 #bbf, stop: 1 #55f) } ");
-
-    QWidget *viewModeButtonsWidget = new QWidget;
-    QVBoxLayout *viewModeLayout = new QVBoxLayout;
-
-    viewModeSignalMapper = new QSignalMapper(this);
-
-    for (int viewModeInt = ViewMode_BEGIN; viewModeInt != ViewMode_END; viewModeInt++)
-    {
-        // ViewMode viewMode = static_cast<ViewMode>(viewModeInt);
-        QToolButton *button = new QToolButton(this);
-        button->setAutoRaise(true);
-        button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-        viewModeButtons.insert(viewModeInt, button);
-        button->addAction(viewActions.at(viewModeInt));
-        button->setDefaultAction(viewActions.at(viewModeInt));
-        viewModeLayout->addWidget(button);
-    }
-
-    QLabel *spacing = new QLabel(tr("____________"));
-    viewModeLayout->addWidget(spacing);
-
-    QToolButton *button = new QToolButton(this);
-    button->setAutoRaise(true);
-    button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    viewModeLayout->addWidget(button);
-    button->addAction(runAction);
-    button->setDefaultAction(runAction);
-    viewModeLayout->addWidget(button);
-
-
-
-//    vbox->addWidget(spacing);
-//    vbox->addWidget(modelLabel);
-//    vbox->addWidget(trialLabel);
-
-    viewModeButtonsWidget->setLayout(viewModeLayout);
-    infoToolBar->addWidget(viewModeButtonsWidget);
-    addToolBar(Qt::LeftToolBarArea, infoToolBar);
-}
-
-void EasyNetMainWindow::initViewActions()
-{
-    viewActionIcons.insert(Welcome, new QIcon(":/images/zebra_64x64.png"));
-    viewActionIcons.insert(Model, new QIcon(":/images/layers-8x.png"));
-    viewActionIcons.insert(Trial, new QIcon(":/images/cog-8x.png"));
-    viewActionIcons.insert(Input, new QIcon(":/images/list-8x.png"));
-    viewActionIcons.insert(Output, new QIcon(":/images/bar-chart-8x.png"));
-    viewActionIcons.insert(Params, new QIcon(":/images/dial-8x.png"));
-    viewActionIcons.insert(Interpreter, new QIcon(":/images/terminal-8x.png"));
-    viewActionIcons.insert(Code, new QIcon(":/images/code-8x.png"));
-
-    viewActionTexts.insert(Welcome, tr("&Welcome"));
-    viewActionTexts.insert(Model, tr("&Model"));
-    viewActionTexts.insert(Trial, tr("&Trial"));
-    viewActionTexts.insert(Input, tr("&Input"));
-    viewActionTexts.insert(Output, tr("&Output"));
-    viewActionTexts.insert(Params, tr("&Parameters"));
-    viewActionTexts.insert(Interpreter, tr("&Interpreter"));
-    viewActionTexts.insert(Code, tr("&Code"));
-
-    viewActionStatusTips.insert(Welcome, tr("Welcome to easyNet"));
-    viewActionStatusTips.insert(Model, tr("Display model view"));
-    viewActionStatusTips.insert(Trial, tr("Display trial editor"));
-    viewActionStatusTips.insert(Input, tr("Display input view"));
-    viewActionStatusTips.insert(Output, tr("Display output view"));
-    viewActionStatusTips.insert(Params, tr("Display parameter view"));
-    viewActionStatusTips.insert(Interpreter, tr("Display interpreter view"));
-    viewActionStatusTips.insert(Code, tr("Display code view"));
-}
-
-void EasyNetMainWindow::createViewActions()
-{
-    initViewActions();
-    viewModeSignalMapper = new QSignalMapper(this);
-    // iterate over ViewMode enum
-    // http://stackoverflow.com/questions/261963/how-can-i-iterate-over-an-enum
-    // http://stackoverflow.com/questions/1390703/enumerate-over-an-enum-in-c
-    for (int viewModeInt = ViewMode_BEGIN; viewModeInt != ViewMode_END; viewModeInt++)
-    {
-        // ViewMode viewMode = static_cast<ViewMode>(viewModeInt);
-        QAction *action = new QAction(this);
-        viewActions.insert(viewModeInt, action);
-        action->setIcon(*viewActionIcons.at(viewModeInt));
-        action->setText(viewActionTexts.at(viewModeInt));
-        action->setStatusTip(viewActionStatusTips.at(viewModeInt));
-        connect(action, SIGNAL(triggered()), viewModeSignalMapper, SLOT(map()));
-        viewModeSignalMapper->setMapping(action, viewModeInt);
-    }
-    connect(viewModeSignalMapper,SIGNAL(mapped(int)),this,SIGNAL(viewModeClicked(int)));
-    connect(this,SIGNAL(viewModeClicked(int)),this,SLOT(showViewMode(int)));
-}
-
-void EasyNetMainWindow::hideAllDocks()
-{
-    dockWelcome->hide();
-//    dockWebWelcome->hide();
-    dockEdit->hide();
-    dockInterpreter->hide();
-//    dockInput->hide();
-    dockOutput->hide();
-    dockExplorer->hide();
-    dockDesignWindow->hide();
-    dockCommandLog->hide();
-    statusBar()->show();
-
-}
-
-
-void EasyNetMainWindow::showViewMode(int viewModeInt)
-{
-    hideAllDocks();
-    switch (viewModeInt) {
-    case Welcome:
-        welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
-//        QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
-//        webWelcomeScreen->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
-//        webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
-
-//        dockWebWelcome->show();
-        dockWelcome->show();
-        break;
-    case Model:
-        dockDesignWindow->show();
-        dockExplorer->show();
-        break;
-    case Trial:
-        break;
-    case Input:
-        break;
-    case Output:
-        dockOutput->show();
-        break;
-    case Params:
-        break;
-    case Interpreter:
-        dockInterpreter->show();
-        break;
-    case Code:
-        dockEdit->show();
-        dockCommandLog->show();
-        dockInterpreter->show();
-        break;
-    default:
-        break;
-    }
-
-    statusBar()->show();
-//    showNormal();
-//    this->showMinimized();
-//    this->showMaximized();
-}
-*/
-
 
 void MainWindow::processHistoryKey(int dir)
 {

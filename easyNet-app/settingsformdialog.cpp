@@ -28,21 +28,11 @@ SettingsFormDialog::~SettingsFormDialog()
 
 void SettingsFormDialog::accept()
 {
-    // just print for the moment
-//    QStringList settingsList = form->getSettingsCmdList();
     QStringList cmdList;
     QString dfName = nameLineEdit->text();
     cmdList << QString("create dataframe_merge %1").arg(dfName);
     cmdList << form->getSettingsCmdList().replaceInStrings(QRegExp("^"), QString("%1 set_").arg(dfName));
-//    cmdList.replaceInStrings(QRegExp("(set_[xy]_key) (.*)$"), "\\1 \"\\2\"");
-//    cmdList << QString ("%1 get").arg(dfName);
-//    qDebug() << cmdList;
-
-    // order matters, first cmdListReady then dfNameReady
-//    emit cmdListReady(cmdList);
-//    emit dfNameReady(dfName);
     emit dataframeMergeSettingsReady(cmdList, dfName, form->value("x"), form->value("y"));
-
     QDialog::accept();
 }
 

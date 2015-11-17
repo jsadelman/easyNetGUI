@@ -9,6 +9,7 @@ class QAbstractItemModel;
 class QListView;
 class QPushButton;
 class QLabel;
+class QLineEdit;
 
 class PairedListWidget : public QFrame
 {
@@ -43,6 +44,7 @@ private:
     QSortFilterProxyModel *notSelectedModel;
     QListView *selectedView;
     QListView *notSelectedView;
+    QLineEdit *searchEdit;
     QPushButton *addButton;
     QPushButton *removeButton;
     QLabel *selectedLabel;

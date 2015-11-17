@@ -17,6 +17,7 @@ public:
     QString name();
     QTableView *view();
     bool hasHeaderReplaceRules() {return !headerReplaceRules.isEmpty();}
+    QMap<Qt::Orientation , QList<QPair<QString, QString> > > getHeaderReplace() {return headerReplaceRules;}
 
 private:
     QMap<Qt::Orientation , QList<QPair<QString, QString> > > headerReplaceRules;

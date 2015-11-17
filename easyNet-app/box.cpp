@@ -4,6 +4,11 @@
 #include "libdunnartcanvas/limitstring.h"
 #include "objectcachefilter.h"
 #include "enumclasses.h"
+#include "lazynutjob.h"
+#include "easyNetMainWindow.h"
+#include "trialwidget.h"
+#include "xmlelement.h"
+
 
 
 #include <QPainter>
@@ -50,11 +55,13 @@ void Box::setLabelPointSize(int labelPointSize)
 }
 
 
-void Box::read(const QJsonObject &json)
+void Box::read(const QJsonObject &json, qreal boxWidth)
 {
     m_name = json["name"].toString();
     m_lazyNutType = json["lazyNutType"].toString();
     QPointF position(json["x"].toDouble(),json["y"].toDouble());
+    if (boxWidth != 0)
+        position *= (autoWidth() / boxWidth);
     if (!position.isNull())
         setCentrePos(position);
 }
@@ -68,12 +75,18 @@ void Box::write(QJsonObject &json) const
     json["y"] = position.y();
 }
 
+qreal Box::autoWidth()
+{
+    QFontMetrics fm(labelFont);
+    return (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
+}
+
 void Box::autoSize()
 {
-   QFontMetrics fm(labelFont);
-   qreal autoWidth = (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
-   qreal autoHeigth = autoWidth / m_widthOverHeight;
-   cmd_setSize(QSizeF(autoWidth, autoHeigth));
+//   QFontMetrics fm(labelFont);
+//   qreal autoWidth = (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
+   qreal autoHeigth = autoWidth() / m_widthOverHeight;
+   cmd_setSize(QSizeF(autoWidth(), autoHeigth));
 }
 
 void Box::paintLabel(QPainter *painter)
@@ -108,14 +121,28 @@ QRectF Box::labelBoundingRect() const
 QString Box::defaultPlotType()
 {
     if (m_lazyNutType == "layer")
+    {
+        QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
+        QString subtype;
+        if (domDoc)
+            subtype = XMLelement(*domDoc)["subtype"]();
+
         if (m_name == "spatial_code") //quick and dirty hack!!!
             return "spactivity-3";
         else if (m_name.startsWith("feature"))
             return "plot_features";
+        else if (subtype == "string_layer")
+            return "string_layer";
+        else if (subtype == "wtstring_layer")
+            return "wtstring_layer";
         else
             return "activity";
+    }
     else
         return "";
+
+    // subtype wtstring_layer
+    //
 }
 
 
@@ -173,9 +200,19 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
             actionList.at(row)->setChecked(SessionManager::instance()->descriptionCache->exists(plotData["rplotName"].toString()));
             actionList.at(row)->setData(plotData);
         }
+        QString layerTransfer;
+        QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
+        if (domDoc)
+            layerTransfer =  XMLelement(*domDoc)["subtype"]["layer_transfer"]();
 
 
         menu.addMenu(plotMenu);
+        QAction *lesionAct = menu.addAction(tr("Lesion layer"));
+//        lesionAct->setVisible(layerTransfer != "lesion_transfer");
+        lesionAct->setVisible(!dashedStroke()); // hack, because object updaters don't do their job, have to find out why
+        QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
+//        unlesionAct->setVisible(layerTransfer == "lesion_transfer");
+        unlesionAct->setVisible(dashedStroke());
 
 //        QMenu *enableObserverMenu = new QMenu("Observer");
 //        QAction *enableObserverAct = enableObserverMenu->addAction(tr("Enable default observer"));
@@ -217,6 +254,14 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 }
             }
         }
+
+        if (action == lesionAct)
+            lesion();
+
+        else if (action == unlesionAct)
+            unlesion();
+
+        return action;
 
 //        else if (action == enableObserverAct)
 //            enableObserver();
@@ -265,13 +310,42 @@ void Box::setupDefaultDataframesFilter()
 
 void Box::enableObserver(QString observer)
 {
-    QString cmd = QString("%1 enable").arg(observer);
-    SessionManager::instance()->runCmd(cmd);
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 enable").arg(observer);
+    QMap<QString, QVariant> data;
+    data.insert("observer", observer);
+    job->data = data;
+    job->appendEndOfJobReceiver(MainWindow::instance()->trialWidget, SLOT(observerEnabled()));
+    SessionManager::instance()->submitJobs(job);
 }
 
 void Box::disableObserver(QString observer)
 {
-    QString cmd = QString("%1 disable").arg(observer);
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 disable").arg(observer);
+    QMap<QString, QVariant> data;
+    data.insert("observer", observer);
+    job->data = data;
+    job->appendEndOfJobReceiver(MainWindow::instance()->trialWidget, SLOT(observerDisabled()));
+    SessionManager::instance()->submitJobs(job);
+}
+
+
+void Box::lesion()
+{
+    QString cmd = QString("%1 lesion").arg(m_name);
     SessionManager::instance()->runCmd(cmd);
+    // basic version (should check if cmd was executed succesfully)
+    setDashedStroke(true);
+}
+
+void Box::unlesion()
+{
+    QString cmd = QString("%1 unlesion").arg(m_name);
+    SessionManager::instance()->runCmd(cmd);
+    // basic version (should check if cmd was executed succesfully)
+    setDashedStroke(false);
 }
 

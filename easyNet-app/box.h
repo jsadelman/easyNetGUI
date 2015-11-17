@@ -37,7 +37,7 @@ public:
     void setPorts(QMap <QString, QString> ports) {m_ports = ports;}
 
 
-    void read(const QJsonObject &json);
+    void read(const QJsonObject &json, qreal boxWidth=0);
     void write(QJsonObject &json) const;
     void autoSize();
     virtual void paintLabel(QPainter *painter);
@@ -45,6 +45,7 @@ public:
 
     QString defaultPlotType();
 
+    qreal autoWidth();
 signals:
     void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
     void lazyNutTypeChanged();
@@ -63,6 +64,8 @@ private:
     void defaultPlot(QString plotName, QString dataframe);
     void enableObserver(QString observer);
     void disableObserver(QString observer);
+    void lesion();
+    void unlesion();
 
     QString m_name;
     QString m_lazyNutType;

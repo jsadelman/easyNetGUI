@@ -399,6 +399,12 @@ void ShapeObj::paint(QPainter *painter,
     QPen pen;
     pen.setCosmetic(true);
     pen.setColor(strokeColour());
+    if (m_dashed_stroke)
+    {
+        QVector<qreal> dashes;
+        dashes << 5 << 3;
+        pen.setDashPattern(dashes);
+    }
     
     painter->setPen(pen);
     painter->setBrush(QBrush(fillColour()));
@@ -1064,7 +1070,8 @@ ShapeObj::ShapeObj(const QString& itemType)
       m_size_locked(false),
       m_detail_level(1),
       m_being_resized(false),
-      m_maxLabelLength(20)
+      m_maxLabelLength(20),
+      m_dashed_stroke(false)
 {
     setItemType(itemType);
     setCanvasItemFlag(CanvasItem::ItemIsAlignable, true);
@@ -1348,7 +1355,18 @@ QString ShapeObj::label(void) const
 void ShapeObj::setLabel(const QString& label)
 {
 //    m_label = limitString(label, m_maxLabelLength);
-//    update();
+    //    update();
+}
+
+bool ShapeObj::dashedStroke() const
+{
+    return m_dashed_stroke;
+}
+
+void ShapeObj::setDashedStroke(bool dashed)
+{
+    m_dashed_stroke = dashed;
+    update();
 }
 
 

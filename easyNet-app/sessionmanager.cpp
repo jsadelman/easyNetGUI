@@ -9,6 +9,7 @@
 #include "answerformatterfactory.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
+#include "easyNetMainWindow.h"
 
 
 #include <QtGlobal>
@@ -20,6 +21,9 @@
 #include <QAbstractTransition>
 #include <QThread>
 #include <QMessageBox>
+#include <QSettings>
+#include <QDir>
+#include <QProcessEnvironment>
 
 SessionManager* SessionManager::sessionManager = nullptr;
 
@@ -49,37 +53,20 @@ SessionManager::SessionManager()
             dataframeCache, SLOT(create(QDomDocument*)));
     connect(this,  SIGNAL(recentlyModified(QStringList)),
             dataframeCache,  SLOT(invalidateCache(QStringList)));
-
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             dataframeCache,  SLOT(destroy(QStringList)));
-
-//    ObjectCacheFilter *dfFilter = new ObjectCacheFilter(descriptionCache, this);
-//    dfFilter->setType("dataframe");
-
-//    dataframeCache = new ObjectCache(this);
-//    connect(dfFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-//            dataframeCache, SLOT(create(QString,QString)));
-//    connect(dfFilter, &ObjectCacheFilter::objectCreated, [=] (QString name)
-//    {
-//        qDebug() << "ObjectCacheFilter::objectCreated" << name;
-//    });
-//    connect(dfFilter, SIGNAL(objectModified(QString)),
-//            dataframeCache, SLOT(invalidateCache(QString)));
-//    connect(dfFilter, &ObjectCacheFilter::objectModified, [=] (QString name)
-//    {
-//        qDebug() << "ObjectCacheFilter::objectModified" << name;
-//    });
-//    connect(dfFilter, SIGNAL(objectDestroyed(QString)),
-//            dataframeCache, SLOT(destroy(QString)));
-
-//    connect(dataframeCache, &ObjectCache::dataChanged, [](){qDebug() << "dataframeCache dataChanged";});
-
-
 }
 
 
 void SessionManager::startLazyNut(QString lazyNutBat)
 {
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString easyNetHome = QDir::toNativeSeparators(settings.value("easyNetHome","../..").toString());
+    QString easyNetDataHome = QDir::toNativeSeparators(settings.value("easyNetDataHome",easyNetHome).toString());
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment(); // lazyNut->processEnvironment();
+    env.insert("EASYNET_HOME", easyNetHome);
+    env.insert("EASYNET_DATA_HOME", easyNetDataHome);
+    lazyNut->setProcessEnvironment(env);
     lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
     lazyNut->setProgram(lazyNutBat);
     connect(lazyNut, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(sendLazyNutCrash(int,QProcess::ExitStatus)));
@@ -110,9 +97,7 @@ void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitSta
 
 void SessionManager::restartLazyNut(QString lazyNutBat)
 {
-//    SessionManager::instance()->descriptionCache->removeRows(0, SessionManager::instance()->descriptionCache->rowCount());
     SessionManager::instance()->descriptionCache->clear();
-
     killLazyNut();
     lazyNut->waitForFinished();
     startLazyNut(lazyNutBat);

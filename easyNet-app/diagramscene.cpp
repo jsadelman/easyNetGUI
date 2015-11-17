@@ -115,6 +115,9 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
     boxFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     boxFilter->setType(m_boxType);
+
+
+
     arrowFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     arrowFilter->setType(m_arrowType);
 
@@ -189,6 +192,8 @@ QList<Box *> DiagramScene::boxes()
 
 void DiagramScene::read(const QJsonObject &json)
 {
+    qreal boxWidth = json["boxWidth"].toDouble();
+    qDebug() << "DiagramScene::read boxWidth" << boxWidth;
     QJsonArray itemArray = json["diagramItems"].toArray();
     for (int itemIndex = 0; itemIndex < itemArray.size(); ++itemIndex)
     {
@@ -198,7 +203,7 @@ void DiagramScene::read(const QJsonObject &json)
         {
             Box * box = qobject_cast<Box*>(itemHash.value(name));
             if (box)
-                box->read(itemObject);
+                box->read(itemObject, boxWidth);
         }
     }
 }
@@ -206,13 +211,17 @@ void DiagramScene::read(const QJsonObject &json)
 void DiagramScene::write(QJsonObject &json)
 {
     QJsonArray itemArray;
+    qreal boxWidth=0;
     foreach (Box * box, boxes())
     {
             QJsonObject itemObject;
             box->write(itemObject);
             itemArray.append(itemObject);
+            if (boxWidth == 0)
+                boxWidth = box->autoWidth();
     }
     json["diagramItems"] = itemArray;
+    json["boxWidth"] = boxWidth;
 }
 
 void DiagramScene::setBaseName(QString baseName)
@@ -387,7 +396,7 @@ void DiagramScene::positionObject(QString name, QString type, QDomDocument *domD
         box->setProperty("longNameToDisplayIntact", boxLongNameToDisplayIntact);
         box->setProperty("widthMarginProportionToLongestLabel", boxWidthMarginProportionToLongestLabel);
         box->setProperty("widthOverHeight", boxWidthOverHeight);
-        box->setLabelPointSize(14);
+//        box->setLabelPointSize(14);
         box->autoSize();
         box->setLabel(name);
         box->setToolTip(name);

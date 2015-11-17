@@ -5,12 +5,28 @@
 
 #include <QMap>
 #include <QTimer>
+#include <QDialog>
 
 class QSvgWidget;
 class QToolBar;
 class QAction;
 class QLabel;
 class QByteArray;
+class QScrollArea;
+
+
+class FullScreenSvgDialog: public QDialog
+{
+    Q_OBJECT
+public:
+    FullScreenSvgDialog(QWidget *parent = 0);
+    void loadByteArray(QByteArray byteArray);
+    void clearSvg();
+
+private:
+    QSvgWidget *svg;
+};
+
 
 class ObjectCacheFilter;
 
@@ -61,10 +77,8 @@ protected:
     void showInfo(QSvgWidget* svg);
     void hideInfo();
 
-    void dispatch_private(QDomDocument *info, bool preDispatch);
 private slots:
     void loadByteArray(QString name, QByteArray byteArray);
-//    void addPlot(QString name, QString sourceDataframeOfPlots="");
     void resizeTimeout();
     void snapshot();
     void currentTabChanged(int index);
@@ -74,6 +88,7 @@ private slots:
     void makeSnapshot(QString name);
     void triggerPlotUpdate(QString name=QString());
     void addDataframeMerge(QString df, QString dfm);
+    void setupFullScreen();
 
 
 private:
@@ -89,6 +104,8 @@ private:
     QString cloneRPlot(QString name, QString newName=QString());
     QSvgWidget * newSvg(QString name);
 
+    FullScreenSvgDialog *fullScreenSvgDialog;
+
     QToolBar*       fileToolBar;
     QToolBar*       editToolBar;
     QToolBar*       navigationToolBar;
@@ -97,6 +114,7 @@ private:
     QAction *       snapshotAct;
     QAction *       renameAct;
     QAction *       deleteAct;
+    QAction *       fullScreenAct;
 
     QString         easyNetHome;
     QLabel*         titleLabel;
@@ -119,7 +137,8 @@ private:
     bool            pend;
     ObjectCacheFilter *dataframeFilter;
     QTabWidget*     plotPanel;
-
+    bool            fullScreen;
+    QSize           fullScreenSize;
 };
 
 #endif // PLOTVIEWER_H

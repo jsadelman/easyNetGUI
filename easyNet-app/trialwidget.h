@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QMap>
+#include <QSet>
 
 class QComboBox;
 class QLabel;
@@ -15,6 +16,8 @@ class QAction;
 class QToolButton;
 class myComboBox;
 class LazyNutJob;
+class QMessageBox;
+class QCheckBox;
 
 class TrialWidget : public QWidget
 {
@@ -26,6 +29,7 @@ public:
     ~TrialWidget();
 
     QString getTrialCmd();
+    QString getStochasticCmd();
     bool checkIfReadyToRun();
     QString getStimulusSet();
     QString defaultDataframe();
@@ -53,21 +57,32 @@ private slots:
     void argWasChanged(QString arg);
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
-
+    void updateModelStochasticity(QDomDocument* modelDescription);
+    void observerEnabled(QString name= QString());
+    void observerDisabled(QString name= QString());
+    void suspendObservers();
+    void restoreObservers();
 private:
 
     QDomDocument * createTrialRunInfo();
     void clearLayout(QLayout *layout);
     void runSingleTrial(LazyNutJob *job);
     void runTrialList(LazyNutJob *job);
+    void setStochasticityVisible(bool isVisible);
 
     ObjectCacheFilter* trialFilter;
     ObjectUpdater* trialDescriptionUpdater;
+    ObjectCacheFilter* modelFilter;
+    ObjectUpdater* modelDescriptionUpdater;
     QMap <QString, myComboBox*> argumentMap;
     QVector <QLabel*> labelList;
 
     QComboBox*      setComboBox;
     QToolButton*    setCancelButton;
+    QLabel*         repetitionsLabel;
+    QComboBox*      repetitionsBox;
+    QLabel*         strategyLabel;
+    QComboBox*      strategyBox;
 
     QHBoxLayout*    layout1;
     QHBoxLayout*    layout2;
@@ -77,9 +92,16 @@ private:
     QToolButton*    runButton;
     QAction*        hideSetComboBoxAction;
     QString         argChanged;
+    QSet<QString>   enabledObservers;
+    QMessageBox *disableObserversMsg;
+    QCheckBox *dontAskAgainDisableObserverCheckBox;
+    bool        askDisableObserver;
+    bool        suspendingObservers;
+
 
     QMap<QString,QString>     defs;
     bool runAllMode;
+    bool isStochastic;
 
 
 };

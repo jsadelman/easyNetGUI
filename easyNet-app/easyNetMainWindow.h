@@ -116,6 +116,7 @@ private slots:
     void runCmdAndUpdate(QStringList cmdList);
     void viewSettings();
     void setEasyNetHome();
+    void setEasyNetDataHome();
 //    void showPauseState(bool isPaused);
     void getVersion();
 //    void showDocumentation();
@@ -171,10 +172,14 @@ private:
 
     void setCurrentFile(EditWindow *window, const QString &fileName);
     void readSettings();
+    void setDefaultLocations();
     void writeSettings();
 //    void runLazyNutBat();
 
     void hideAllDocks();
+    bool proceedWithRestart();
+    void loadModel(QString fileName);
+
 
 public:
 
@@ -195,7 +200,8 @@ public:
     QString         scriptsDir;
     QString         trialsDir;
     QString         stimDir;
-    QString         easyNetHome = "";
+    QString         easyNetHome;
+    QString         easyNetDataHome;
     QString         paramDataFrame;
     QString         quietMode;
     QString         df_name_for_updating_combobox;
@@ -244,6 +250,7 @@ public:
 //    CodeEditor      *commandLog;
 //    EditWindow       *commandLog;
     CommandLog       *commandLog;
+    CommandLog       *errorLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
     Highlighter     *highlighter3;
@@ -251,7 +258,7 @@ public:
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
-    DiagramScene    *conversionScene;
+//    DiagramScene    *conversionScene;
     PlotSettingsWindow      *plotSettingsWindow;
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
@@ -282,7 +289,7 @@ public:
     int             plotTabIdx;
     int             plotSettingsTabIdx;
     int             modelTabIdx;
-    int             conversionTabIdx;
+//    int             conversionTabIdx;
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
@@ -335,6 +342,7 @@ public:
     QAction         *restartInterpreterAct;
     QAction         *viewSettingsAct;
     QAction         *setEasyNetHomeAct;
+    QAction         *setEasyNetDataHomeAct;
     QActionGroup    *setFontActGrouop;
     QAction         *setSmallFontAct;
     QAction         *setMediumFontAct;

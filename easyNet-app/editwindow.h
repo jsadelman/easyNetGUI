@@ -20,7 +20,7 @@ class EditWindow : public QMainWindow
     Q_OBJECT
     friend class MainWindow;
 public:
-    EditWindow(QWidget *parent = 0, QAction *p_newAct = NULL, QAction *p_openAct = NULL, bool isReadOnly = false);
+    EditWindow(QWidget *parent = 0, bool isReadOnly = false);
     CodeEditor      *textEdit;
 //    QPlainTextEdit      *textEdit;
     QMenu *fileMenu;
@@ -53,7 +53,7 @@ signals:
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
-private slots:
+protected slots:
     void newFile();
     void open();
     bool save();
@@ -61,7 +61,7 @@ private slots:
     void documentWasModified();
     void showFindDialog();
 
-private:
+protected:
     void createActions();
     void createMenus();
     void createToolBars();
