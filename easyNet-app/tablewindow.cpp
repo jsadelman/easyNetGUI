@@ -61,25 +61,34 @@ TableWindow::~TableWindow()
 void TableWindow::preDispatch(QDomDocument *info)
 {
     QDomElement rootElement = info->documentElement();
-    QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
     QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
-    QString runMode = XMLAccessor::value(runModeElement);
     QString results = XMLAccessor::value(resultsElement);
 
-    int currentDispatchMode;
-    if (runMode == "single")
-        currentDispatchMode = singleTrialDispatchMode;
-    else if (runMode == "list")
-        currentDispatchMode = trialListDispatchMode;
+    int action;
+    if (!tableWidget->contains(results))
+    {
+        action = Dispatch_Overwrite;
+    }
     else
     {
-        qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
-        return;
-    }
-    if (!dispatchModeAuto)
-        currentDispatchMode = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
+        QDomElement resultsRoot = trialRunInfoMap[results]->documentElement();
+        QDomElement runModeElement = XMLAccessor::childElement(resultsRoot, "Run mode");
+        QString runMode = XMLAccessor::value(runModeElement);
+        int currentDispatchMode;
+        if (runMode == "single")
+            currentDispatchMode = singleTrialDispatchMode;
+        else if (runMode == "list")
+            currentDispatchMode = trialListDispatchMode;
+        else
+        {
+            qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
+            return;
+        }
+        if (!dispatchModeAuto)
+            currentDispatchMode = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
 
-    int action = tableWidget->contains(results) ? currentDispatchMode : Dispatch_Overwrite;
+        action = currentDispatchMode;
+    }
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList();
@@ -318,6 +327,7 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     QString results = XMLAccessor::value(resultsElement);
 
     trialRunInfoMap[results] = info;
+    refreshInfo();
 }
 
 void TableWindow::showInfo(QString name)

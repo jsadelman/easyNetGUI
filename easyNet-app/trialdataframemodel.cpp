@@ -38,10 +38,6 @@ void TrialDataFrameModel::setHeadeReplaceRules(QMap<Qt::Orientation, QList<QPair
     headerReplaceRules = rules;
 }
 
-void TrialDataFrameModel::addHeaderReplace(Qt::Orientation orientation, QList<QPair<QString, QString> > replaceList)
-{
-    headerReplace[orientation].append(replaceList);
-}
 
 QString TrialDataFrameModel::name()
 {

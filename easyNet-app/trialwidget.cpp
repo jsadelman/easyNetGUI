@@ -55,7 +55,7 @@ TrialWidget::TrialWidget(QWidget *parent)
 
     modelDescriptionUpdater = new ObjectUpdater(this);
     modelDescriptionUpdater->setProxyModel(modelFilter);
-    connect(modelDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*)),
+    connect(modelDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*, QString)),
            this, SLOT(updateModelStochasticity(QDomDocument*)));
 
 
@@ -330,7 +330,6 @@ void TrialWidget::runSingleTrial(LazyNutJob *job)
 
 QDomDocument * TrialWidget::createTrialRunInfo()
 {
-<<<<<<< HEAD
     QDomDocument *trialRunInfo = new QDomDocument();
     QDomElement rootElem = trialRunInfo->createElement("string");
     rootElem.setAttribute("value", "Trial run info");

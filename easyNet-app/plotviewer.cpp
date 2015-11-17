@@ -66,7 +66,7 @@ void FullScreenSvgDialog::clearSvg()
 
 
 PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
-    : easyNetHome(easyNetHomei), progressiveTabIdx(0), fullScreen(false), QMainWindow(parent),pend(false)
+    : easyNetHome(easyNetHomei), progressiveTabIdx(0), fullScreen(false), ResultsWindow_If(parent),pend(false)
 {
     plotPanel = new QTabWidget;
     fullScreenSvgDialog = new FullScreenSvgDialog(this);
@@ -199,7 +199,7 @@ void PlotViewer::preDispatch(QDomDocument *info)
 
 void PlotViewer::showInfo(QSvgWidget *svg)
 {
-    if (!svgTrialRunInfo.contains(svg))
+    if (!svgTrialRunInfo.contains(svg) || !svgTrialRunInfo[svg])
     {
         return;
     }
@@ -611,7 +611,7 @@ void PlotViewer::setupFullScreen()
 {
     fullScreen = true;
     emit resized(fullScreenSize);
-    emit sendDrawCmd(plotName[currentSvgWidget()]);
+    emit sendDrawCmd(plotSvg.key(currentSvgWidget()));
     fullScreenSvgDialog->clearSvg();
     fullScreenSvgDialog->exec();
     fullScreen = false;

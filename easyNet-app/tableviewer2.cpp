@@ -265,8 +265,11 @@ void TableViewer::setPrettyHeaderFromTables(QStringList tableList)
         int idx = tableMap.key(table);
         TrialDataFrameModel *sourceTrialDataFrameModel = qobject_cast<TrialDataFrameModel *>(tables[idx]);
         if (sourceTrialDataFrameModel)
-            foreach(Qt::Orientation o, sourceTrialDataFrameModel->getHeaderReplace().keys())
-                trialDataFrameModel->addHeaderReplace(o, sourceTrialDataFrameModel->getHeaderReplace().value(o));
+            sourceTrialDataFrameModel->setHeadeReplaceRules(sourceTrialDataFrameModel->getHeaderReplace());
+//            foreach(Qt::Orientation o, sourceTrialDataFrameModel->getHeaderReplace().keys())
+//                trialDataFrameModel->addHeaderReplaceRules(o,
+//                                     sourceTrialDataFrameModel->getHeaderReplace().value(o).first,
+//                                     sourceTrialDataFrameModel->getHeaderReplace().value(o).second);
     }
     trialDataFrameModel->setSourceModel(lastAddedModel);
     setModelAtTableIdx(trialDataFrameModel, lastAddedDataFrameIdx);
@@ -422,7 +425,7 @@ void TableViewer::mergeFD()
     {
         SessionManager::instance()->runCmd(cmdList);
     });
-    connect(&dialog, &SettingsFormDialog::dfNameReady, [=](QString dfName, QString x, QString y)
+    connect(&dialog, &SettingsFormDialog::dataframeMergeSettingsReady, [=](QStringList /*cmdList*/, QString dfName, QString x, QString y)
     {
        addTableWithThisName(dfName);
        currentTable = dfName;
