@@ -46,6 +46,7 @@ public:
 
     void submitJobs(QList<LazyNutJob*> jobs);
     void submitJobs(LazyNutJob* job) {submitJobs(QList<LazyNutJob*>{job});}
+    QVariant getDataFromJob(QObject *obj, QString key);
 
     LazyNutJob* recentlyCreatedJob();
     LazyNutJob* recentlyModifiedJob();

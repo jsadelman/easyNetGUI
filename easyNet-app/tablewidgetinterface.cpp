@@ -32,6 +32,11 @@ void TableWidgetInterface::addHeaderReplaceRules(Qt::Orientation orientation, QS
     headerReplaceRules[orientation].append(QPair<QString, QString>(from, to));
 }
 
+bool TableWidgetInterface::contains(QString table)
+{
+    return modelMap.contains(table);
+}
+
 void TableWidgetInterface::addTable(QString name)
 {
     if (modelMap.contains(name))

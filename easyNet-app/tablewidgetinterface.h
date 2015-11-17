@@ -19,7 +19,7 @@ public:
     virtual ~TableWidgetInterface();
     virtual QString currentTable()=0;
     void addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to);
-
+    bool contains(QString table);
 
 
 public slots:

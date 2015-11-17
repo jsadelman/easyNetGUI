@@ -1,6 +1,7 @@
 #include "resultswindow_if.h"
 #include "lazynutjob.h"
 #include "enumclasses.h"
+#include "sessionmanager.h"
 
 #include <QDomDocument>
 #include <QAction>
@@ -42,25 +43,17 @@ ResultsWindow_If::~ResultsWindow_If()
 
 void ResultsWindow_If::dispatch()
 {
-    LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-    if (!job)
+    QVariant info = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
+    if (info.canConvert<QDomDocument *>())
     {
-        qDebug() << "ERROR: ResultsWindow_If::dispatch cannot extract LazyNutJob from sender";
-        return;
+        dispatch_Impl(info.value<QDomDocument*>());
     }
-    QMap<QString, QVariant> data = job->data.toMap();
-    if (!data.contains("trialRunInfo"))
-    {
-        qDebug() << "ERROR: ResultsWindow_If::dispatch LazyNutJob->data does not contain trialRunInfo entry";
-        return;
-    }
-    if (!data.value("trialRunInfo").canConvert<QDomDocument *>())
+    else
     {
         qDebug() << "ERROR: ResultsWindow_If::dispatch cannot convert trialRunInfo to QDomDocument";
-        return;
     }
-    dispatch_Impl(data.value("trialRunInfo").value<QDomDocument*>());
 }
+
 
 void ResultsWindow_If::setDispatchModeOverride(int mode)
 {

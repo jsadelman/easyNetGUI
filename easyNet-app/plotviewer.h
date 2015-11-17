@@ -52,7 +52,7 @@ protected slots:
                              int dispatchOverride=-1);
 
 
-    void preDispatch(QDomDocument *info);
+    virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
     virtual void createToolBars() Q_DECL_OVERRIDE;

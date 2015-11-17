@@ -40,12 +40,10 @@ PlotViewer::PlotViewer(QString easyNetHome, QWidget* parent)
     {
         foreach (QString plot, sourceDataframeOfPlots.values(df))
         {
-//            qDebug() << "PlotViewer objectModified" << df << plot;
             QSvgWidget* svg = plotSvg.value(plot);
             if (svgIsActive.value(svg))
             {
                 svgSourceModified[svg] = true;
-//                qDebug() << "plotSourceModified" << plot;
             }
         }
     });
@@ -88,7 +86,6 @@ void PlotViewer::createToolBars()
 
 void PlotViewer::dispatch_Impl(QDomDocument *info)
 {
-    Q_UNUSED(info)
     QMutableMapIterator<QSvgWidget*, bool> svgSourceModified_it(svgSourceModified);
     while (svgSourceModified_it.hasNext())
     {

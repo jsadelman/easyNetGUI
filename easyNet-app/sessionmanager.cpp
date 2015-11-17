@@ -125,6 +125,23 @@ void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
     jobQueue->tryRun(jobs);
 }
 
+QVariant SessionManager::getDataFromJob(QObject *obj, QString key)
+{
+    LazyNutJob *job = qobject_cast<LazyNutJob *>(obj);
+    if (!job)
+    {
+        qDebug() << "ERROR: SessionManager::getDataFromJob cannot extract LazyNutJob from sender";
+        return QVariant();
+    }
+    QMap<QString, QVariant> data = job->data.toMap();
+    if (!data.contains(key))
+    {
+        qDebug() << "ERROR: SessionManager::getDataFromJob LazyNutJob->data does not contain key entry" << key;
+        return QVariant();
+    }
+    return data.value(key);
+}
+
 LazyNutJob *SessionManager::recentlyCreatedJob()
 {
     LazyNutJob *job = new LazyNutJob();

@@ -58,6 +58,76 @@ TableWindow::~TableWindow()
 {
 }
 
+void TableWindow::preDispatch(QDomDocument *info)
+{
+    QDomElement rootElement = info->documentElement();
+    QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
+    QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
+    QString runMode = XMLAccessor::value(runModeElement);
+    QString results = XMLAccessor::value(resultsElement);
+
+    int currentDispatchMode;
+    if (runMode == "single")
+        currentDispatchMode = singleTrialDispatchMode;
+    else if (runMode == "list")
+        currentDispatchMode = trialListDispatchMode;
+    else
+    {
+        qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
+        return;
+    }
+    if (!dispatchModeAuto)
+        currentDispatchMode = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
+
+    int action = tableWidget->contains(results) ? currentDispatchMode : Dispatch_Overwrite;
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList = QStringList();
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
+    switch(action)
+    {
+    case Dispatch_New:
+    {
+        QString backupTable = newTableName();
+        job->cmdList << QString("%1 copy %2").arg(results).arg(backupTable);
+        QMap<QString, QVariant> data;
+        data.insert("addTable", backupTable);
+        jobs << SessionManager::instance()->recentlyCreatedJob();
+        jobs.last()->data = data;
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
+        trialRunInfoMap[backupTable] = trialRunInfoMap[results];
+        break;
+    }
+    case Dispatch_Overwrite:
+    {
+        if (!tableWidget->contains(results))
+        {
+            tableWidget->addTable(results);
+        }
+        // make sure you clear results
+        break;
+    }
+    case Dispatch_Append:
+    {
+        // make sure you don't send results clear
+        break;
+    }
+    default:
+    {
+        qDebug() << "TableWindow::dispatch_Impl computed action was unrecognised";
+    }
+    }
+    if (!job->cmdList.isEmpty())
+    {
+        SessionManager::instance()->submitJobs(jobs);
+    }
+    else
+    {
+        foreach(LazyNutJob *j, jobs)
+            delete j;
+    }
+}
+
 void TableWindow::open()
 {
 
@@ -130,11 +200,11 @@ void TableWindow::dataframeMerge()
         // pass info over, assume only one of the two source df is a result
         if (trialRunInfoMap.contains(x))
         {
-            trialRunInfoMap[dfName].append(trialRunInfoMap[x]);
+            trialRunInfoMap[dfName] = trialRunInfoMap[x];
         }
         else if (trialRunInfoMap.contains(y))
         {
-            trialRunInfoMap[dfName].append(trialRunInfoMap[y]);
+            trialRunInfoMap[dfName] =trialRunInfoMap[y];
         }
         emit addDataframeMerge(x, dfName);
         emit addDataframeMerge(y, dfName);
@@ -145,31 +215,25 @@ void TableWindow::dataframeMerge()
 
 void TableWindow::addTable()
 {
-    LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-    if (!job)
+    QVariant v = SessionManager::instance()->getDataFromJob(sender(), "addTable");
+    if (!v.canConvert<QString>())
     {
-        qDebug() << "ERROR: TableWindow::addTable cannot extract LazyNutJob from sender";
-        return;
+        qDebug() << "ERROR: TableWindow::addTable cannot retrieve a valid string from addTable key in sender LazyNut job";
     }
-    QMap<QString, QVariant> data = job->data.toMap();
-    if (!data.contains("addTable"))
-    {
-        qDebug() << "ERROR: TableWindow::addTable LazyNutJob->data does not contain addTable entry";
-        return;
-    }
-    QString tableName = data.value("addTable").toString();
+    QString tableName = v.value<QString>();
     if (tableName.isEmpty())
     {
-        qDebug() << "ERROR: TableWindow::addTable LazyNutJob->data addTable entry is empty";
-        return;
+        qDebug() << "ERROR: TableWindow::addTable string from addTable key in sender LazyNut job is empty";
     }
-    if (!SessionManager::instance()->descriptionCache->exists(tableName))
+    else if (!SessionManager::instance()->descriptionCache->exists(tableName))
     {
         qDebug() << QString("ERROR: TableWindow::addTable attempt to add a non-existing table (dataframe) %1")
                     .arg(tableName);
-        return;
     }
-    tableWidget->addTable(tableName);
+    else
+    {
+        tableWidget->addTable(tableName);
+    }
 }
 
 void TableWindow::removeTable(QString name)
@@ -250,115 +314,20 @@ void TableWindow::createToolBars()
 void TableWindow::dispatch_Impl(QDomDocument *info)
 {
     QDomElement rootElement = info->documentElement();
-    QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
     QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
-    QString runMode = XMLAccessor::value(runModeElement);
     QString results = XMLAccessor::value(resultsElement);
 
-    int currentDispatchMode;
-    if (runMode == "single")
-        currentDispatchMode = singleTrialDispatchMode;
-    else if (runMode == "list")
-        currentDispatchMode = trialListDispatchMode;
-    else
-    {
-        qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
-        return;
-    }
-    if (!dispatchModeAuto)
-        currentDispatchMode = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
-
-    int action = dispatchMap.contains(results) ? currentDispatchMode : Dispatch_New;
-
-    QString dispatchDestination = QString(); // if not assigned, it will be newTableName();
-    switch(action)
-    {
-    case Dispatch_New:
-    {
-        // new table
-        break;
-    }
-    case Dispatch_Append:
-    case Dispatch_Overwrite:
-    {
-        if (dispatchModeAuto)
-        {
-            // destination is a table in Append or Overwrite mode if it's there,
-            // otherwise a new one
-            foreach(QString table, dispatchMap[results])
-            {
-                if (dispatchModeMap.value(table) == Dispatch_Append ||
-                    dispatchModeMap.value(table) == Dispatch_Overwrite)
-                {
-                    dispatchDestination = table;
-                    break;
-                }
-            }
-        }
-        else
-            dispatchDestination = tableWidget->currentTable();
-        break;
-    }
-    default:
-    {
-        qDebug() << "TableWindow::dispatch_Impl computed action was unrecognised";
-        return;
-    }
-    }
-    if (dispatchDestination.isEmpty())
-        dispatchDestination = newTableName();
-
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << SessionManager::instance()->updateObjectCatalogueJobs();
-    jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
-    switch(action)
-    {
-    case Dispatch_New:
-    {
-        job->cmdList << QString("%1 copy %2").arg(results).arg(dispatchDestination);
-        QMap<QString, QVariant> data;
-        data.insert("addTable", dispatchDestination);
-        jobs.last()->data = data;
-        jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
-        break;
-    }
-    case Dispatch_Overwrite:
-    {
-        job->cmdList << QString("R << eN[\"%1\"] <- eN[\"%2\"]").arg(dispatchDestination).arg(results);
-        break;
-    }
-    case Dispatch_Append:
-    {
-        job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])").arg(dispatchDestination).arg(results);
-        break;
-    }
-    default:
-    {
-        qDebug() << "TableWindow::dispatch_Impl computed action was unrecognised";
-        foreach(LazyNutJob *j, jobs)
-            delete j;
-        return;
-    }
-    }
-    SessionManager::instance()->submitJobs(jobs);
-    // update maps
-    dispatchMap[results].insert(dispatchDestination);
-    dispatchModeMap[dispatchDestination] = currentDispatchMode;
-    trialRunInfoMap[dispatchDestination].append(info);
-    sourceDfMap[dispatchDestination] = results;
+    trialRunInfoMap[results] = info;
 }
 
 void TableWindow::showInfo(QString name)
 {
-    if (!trialRunInfoMap.contains(name) || trialRunInfoMap.value(name).isEmpty())
+    if (!trialRunInfoMap.contains(name))
     {
 //        qDebug () << "ERROR: TableWindow::showInfo no info available for table" << name;
         return;
     }
-    XMLForm *infoForm = new XMLForm(trialRunInfoMap[name].last()->documentElement());
+    XMLForm *infoForm = new XMLForm(trialRunInfoMap[name]->documentElement());
     infoForm->build();
     infoScroll->setWidget(infoForm);
     infoForm->show();

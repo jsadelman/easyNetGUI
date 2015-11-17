@@ -36,6 +36,8 @@ protected slots:
     virtual void copy()=0;
     virtual void setInfoVisible(bool visible)=0;
     virtual void refreshInfo()=0;
+    virtual void preDispatch(QDomDocument *info)=0;
+
 
 protected:
     virtual void createActions();

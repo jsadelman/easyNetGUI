@@ -262,6 +262,8 @@ void MainWindow::connectSignalsAndSlots()
     connect(tableWindow, SIGNAL(addDataframeMerge(QString,QString)),
             plotViewer, SLOT(addDataframeMerge(QString,QString)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
+             tableWindow, SLOT(preDispatch(QDomDocument*)));
+    connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
             plotViewer, SLOT(preDispatch(QDomDocument*)));
 
 

@@ -19,6 +19,7 @@ public:
     ~TableWindow();
 
 protected slots:
+
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
@@ -28,6 +29,8 @@ protected slots:
     void removeTable(QString name);
     virtual void setInfoVisible(bool visible) Q_DECL_OVERRIDE;
     virtual void refreshInfo() Q_DECL_OVERRIDE;
+    virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
+
 
 signals:
     void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
@@ -44,7 +47,7 @@ protected:
 
     QMap <QString, int> dispatchModeMap; // <Table, Mode>
     QMap <QString, QSet<QString> > dispatchMap; // <results df, set of Tables>
-    QMap <QString, QList<QDomDocument*> > trialRunInfoMap; // <Table, list of info XML>
+    QMap <QString, QDomDocument*> trialRunInfoMap; // <Table, info XML>
     QMap <QString, QString> sourceDfMap; // reverse of dispatchMap
 
     QAction *copyDFAct;
