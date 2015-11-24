@@ -130,6 +130,8 @@ void PlotViewer::createToolBars()
     navigationToolBar = addToolBar(tr("Plots"));
     navigationToolBar->addSeparator();
     navigationToolBar->addWidget(titleLabel);
+
+    dispatchToolBar->removeAction(setDispatchModeOverrideActs.at(Dispatch_Append));
 }
 
 void PlotViewer::dispatch_Impl(QDomDocument *info)
@@ -248,7 +250,7 @@ void PlotViewer::createActions()
     fullScreenAct = new QAction(QIcon("://images/Full_screen_view.png"), "Full Screen", this);
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
 
-
+//    setDispatchModeOverrideActs.at(Dispatch_Append)->setDisabled(true);
 
 }
 

@@ -140,13 +140,16 @@ void TabsTableWidget::deleteTable_impl(QString name)
     delete dFmodel;
     modelMap.remove(name);
 //    emit tableDeleted(name);
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    job->cmdList << QString("destroy %1").arg(name);
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << SessionManager::instance()->updateObjectCatalogueJobs();
-    SessionManager::instance()->submitJobs(jobs);
+    if (!name.contains(QRegExp("[()]")))
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->logMode |= ECHO_INTERPRETER;
+        job->cmdList << QString("destroy %1").arg(name);
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << SessionManager::instance()->recentlyDestroyedJob();
+        SessionManager::instance()->submitJobs(jobs);
+    }
 }
 
 void TabsTableWidget::buildWidget()

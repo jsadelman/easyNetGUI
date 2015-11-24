@@ -151,5 +151,8 @@
         <file>images/Radioactive-icon.png</file>
         <file>images/Information-icon.png</file>
         <file>images/Full_screen_view.png</file>
+        <file>images/overwrite.png</file>
+        <file>images/append.png</file>
+        <file>images/tab_new.png</file>
     </qresource>
 </RCC>

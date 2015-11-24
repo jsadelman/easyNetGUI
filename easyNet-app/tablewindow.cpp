@@ -27,10 +27,7 @@ TableWindow::TableWindow(QWidget *parent)
     // instantiate main widget
     tableWidget = new TabsTableWidget(this);
     setCentralWidget(tableWidget);
-    // setup pretty headers (not the right place here, it should be customisable from this class
-    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"event_pattern", "");
-    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
-    tableWidget->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
+
     connect(tableWidget, &TabsTableWidget::currentTableChanged, [=](QString name)
     {
        if (infoVisible)

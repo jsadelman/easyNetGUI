@@ -45,10 +45,10 @@ protected:
     void hideInfo();
     QString newTableName();
 
-    QMap <QString, int> dispatchModeMap; // <Table, Mode>
-    QMap <QString, QSet<QString> > dispatchMap; // <results df, set of Tables>
+    QMap <QString, int> dispatchModeMap; // <Table, Mode> NOT USED
+    QMap <QString, QSet<QString> > dispatchMap; // <results df, set of Tables> NOT USED
     QMap <QString, QDomDocument*> trialRunInfoMap; // <Table, info XML>
-    QMap <QString, QString> sourceDfMap; // reverse of dispatchMap
+    QMap <QString, QString> sourceDfMap; // reverse of dispatchMap NOT USED
 
     QAction *copyDFAct;
     QAction *dataframeMergeAct;

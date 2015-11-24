@@ -22,6 +22,10 @@ ResultsWindow_If::ResultsWindow_If(QWidget *parent)
     dispatchModeName.insert(Dispatch_Overwrite, "Overwrite");
     dispatchModeName.insert(Dispatch_Append, "Append");
 
+    dispatchModeIconName.insert(Dispatch_New, ":/images/tab_new.png");
+    dispatchModeIconName.insert(Dispatch_Overwrite, ":/images/overwrite.png");
+    dispatchModeIconName.insert(Dispatch_Append, ":/images/append.png");
+
     // info
     infoDock = new QDockWidget("Info",this);
     infoScroll = new QScrollArea(this);
@@ -63,46 +67,21 @@ void ResultsWindow_If::setDispatchModeOverride(int mode)
 void ResultsWindow_If::setDispatchModeAuto(bool isAuto)
 {
     dispatchModeAuto = isAuto;
-    setDispatchModeOverrideActGroup->setDisabled(isAuto);
+//    setDispatchModeOverrideActGroup->setDisabled(isAuto);
+    setDispatchModeOverrideActGroup->setVisible(!isAuto);
 }
 
 void ResultsWindow_If::createActions()
 {
-    // single trial
-//    setSignleTrialDispatchModeMapper = new QSignalMapper(this);
-//    setSignleTrialDispatchModeActGrouop = new QActionGroup(this);
-//    for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
-//    {
-//        setSingleTrialDispatchModeActs.insert(mode, new QAction(dispatchModeName.value(mode), this));
-//        setSingleTrialDispatchModeActs.at(mode)->setCheckable(true);
-//        setSignleTrialDispatchModeMapper->setMapping(setSingleTrialDispatchModeActs.at(mode), mode);
-//        connect(setSingleTrialDispatchModeActs.at(mode), SIGNAL(triggered()),
-//                setSignleTrialDispatchModeMapper, SLOT(map()));
-//        setSignleTrialDispatchModeActGrouop->addAction(setSingleTrialDispatchModeActs.at(mode));
-//    }
-//    connect(setSignleTrialDispatchModeMapper, SIGNAL(mapped(int)),
-//            this, SLOT(setSingleTrialMode(int)));
-
-    // trial list
-//    setTrialListDispatchModeMapper = new QSignalMapper(this);
-//    setTrialListDispatchModeActGrouop = new QActionGroup(this);
-//    for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
-//    {
-//        setTrialListDispatchModeActs.insert(mode, new QAction(dispatchModeName.value(mode), this));
-//        setTrialListDispatchModeActs.at(mode)->setCheckable(true);
-//        setTrialListDispatchModeMapper->setMapping(setTrialListDispatchModeActs.at(mode), mode);
-//        connect(setTrialListDispatchModeActs.at(mode), SIGNAL(triggered()),
-//                setTrialListDispatchModeMapper, SLOT(map()));
-//        setTrialListDispatchModeActGrouop->addAction(setTrialListDispatchModeActs.at(mode));
-//    }
-//    connect(setTrialListDispatchModeMapper, SIGNAL(mapped(int)),
-//            this, SLOT(setTrialListMode(int)));
 
     setDispatchModeOverrideMapper = new QSignalMapper(this);
     setDispatchModeOverrideActGroup = new QActionGroup(this);
     for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
     {
-        setDispatchModeOverrideActs.insert(mode, new QAction(dispatchModeName.value(mode), this));
+        setDispatchModeOverrideActs.insert(mode, new QAction(
+                                               QIcon(dispatchModeIconName.value(mode)),
+                                               dispatchModeName.value(mode),
+                                               this));
         setDispatchModeOverrideActs.at(mode)->setCheckable(true);
         setDispatchModeOverrideMapper->setMapping(setDispatchModeOverrideActs.at(mode), mode);
         connect(setDispatchModeOverrideActs.at(mode), SIGNAL(triggered()),
@@ -113,6 +92,7 @@ void ResultsWindow_If::createActions()
             this, SLOT(setDispatchModeOverride(int)));
 
     setDispatchModeAutoAct = new QAction("Auto", this);
+    setDispatchModeAutoAct->setToolTip("Override default tabs behaviour");
     setDispatchModeAutoAct->setCheckable(true);
 //    setDispatchModeOverrideActGroup->addAction(setDispatchModeAutoAct);
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),

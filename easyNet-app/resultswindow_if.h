@@ -60,6 +60,7 @@ protected:
     bool dispatchModeAuto;
 
     QMap<int, QString> dispatchModeName;
+    QMap<int, QString> dispatchModeIconName;
     int singleTrialDispatchMode;
     int trialListDispatchMode;
 
