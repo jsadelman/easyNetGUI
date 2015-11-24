@@ -85,7 +85,9 @@ void TabsTableWidget::updateTable_impl(QAbstractItemModel *model)
     {
         dFmodel->setView(new QTableView(this));
         dFmodel->view()->setModel(model);
-        tabWidget->addTab(dFmodel->view(), name);
+        QRegExp prettyNameRx("\\(\\((\\w+) default_observer\\) default_dataframe\\)");
+        QString prettyName = prettyNameRx.indexIn(name) != -1 ? prettyNameRx.cap(1) : name;
+        tabWidget->addTab(dFmodel->view(), prettyName);
         dFmodel->view()->verticalHeader()->hide();
     }
     else

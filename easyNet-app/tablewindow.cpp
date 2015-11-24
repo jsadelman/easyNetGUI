@@ -9,6 +9,7 @@
 #include "xmlform.h"
 #include "settingsform.h"
 #include "settingsformdialog.h"
+#include "easyNetMainWindow.h"
 
 #include <QMenu>
 #include <QSignalMapper>
@@ -22,7 +23,7 @@
 
 
 TableWindow::TableWindow(QWidget *parent)
-    : tableCounter(0), ResultsWindow_If(parent)
+    : tableCounter(0), lastOpenDir(""), lastSaveDir(""), ResultsWindow_If(parent)
 {
     // instantiate main widget
     tableWidget = new TabsTableWidget(this);
@@ -34,8 +35,6 @@ TableWindow::TableWindow(QWidget *parent)
            showInfo(name);
     });
 
-
-
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeFilter->setType("dataframe");
     connect(dataframeFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeTable(QString)));
@@ -45,10 +44,6 @@ TableWindow::TableWindow(QWidget *parent)
     // trial dispatch defaults
     setSingleTrialMode(Dispatch_Append);
     setTrialListMode(Dispatch_New);
-
-//    infoAct->setChecked(false);
-
-
 }
 
 TableWindow::~TableWindow()
@@ -151,12 +146,48 @@ void TableWindow::preDispatch(QDomDocument *info)
 
 void TableWindow::open()
 {
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
+                                                    lastOpenDir.isEmpty() ? MainWindow::instance()->stimDir : lastOpenDir,
+                                                    tr("Database Files (*.eNd);;Text files (*.csv);;All files (*.*)"));
+    if (!fileName.isEmpty())
+    {
+        // create db
+        QFileInfo fi(fileName);
+        QString tableName = fi.completeBaseName();
+        lastOpenDir = fi.path();
 
+        fileName = QDir(MainWindow::instance()->easyNetDataHome).relativeFilePath(fileName);
+        QString loadCmd = fi.suffix() == "csv" ? "load_csv" : "load";
+        LazyNutJob *job = new LazyNutJob;
+        job->logMode |= ECHO_INTERPRETER;
+        job->cmdList = QStringList({
+                            QString("create dataframe %1").arg(tableName),
+                            QString("%1 %2 %3").arg(tableName).arg(loadCmd).arg(fileName)});
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << SessionManager::instance()->recentlyCreatedJob();
+        QMap<QString, QVariant> data;
+        data.insert("addTable", tableName);
+        jobs.last()->data = data;
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
+        SessionManager::instance()->submitJobs(jobs);
+    }
 }
 
 void TableWindow::save()
 {
-
+    QString fileName = QFileDialog::getSaveFileName(this,
+                        tr("Save as CSV file"),
+                        lastSaveDir.isEmpty() ? QString("%1/Databases").arg(MainWindow::instance()->easyNetDataHome) : lastOpenDir,
+                        "CSV (*.csv)");
+    if (!fileName.isEmpty())
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->logMode |= ECHO_INTERPRETER;
+        job->cmdList = QStringList({QString("%1 save_csv %2").arg(tableWidget->currentTable()).arg(fileName)});
+        SessionManager::instance()->submitJobs(job);
+        lastSaveDir = QFileInfo(fileName).path();
+    }
 }
 
 void TableWindow::copy()
@@ -262,16 +293,16 @@ void TableWindow::removeTable(QString name)
     // assumes that name is the name of a destination table deleted by the user,
     // not of a results dataframe
     // e.g. Table_1, as opposed to ((ldt default_observer) default_dataframe)
-    QMutableMapIterator<QString, QSet<QString> > dispatchMapIt(dispatchMap);
-    while (dispatchMapIt.hasNext())
-    {
-        dispatchMapIt.next();
-        dispatchMapIt.value().remove(name);
-        if (dispatchMapIt.value().isEmpty())
-            dispatchMapIt.remove();
-    }
+//    QMutableMapIterator<QString, QSet<QString> > dispatchMapIt(dispatchMap);
+//    while (dispatchMapIt.hasNext())
+//    {
+//        dispatchMapIt.next();
+//        dispatchMapIt.value().remove(name);
+//        if (dispatchMapIt.value().isEmpty())
+//            dispatchMapIt.remove();
+//    }
     trialRunInfoMap.remove(name);
-    sourceDfMap.remove(name);
+//    sourceDfMap.remove(name);
     if (tableWidget->currentTable().isEmpty())
         delete infoScroll->takeWidget();
 }

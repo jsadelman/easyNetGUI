@@ -62,6 +62,8 @@ protected:
 
     int tableCounter;
     ObjectCacheFilter *dataframeFilter;
+    QString lastOpenDir;
+    QString lastSaveDir;
 
 };
 
