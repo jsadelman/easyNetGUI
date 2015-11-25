@@ -35,6 +35,7 @@ public slots:
 signals:
     void currentTableChanged(QString);
     void tableDeleted(QString);
+    void hasCurrentTable(bool);
 
 protected slots:
     //

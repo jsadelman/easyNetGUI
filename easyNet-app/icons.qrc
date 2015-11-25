@@ -154,5 +154,6 @@
         <file>images/overwrite.png</file>
         <file>images/append.png</file>
         <file>images/tab_new.png</file>
+        <file>images/view_refresh.png</file>
     </qresource>
 </RCC>

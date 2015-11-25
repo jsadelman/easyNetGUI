@@ -31,6 +31,7 @@ protected slots:
     virtual void setInfoVisible(bool visible) Q_DECL_OVERRIDE;
     virtual void refreshInfo() Q_DECL_OVERRIDE;
     virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
+    void enableActions(bool enable);
 
 
 signals:
@@ -67,6 +68,7 @@ protected:
     ObjectCacheFilter *dataframeFilter;
     QString lastOpenDir;
     QString lastSaveDir;
+    QString lastResults;
 
 };
 

@@ -52,6 +52,30 @@ void TabsTableWidget::setCurrentTable(QString name)
     emit currentTableChanged(name);
 }
 
+void TabsTableWidget::setTabState(QString name, int state)
+{
+    setTabState(tabIndexOfTable(name), state);
+}
+
+void TabsTableWidget::setTabState(int index, int state)
+{
+    QIcon icon;
+    switch(state)
+    {
+    case Tab_DefaultState:
+        break;
+    case Tab_Updating:
+        icon = QIcon(":/images/view_refresh.png");
+        break;
+    case Tab_Ready:
+        icon = QIcon(":/images/icon_check_x24green.png");
+        break;
+    default:
+        break;
+    }
+    tabWidget->setTabIcon(index, icon);
+}
+
 void TabsTableWidget::addTable_impl(QString name)
 {
     dataframeFilter->setName(name);
@@ -154,6 +178,18 @@ void TabsTableWidget::deleteTable_impl(QString name)
     }
 }
 
+int TabsTableWidget::tabIndexOfTable(QString name)
+{
+    if (!modelMap.contains(name))
+        return -1;
+
+    DataFrameModel *dFmodel = getDataFrameModel(modelMap.value(name));
+    if (!dFmodel)
+         return -1;
+
+    return tabWidget->indexOf(dFmodel->view());
+}
+
 void TabsTableWidget::buildWidget()
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -166,6 +202,7 @@ void TabsTableWidget::buildWidget()
     connect(tabWidget, &QTabWidget::currentChanged, [=](int index)
     {
         emit currentTableChanged(tableAt(index));
+        emit hasCurrentTable(index != -1);
     });
     layout->addWidget(tabWidget);
     setLayout(layout);

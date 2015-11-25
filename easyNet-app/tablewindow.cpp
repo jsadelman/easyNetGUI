@@ -23,7 +23,7 @@
 
 
 TableWindow::TableWindow(QWidget *parent)
-    : tableCounter(0), lastOpenDir(""), lastSaveDir(""), ResultsWindow_If(parent)
+    : tableCounter(0), lastOpenDir(""), lastSaveDir(""), lastResults(""), ResultsWindow_If(parent)
 {
     // instantiate main widget
     tableWidget = new TabsTableWidget(this);
@@ -41,6 +41,8 @@ TableWindow::TableWindow(QWidget *parent)
 
     createActions();
     createToolBars();
+    connect(tableWidget, SIGNAL(hasCurrentTable(bool)), this, SLOT(enableActions(bool)));
+    enableActions(false);
     // trial dispatch defaults
     setSingleTrialMode(Dispatch_Append);
     setTrialListMode(Dispatch_New);
@@ -133,6 +135,8 @@ void TableWindow::preDispatch(QDomDocument *info)
         qDebug() << "TableWindow::dispatch_Impl computed action was unrecognised";
     }
     }
+    tableWidget->setTabState(lastResults, TabsTableWidget::Tab_DefaultState);
+    tableWidget->setTabState(results, TabsTableWidget::Tab_Updating);
     if (!job->cmdList.isEmpty())
     {
         SessionManager::instance()->submitJobs(jobs);
@@ -142,6 +146,19 @@ void TableWindow::preDispatch(QDomDocument *info)
         foreach(LazyNutJob *j, jobs)
             delete j;
     }
+}
+
+void TableWindow::enableActions(bool enable)
+{
+    // all actions except for open are disabled when there are no tables
+    saveAct->setEnabled(enable);
+    copyAct->setEnabled(enable);
+    copyDFAct->setEnabled(enable);
+    dataframeMergeAct->setEnabled(enable);
+    findAct->setEnabled(enable);
+    plotAct->setEnabled(enable);
+    setDispatchModeAutoAct->setEnabled(enable);
+    infoAct->setEnabled(enable);
 }
 
 void TableWindow::open()
@@ -401,6 +418,8 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     QDomElement rootElement = info->documentElement();
     QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
     QString results = XMLAccessor::value(resultsElement);
+    tableWidget->setTabState(results, TabsTableWidget::Tab_Ready);
+    lastResults = results;
 
     trialRunInfoMap[results] = info;
     refreshInfo();

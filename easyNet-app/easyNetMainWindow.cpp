@@ -61,7 +61,6 @@ MainWindow* MainWindow::mainWindow = nullptr;
 
 MainWindow* MainWindow::instance()
 {
-    qDebug() << "MainWindow::instance()" << mainWindow;
     return mainWindow ? mainWindow : (mainWindow = new MainWindow);
 }
 
