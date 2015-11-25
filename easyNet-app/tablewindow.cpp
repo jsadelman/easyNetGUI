@@ -10,6 +10,8 @@
 #include "settingsform.h"
 #include "settingsformdialog.h"
 #include "easyNetMainWindow.h"
+#include "objectnamevalidator.h"
+
 
 #include <QMenu>
 #include <QSignalMapper>
@@ -38,6 +40,8 @@ TableWindow::TableWindow(QWidget *parent)
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeFilter->setType("dataframe");
     connect(dataframeFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeTable(QString)));
+
+    validator = new ObjectNameValidator(this);
 
     createActions();
     createToolBars();
@@ -251,7 +255,7 @@ void TableWindow::preparePlot()
         return;
     QMap<QString,QString> settings;
     settings["df"] = tableWidget->currentTable();
-    QString plotName = normalisedName(tableWidget->currentTable()).append(".plot");
+    QString plotName = validator->makeValid(normalisedName(tableWidget->currentTable()).append(".plot"));
     QString plotType = "plot_mean_bars.R"; // testing!!!
     emit createNewRPlot(plotName, plotType, settings, settings, -1, trialRunInfoMap.value(tableWidget->currentTable()));
     emit showPlotSettings();

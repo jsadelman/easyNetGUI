@@ -8,6 +8,8 @@ class QActionGroup;
 class TabsTableWidget;
 class ObjectCacheFilter;
 class QScrollArea;
+class ObjectNameValidator;
+
 
 
 class TableWindow: public ResultsWindow_If
@@ -69,6 +71,7 @@ protected:
     QString lastOpenDir;
     QString lastSaveDir;
     QString lastResults;
+    ObjectNameValidator *validator;
 
 };
 

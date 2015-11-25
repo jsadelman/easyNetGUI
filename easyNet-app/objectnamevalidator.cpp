@@ -3,8 +3,9 @@
 #include "sessionmanager.h"
 
 ObjectNameValidator::ObjectNameValidator(QObject *parent)
+    : QValidator(parent)
 {
-    forbiddenNames
+    forbiddenNames = QStringList()
                       << "\\s+.*"
                       << "[#(0-9].*"
                       << "query"
@@ -68,8 +69,33 @@ QValidator::State ObjectNameValidator::validate(QString &input, int &pos) const
 
 }
 
-bool ObjectNameValidator::isValid(QString input)
+bool ObjectNameValidator::isValid(QString name)
 {
     int pos(0);
-    return validate(input, pos) == QValidator::Acceptable;
+    return validate(name, pos) == QValidator::Acceptable;
+}
+
+QString ObjectNameValidator::makeValid(QString name)
+{
+    // if name is not valid appends .1 or .2 etc. until a valid name is found.
+    if (isValid(name))
+        return name;
+
+    QRegExp countRx("\\.(\\d+)$");
+    int count = 1;
+    if (countRx.indexIn(name) == -1)
+    {
+        name.append(".1");
+    }
+    else
+    {
+        count = countRx.cap(1).toInt();
+    }
+    while (!isValid(name))
+    {
+        name.replace(QRegExp(QString("\\.%1$").arg(QString::number(count))),
+                     QString(".%1").arg(QString::number(count + 1)));
+        ++count;
+    }
+    return name;
 }
