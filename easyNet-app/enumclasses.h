@@ -4,6 +4,7 @@
 #include <Qt>
 #include <QHash>
 #include <QMap>
+#include <QRegExp>
 
 class AsLazyNutObject;
 typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
@@ -104,6 +105,13 @@ static QSet<K> allKeysOfValue(QMap<K, V> map, V v)
             set.insert(k);
     }
     return set;
+}
+
+static QString normalisedName(QString name)
+{
+    name.replace(QRegExp("[()]"), "");
+    name.replace(" ", "_");
+    return name;
 }
 
 #endif // ENUMCLASSES_H

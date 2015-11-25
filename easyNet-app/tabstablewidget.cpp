@@ -165,7 +165,8 @@ void TabsTableWidget::deleteTable_impl(QString name)
 
     delete dFmodel;
     modelMap.remove(name);
-//    emit tableDeleted(name);
+    // don't destroy default dataframes
+    // their names contain brackets
     if (!name.contains(QRegExp("[()]")))
     {
         LazyNutJob *job = new LazyNutJob;

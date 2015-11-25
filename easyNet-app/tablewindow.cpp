@@ -251,7 +251,7 @@ void TableWindow::preparePlot()
         return;
     QMap<QString,QString> settings;
     settings["df"] = tableWidget->currentTable();
-    QString plotName = tableWidget->currentTable().append(".plot");
+    QString plotName = normalisedName(tableWidget->currentTable()).append(".plot");
     QString plotType = "plot_mean_bars.R"; // testing!!!
     emit createNewRPlot(plotName, plotType, settings, settings, -1, trialRunInfoMap.value(tableWidget->currentTable()));
     emit showPlotSettings();

@@ -97,7 +97,7 @@ private:
     void setSvgActive(bool isActive, QSvgWidget *svg = nullptr);
     void updateActivePlots();
     QString plotCloneName(QString name);
-    QString normalisedName(QString name);
+//    QString normalisedName(QString name);
     void renamePlot(QString oldName, QString newName = QString());
 
 

@@ -373,12 +373,12 @@ QString PlotViewer::plotCloneName(QString name)
     return QString("%1_tab%2").arg(normalisedName(name)).arg(QString::number(plotCloneCount[name]++));
 }
 
-QString PlotViewer::normalisedName(QString name)
-{
-    name.replace(QRegExp("[()]"), "");
-    name.replace(" ", "_");
-    return name;
-}
+//QString PlotViewer::normalisedName(QString name)
+//{
+//    name.replace(QRegExp("[()]"), "");
+//    name.replace(" ", "_");
+//    return name;
+//}
 
 QString PlotViewer::cloneRPlot(QString name, QString newName)
 {
