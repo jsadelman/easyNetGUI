@@ -23,6 +23,7 @@ protected slots:
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
+    void copyDF();
     void preparePlot();
     void dataframeMerge();
     void addTable();
@@ -44,6 +45,8 @@ protected:
     void showInfo(QString name);
     void hideInfo();
     QString newTableName();
+    void setPrettyHeaders(QString trial, QString table);
+
 
     QMap <QString, int> dispatchModeMap; // <Table, Mode> NOT USED
     QMap <QString, QSet<QString> > dispatchMap; // <results df, set of Tables> NOT USED

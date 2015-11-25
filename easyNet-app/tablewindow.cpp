@@ -50,6 +50,16 @@ TableWindow::~TableWindow()
 {
 }
 
+void TableWindow::setPrettyHeaders(QString trial, QString table)
+{
+    TrialDataFrameModel *prettyHeadersModel = new TrialDataFrameModel(this);
+    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
+    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
+    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
+    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
+    tableWidget->setPrettyHeaders(table, prettyHeadersModel);
+}
+
 void TableWindow::preDispatch(QDomDocument *info)
 {
     QDomElement rootElement = info->documentElement();
@@ -100,12 +110,7 @@ void TableWindow::preDispatch(QDomDocument *info)
         jobs.last()->data = data;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
         trialRunInfoMap[backupTable] = trialRunInfoMap[results];
-        TrialDataFrameModel *prettyHeadersModel = new TrialDataFrameModel(this);
-        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
-        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
-        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
-        prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
-        tableWidget->setPrettyHeaders(backupTable, prettyHeadersModel);
+        setPrettyHeaders(trial, backupTable);
         break;
     }
     case Dispatch_Overwrite:
@@ -113,12 +118,7 @@ void TableWindow::preDispatch(QDomDocument *info)
         if (!tableWidget->contains(results))
         {
             tableWidget->addTable(results);
-            TrialDataFrameModel *prettyHeadersModel = new TrialDataFrameModel(this);
-            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
-            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
-            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
-            prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
-            tableWidget->setPrettyHeaders(results, prettyHeadersModel);
+            setPrettyHeaders(trial, results);
         }
         // make sure you clear results
         break;
@@ -192,7 +192,40 @@ void TableWindow::save()
 
 void TableWindow::copy()
 {
+    // this is an illegal approach -- get R to copy the df to the clipboard
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)")
+                                .arg(tableWidget->currentTable())});
+    SessionManager::instance()->submitJobs(job);
+}
 
+void TableWindow::copyDF()
+{
+    QString originalTable = tableWidget->currentTable();
+    QString copyTable = newTableName();
+    QString trial;
+    if (trialRunInfoMap.contains(originalTable))
+    {
+        QDomElement rootElement = trialRunInfoMap.value(originalTable)->documentElement();
+        QDomElement trialElement = XMLAccessor::childElement(rootElement, "Trial");
+        trial = XMLAccessor::value(trialElement);
+
+        trialRunInfoMap[copyTable] = trialRunInfoMap[originalTable];
+    }
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 copy %2").arg(originalTable).arg(copyTable);
+    QMap<QString, QVariant> data;
+    data.insert("addTable", copyTable);
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->recentlyCreatedJob();
+    jobs.last()->data = data;
+    jobs.last()->appendEndOfJobReceiver(this, SLOT(addTable()));
+    SessionManager::instance()->submitJobs(jobs);
+
+    setPrettyHeaders(trial, copyTable);
 }
 
 void TableWindow::preparePlot()
@@ -328,12 +361,12 @@ void TableWindow::createActions()
     ResultsWindow_If::createActions();
 
     openAct->setStatusTip(tr("Open an existing table"));
-    saveAct->setStatusTip(tr("Save current table"));
+    saveAct->setStatusTip(tr("Save current table as CSV"));
     copyAct->setStatusTip(tr("Copy the current selection's contents to the clipboard"));
 
     copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
-    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe "));
-//    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(on_copy_DF_clicked()));
+    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
+    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDF()));
 
     dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
     dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
