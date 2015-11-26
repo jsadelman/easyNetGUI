@@ -7,6 +7,8 @@
 #include "lazynutjob.h"
 #include "plotwindow.h"
 #include "xmlform.h"
+#include "objectnamevalidator.h"
+
 
 #include <QSvgWidget>
 #include <QToolBar>
@@ -94,6 +96,7 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
             }
         }
     });
+    validator = new ObjectNameValidator(this);
     setSingleTrialMode(Dispatch_New);
     setTrialListMode(Dispatch_New);
 
@@ -174,7 +177,6 @@ void PlotViewer::preDispatch(QDomDocument *info)
     QStringList sourceDfs({results});
     if (!dataframeMergeOfSource.values(results).isEmpty())
         sourceDfs.append(dataframeMergeOfSource.values(results));
-    qDebug() << " PlotViewer::preDispatch sourceDfs" << sourceDfs;
     foreach (QString df, sourceDfs)
     {
         foreach (QString rplot, sourceDataframeOfPlots.values(df))
@@ -370,7 +372,7 @@ void PlotViewer::updateActivePlots()
 
 QString PlotViewer::plotCloneName(QString name)
 {
-    return QString("%1_tab%2").arg(normalisedName(name)).arg(QString::number(plotCloneCount[name]++));
+    return validator->makeValid(name);
 }
 
 //QString PlotViewer::normalisedName(QString name)
@@ -382,16 +384,14 @@ QString PlotViewer::plotCloneName(QString name)
 
 QString PlotViewer::cloneRPlot(QString name, QString newName)
 {
-    newName = newName.isEmpty() ? plotCloneName(name) : newName;
+    newName =  validator->makeValid(newName.isEmpty() ? name : newName);
     // set df-related settings to values that are names of copies of the original df's
     QMap<QString, QString> sourceDataframeSettings = plotSourceDataframeSettings.value(name);
     QMutableMapIterator<QString, QString>sourceDataframeSettings_it(sourceDataframeSettings);
     while(sourceDataframeSettings_it.hasNext())
     {
         sourceDataframeSettings_it.next();
-        sourceDataframeSettings_it.setValue(QString("%1_rplotCopy%2")
-                                            .arg(normalisedName(sourceDataframeSettings_it.value()))
-                                            .arg(dataframeCloneCount[sourceDataframeSettings_it.value()]++));
+        sourceDataframeSettings_it.setValue(validator->makeValid(sourceDataframeSettings_it.value()));
     }
     // make the above mentioned df copies
     LazyNutJob *job = new LazyNutJob;
@@ -413,7 +413,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     // have a plot settings form created for the clone rplot
     // use the current settings from the original rplot, overwrite the df related ones and set them as defaults
     // for the new form
-    QMap<QString, QString> settings = MainWindow::instance()->plotSettingsWindow->getSettings(name); // bad design but quicker than using sinals/slots
+    QMap<QString, QString> settings = MainWindow::instance()->plotSettingsWindow->getSettings(name); // bad design but quicker than using signals/slots
     sourceDataframeSettings_it.toFront();
     while(sourceDataframeSettings_it.hasNext())
     {
@@ -471,8 +471,6 @@ QSvgWidget *PlotViewer::newSvg(QString name)
     QSvgWidget* svg = new QSvgWidget;
     plotSvg[name] = svg;
     plotPanel->addTab(svg, QString("Plot %1").arg(++progressiveTabIdx));
-    if (svg == currentSvgWidget())
-        qDebug() << "current svg changed to " << plotSvg.key(svg);
     setSvgActive(true, svg);
     svgIsUpToDate[svg] = true;
     svgSourceModified[svg] = false;

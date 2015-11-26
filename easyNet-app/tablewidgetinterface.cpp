@@ -16,10 +16,14 @@ TableWidgetInterface::TableWidgetInterface(QWidget *parent)
     dataframeUpdater = new ObjectUpdater(this);
     dataframeUpdater->setCommand("get");
     dataframeUpdater->setProxyModel(dataframeFilter);
-    connect(this, SIGNAL(currentTableChanged(QString)),
-            dataframeFilter, SLOT(setName(QString)));
+//    connect(this, SIGNAL(currentTableChanged(QString)),
+//            dataframeFilter, SLOT(setName(QString)));
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateTable(QDomDocument*,QString)));
+    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    dataframeDescriptionUpdater = new ObjectUpdater(this);
+    dataframeDescriptionUpdater->setProxyModel(dataframeDescriptionFilter);
+
 }
 
 TableWidgetInterface::~TableWidgetInterface()

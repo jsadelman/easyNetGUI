@@ -1,11 +1,12 @@
 #include "objectnamevalidator.h"
 #include "objectcache.h"
 #include "sessionmanager.h"
+#include "enumclasses.h"
 
 ObjectNameValidator::ObjectNameValidator(QObject *parent)
     : QValidator(parent)
 {
-    forbiddenNames = QStringList()
+    QStringList forbiddenNames = QStringList()
                       << "\\s+.*"
                       << "[#(0-9].*"
                       << "query"
@@ -49,19 +50,13 @@ ObjectNameValidator::ObjectNameValidator(QObject *parent)
                       << "unset"
                       << "R"
                          ;
+    forbiddenRex = QRegExp(QString("^(%1)$").arg(forbiddenNames.join("|")));
 }
 
 QValidator::State ObjectNameValidator::validate(QString &input, int &pos) const
 {
     Q_UNUSED(pos)
-    QRegExp forbiddenRex(QString("^(%1)$").arg(forbiddenNames.join("|")));
-    QModelIndexList objectMatchList = SessionManager::instance()->descriptionCache->match(
-                SessionManager::instance()->descriptionCache->index(0,0),
-                Qt::DisplayRole,
-                input,
-                1,
-                Qt::MatchExactly);
-    if (forbiddenRex.exactMatch(input) || objectMatchList.length() > 0)
+    if (forbiddenRex.exactMatch(input) || SessionManager::instance()->descriptionCache->exists(input))
         return Invalid;
 
     else
@@ -77,7 +72,9 @@ bool ObjectNameValidator::isValid(QString name)
 
 QString ObjectNameValidator::makeValid(QString name)
 {
-    // if name is not valid appends .1 or .2 etc. until a valid name is found.
+    // first eliminate brackets and spaces
+    name = normalisedName(name);
+    // then, if name is not valid appends .1 or .2 etc. until a valid name is found.
     if (isValid(name))
         return name;
 

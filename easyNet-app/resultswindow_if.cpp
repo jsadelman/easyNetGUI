@@ -26,6 +26,16 @@ ResultsWindow_If::ResultsWindow_If(QWidget *parent)
     dispatchModeIconName.insert(Dispatch_Overwrite, ":/images/overwrite.png");
     dispatchModeIconName.insert(Dispatch_Append, ":/images/append.png");
 
+    dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_New), Dispatch_New);
+    dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_Overwrite), Dispatch_New);
+    dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_Append), Dispatch_New);
+    dispatchModeFST.insert(qMakePair(Dispatch_Overwrite,Dispatch_New), Dispatch_Overwrite);
+    dispatchModeFST.insert(qMakePair(Dispatch_Overwrite,Dispatch_Overwrite), Dispatch_Overwrite);
+    dispatchModeFST.insert(qMakePair(Dispatch_Overwrite,Dispatch_Append), Dispatch_Overwrite);
+    dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_New), Dispatch_New);
+    dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Overwrite), Dispatch_New);
+    dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Append), Dispatch_Append);
+
     // info
     infoDock = new QDockWidget("Info",this);
     infoScroll = new QScrollArea(this);

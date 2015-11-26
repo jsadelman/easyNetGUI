@@ -13,7 +13,7 @@ public:
     QString makeValid(QString name);
 
 private:
-    QStringList forbiddenNames;
+    QRegExp forbiddenRex;
 
 };
 

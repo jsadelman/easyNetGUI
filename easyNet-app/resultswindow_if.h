@@ -58,6 +58,7 @@ protected:
 
     int dispatchModeOverride;
     bool dispatchModeAuto;
+    QMap<QPair<int, int>, int> dispatchModeFST; // <previous mode, current mode> -> action
 
     QMap<int, QString> dispatchModeName;
     QMap<int, QString> dispatchModeIconName;

@@ -13,6 +13,8 @@ class QAction;
 class QLabel;
 class QByteArray;
 class QScrollArea;
+class ObjectNameValidator;
+
 
 
 class FullScreenSvgDialog: public QDialog
@@ -39,11 +41,7 @@ public:
     PlotViewer(QString easyNetHome, QWidget *parent=0);
     ~PlotViewer();
 
-
     QSvgWidget *currentSvgWidget();
-
-
-
     void updateActionEnabledState(QSvgWidget* svg);
 public slots:
     void updateAllActivePlots();
@@ -139,6 +137,7 @@ private:
     QTabWidget*     plotPanel;
     bool            fullScreen;
     QSize           fullScreenSize;
+    ObjectNameValidator *validator;
 };
 
 #endif // PLOTVIEWER_H

@@ -2,8 +2,10 @@
 #include "dataframemodel.h"
 #include "trialdataframemodel.h"
 #include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "sessionmanager.h"
 #include "lazynutjob.h"
+#include "xmlaccessor.h"
 
 #include <QVBoxLayout>
 #include <QTabWidget>
@@ -78,7 +80,8 @@ void TabsTableWidget::setTabState(int index, int state)
 
 void TabsTableWidget::addTable_impl(QString name)
 {
-    dataframeFilter->setName(name);
+    dataframeFilter->addName(name);
+    dataframeDescriptionFilter->addName(name);
 }
 
 
@@ -109,9 +112,7 @@ void TabsTableWidget::updateTable_impl(QAbstractItemModel *model)
     {
         dFmodel->setView(new QTableView(this));
         dFmodel->view()->setModel(model);
-        QRegExp prettyNameRx("\\(\\((\\w+) default_observer\\) default_dataframe\\)");
-        QString prettyName = prettyNameRx.indexIn(name) != -1 ? prettyNameRx.cap(1) : name;
-        tabWidget->addTab(dFmodel->view(), prettyName);
+        tabWidget->addTab(dFmodel->view(), ""); // the (pretty) name on the tag will be set later
         dFmodel->view()->verticalHeader()->hide();
     }
     else
@@ -133,7 +134,7 @@ void TabsTableWidget::updateTable_impl(QAbstractItemModel *model)
     dFmodel->view()->resizeColumnsToContents();
 
     modelMap[name] = dFmodel;
-    if (isNewModel)
+//    if (isNewModel)
         setCurrentTable(name);
 }
 
@@ -177,6 +178,7 @@ void TabsTableWidget::deleteTable_impl(QString name)
                 << SessionManager::instance()->recentlyDestroyedJob();
         SessionManager::instance()->submitJobs(jobs);
     }
+    dataframeDescriptionFilter->removeName(name);
 }
 
 int TabsTableWidget::tabIndexOfTable(QString name)
@@ -207,6 +209,13 @@ void TabsTableWidget::buildWidget()
     });
     layout->addWidget(tabWidget);
     setLayout(layout);
+    connect(dataframeDescriptionUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* description, QString name)
+    {
+        QDomElement rootElement = description->documentElement();
+        QDomElement prettyNameElement = XMLAccessor::childElement(rootElement, "pretty name");
+        QString prettyName = XMLAccessor::value(prettyNameElement);
+        tabWidget->setTabText(tabIndexOfTable(name), prettyName);
+    });
 
 }
 

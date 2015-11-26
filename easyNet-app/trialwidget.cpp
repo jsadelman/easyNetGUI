@@ -42,6 +42,22 @@ TrialWidget::TrialWidget(QWidget *parent)
 
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     trialFilter->setType("trial");
+    // cosmetics used in tabs names in TableWindow
+    connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QDomDocument*)
+    {
+        QString df = QString("((%1 default_observer) default_dataframe)").arg(name);
+        if (SessionManager::instance()->descriptionCache->exists(df))
+        {
+            LazyNutJob *job = new LazyNutJob;
+            job->logMode |= ECHO_INTERPRETER;
+            job->cmdList = QStringList() << QString("%1 set_pretty_name %2").arg(df).arg(name);
+            QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                    << job
+                    << SessionManager::instance()->recentlyModifiedJob();
+            SessionManager::instance()->submitJobs(jobs);
+        }
+    });
+
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
@@ -261,6 +277,8 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which model to run");
         return;
     }
+    QDomDocument *trialRunInfo = createTrialRunInfo(); // will be a smart pointer
+    emit aboutToRunTrial(trialRunInfo);
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     if (runAllMode)
@@ -271,8 +289,7 @@ void TrialWidget::runTrial()
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->updateObjectCatalogueJobs();
-    QDomDocument *trialRunInfo = createTrialRunInfo(); // will be a smart pointer
-    emit aboutToRunTrial(trialRunInfo);
+
     QMap<QString, QVariant> data;
     data.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
     jobs.last()->data = data;
@@ -296,7 +313,7 @@ QString TrialWidget::defaultDataframe()
 void TrialWidget::runSingleTrial(LazyNutJob *job)
 {
 
-    job->cmdList << QString("%1 clear").arg(defaultDataframe());
+//    job->cmdList << QString("%1 clear").arg(defaultDataframe());
     job->cmdList << QString("%1 %2 step %3")
             .arg(MainWindow::instance()->quietMode)
             .arg(SessionManager::instance()->currentTrial())
@@ -367,7 +384,7 @@ QDomDocument * TrialWidget::createTrialRunInfo()
 void TrialWidget::runTrialList(LazyNutJob *job)
 {
 
-    job->cmdList << QString("%1 clear").arg(defaultDataframe());
+//    job->cmdList << QString("%1 clear").arg(defaultDataframe());
     if (askDisableObserver)
     {
         int answer = disableObserversMsg->exec();

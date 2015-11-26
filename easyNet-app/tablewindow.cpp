@@ -73,32 +73,44 @@ void TableWindow::preDispatch(QDomDocument *info)
     QString results = XMLAccessor::value(resultsElement);
     QDomElement trialElement = XMLAccessor::childElement(rootElement, "Trial");
     QString trial = XMLAccessor::value(trialElement);
-
+    QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");
+    QString runMode = XMLAccessor::value(runModeElement);
+    int currentDispatchMode;
+    if (runMode == "single")
+        currentDispatchMode = singleTrialDispatchMode;
+    else if (runMode == "list")
+        currentDispatchMode = trialListDispatchMode;
+    else
+    {
+        qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
+        return;
+    }
 
     int action;
     if (!tableWidget->contains(results))
     {
         action = Dispatch_Overwrite;
     }
+    else if (!dispatchModeAuto && dispatchModeOverride > -1)
+    {
+        action = dispatchModeOverride;
+    }
     else
     {
         QDomElement resultsRoot = trialRunInfoMap[results]->documentElement();
-        QDomElement runModeElement = XMLAccessor::childElement(resultsRoot, "Run mode");
-        QString runMode = XMLAccessor::value(runModeElement);
-        int currentDispatchMode;
-        if (runMode == "single")
-            currentDispatchMode = singleTrialDispatchMode;
-        else if (runMode == "list")
-            currentDispatchMode = trialListDispatchMode;
+        QDomElement previousRunModeElement = XMLAccessor::childElement(resultsRoot, "Run mode");
+        QString previousRunMode = XMLAccessor::value(previousRunModeElement);
+        int previousDispatchMode;
+        if (previousRunMode == "single")
+            previousDispatchMode = singleTrialDispatchMode;
+        else if (previousRunMode == "list")
+            previousDispatchMode = trialListDispatchMode;
         else
         {
             qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
             return;
         }
-        if (!dispatchModeAuto)
-            currentDispatchMode = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
-
-        action = currentDispatchMode;
+        action = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
     }
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
@@ -108,8 +120,13 @@ void TableWindow::preDispatch(QDomDocument *info)
     {
     case Dispatch_New:
     {
-        QString backupTable = newTableName();
+        QDomDocument* description = SessionManager::instance()->descriptionCache->getDomDoc(results);
+        QDomElement rootElement = description->documentElement();
+        QDomElement prettyNameElement = XMLAccessor::childElement(rootElement, "pretty name");
+        QString prettyName = XMLAccessor::value(prettyNameElement);
+        QString backupTable = validator->makeValid(prettyName);
         job->cmdList << QString("%1 copy %2").arg(results).arg(backupTable);
+        job->cmdList << QString("%1 clear").arg(results);
         QMap<QString, QVariant> data;
         data.insert("addTable", backupTable);
         jobs << SessionManager::instance()->recentlyCreatedJob();
@@ -121,17 +138,17 @@ void TableWindow::preDispatch(QDomDocument *info)
     }
     case Dispatch_Overwrite:
     {
+        job->cmdList << QString("%1 clear").arg(results);
         if (!tableWidget->contains(results))
         {
             tableWidget->addTable(results);
             setPrettyHeaders(trial, results);
         }
-        // make sure you clear results
         break;
     }
     case Dispatch_Append:
     {
-        // make sure you don't send results clear
+        // don't send results clear
         break;
     }
     default:
@@ -255,7 +272,7 @@ void TableWindow::preparePlot()
         return;
     QMap<QString,QString> settings;
     settings["df"] = tableWidget->currentTable();
-    QString plotName = validator->makeValid(normalisedName(tableWidget->currentTable()).append(".plot"));
+    QString plotName = validator->makeValid(tableWidget->currentTable().append(".plot"));
     QString plotType = "plot_mean_bars.R"; // testing!!!
     emit createNewRPlot(plotName, plotType, settings, settings, -1, trialRunInfoMap.value(tableWidget->currentTable()));
     emit showPlotSettings();
@@ -423,6 +440,7 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
     QString results = XMLAccessor::value(resultsElement);
     tableWidget->setTabState(results, TabsTableWidget::Tab_Ready);
+//    tableWidget->setCurrentTable(results);
     lastResults = results;
 
     trialRunInfoMap[results] = info;

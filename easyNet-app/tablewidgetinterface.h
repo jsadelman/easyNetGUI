@@ -51,7 +51,9 @@ protected:
 
     QString nameFromCmd(QString cmd);
     ObjectCacheFilter *dataframeFilter;
+    ObjectCacheFilter *dataframeDescriptionFilter;
     ObjectUpdater *dataframeUpdater;
+    ObjectUpdater *dataframeDescriptionUpdater;
     DataFrameModel *lastModel;
     QString lastName;
     QMap<QString, DataFrameModel*> modelMap;
