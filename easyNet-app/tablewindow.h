@@ -37,7 +37,7 @@ protected slots:
 
 
 signals:
-    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int, QDomDocument *);
+    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int, QDomDocument *);
     void showPlotSettings();
     void addDataframeMerge(QString, QString);
 

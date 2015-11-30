@@ -93,6 +93,7 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
             if (svgIsActive.value(svg))
             {
                 svgSourceModified[svg] = true;
+                updateActivePlots();
             }
         }
     });
@@ -173,30 +174,69 @@ void PlotViewer::preDispatch(QDomDocument *info)
         qDebug() << "ERROR: PlotViewer::dispatch_private cannot read trial run info XML.";
         return;
     }
-    int action;
+    QSet<QString> affectedPlots;
     QStringList sourceDfs({results});
     if (!dataframeMergeOfSource.values(results).isEmpty())
         sourceDfs.append(dataframeMergeOfSource.values(results));
-    foreach (QString df, sourceDfs)
-    {
+    foreach(QString df, sourceDfs)
         foreach (QString rplot, sourceDataframeOfPlots.values(df))
+            affectedPlots.insert(rplot);
+    QMapIterator<QString, bool> anyTrialPlot_it(anyTrialPlot);
+    while (anyTrialPlot_it.hasNext())
+    {
+        anyTrialPlot_it.next();
+        if (anyTrialPlot_it.value())
+            affectedPlots.insert(anyTrialPlot_it.key());
+    }
+
+    foreach (QString rplot, affectedPlots)
+    {
+        QSvgWidget* svg = plotSvg[rplot];
+        int action;
+        if (!svgByteArray.contains(svg))
         {
-            QSvgWidget* svg = plotSvg[rplot];
-            if (!dispatchModeAuto && svg == currentSvgWidget()) // apply manual override only to visible tab
-                action = dispatchModeOverride > -1 ? dispatchModeOverride : currentDispatchMode;
+            action = Dispatch_Overwrite;
+        }
+        else if (!dispatchModeAuto && dispatchModeOverride > -1 && svg == currentSvgWidget())
+        {
+            action = dispatchModeOverride;
+        }
+        else if (svgDispatchOverride.value(svg) > -1)
+        {
+            action = svgDispatchOverride.value(svg);
+        }
+        else if (!svgTrialRunInfo.value(svg))
+        {
+            action = currentDispatchMode;
+        }
+        else
+        {
+            QDomElement previousRoot = svgTrialRunInfo[svg]->documentElement();
+            QDomElement previousRunModeElement = XMLAccessor::childElement(previousRoot, "Run mode");
+            QString previousRunMode = XMLAccessor::value(previousRunModeElement);
+            int previousDispatchMode;
+            if (previousRunMode == "single")
+                previousDispatchMode = singleTrialDispatchMode;
+            else if (previousRunMode == "list")
+                previousDispatchMode = trialListDispatchMode;
             else
-                action = svgDispatchOverride.value(svg) > -1 ? svgDispatchOverride.value(svg) : currentDispatchMode;
-            action = svgByteArray.contains(svg) ? action : Dispatch_Overwrite; // if tab is empty, write on it anyway
-            qDebug() << " PlotViewer::preDispatch rplot action" << rplot << action;
-            if (action == Dispatch_New)
             {
-                QString newName = cloneRPlot(plotSvg.key(svg));
-                svgIsUpToDate[plotSvg[newName]] = false;
+                qDebug() << "ERROR: PlotViewer::preDispatch cannot read trial run info XML.";
+                return;
             }
+            action = dispatchModeFST.value(qMakePair(previousDispatchMode,
+                                                     svgDispatchOverride.contains(svg) ? svgDispatchOverride.value(svg) : currentDispatchMode));
+        }
+
+        if (action == Dispatch_New)
+        {
+            QString newName = cloneRPlot(plotSvg.key(svg));
+            svgIsUpToDate[plotSvg[newName]] = false;
         }
     }
-    updateActivePlots();
-    refreshInfo();
+
+//    updateActivePlots();
+//    refreshInfo();
 }
 
 
@@ -290,6 +330,7 @@ void PlotViewer::loadByteArray(QString name, QByteArray byteArray)
             svg->load(byteArray);
             plotPanel->setCurrentWidget(svg);
             titleLabel->setText(name);
+            setTabState(plotPanel->indexOf(svg) ,Tab_Ready);
         }
     }
 }
@@ -331,11 +372,12 @@ void PlotViewer::refreshInfo()
         showInfo(currentSvgWidget());
 }
 
-void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, int dispatchOverride, QDomDocument *info)
+void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, bool anyTrial, int dispatchOverride, QDomDocument *info)
 {
     Q_UNUSED(defaultSettings)
 
     plotType.insert(name, type);
+    anyTrialPlot.insert(name, anyTrial);
     plotSourceDataframeSettings.insert(name, sourceDataframeSettings);
     foreach (QString df, sourceDataframeSettings.values())
     {
@@ -355,6 +397,15 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
 
 void PlotViewer::updateActivePlots()
 {
+    QMapIterator<QSvgWidget*, bool> plotIsActiveIt(svgIsActive);
+    while (plotIsActiveIt.hasNext()) {
+        plotIsActiveIt.next();
+        if (plotIsActiveIt.value() && !svgIsUpToDate[plotIsActiveIt.key()])
+        {
+            setTabState(plotPanel->indexOf(plotIsActiveIt.key()), Tab_Old);
+        }
+    }
+
     if(plotPanel->currentIndex()>-1 &&
             svgIsActive[currentSvgWidget()] &&
             !svgIsUpToDate[currentSvgWidget()])
@@ -366,6 +417,7 @@ void PlotViewer::updateActivePlots()
         else
         {
             emit sendDrawCmd(plotSvg.key(currentSvgWidget()));
+            setTabState(plotPanel->indexOf(currentSvgWidget()), Tab_Updating);
         }
     }
 }
@@ -375,12 +427,6 @@ QString PlotViewer::plotCloneName(QString name)
     return validator->makeValid(name);
 }
 
-//QString PlotViewer::normalisedName(QString name)
-//{
-//    name.replace(QRegExp("[()]"), "");
-//    name.replace(" ", "_");
-//    return name;
-//}
 
 QString PlotViewer::cloneRPlot(QString name, QString newName)
 {
@@ -404,8 +450,8 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
                             .arg(plotSourceDataframeSettings.value(name).value(sourceDataframeSettings_it.key()))
                             .arg(sourceDataframeSettings_it.value()));
     }
-    job->data = QVariant::fromValue(QMap<QString, QString>({{"plotName", newName}}));
-    job->appendEndOfJobReceiver(this, SLOT(triggerPlotUpdate()));
+//    job->data = QVariant::fromValue(QMap<QString, QString>({{"plotName", newName}}));
+//    job->appendEndOfJobReceiver(this, SLOT(triggerPlotUpdate()));
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->recentlyCreatedJob();
@@ -420,7 +466,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
         sourceDataframeSettings_it.next();
         settings[sourceDataframeSettings_it.key()] = sourceDataframeSettings_it.value();
     }
-    emit createNewRPlot(newName, plotType[name], settings, QMap<QString, QString>(), -1);
+    emit quietlyCreateNewRPlot(newName, plotType[name], settings, QMap<QString, QString>(), false, -1);
     // new svg for the clone plot, copy the original trial run info to the clone
     QSvgWidget* svg = newSvg(newName);
     svgTrialRunInfo.insert(svg, svgTrialRunInfo[plotSvg[name]]);
@@ -434,9 +480,39 @@ void PlotViewer::updateAllActivePlots()
     while (plotIsActiveIt.hasNext()) {
         plotIsActiveIt.next();
         if (plotIsActiveIt.value())
+        {
             svgIsUpToDate[plotIsActiveIt.key()]=false;
+//            setTabState(plotPanel->indexOf(plotIsActiveIt.key()), Tab_Old);
+        }
     }
     updateActivePlots();
+}
+
+void PlotViewer::setTabState(int index, int state)
+{
+    QIcon icon;
+    switch(state)
+    {
+    case Tab_DefaultState:
+        break;
+    case Tab_Updating:
+        icon = QIcon(":/images/view_refresh.png");
+        break;
+    case Tab_Ready:
+        icon = QIcon(":/images/icon_check_x24green.png");
+        break;
+    case Tab_Old:
+        icon = QIcon(":/images/large-yellow-dot.png");
+        break;
+    default:
+        break;
+    }
+    plotPanel->setTabIcon(index, icon);
+}
+
+void PlotViewer::setCurrentPlot(QString name)
+{
+    plotPanel->setCurrentWidget(plotSvg.value(name));
 }
 
 
@@ -462,7 +538,7 @@ void PlotViewer::setSvgActive(bool isActive, QSvgWidget *svg)
     svg = svg ? svg : currentSvgWidget();
     svgIsActive[svg] = isActive;
     plotPanel->setTabIcon(plotPanel->indexOf(svg),
-                          isActive ? QIcon(":/images/icon-record.png") :
+                          isActive ? QIcon() :
                                      QIcon(":/images/snapshot-icon.png"));
 }
 
@@ -642,12 +718,8 @@ void PlotViewer::updateActionEnabledState(QSvgWidget* svg)
 void PlotViewer::currentTabChanged(int index)
 {
     QSvgWidget* svg = static_cast<QSvgWidget*>(plotPanel->widget(index));
-    if (svgIsActive.value(svg))
-    {
-        emit setPlot(plotSvg.key(svg));
-        updateActivePlots();
-//        if(!plotIsUpToDate[svg]&&!visibleRegion().isEmpty()) emit sendDrawCmd(plotName.value(svg));
-    }
+    emit setPlot(plotSvg.key(svg));
+    updateActivePlots();
     updateActionEnabledState(svg);
     if (infoVisible)
         showInfo(svg);

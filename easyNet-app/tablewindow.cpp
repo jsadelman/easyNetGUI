@@ -107,7 +107,7 @@ void TableWindow::preDispatch(QDomDocument *info)
             previousDispatchMode = trialListDispatchMode;
         else
         {
-            qDebug() << "ERROR: TableWindow::dispatch_Impl cannot read trial run info XML.";
+            qDebug() << "ERROR: TableWindow::preDispatch cannot read trial run info XML.";
             return;
         }
         action = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
@@ -274,7 +274,7 @@ void TableWindow::preparePlot()
     settings["df"] = tableWidget->currentTable();
     QString plotName = validator->makeValid(tableWidget->currentTable().append(".plot"));
     QString plotType = "plot_mean_bars.R"; // testing!!!
-    emit createNewRPlot(plotName, plotType, settings, settings, -1, trialRunInfoMap.value(tableWidget->currentTable()));
+    emit createNewRPlot(plotName, plotType, settings, settings, false, -1, trialRunInfoMap.value(tableWidget->currentTable()));
     emit showPlotSettings();
 }
 
@@ -440,7 +440,6 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");
     QString results = XMLAccessor::value(resultsElement);
     tableWidget->setTabState(results, TabsTableWidget::Tab_Ready);
-//    tableWidget->setCurrentTable(results);
     lastResults = results;
 
     trialRunInfoMap[results] = info;

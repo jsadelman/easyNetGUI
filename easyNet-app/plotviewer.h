@@ -38,6 +38,7 @@ class PlotViewer: public ResultsWindow_If
     Q_OBJECT
 
 public:
+     enum {Tab_DefaultState = 0, Tab_Updating, Tab_Ready, Tab_Old}; // same as in TabsTableWidget
     PlotViewer(QString easyNetHome, QWidget *parent=0);
     ~PlotViewer();
 
@@ -45,13 +46,16 @@ public:
     void updateActionEnabledState(QSvgWidget* svg);
 public slots:
     void updateAllActivePlots();
+     void setTabState(int index, int state=Tab_DefaultState); // same as in TabsTableWidget
+     void setCurrentPlot(QString name);
 signals:
     void sendDrawCmd(QString);
     void showPlotSettings();
     void setPlot(QString);
     void resized(QSize);
     void hidePlotSettings();
-    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
+    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
+    void quietlyCreateNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
 
 
 protected slots:
@@ -63,6 +67,7 @@ protected slots:
     void newRPlot(QString name, QString type,
                              QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
                              QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
+                             bool anyTrial=false,
                              int dispatchOverride=-1,
                              QDomDocument *info=nullptr);
 
@@ -119,6 +124,7 @@ private:
     int             progressiveTabIdx;
     QMap <QString, QSvgWidget*> plotSvg;
     QMap <QString, QString> plotType;
+    QMap <QString, bool> anyTrialPlot;
     QMap <QString, QMap<QString, QString> > plotSourceDataframeSettings; // <rplot <key, val> >
     QMap <QString, int> plotCloneCount;
     QMap <QSvgWidget*, bool> svgIsActive;

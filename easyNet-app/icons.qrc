@@ -155,5 +155,6 @@
         <file>images/append.png</file>
         <file>images/tab_new.png</file>
         <file>images/view_refresh.png</file>
+        <file>images/large-yellow-dot.png</file>
     </qresource>
 </RCC>

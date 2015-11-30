@@ -67,11 +67,18 @@ public:
 signals:
         void plot(QString, QByteArray);
         void showPlotViewer();
-        void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, int);
+        void setCurrentPlot(QString);
+        void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
 public slots:
         void newRPlot(QString name, QString type,
                                  QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
                                  QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
+                                 bool anyTrial = false,
+                                 int dispatchOverride=-1);
+        void quietlyNewRPlot(QString name, QString type,
+                                 QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
+                                 QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
+                                 bool anyTrial = false,
                                  int dispatchOverride=-1);
         void sendGetCmd(QString plotName);
         void sendGetCmd();
@@ -166,6 +173,7 @@ private:
     QAction *exitAct;
     QAction *copyAct;
     double plotAspr_;
+    bool quietly;
 };
 
 

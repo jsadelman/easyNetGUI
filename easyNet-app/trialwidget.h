@@ -60,8 +60,6 @@ private slots:
     void updateModelStochasticity(QDomDocument* modelDescription);
     void observerEnabled(QString name= QString());
     void observerDisabled(QString name= QString());
-    void suspendObservers();
-    void restoreObservers();
 private:
 
     QDomDocument * createTrialRunInfo();

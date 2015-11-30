@@ -25,7 +25,8 @@ PlotSettingsWindow::PlotSettingsWindow(QWidget *parent)
       savePlotSettingsAsText("Save plot setings as..."),
 //      plotSettingsForm(nullptr),
       QMainWindow(parent),
-      plotAspr_(1.)
+      plotAspr_(1.),
+      quietly(false)
 {
     setUnifiedTitleAndToolBarOnMac(true);
     createActions();
@@ -276,7 +277,7 @@ void PlotSettingsWindow::newPlot()
             this, SLOT(newRPlot(QString,QString)));
     connect(plotWizard, &NewPlotWizard::createNewRPlot, [=](QString name, QString type)
     {
-       emit createNewRPlot(name, type, QMap<QString,QString>(),QMap<QString,QString>(), -1);
+       emit createNewRPlot(name, type, QMap<QString,QString>(),QMap<QString,QString>(), false, -1);
     });
     plotWizard->show();
 }
@@ -294,10 +295,11 @@ void PlotSettingsWindow::newPlot()
 //}
 
 void PlotSettingsWindow::newRPlot(QString name, QString rScript,
-                                     QMap <QString,QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, int dispatchOverride)
+                                     QMap <QString,QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, bool anyTrial, int dispatchOverride)
 {
     Q_UNUSED(sourceDataframeSettings)
     Q_UNUSED(dispatchOverride)
+    Q_UNUSED(anyTrial)
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({
@@ -318,14 +320,20 @@ void PlotSettingsWindow::newRPlot(QString name, QString rScript,
             << SessionManager::instance()->recentlyCreatedJob();
     SessionManager::instance()->submitJobs(jobs);
 
-    currentPlotName = name;
-    currentPlotType = rScript;
+//    currentPlotName = name;
+//    currentPlotType = rScript;
     plotTypes[name] = rScript;
-    plotNameBox->setText(name);
-    plotTypeBox->setText(rScript);
+//    plotNameBox->setText(name);
+//    plotTypeBox->setText(rScript);
 
 //    getSettingsXML(currentPlotName);
 
+}
+
+void PlotSettingsWindow::quietlyNewRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, bool anyTrial, int dispatchOverride)
+{
+    quietly = true;
+    newRPlot(name, type, defaultSettings, sourceDataframeSettings, anyTrial, dispatchOverride);
 }
 
 //void PlotSettingsWindow::setType(QString rScript)
@@ -394,7 +402,7 @@ void PlotSettingsWindow::buildSettingsForm(QString plotName, QDomDocument *domDo
     plotSettingsForm->setPlotName(plotName);
     plotSettingsForm->setDefaultSettings(defaultSettings);
     plotSettingsForm->build();
-    plotForms[currentPlotName] = plotSettingsForm;
+    plotForms[plotName] = plotSettingsForm;
 
 
 //    QVBoxLayout *vboxLayout = new QVBoxLayout;
@@ -404,8 +412,14 @@ void PlotSettingsWindow::buildSettingsForm(QString plotName, QDomDocument *domDo
 //    plotSettingsWidget->setLayout(vboxLayout);
 //    plotSettingsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
 //    plotControlPanelScrollArea->setWidget(plotSettingsWidget);
-     plotControlPanelScrollArea->takeWidget();
-     plotControlPanelScrollArea->setWidget(plotSettingsForm);
+
+//     plotControlPanelScrollArea->takeWidget();
+//     plotControlPanelScrollArea->setWidget(plotSettingsForm);
+
+    if (!quietly)
+        setPlot(plotName);
+    quietly = false;
+//    emit setCurrentPlot(plotName);
 
 }
 
@@ -457,7 +471,7 @@ void PlotSettingsWindow::buildWindow()
 //            this, SLOT(setPlot(QString)));
 
     plotNameBox = new QLabel(this);
-    plotNameBox->setText(currentPlotType);
+    plotNameBox->setText(currentPlotName);
     plotNameBox->setStyleSheet("QLabel {"
                                "background-color: " + backCol + ";"
                              "color: " + textCol + ";"

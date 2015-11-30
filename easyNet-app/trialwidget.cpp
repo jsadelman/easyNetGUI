@@ -31,7 +31,7 @@ Q_DECLARE_METATYPE(QDomDocument*)
 
 
 TrialWidget::TrialWidget(QWidget *parent)
-    : runAllMode(false), askDisableObserver(true), suspendingObservers(true), QWidget(parent)
+    : runAllMode(false), askDisableObserver(true), suspendingObservers(false), QWidget(parent)
 {
     layout = new QHBoxLayout;
     layout1 = new QHBoxLayout;
@@ -383,16 +383,15 @@ QDomDocument * TrialWidget::createTrialRunInfo()
 
 void TrialWidget::runTrialList(LazyNutJob *job)
 {
-
-//    job->cmdList << QString("%1 clear").arg(defaultDataframe());
-    if (askDisableObserver)
+    if (askDisableObserver && !enabledObservers.isEmpty())
     {
         int answer = disableObserversMsg->exec();
         suspendingObservers = answer == QMessageBox::Yes;
         askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
     }
     if (suspendingObservers)
-        suspendObservers();
+        foreach(QString observer, enabledObservers)
+            job->cmdList << QString("%1 disable").arg(observer);
 
     job->cmdList << QString("set %1").arg(getTrialCmd());
     if (isStochastic)
@@ -411,6 +410,9 @@ void TrialWidget::runTrialList(LazyNutJob *job)
                         .arg(getStimulusSet());
     }
     job->cmdList << QString("unset %1").arg(getArguments().join(" "));
+    if (suspendingObservers)
+        foreach(QString observer, enabledObservers)
+            job->cmdList << QString("%1 enable").arg(observer);
 }
 
 bool TrialWidget::checkIfReadyToRun()
@@ -506,25 +508,6 @@ void TrialWidget::observerDisabled(QString name)
     enabledObservers.remove(name);
 }
 
-void TrialWidget::suspendObservers()
-{
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    foreach(QString observer, enabledObservers)
-        job->cmdList << QString("%1 disable").arg(observer);
-
-    SessionManager::instance()->submitJobs(job);
-}
-
-void TrialWidget::restoreObservers()
-{
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    foreach(QString observer, enabledObservers)
-        job->cmdList << QString("%1 enable").arg(observer);
-
-    SessionManager::instance()->submitJobs(job);
-}
 
 void TrialWidget::setStochasticityVisible(bool isVisible)
 {
