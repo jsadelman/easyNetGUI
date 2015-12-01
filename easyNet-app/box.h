@@ -4,6 +4,8 @@
 #include "libdunnartcanvas/shape.h"
 
 class ObjectCacheFilter;
+class ObjectUpdater;
+
 
 
 class Box: public dunnart::ShapeObj
@@ -58,14 +60,12 @@ protected:
 
 private slots:
 //    void sendCreateNewPlotOfType();
-    void setupDefaultDataframesFilter();
+    void setupDefaultObserverFilter();
 
 private:
     void defaultPlot(QString plotName, QString dataframe);
-    void enableObserver(QString observer);
-    void disableObserver(QString observer);
-    void lesion();
-    void unlesion();
+    void enableObserver(QString observer, bool enable);
+    void lesionBox(bool lesion);
 
     QString m_name;
     QString m_lazyNutType;
@@ -75,7 +75,8 @@ private:
     qreal m_widthMarginProportionToLongestLabel;
     qreal m_widthOverHeight;
 
-    ObjectCacheFilter *defaultDataframesFilter;
+    ObjectCacheFilter *defaultObserverFilter;
+    ObjectUpdater     *defaultObserverUpdater;
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
 
