@@ -280,6 +280,7 @@ void Box::enableObserver(QString observer, bool enable)
     job->cmdList << QString("%1 %2").arg(observer).arg(enable? "enable" : "disable");
     QMap<QString, QVariant> data;
     data.insert("observer", observer);
+    data.insert("enabled", enable);
     job->data = data;
     job->appendEndOfJobReceiver(MainWindow::instance()->trialWidget, SLOT(observerEnabled()));
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()

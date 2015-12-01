@@ -58,8 +58,7 @@ private slots:
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
     void updateModelStochasticity(QDomDocument* modelDescription);
-    void observerEnabled(QString name= QString());
-    void observerDisabled(QString name= QString());
+    void observerEnabled(QString name= QString(), bool enabled=true);
 private:
 
     QDomDocument * createTrialRunInfo();

@@ -468,7 +468,7 @@ void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
     setStochasticityVisible(runAllMode && isStochastic);
 }
 
-void TrialWidget::observerEnabled(QString name)
+void TrialWidget::observerEnabled(QString name, bool enabled)
 {
     if (name.isEmpty())
     {
@@ -484,29 +484,14 @@ void TrialWidget::observerEnabled(QString name)
             qDebug() << "TrialWidget::observerEnabled LazyNutJob does not contain an observer name";
             return;
         }
+        enabled = job->data.toMap().value("enabled").toBool();
     }
-    enabledObservers.insert(name);
+    if (enabled)
+        enabledObservers.insert(name);
+    else
+        enabledObservers.remove(name);
 }
 
-void TrialWidget::observerDisabled(QString name)
-{
-    if (name.isEmpty())
-    {
-        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-        if (!job)
-        {
-            qDebug() << "TrialWidget::observerDisabled sender not a LazyNutJob";
-            return;
-        }
-        name = job->data.toMap().value("observer").toString();
-        if (name.isEmpty())
-        {
-            qDebug() << "TrialWidget::observerDisabled LazyNutJob does not contain an observer name";
-            return;
-        }
-    }
-    enabledObservers.remove(name);
-}
 
 
 void TrialWidget::setStochasticityVisible(bool isVisible)
