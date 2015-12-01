@@ -14,6 +14,8 @@ class QLabel;
 class QByteArray;
 class QScrollArea;
 class ObjectNameValidator;
+class ObjectUpdater;
+
 
 
 
@@ -92,6 +94,7 @@ private slots:
     void triggerPlotUpdate(QString name=QString());
     void addDataframeMerge(QString df, QString dfm);
     void setupFullScreen();
+    void generatePrettyName(QString plotName, QString type, QDomDocument* domDoc);
 
 
 private:
@@ -140,6 +143,8 @@ private:
     QTimer*         resizeTimer;
     bool            pend;
     ObjectCacheFilter *dataframeFilter;
+    ObjectCacheFilter *plotFilter;
+    ObjectUpdater     *plotUpdater;
     QTabWidget*     plotPanel;
     bool            fullScreen;
     QSize           fullScreenSize;

@@ -1,5 +1,6 @@
 #include "plotviewer.h"
 #include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "sessionmanager.h"
 #include "xmlaccessor.h"
 #include "enumclasses.h"
@@ -8,6 +9,8 @@
 #include "plotwindow.h"
 #include "xmlform.h"
 #include "objectnamevalidator.h"
+#include "xmlelement.h"
+
 
 
 #include <QSvgWidget>
@@ -97,6 +100,21 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
             }
         }
     });
+    plotFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    plotFilter->setFilterKeyColumn(ObjectCache::NameCol);
+    plotUpdater = new ObjectUpdater(this);
+    plotUpdater->setProxyModel(plotFilter);
+    connect(plotFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+            this, SLOT(generatePrettyName(QString,QString,QDomDocument*)));
+    connect(plotUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domDoc, QString plotName)
+    {
+        QString prettyName =  XMLelement(*domDoc)["pretty name"]();
+        plotPanel->setTabText(plotPanel->indexOf(plotSvg.value(plotName)), prettyName);
+    });
+
+
+
+
     validator = new ObjectNameValidator(this);
     setSingleTrialMode(Dispatch_New);
     setTrialListMode(Dispatch_New);
@@ -312,6 +330,7 @@ void PlotViewer::open()
         setSvgActive(false, svg);
         svg->load(fileName);
         plotPanel->setCurrentWidget(svg);
+        plotPanel->setTabText(plotPanel->currentIndex(), name);
         currentTabChanged(plotPanel->currentIndex()); // refresh action enable properties
     }
 }
@@ -391,6 +410,7 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
     QSvgWidget* svg = newSvg(name);
     svgDispatchOverride.insert(svg, dispatchOverride);
     svgTrialRunInfo.insert(svg, info);
+    plotFilter->addName(name);
 
 }
 
@@ -398,11 +418,15 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
 void PlotViewer::updateActivePlots()
 {
     QMapIterator<QSvgWidget*, bool> plotIsActiveIt(svgIsActive);
-    while (plotIsActiveIt.hasNext()) {
+    while (plotIsActiveIt.hasNext())
+    {
         plotIsActiveIt.next();
-        if (plotIsActiveIt.value() && !svgIsUpToDate[plotIsActiveIt.key()])
+        if (plotIsActiveIt.value())
         {
-            setTabState(plotPanel->indexOf(plotIsActiveIt.key()), Tab_Old);
+            if (svgIsUpToDate[plotIsActiveIt.key()])
+                setTabState(plotPanel->indexOf(plotIsActiveIt.key()), Tab_DefaultState);
+            else
+                setTabState(plotPanel->indexOf(plotIsActiveIt.key()), Tab_Old);
         }
     }
 
@@ -431,6 +455,7 @@ QString PlotViewer::plotCloneName(QString name)
 QString PlotViewer::cloneRPlot(QString name, QString newName)
 {
     newName =  validator->makeValid(newName.isEmpty() ? name : newName);
+    plotFilter->addName(newName);
     // set df-related settings to values that are names of copies of the original df's
     QMap<QString, QString> sourceDataframeSettings = plotSourceDataframeSettings.value(name);
     QMutableMapIterator<QString, QString>sourceDataframeSettings_it(sourceDataframeSettings);
@@ -471,6 +496,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     QSvgWidget* svg = newSvg(newName);
     svgTrialRunInfo.insert(svg, svgTrialRunInfo[plotSvg[name]]);
 
+
     return newName;
 }
 
@@ -494,6 +520,7 @@ void PlotViewer::setTabState(int index, int state)
     switch(state)
     {
     case Tab_DefaultState:
+        icon = QIcon();
         break;
     case Tab_Updating:
         icon = QIcon(":/images/view_refresh.png");
@@ -691,6 +718,16 @@ void PlotViewer::setupFullScreen()
     fullScreenSvgDialog->clearSvg();
     fullScreenSvgDialog->exec();
     fullScreen = false;
+}
+
+void PlotViewer::generatePrettyName(QString plotName, QString type, QDomDocument *domDoc)
+{
+    Q_UNUSED(type)
+    Q_UNUSED(domDoc)
+    QString prettyName = plotName;
+    prettyName.remove(".plot");
+    prettyName.replace(".", " ");
+    SessionManager::instance()->setPrettyName(plotName, prettyName);
 }
 
 void PlotViewer::snapshot()

@@ -113,6 +113,7 @@ public slots:
     void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
     void setCurrentTrial(QString s) {m_currentTrial = s;}
     void setCurrentSet(QString s) {m_currentSet = s;}
+    void setPrettyName(QString name, QString prettyName);
 
 private slots:
 

@@ -103,6 +103,19 @@ void SessionManager::restartLazyNut(QString lazyNutBat)
     startLazyNut(lazyNutBat);
 }
 
+void SessionManager::setPrettyName(QString name, QString prettyName)
+{
+    if (!descriptionCache->exists(name))
+        return;
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 set_pretty_name %2").arg(name).arg(prettyName);
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << job
+                                << recentlyModifiedJob();
+    submitJobs(jobs);
+}
+
 
 
 void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
