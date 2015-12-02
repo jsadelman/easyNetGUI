@@ -277,10 +277,22 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which model to run");
         return;
     }
+    if (runAllMode && askDisableObserver && !enabledObservers.isEmpty())
+    {
+        int answer = disableObserversMsg->exec();
+        suspendingObservers = answer == QMessageBox::Yes;
+        askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
+    }
     QDomDocument *trialRunInfo = createTrialRunInfo(); // will be a smart pointer
     emit aboutToRunTrial(trialRunInfo);
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
+
+    if (!suspendingObservers)
+    {
+        foreach(QString observer, enabledObservers)
+            job->cmdList << QString("(%1 default_dataframe) clear").arg(observer);
+    }
     if (runAllMode)
         runTrialList(job);
     else
@@ -383,12 +395,7 @@ QDomDocument * TrialWidget::createTrialRunInfo()
 
 void TrialWidget::runTrialList(LazyNutJob *job)
 {
-    if (askDisableObserver && !enabledObservers.isEmpty())
-    {
-        int answer = disableObserversMsg->exec();
-        suspendingObservers = answer == QMessageBox::Yes;
-        askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
-    }
+
     if (suspendingObservers)
         foreach(QString observer, enabledObservers)
             job->cmdList << QString("%1 disable").arg(observer);

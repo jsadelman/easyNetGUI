@@ -114,6 +114,7 @@ public slots:
     void setCurrentTrial(QString s) {m_currentTrial = s;}
     void setCurrentSet(QString s) {m_currentSet = s;}
     void setPrettyName(QString name, QString prettyName);
+    void destroyObject(QString name);
 
 private slots:
 

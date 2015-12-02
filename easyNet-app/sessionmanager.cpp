@@ -116,6 +116,20 @@ void SessionManager::setPrettyName(QString name, QString prettyName)
     submitJobs(jobs);
 }
 
+void SessionManager::destroyObject(QString name)
+{
+    if (descriptionCache->exists(name))
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->logMode |= ECHO_INTERPRETER;
+        job->cmdList << QString("destroy %1").arg(name);
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << recentlyDestroyedJob();
+        submitJobs(jobs);
+    }
+}
+
 
 
 void SessionManager::submitJobs(QList<LazyNutJob *> jobs)

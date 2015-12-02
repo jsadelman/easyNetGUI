@@ -55,8 +55,7 @@ signals:
 
 
 protected:
-    virtual QAction *buildAndExecContextMenu(
-            QGraphicsSceneMouseEvent *event, QMenu& menu);
+    virtual QAction *buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu& menu);
 
 private slots:
 //    void sendCreateNewPlotOfType();
@@ -77,6 +76,8 @@ private:
 
     ObjectCacheFilter *defaultObserverFilter;
     ObjectUpdater     *defaultObserverUpdater;
+    ObjectCacheFilter *plotFilter;
+    QMap <QString, QString> observerOfPlot;
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
 

@@ -89,7 +89,7 @@ private slots:
     void currentTabChanged(int index);
     void freeze(QSvgWidget *svg = nullptr);
     void renamePlot();
-    void deletePlot();
+    void deletePlot(QString name);
     void makeSnapshot(QString name);
     void triggerPlotUpdate(QString name=QString());
     void addDataframeMerge(QString df, QString dfm);
@@ -129,7 +129,6 @@ private:
     QMap <QString, QString> plotType;
     QMap <QString, bool> anyTrialPlot;
     QMap <QString, QMap<QString, QString> > plotSourceDataframeSettings; // <rplot <key, val> >
-    QMap <QString, int> plotCloneCount;
     QMap <QSvgWidget*, bool> svgIsActive;
     QMap <QSvgWidget*, QByteArray> svgByteArray;
     QMap <QSvgWidget*, bool> svgIsUpToDate;
@@ -137,7 +136,6 @@ private:
     QMap <QSvgWidget*, QDomDocument*> svgTrialRunInfo; // <svg, info XML>
     QMap <QSvgWidget*, int> svgDispatchOverride;
     QMultiMap <QString, QString> sourceDataframeOfPlots; // <dataframe, rplots>
-    QMap <QString, int> dataframeCloneCount;
     QMultiMap <QString, QString> dataframeMergeOfSource; // <dataframe, dataframe_merges>
 
     QTimer*         resizeTimer;

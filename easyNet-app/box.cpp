@@ -177,6 +177,11 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                             .arg(plotData["displayName"].toString());
                 }
             }
+            if (!observerOfPlot.contains(plotData["rplotName"].toString()))
+            {
+                observerOfPlot.insert(plotData["rplotName"].toString(), observer);
+                plotFilter->addName(plotData["rplotName"].toString());
+            }
 
             actionList.append(plotMenu->addAction(plotData["displayName"].toString()));
             actionList.at(row)->setCheckable(true);
@@ -270,6 +275,18 @@ void Box::setupDefaultObserverFilter()
             QString observer = defaultObserverFilter->data(defaultObserverFilter->index(row, ObjectCache::NameCol)).toString();
             defaultObserverUpdater->requestObject(observer);
         }
+
+        plotFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+        plotFilter->setFilterKeyColumn(ObjectCache::NameCol);
+        connect(plotFilter, &ObjectCacheFilter::objectDestroyed, [=](QString name)
+        {
+            if (observerOfPlot.contains(name))
+            {
+                enableObserver(observerOfPlot.value(name), false);
+                observerOfPlot.remove(name);
+                plotFilter->removeName(name);
+            }
+        });
     }
 }
 

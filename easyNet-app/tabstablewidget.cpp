@@ -169,15 +169,8 @@ void TabsTableWidget::deleteTable_impl(QString name)
     // don't destroy default dataframes
     // their names contain brackets
     if (!name.contains(QRegExp("[()]")))
-    {
-        LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
-        job->cmdList << QString("destroy %1").arg(name);
-        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                << job
-                << SessionManager::instance()->recentlyDestroyedJob();
-        SessionManager::instance()->submitJobs(jobs);
-    }
+        SessionManager::instance()->destroyObject(name);
+
     dataframeDescriptionFilter->removeName(name);
 }
 
@@ -198,7 +191,7 @@ void TabsTableWidget::buildWidget()
     QVBoxLayout *layout = new QVBoxLayout(this);
     tabWidget = new QTabWidget;
     tabWidget->setTabsClosable(true);
-    connect(tabWidget->tabBar(), &QTabBar::tabCloseRequested, [=](int index)
+    connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)
     {
        deleteTable(tableAt(index));
     });

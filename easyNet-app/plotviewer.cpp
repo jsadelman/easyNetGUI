@@ -74,6 +74,7 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
     : easyNetHome(easyNetHomei), progressiveTabIdx(0), fullScreen(false), ResultsWindow_If(parent),pend(false)
 {
     plotPanel = new QTabWidget;
+    plotPanel->setTabsClosable(true);
     fullScreenSvgDialog = new FullScreenSvgDialog(this);
     auto temp=QApplication::desktop()->availableGeometry();
     fullScreenSize = QSize(temp.width(),temp.height());
@@ -83,6 +84,10 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
     createToolBars();
 
     connect(plotPanel, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
+    connect(plotPanel, &QTabWidget::tabCloseRequested, [=](int index)
+    {
+        deletePlot(plotSvg.key(qobject_cast<QSvgWidget*>(plotPanel->widget(index))));
+    });
 
     resizeTimer = new QTimer(this);
     connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
@@ -193,9 +198,10 @@ void PlotViewer::preDispatch(QDomDocument *info)
         return;
     }
     QSet<QString> affectedPlots;
-    QStringList sourceDfs({results});
-    if (!dataframeMergeOfSource.values(results).isEmpty())
-        sourceDfs.append(dataframeMergeOfSource.values(results));
+    QSet<QString> sourceDfs({results});
+    sourceDfs.unite(matchListFromMap(dataframeMergeOfSource, results));
+//    if (!dataframeMergeOfSource.values(results).isEmpty())
+//        sourceDfs.append(dataframeMergeOfSource.values(results));
     foreach(QString df, sourceDfs)
         foreach (QString rplot, sourceDataframeOfPlots.values(df))
             affectedPlots.insert(rplot);
@@ -307,7 +313,7 @@ void PlotViewer::createActions()
     deleteAct->setStatusTip(tr("Delete plot"));
     connect(deleteAct, SIGNAL(triggered()), this, SLOT(deletePlot()));
 
-    fullScreenAct = new QAction(QIcon("://images/Full_screen_view.png"), "Full Screen", this);
+    fullScreenAct = new QAction(QIcon(":/images/Full_screen_view.png"), "Full Screen", this);
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
 
 //    setDispatchModeOverrideActs.at(Dispatch_Append)->setDisabled(true);
@@ -324,8 +330,7 @@ void PlotViewer::open()
     {
         QString name = QFileInfo(fileName).baseName();
         if (plotSvg.contains(name))
-            name = QString("%1_tab%2").arg(name).arg(QString::number(plotCloneCount[name]++));
-
+            name.append("_");
         QSvgWidget* svg = newSvg(name);
         setSvgActive(false, svg);
         svg->load(fileName);
@@ -402,11 +407,9 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
     {
         if (!sourceDataframeOfPlots.contains(df, name))
             sourceDataframeOfPlots.insert(df, name);
-        if (!dataframeCloneCount.contains(df))
-            dataframeCloneCount.insert(df, 0);
         dataframeFilter->addName(df);
     }
-    plotCloneCount.insert(name, 0);
+//    plotCloneCount.insert(name, 0);
     QSvgWidget* svg = newSvg(name);
     svgDispatchOverride.insert(svg, dispatchOverride);
     svgTrialRunInfo.insert(svg, info);
@@ -634,15 +637,23 @@ void PlotViewer::renamePlot(QString oldName, QString newName)
         titleLabel->setText(newName);
 }
 
-void PlotViewer::deletePlot()
+void PlotViewer::deletePlot(QString name)
 {
-    QString name = plotSvg.key(currentSvgWidget());
-    QSvgWidget* svg = currentSvgWidget();
-    // remove all map entries
+    // remove all map entries, lazyNut object and svg
+    QSvgWidget* svg = plotSvg.value(name);
     plotSvg.remove(name);
     plotType.remove(name);
+    anyTrialPlot.remove(name);
+    SessionManager::instance()->destroyObject(name);
+
+    svgIsActive.remove(svg);
+    svgByteArray.remove(svg);
+    svgIsUpToDate.remove(svg);
+    svgSourceModified.remove(svg);
+    svgTrialRunInfo.remove(svg); // leakage, but smart pointers will fix
+    svgDispatchOverride.remove(svg);
+
     plotSourceDataframeSettings.remove(name);
-    plotCloneCount.remove(name);
     // remove all <df, name> pairs from sourceDataframeOfPlots
     // looks like there is no simple way to iterate mutably through a multimap
     // so first take note of all df keys associated with the plot name and then remove them
@@ -655,13 +666,6 @@ void PlotViewer::deletePlot()
     }
     foreach(QString df, dfSet)
         sourceDataframeOfPlots.remove(df, name);
-
-    svgIsActive.remove(svg);
-    svgByteArray.remove(svg);
-    svgIsUpToDate.remove(svg);
-    svgSourceModified.remove(svg);
-    svgTrialRunInfo.remove(svg); // leakage, but smart pointers will fix
-    svgDispatchOverride.remove(svg);
 
     delete svg;
 }
