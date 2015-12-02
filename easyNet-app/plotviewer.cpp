@@ -140,24 +140,11 @@ void PlotViewer::createToolBars()
 {
     ResultsWindow_If::createToolBars();
 
-    editToolBar = addToolBar(tr("Edit"));
-    editToolBar->addAction(refreshAct);
     editToolBar->addAction(snapshotAct);
     editToolBar->addAction(settingsAct);
     editToolBar->addAction(fullScreenAct);
-
-    fileToolBar = addToolBar(tr("File"));
-    fileToolBar->addAction(renameAct);
-    fileToolBar->addAction(copyAct);
-    fileToolBar->addAction(openAct);
-    fileToolBar->addAction(saveAct);
-    fileToolBar->addAction(deleteAct);
-
-    titleLabel = new QLabel("");
-    navigationToolBar = addToolBar(tr("Plots"));
-    navigationToolBar->addSeparator();
-    navigationToolBar->addWidget(titleLabel);
-
+    editToolBar->addAction(renameAct);
+//    titleLabel = new QLabel("");
     dispatchToolBar->removeAction(setDispatchModeOverrideActs.at(Dispatch_Append));
 }
 
@@ -308,10 +295,6 @@ void PlotViewer::createActions()
     renameAct->setStatusTip(tr("Rename"));
     connect(renameAct, SIGNAL(triggered()), this, SLOT(renamePlot()));
 
-    deleteAct = new QAction(QIcon(":/images/delete-icon.png"), tr("&Delete"), this);
-    deleteAct->setShortcut(QKeySequence::Delete);
-    deleteAct->setStatusTip(tr("Delete plot"));
-    connect(deleteAct, SIGNAL(triggered()), this, SLOT(deletePlot()));
 
     fullScreenAct = new QAction(QIcon(":/images/Full_screen_view.png"), "Full Screen", this);
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
@@ -353,7 +336,7 @@ void PlotViewer::loadByteArray(QString name, QByteArray byteArray)
             svgByteArray[svg] = byteArray;
             svg->load(byteArray);
             plotPanel->setCurrentWidget(svg);
-            titleLabel->setText(name);
+//            titleLabel->setText(name);
             setTabState(plotPanel->indexOf(svg) ,Tab_Ready);
         }
     }
@@ -633,8 +616,8 @@ void PlotViewer::renamePlot(QString oldName, QString newName)
 
     plotSvg[newName] = plotSvg.value(oldName);
     plotSvg.remove(oldName);
-    if (plotSvg[newName] == currentSvgWidget())
-        titleLabel->setText(newName);
+//    if (plotSvg[newName] == currentSvgWidget())
+//        titleLabel->setText(newName);
 }
 
 void PlotViewer::deletePlot(QString name)
@@ -752,8 +735,7 @@ void PlotViewer::updateActionEnabledState(QSvgWidget* svg)
     refreshAct->setEnabled(svgIsActive.value(svg));
     snapshotAct->setEnabled(svgIsActive.value(svg));
     renameAct->setEnabled(!svgIsActive.value(svg));
-    deleteAct->setEnabled(!svgIsActive.value(svg));
-    titleLabel->setText(plotSvg.key(svg));
+//    titleLabel->setText(plotSvg.key(svg));
 }
 
 void PlotViewer::currentTabChanged(int index)

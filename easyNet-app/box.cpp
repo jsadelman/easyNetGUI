@@ -284,7 +284,6 @@ void Box::setupDefaultObserverFilter()
             {
                 enableObserver(observerOfPlot.value(name), false);
                 observerOfPlot.remove(name);
-                plotFilter->removeName(name);
             }
         });
     }

@@ -112,18 +112,14 @@ private:
 
     FullScreenSvgDialog *fullScreenSvgDialog;
 
-    QToolBar*       fileToolBar;
-    QToolBar*       editToolBar;
-    QToolBar*       navigationToolBar;
     QAction *       settingsAct;
     QAction *       refreshAct;
     QAction *       snapshotAct;
     QAction *       renameAct;
-    QAction *       deleteAct;
     QAction *       fullScreenAct;
 
     QString         easyNetHome;
-    QLabel*         titleLabel;
+//    QLabel*         titleLabel;
     int             progressiveTabIdx;
     QMap <QString, QSvgWidget*> plotSvg;
     QMap <QString, QString> plotType;
