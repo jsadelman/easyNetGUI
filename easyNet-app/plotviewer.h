@@ -15,6 +15,8 @@ class QByteArray;
 class QScrollArea;
 class ObjectNameValidator;
 class ObjectUpdater;
+class QMessageBox;
+class QCheckBox;
 
 
 
@@ -85,12 +87,11 @@ protected:
 private slots:
     void loadByteArray(QString name, QByteArray byteArray);
     void resizeTimeout();
-    void snapshot();
+    void snapshot(QString name = QString());
     void currentTabChanged(int index);
     void freeze(QSvgWidget *svg = nullptr);
     void renamePlot();
     void deletePlot(QString name);
-    void makeSnapshot(QString name);
     void triggerPlotUpdate(QString name=QString());
     void addDataframeMerge(QString df, QString dfm);
     void setupFullScreen();
@@ -143,6 +144,10 @@ private:
     bool            fullScreen;
     QSize           fullScreenSize;
     ObjectNameValidator *validator;
+    QMessageBox *makeSnapshotMsg;
+    QCheckBox *dontAskAgainMakeSnapshotCheckBox;
+    bool askMakeSnapshot;
+    bool makeSnapshot;
 };
 
 #endif // PLOTVIEWER_H

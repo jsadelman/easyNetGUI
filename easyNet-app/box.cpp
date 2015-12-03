@@ -215,7 +215,6 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                     enableObserver(plotData.value("observer").toString(), true);
                     if (!SessionManager::instance()->descriptionCache->exists(plotData.value("rplotName").toString()))
                         defaultPlot(plotData.value("rplotName").toString(), plotData.value("dataframe").toString());
-//                    setFillColour(observedCol);
                     return action;
                 }
                 else
@@ -223,16 +222,6 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                     enableObserver(plotData.value("observer").toString(), false);
 //                    SessionManager::instance()->runCmd(QString("destroy %1").arg(plotData.value("rplotName").toString()));
 //                    emit plotDestroyed(plotData.value("rplotName").toString());
-                    // if all actions unchecked restore original box colour
-
-
-//                    bool unobserved = true;
-//                    foreach (QAction *a, actionList)
-//                        unobserved &= !a->isChecked();
-
-//                    if (unobserved)
-//                        setFillColour(layerCol);
-
                     return action;
                 }
             }

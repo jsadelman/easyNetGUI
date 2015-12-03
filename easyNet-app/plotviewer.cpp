@@ -25,6 +25,7 @@
 #include <QInputDialog>
 #include <QDomDocument>
 #include <QMessageBox>
+#include <QCheckBox>
 #include <QDebug>
 #include <QKeyEvent>
 #include <QPushButton>
@@ -71,7 +72,13 @@ void FullScreenSvgDialog::clearSvg()
 
 
 PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
-    : easyNetHome(easyNetHomei), progressiveTabIdx(0), fullScreen(false), ResultsWindow_If(parent),pend(false)
+    : easyNetHome(easyNetHomei),
+      progressiveTabIdx(0),
+      fullScreen(false),
+      ResultsWindow_If(parent),
+      pend(false),
+      askMakeSnapshot(true),
+      makeSnapshot(true)
 {
     plotPanel = new QTabWidget;
     plotPanel->setTabsClosable(true);
@@ -86,7 +93,19 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
     connect(plotPanel, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
     connect(plotPanel, &QTabWidget::tabCloseRequested, [=](int index)
     {
-        deletePlot(plotSvg.key(qobject_cast<QSvgWidget*>(plotPanel->widget(index))));
+        QSvgWidget* svg = qobject_cast<QSvgWidget*>(plotPanel->widget(index));
+        QString name = plotSvg.key(svg);
+        if (!svg || name.isEmpty())
+            return;
+        if (askMakeSnapshot && svgIsActive.value(svg))
+        {
+            makeSnapshot = makeSnapshotMsg->exec() == QMessageBox::Yes;
+            askMakeSnapshot = dontAskAgainMakeSnapshotCheckBox->checkState() == Qt::Unchecked;
+        }
+        if (makeSnapshot)
+            snapshot(name);
+
+        deletePlot(name);
     });
 
     resizeTimer = new QTimer(this);
@@ -117,13 +136,19 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
         plotPanel->setTabText(plotPanel->indexOf(plotSvg.value(plotName)), prettyName);
     });
 
-
-
-
     validator = new ObjectNameValidator(this);
     setSingleTrialMode(Dispatch_New);
     setTrialListMode(Dispatch_New);
 
+    makeSnapshotMsg = new QMessageBox(
+                QMessageBox::Question,
+                "Make a snapshot",
+                "Would you like to create a snapshot of the current plot instead of deleting it entirely?\n"
+                "A snapshot can be saved as SVG, but cannot be modified.",
+                QMessageBox::Yes | QMessageBox::No,
+                this);
+    dontAskAgainMakeSnapshotCheckBox = new QCheckBox("don't show this message again");
+    makeSnapshotMsg->setCheckBox(dontAskAgainMakeSnapshotCheckBox);
 }
 
 PlotViewer::~PlotViewer()
@@ -143,7 +168,7 @@ void PlotViewer::createToolBars()
     editToolBar->addAction(snapshotAct);
     editToolBar->addAction(settingsAct);
     editToolBar->addAction(fullScreenAct);
-    editToolBar->addAction(renameAct);
+//    editToolBar->addAction(renameAct);
 //    titleLabel = new QLabel("");
     dispatchToolBar->removeAction(setDispatchModeOverrideActs.at(Dispatch_Append));
 }
@@ -559,7 +584,7 @@ QSvgWidget *PlotViewer::newSvg(QString name)
 {
     QSvgWidget* svg = new QSvgWidget;
     plotSvg[name] = svg;
-    plotPanel->addTab(svg, QString("Plot %1").arg(++progressiveTabIdx));
+    plotPanel->addTab(svg, "");
     setSvgActive(true, svg);
     svgIsUpToDate[svg] = true;
     svgSourceModified[svg] = false;
@@ -653,13 +678,6 @@ void PlotViewer::deletePlot(QString name)
     delete svg;
 }
 
-void PlotViewer::makeSnapshot(QString name)
-{
-    qDebug() << "PlotViewer::makeSnapshot" << name;
-    QSvgWidget* svg = plotSvg.value(name);
-    freeze(svg);
-    renamePlot(name);
-}
 
 void PlotViewer::triggerPlotUpdate(QString name)
 {
@@ -717,12 +735,29 @@ void PlotViewer::generatePrettyName(QString plotName, QString type, QDomDocument
     SessionManager::instance()->setPrettyName(plotName, prettyName);
 }
 
-void PlotViewer::snapshot()
+void PlotViewer::snapshot(QString name)
 {
-    QSvgWidget* svg = currentSvgWidget();
-    QString name = plotSvg.key(svg);
-    QString snapshotName = plotCloneName(name);
+    QSvgWidget* svg;
+    if (name.isEmpty())
+    {
+        svg = currentSvgWidget();
+        name = plotSvg.key(svg);
+    }
+    else
+    {
+        svg = plotSvg.value(name);
+    }
+    if (!svg)
+        return;
+    int progNum = 1;
+    QString snapshotName = QString("%1.%2").arg(name).arg(QString::number(progNum));
+    while (plotSvg.contains(snapshotName))
+    {
+        progNum++;
+        snapshotName = QString("%1.%2").arg(name).arg(QString::number(progNum));
+    }
     QSvgWidget* snapshotSvg = newSvg(snapshotName);
+    plotPanel->setTabText(plotPanel->indexOf(snapshotSvg), snapshotName);
     setSvgActive(false, snapshotSvg);
     svgTrialRunInfo.insert(snapshotSvg, svgTrialRunInfo[svg]);
     snapshotSvg->load(svgByteArray[svg]);
