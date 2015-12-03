@@ -26,7 +26,8 @@ Box::Box()
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618),
       m_labelPointSize(9),
-      default_input_observer_Rex("default_input_observer (\\d+)")
+      default_input_observer_Rex("default_input_observer (\\d+)"),
+      defaultObserverSet()
 {
     labelFont = canvas() ? canvas()->canvasFont() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
@@ -214,7 +215,7 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                     enableObserver(plotData.value("observer").toString(), true);
                     if (!SessionManager::instance()->descriptionCache->exists(plotData.value("rplotName").toString()))
                         defaultPlot(plotData.value("rplotName").toString(), plotData.value("dataframe").toString());
-                    setFillColour(observedCol);
+//                    setFillColour(observedCol);
                     return action;
                 }
                 else
@@ -223,12 +224,14 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
 //                    SessionManager::instance()->runCmd(QString("destroy %1").arg(plotData.value("rplotName").toString()));
 //                    emit plotDestroyed(plotData.value("rplotName").toString());
                     // if all actions unchecked restore original box colour
-                    bool unobserved = true;
-                    foreach (QAction *a, actionList)
-                        unobserved &= !a->isChecked();
 
-                    if (unobserved)
-                        setFillColour(layerCol);
+
+//                    bool unobserved = true;
+//                    foreach (QAction *a, actionList)
+//                        unobserved &= !a->isChecked();
+
+//                    if (unobserved)
+//                        setFillColour(layerCol);
 
                     return action;
                 }
@@ -275,6 +278,19 @@ void Box::setupDefaultObserverFilter()
             QString observer = defaultObserverFilter->data(defaultObserverFilter->index(row, ObjectCache::NameCol)).toString();
             defaultObserverUpdater->requestObject(observer);
         }
+        connect(defaultObserverUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domDoc, QString observer)
+        {
+            bool enabled = XMLelement(*domDoc)["Enabled"]() == "1";
+            if (enabled)
+                defaultObserverSet.insert(observer);
+            else
+                defaultObserverSet.remove(observer);
+
+            if (defaultObserverSet.isEmpty())
+                setFillColour(layerCol);
+            else
+                setFillColour(observedCol);
+        });
 
         plotFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
         plotFilter->setFilterKeyColumn(ObjectCache::NameCol);
@@ -285,6 +301,7 @@ void Box::setupDefaultObserverFilter()
                 enableObserver(observerOfPlot.value(name), false);
                 observerOfPlot.remove(name);
             }
+//            updateObservedState();
         });
     }
 }

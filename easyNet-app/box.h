@@ -60,11 +60,13 @@ protected:
 private slots:
 //    void sendCreateNewPlotOfType();
     void setupDefaultObserverFilter();
+//    void updateObservedState();
 
 private:
     void defaultPlot(QString plotName, QString dataframe);
     void enableObserver(QString observer, bool enable);
     void lesionBox(bool lesion);
+
 
     QString m_name;
     QString m_lazyNutType;
@@ -76,6 +78,7 @@ private:
 
     ObjectCacheFilter *defaultObserverFilter;
     ObjectUpdater     *defaultObserverUpdater;
+    QSet<QString>     defaultObserverSet;
     ObjectCacheFilter *plotFilter;
     QMap <QString, QString> observerOfPlot;
     QMap <QString, QString> m_ports;
