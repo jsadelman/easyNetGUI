@@ -78,7 +78,8 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
       ResultsWindow_If(parent),
       pend(false),
       askMakeSnapshot(true),
-      makeSnapshot(true)
+      makeSnapshot(true),
+      plotClones()
 {
     plotPanel = new QTabWidget;
     plotPanel->setTabsClosable(true);
@@ -477,7 +478,7 @@ QString PlotViewer::plotCloneName(QString name)
 QString PlotViewer::cloneRPlot(QString name, QString newName)
 {
     newName =  validator->makeValid(newName.isEmpty() ? name : newName);
-    plotFilter->addName(newName);
+//    plotFilter->addName(newName);
     // set df-related settings to values that are names of copies of the original df's
     QMap<QString, QString> sourceDataframeSettings = plotSourceDataframeSettings.value(name);
     QMutableMapIterator<QString, QString>sourceDataframeSettings_it(sourceDataframeSettings);
@@ -515,10 +516,11 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     }
     emit quietlyCreateNewRPlot(newName, plotType[name], settings, QMap<QString, QString>(), false, -1);
     // new svg for the clone plot, copy the original trial run info to the clone
-    QSvgWidget* svg = newSvg(newName);
-    svgTrialRunInfo.insert(svg, svgTrialRunInfo[plotSvg[name]]);
-
-
+//    QSvgWidget* svg = newSvg(newName);
+//    svgTrialRunInfo.insert(svg, svgTrialRunInfo[plotSvg[name]]);
+    newRPlot(newName, plotType[name], QMap<QString, QString>(), sourceDataframeSettings,
+             false, -1, svgTrialRunInfo[plotSvg[name]]);
+    plotClones.append(newName);
     return newName;
 }
 
@@ -648,10 +650,10 @@ void PlotViewer::renamePlot()
 
 void PlotViewer::renamePlot(QString oldName, QString newName)
 {
-    newName = newName.isEmpty() ? plotCloneName(oldName) : newName;
+//    newName = newName.isEmpty() ? plotCloneName(oldName) : newName;
 
-    plotSvg[newName] = plotSvg.value(oldName);
-    plotSvg.remove(oldName);
+//    plotSvg[newName] = plotSvg.value(oldName);
+//    plotSvg.remove(oldName);
 //    if (plotSvg[newName] == currentSvgWidget())
 //        titleLabel->setText(newName);
 }
@@ -664,6 +666,12 @@ void PlotViewer::deletePlot(QString name)
     plotType.remove(name);
     anyTrialPlot.remove(name);
     SessionManager::instance()->destroyObject(name);
+    if (plotClones.contains(name))
+    {
+        foreach (QString df, sourceDataframeOfPlots.keys(name))
+            SessionManager::instance()->destroyObject(df);
+        plotClones.removeAll(name);
+    }
 
     svgIsActive.remove(svg);
     svgByteArray.remove(svg);
@@ -687,6 +695,8 @@ void PlotViewer::deletePlot(QString name)
         sourceDataframeOfPlots.remove(df, name);
 
     delete svg;
+    emit removePlot(name);
+
     if (plotPanel->count() == 0)
     {
         settingsAct->setEnabled(false);

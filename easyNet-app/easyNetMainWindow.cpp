@@ -285,9 +285,9 @@ void MainWindow::connectSignalsAndSlots()
     connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
             plotViewer, SLOT(setCurrentPlot(QString)));
 
-
-    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
-    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(snapshot(QString)));
+    connect(plotViewer, SIGNAL(removePlot(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
+//    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
+//    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(snapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
 //            this,SLOT(showPlotViewer()));
 

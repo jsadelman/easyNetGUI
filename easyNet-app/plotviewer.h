@@ -61,7 +61,7 @@ signals:
     void hidePlotSettings();
     void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
     void quietlyCreateNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
-
+    void removePlot(QString);
 
 protected slots:
     virtual void open() Q_DECL_OVERRIDE;
@@ -135,6 +135,7 @@ private:
     QMap <QSvgWidget*, int> svgDispatchOverride;
     QMultiMap <QString, QString> sourceDataframeOfPlots; // <dataframe, rplots>
     QMultiMap <QString, QString> dataframeMergeOfSource; // <dataframe, dataframe_merges>
+    QStringList plotClones;
 
     QTimer*         resizeTimer;
     bool            pend;
