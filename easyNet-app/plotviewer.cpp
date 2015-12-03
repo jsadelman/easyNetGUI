@@ -97,13 +97,16 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
         QString name = plotSvg.key(svg);
         if (!svg || name.isEmpty())
             return;
-        if (askMakeSnapshot && svgIsActive.value(svg))
+        if (svgIsActive.value(svg))
         {
-            makeSnapshot = makeSnapshotMsg->exec() == QMessageBox::Yes;
-            askMakeSnapshot = dontAskAgainMakeSnapshotCheckBox->checkState() == Qt::Unchecked;
+            if (askMakeSnapshot)
+            {
+                makeSnapshot = makeSnapshotMsg->exec() == QMessageBox::Yes;
+                askMakeSnapshot = dontAskAgainMakeSnapshotCheckBox->checkState() == Qt::Unchecked;
+            }
+            if (makeSnapshot)
+                snapshot(name);
         }
-        if (makeSnapshot)
-            snapshot(name);
 
         deletePlot(name);
     });
@@ -294,16 +297,20 @@ void PlotViewer::showInfo(QSvgWidget *svg)
 void PlotViewer::createActions()
 {
     ResultsWindow_If::createActions();
+    setDispatchModeAutoAct->setEnabled(false);
+    infoAct->setEnabled(false);
 
     openAct->setStatusTip(tr("Load plot"));
     saveAct->setStatusTip(tr("Save plot"));
+    saveAct->setEnabled(false);
     copyAct->setStatusTip(tr("Copy plot to clipboard"));
-
+    copyAct->setEnabled(false);
 
     settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
     settingsAct->setShortcut(QKeySequence::Refresh);
     settingsAct->setStatusTip(tr("Plot settings"));
     connect(settingsAct, SIGNAL(triggered()), this, SIGNAL(showPlotSettings()));
+    settingsAct->setEnabled(false);
 
     refreshAct = new QAction(QIcon(":/images/refresh.png"), tr("&Refresh"), this);
     refreshAct->setShortcut(QKeySequence::Refresh);
@@ -315,6 +322,7 @@ void PlotViewer::createActions()
     snapshotAct = new QAction(QIcon(":/images/snapshot-icon.png"), tr("Snapshot"), this);
     snapshotAct->setStatusTip(tr("Snapshot"));
     connect(snapshotAct, SIGNAL(triggered()), this, SLOT(snapshot()));
+    snapshotAct->setEnabled(false);
 
     renameAct =  new QAction(QIcon(":/images/rename-icon.png"), tr("Rename"), this);
     renameAct->setStatusTip(tr("Rename"));
@@ -323,7 +331,7 @@ void PlotViewer::createActions()
 
     fullScreenAct = new QAction(QIcon(":/images/Full_screen_view.png"), "Full Screen", this);
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
-
+    fullScreenAct->setEnabled(false);
 //    setDispatchModeOverrideActs.at(Dispatch_Append)->setDisabled(true);
 
 }
@@ -676,6 +684,17 @@ void PlotViewer::deletePlot(QString name)
         sourceDataframeOfPlots.remove(df, name);
 
     delete svg;
+    if (plotPanel->count() == 0)
+    {
+        settingsAct->setEnabled(false);
+        snapshotAct->setEnabled(false);
+        saveAct->setEnabled(false);
+        copyAct->setEnabled(false);
+        fullScreenAct->setEnabled(false);
+        infoAct->setEnabled(false);
+        setDispatchModeAutoAct->setEnabled(false);
+    }
+
 }
 
 
@@ -770,6 +789,11 @@ void PlotViewer::updateActionEnabledState(QSvgWidget* svg)
     refreshAct->setEnabled(svgIsActive.value(svg));
     snapshotAct->setEnabled(svgIsActive.value(svg));
     renameAct->setEnabled(!svgIsActive.value(svg));
+    setDispatchModeAutoAct->setEnabled(svgIsActive.value(svg));
+    saveAct->setEnabled(true);
+    copyAct->setEnabled(true);
+    fullScreenAct->setEnabled(true);
+    infoAct->setEnabled(true);
 //    titleLabel->setText(plotSvg.key(svg));
 }
 
