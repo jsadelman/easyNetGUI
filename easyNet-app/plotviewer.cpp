@@ -344,9 +344,7 @@ void PlotViewer::open()
                                                     tr("SVG Files (*.svg)"));
     if (!fileName.isEmpty())
     {
-        QString name = QFileInfo(fileName).baseName();
-        if (plotSvg.contains(name))
-            name.append("_");
+        QString name = uniqueName(QFileInfo(fileName).completeBaseName());
         QSvgWidget* svg = newSvg(name);
         setSvgActive(false, svg);
         svg->load(fileName);
@@ -415,6 +413,11 @@ void PlotViewer::refreshInfo()
 void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, bool anyTrial, int dispatchOverride, QDomDocument *info)
 {
     Q_UNUSED(defaultSettings)
+    if (plotSvg.contains(name))
+    {
+        snapshot(name);
+        deletePlot(name);
+    }
 
     plotType.insert(name, type);
     anyTrialPlot.insert(name, anyTrial);
@@ -754,6 +757,21 @@ void PlotViewer::generatePrettyName(QString plotName, QString type, QDomDocument
     SessionManager::instance()->setPrettyName(plotName, prettyName);
 }
 
+QString PlotViewer::uniqueName(QString name)
+{
+    if (!plotSvg.contains(name))
+        return name;
+    int progNum = 1;
+    QString newName = QString("%1.%2").arg(name).arg(QString::number(progNum));
+    while (plotSvg.contains(newName))
+    {
+        progNum++;
+        newName = QString("%1.%2").arg(name).arg(QString::number(progNum));
+    }
+
+    return newName;
+}
+
 void PlotViewer::snapshot(QString name)
 {
     QSvgWidget* svg;
@@ -768,13 +786,7 @@ void PlotViewer::snapshot(QString name)
     }
     if (!svg)
         return;
-    int progNum = 1;
-    QString snapshotName = QString("%1.%2").arg(name).arg(QString::number(progNum));
-    while (plotSvg.contains(snapshotName))
-    {
-        progNum++;
-        snapshotName = QString("%1.%2").arg(name).arg(QString::number(progNum));
-    }
+    QString snapshotName = uniqueName(name);
     QSvgWidget* snapshotSvg = newSvg(snapshotName);
     plotPanel->setTabText(plotPanel->indexOf(snapshotSvg), snapshotName);
     setSvgActive(false, snapshotSvg);

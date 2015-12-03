@@ -48,6 +48,7 @@ public:
 
     QSvgWidget *currentSvgWidget();
     void updateActionEnabledState(QSvgWidget* svg);
+    QString uniqueName(QString name);
 public slots:
     void updateAllActivePlots();
      void setTabState(int index, int state=Tab_DefaultState); // same as in TabsTableWidget
