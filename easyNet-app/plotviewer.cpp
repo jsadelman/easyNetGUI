@@ -422,14 +422,14 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
 
     plotType.insert(name, type);
     anyTrialPlot.insert(name, anyTrial);
-    plotSourceDataframeSettings.insert(name, sourceDataframeSettings);
-    foreach (QString df, sourceDataframeSettings.values())
-    {
-        if (!sourceDataframeOfPlots.contains(df, name))
-            sourceDataframeOfPlots.insert(df, name);
-        dataframeFilter->addName(df);
-    }
-//    plotCloneCount.insert(name, 0);
+    addSourceDataframes(name, sourceDataframeSettings);
+//    plotSourceDataframeSettings.insert(name, sourceDataframeSettings);
+//    foreach (QString df, sourceDataframeSettings.values())
+//    {
+//        if (!sourceDataframeOfPlots.contains(df, name))
+//            sourceDataframeOfPlots.insert(df, name);
+//        dataframeFilter->addName(df);
+//    }
     QSvgWidget* svg = newSvg(name);
     svgDispatchOverride.insert(svg, dispatchOverride);
     svgTrialRunInfo.insert(svg, info);
@@ -498,11 +498,14 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
                             .arg(plotSourceDataframeSettings.value(name).value(sourceDataframeSettings_it.key()))
                             .arg(sourceDataframeSettings_it.value()));
     }
-//    job->data = QVariant::fromValue(QMap<QString, QString>({{"plotName", newName}}));
-//    job->appendEndOfJobReceiver(this, SLOT(triggerPlotUpdate()));
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->recentlyCreatedJob();
+    QMap<QString, QVariant> jobData;
+    jobData.insert("plotName", newName);
+    jobData.insert("sourceDataframeSettings", QVariant::fromValue(sourceDataframeSettings));
+    jobs.last()->data = jobData;
+    jobs.last()->appendEndOfJobReceiver(this, SLOT(addSourceDataframes()));
     SessionManager::instance()->submitJobs(jobs);
     // have a plot settings form created for the clone rplot
     // use the current settings from the original rplot, overwrite the df related ones and set them as defaults
@@ -518,7 +521,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     // new svg for the clone plot, copy the original trial run info to the clone
 //    QSvgWidget* svg = newSvg(newName);
 //    svgTrialRunInfo.insert(svg, svgTrialRunInfo[plotSvg[name]]);
-    newRPlot(newName, plotType[name], QMap<QString, QString>(), sourceDataframeSettings,
+    newRPlot(newName, plotType[name], QMap<QString, QString>(), QMap<QString, QString>(), // sourceDataframeSettings will be set after df creation
              false, -1, svgTrialRunInfo[plotSvg[name]]);
     plotClones.append(newName);
     return newName;
@@ -765,6 +768,52 @@ void PlotViewer::generatePrettyName(QString plotName, QString type, QDomDocument
     prettyName.remove(".plot");
     prettyName.replace(".", " ");
     SessionManager::instance()->setPrettyName(plotName, prettyName);
+}
+
+void PlotViewer::addSourceDataframes(QString plotName, QMap<QString, QString> sourceDataframeSettings)
+{
+    if (plotName.isEmpty())
+    {
+        QVariant pNVariant = SessionManager::instance()->getDataFromJob(sender(), "plotName");
+        if (!pNVariant.canConvert<QString>())
+        {
+            qDebug() << "ERROR: PlotViewer::addDataframeToFilter cannot retrieve a valid string from plotName key in sender LazyNut job";
+            return;
+        }
+        plotName = pNVariant.toString();
+        if (plotName.isEmpty())
+        {
+            qDebug() << "ERROR: PlotViewer::addDataframeToFilter string from plotName key in sender LazyNut job is empty";
+            return;
+        }
+        QVariant sDFVariant = SessionManager::instance()->getDataFromJob(sender(), "sourceDataframeSettings");
+        if (!sDFVariant.canConvert<QMap<QString, QString> >())
+        {
+            qDebug() << "ERROR: PlotViewer::addDataframeToFilter cannot retrieve a valid string from sourceDataframeSettings key in sender LazyNut job";
+            return;
+        }
+        sourceDataframeSettings = sDFVariant.value<QMap<QString, QString> >();
+        if (sourceDataframeSettings.isEmpty())
+        {
+             qDebug() << "ERROR: PlotViewer::addDataframeToFilter string from sourceDataframeSettings key in sender LazyNut job is empty";
+             return;
+        }
+    }
+    plotSourceDataframeSettings.insert(plotName, sourceDataframeSettings);
+    foreach(QString df, sourceDataframeSettings.values())
+    {
+        if (!sourceDataframeOfPlots.contains(df, plotName))
+            sourceDataframeOfPlots.insert(df, plotName);
+        if (!SessionManager::instance()->descriptionCache->exists(df))
+        {
+            qDebug() << QString("ERROR: PlotViewer::addDataframeToFilter attempt to add a non-existing dataframe %1")
+                        .arg(df);
+        }
+        else
+        {
+            dataframeFilter->addName(df);
+        }
+    }
 }
 
 QString PlotViewer::uniqueName(QString name)

@@ -97,6 +97,7 @@ private slots:
     void addDataframeMerge(QString df, QString dfm);
     void setupFullScreen();
     void generatePrettyName(QString plotName, QString type, QDomDocument* domDoc);
+    void addSourceDataframes(QString plotName=QString(), QMap<QString, QString> sourceDataframeSettings=QMap<QString, QString>());
 
 
 private:
