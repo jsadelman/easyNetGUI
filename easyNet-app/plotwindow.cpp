@@ -273,12 +273,12 @@ void PlotSettingsWindow::newPlot()
 //        currentPlot = name;
 //    }
     NewPlotWizard *plotWizard = new NewPlotWizard(this);
-    connect(plotWizard, SIGNAL(createNewRPlot(QString,QString)),
+    connect(plotWizard, SIGNAL(newRPlotCreated(QString,QString)),
             this, SLOT(newRPlot(QString,QString)));
-    connect(plotWizard, &NewPlotWizard::createNewRPlot, [=](QString name, QString type)
-    {
-       emit createNewRPlot(name, type, QMap<QString,QString>(),QMap<QString,QString>(), false, -1);
-    });
+//    connect(plotWizard, &NewPlotWizard::createNewRPlot, [=](QString name, QString type)
+//    {
+//       emit newRPlotCreated(name, type, QMap<QString,QString>(),QMap<QString,QString>(), false, -1);
+//    });
     plotWizard->show();
 }
 
@@ -295,11 +295,8 @@ void PlotSettingsWindow::newPlot()
 //}
 
 void PlotSettingsWindow::newRPlot(QString name, QString rScript,
-                                     QMap <QString,QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, bool anyTrial, int dispatchOverride)
+                                     QMap <QString,QString> defaultSettings, int flags)
 {
-    Q_UNUSED(sourceDataframeSettings)
-    Q_UNUSED(dispatchOverride)
-    Q_UNUSED(anyTrial)
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({
@@ -307,34 +304,23 @@ void PlotSettingsWindow::newRPlot(QString name, QString rScript,
                                 QString("%1 set_type %2").arg(name).arg(rScript),
                                 QString("xml %1 list_settings").arg(name)
                                 });
-    QMap<QString, QVariant> data;
-    data.insert("plotName", name);
+    QMap<QString, QVariant> jobData;
+    jobData.insert("plotName", name);
     if (!defaultSettings.isEmpty())
-        data.insert("defaultSettings", QVariant::fromValue(defaultSettings));
+        jobData.insert("defaultSettings", QVariant::fromValue(defaultSettings));
+    jobData.insert("flags", flags);
 
-    job->data = data;
+    job->data = jobData;
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
     job->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->recentlyCreatedJob();
     SessionManager::instance()->submitJobs(jobs);
-
-//    currentPlotName = name;
-//    currentPlotType = rScript;
     plotTypes[name] = rScript;
-//    plotNameBox->setText(name);
-//    plotTypeBox->setText(rScript);
-
-//    getSettingsXML(currentPlotName);
 
 }
 
-void PlotSettingsWindow::quietlyNewRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, bool anyTrial, int dispatchOverride)
-{
-    quietly = true;
-    newRPlot(name, type, defaultSettings, sourceDataframeSettings, anyTrial, dispatchOverride);
-}
 
 //void PlotSettingsWindow::setType(QString rScript)
 //{
@@ -376,22 +362,30 @@ void PlotSettingsWindow::buildSettingsForm()
         qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() cannot extract LazyNutJob from sender";
         return;
     }
-    QMap<QString, QVariant> data = job->data.toMap();
-    if (!data.contains("plotName"))
+    QMap<QString, QVariant> jobData = job->data.toMap();
+    if (!jobData.contains("plotName"))
     {
         qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() LazyNutJob->data does not contain plotName entry";
         return;
     }
-    QString plotName = data.value("plotName").toString();
+    QString plotName = jobData.value("plotName").toString();
     if (plotName.isEmpty())
     {
         qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() LazyNutJob->data contains an empty plotName entry";
         return;
     }
     QMap<QString, QString> defaultSettings;
-    if (data.contains("defaultSettings"))
-        defaultSettings = data.value("defaultSettings").value<QMap<QString, QString>>();
+    if (jobData.contains("defaultSettings"))
+        defaultSettings = jobData.value("defaultSettings").value<QMap<QString, QString>>();
+    int flags = 0;
+    if (jobData.contains("flags"))
+        flags = jobData.value("flags").toInt();
+    SessionManager::instance()->setPlotFlags(plotName, flags);
+
     buildSettingsForm(plotName, currentSettings, defaultSettings);
+    emit newRPlotCreated(plotName);
+    if (!(flags & Plot_Backup))
+        setPlot(plotName);
 }
 
 
@@ -403,24 +397,6 @@ void PlotSettingsWindow::buildSettingsForm(QString plotName, QDomDocument *domDo
     plotSettingsForm->setDefaultSettings(defaultSettings);
     plotSettingsForm->build();
     plotForms[plotName] = plotSettingsForm;
-
-
-//    QVBoxLayout *vboxLayout = new QVBoxLayout;
-//    vboxLayout->addWidget(plotSettingsForm);
-//    vboxLayout->addStretch();
-//    plotSettingsWidget = new QWidget;
-//    plotSettingsWidget->setLayout(vboxLayout);
-//    plotSettingsWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
-//    plotControlPanelScrollArea->setWidget(plotSettingsWidget);
-
-//     plotControlPanelScrollArea->takeWidget();
-//     plotControlPanelScrollArea->setWidget(plotSettingsForm);
-
-    if (!quietly)
-        setPlot(plotName);
-    quietly = false;
-//    emit setCurrentPlot(plotName);
-
 }
 
 void PlotSettingsWindow::buildWindow()

@@ -116,18 +116,8 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
     connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
 
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
-    connect(dataframeFilter, &ObjectCacheFilter::objectModified, [=](QString df)
-    {
-        foreach (QString plot, sourceDataframeOfPlots.values(df))
-        {
-            QSvgWidget* svg = plotSvg.value(plot);
-            if (svgIsActive.value(svg))
-            {
-                svgSourceModified[svg] = true;
-                updateActivePlots();
-            }
-        }
-    });
+    connect(dataframeFilter, SIGNAL(objectModified(QString)), this, SLOT(dfSourceModified(QString)));
+
     plotFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     plotFilter->setFilterKeyColumn(ObjectCache::NameCol);
     plotUpdater = new ObjectUpdater(this);
@@ -210,44 +200,45 @@ void PlotViewer::preDispatch(QDomDocument *info)
         currentDispatchMode = trialListDispatchMode;
     else
     {
-        qDebug() << "ERROR: PlotViewer::dispatch_private cannot read trial run info XML.";
+        qDebug() << "ERROR: PlotViewer::preDispatch cannot read trial run info XML.";
         return;
     }
-    QSet<QString> affectedPlots;
-    QSet<QString> sourceDfs({results});
-    sourceDfs.unite(matchListFromMap(dataframeMergeOfSource, results));
-//    if (!dataframeMergeOfSource.values(results).isEmpty())
-//        sourceDfs.append(dataframeMergeOfSource.values(results));
-    foreach(QString df, sourceDfs)
-        foreach (QString rplot, sourceDataframeOfPlots.values(df))
-            affectedPlots.insert(rplot);
-    QMapIterator<QString, bool> anyTrialPlot_it(anyTrialPlot);
-    while (anyTrialPlot_it.hasNext())
-    {
-        anyTrialPlot_it.next();
-        if (anyTrialPlot_it.value())
-            affectedPlots.insert(anyTrialPlot_it.key());
-    }
 
-    foreach (QString rplot, affectedPlots)
+//    QSet<QString> affectedPlots;
+//    QSet<QString> sourceDfs({results});
+//    sourceDfs.unite(matchListFromMap(dataframeMergeOfSource, results));
+////    if (!dataframeMergeOfSource.values(results).isEmpty())
+////        sourceDfs.append(dataframeMergeOfSource.values(results));
+//    foreach(QString df, sourceDfs)
+//        foreach (QString rplot, sourceDataframeOfPlots.values(df))
+//            affectedPlots.insert(rplot);
+//    QMapIterator<QString, bool> anyTrialPlot_it(anyTrialPlot);
+//    while (anyTrialPlot_it.hasNext())
+//    {
+//        anyTrialPlot_it.next();
+//        if (anyTrialPlot_it.value())
+//            affectedPlots.insert(anyTrialPlot_it.key());
+//    }
+
+    foreach (QString rplot, SessionManager::instance()->affectedPlots(results))
     {
         QSvgWidget* svg = plotSvg[rplot];
-        int action;
+        int dispatchAction;
         if (!svgByteArray.contains(svg))
         {
-            action = Dispatch_Overwrite;
+            dispatchAction = Dispatch_Overwrite;
         }
         else if (!dispatchModeAuto && dispatchModeOverride > -1 && svg == currentSvgWidget())
         {
-            action = dispatchModeOverride;
+            dispatchAction = dispatchModeOverride;
         }
-        else if (svgDispatchOverride.value(svg) > -1)
-        {
-            action = svgDispatchOverride.value(svg);
-        }
+//        else if (svgDispatchOverride.value(svg) > -1)
+//        {
+//            dispatchAction = svgDispatchOverride.value(svg);
+//        }
         else if (!svgTrialRunInfo.value(svg))
         {
-            action = currentDispatchMode;
+            dispatchAction = currentDispatchMode;
         }
         else
         {
@@ -264,14 +255,15 @@ void PlotViewer::preDispatch(QDomDocument *info)
                 qDebug() << "ERROR: PlotViewer::preDispatch cannot read trial run info XML.";
                 return;
             }
-            action = dispatchModeFST.value(qMakePair(previousDispatchMode,
-                                                     svgDispatchOverride.contains(svg) ? svgDispatchOverride.value(svg) : currentDispatchMode));
+            dispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
+//                                                             dispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode,
+//                                                     svgDispatchOverride.contains(svg) ? svgDispatchOverride.value(svg) : currentDispatchMode));
         }
 
-        if (action == Dispatch_New)
+        if (dispatchAction == Dispatch_New)
         {
             QString newName = cloneRPlot(plotSvg.key(svg));
-            svgIsUpToDate[plotSvg[newName]] = false;
+//            svgIsUpToDate[plotSvg[newName]] = false;
         }
     }
 
@@ -411,18 +403,17 @@ void PlotViewer::refreshInfo()
         showInfo(currentSvgWidget());
 }
 
-void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings, QMap<QString, QString> sourceDataframeSettings, bool anyTrial, int dispatchOverride, QDomDocument *info)
+void PlotViewer::newRPlot(QString name)
 {
-    Q_UNUSED(defaultSettings)
     if (plotSvg.contains(name))
     {
         snapshot(name);
         deletePlot(name);
     }
 
-    plotType.insert(name, type);
-    anyTrialPlot.insert(name, anyTrial);
-    addSourceDataframes(name, sourceDataframeSettings);
+//    plotType.insert(name, type);
+//    anyTrialPlot.insert(name, anyTrial);
+//    addSourceDataframes(name, sourceDataframeSettings);
 //    plotSourceDataframeSettings.insert(name, sourceDataframeSettings);
 //    foreach (QString df, sourceDataframeSettings.values())
 //    {
@@ -430,10 +421,13 @@ void PlotViewer::newRPlot(QString name, QString type, QMap<QString, QString> def
 //            sourceDataframeOfPlots.insert(df, name);
 //        dataframeFilter->addName(df);
 //    }
-    QSvgWidget* svg = newSvg(name);
-    svgDispatchOverride.insert(svg, dispatchOverride);
-    svgTrialRunInfo.insert(svg, info);
+    newSvg(name);
+//    svgDispatchOverride.insert(svg, dispatchOverride);
+//    svgTrialRunInfo.insert(svg, info);
     plotFilter->addName(name);
+    foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
+        dataframeFilter->addName(df);
+    updateActivePlots();
 
 }
 
@@ -480,7 +474,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     newName =  validator->makeValid(newName.isEmpty() ? name : newName);
 //    plotFilter->addName(newName);
     // set df-related settings to values that are names of copies of the original df's
-    QMap<QString, QString> sourceDataframeSettings = plotSourceDataframeSettings.value(name);
+    QMap<QString, QString> sourceDataframeSettings = SessionManager::instance()->plotSourceDataframeSettings(name);
     QMutableMapIterator<QString, QString>sourceDataframeSettings_it(sourceDataframeSettings);
     while(sourceDataframeSettings_it.hasNext())
     {
@@ -495,15 +489,17 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     {
         sourceDataframeSettings_it.next();
         job->cmdList.append(QString("%1 copy %2")
-                            .arg(plotSourceDataframeSettings.value(name).value(sourceDataframeSettings_it.key()))
+                            .arg(SessionManager::instance()->plotSourceDataframeSettings(name).value(sourceDataframeSettings_it.key()))
                             .arg(sourceDataframeSettings_it.value()));
     }
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->recentlyCreatedJob();
     QMap<QString, QVariant> jobData;
-    jobData.insert("plotName", newName);
-    jobData.insert("sourceDataframeSettings", QVariant::fromValue(sourceDataframeSettings));
+//    jobData.insert("plotName", newName);
+//    jobData.insert("sourceDataframeSettings", QVariant::fromValue(sourceDataframeSettings));
+    QStringList newDataframes = sourceDataframeSettings.values();
+    jobData.insert("newDataframes",  newDataframes);
     jobs.last()->data = jobData;
     jobs.last()->appendEndOfJobReceiver(this, SLOT(addSourceDataframes()));
     SessionManager::instance()->submitJobs(jobs);
@@ -517,13 +513,14 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
         sourceDataframeSettings_it.next();
         settings[sourceDataframeSettings_it.key()] = sourceDataframeSettings_it.value();
     }
-    emit quietlyCreateNewRPlot(newName, plotType[name], settings, QMap<QString, QString>(), false, -1);
+    int flags = SessionManager::instance()->plotFlags(name) | Plot_Backup;
+    emit createNewRPlot(newName, plotType(name), settings, flags);
     // new svg for the clone plot, copy the original trial run info to the clone
 //    QSvgWidget* svg = newSvg(newName);
 //    svgTrialRunInfo.insert(svg, svgTrialRunInfo[plotSvg[name]]);
-    newRPlot(newName, plotType[name], QMap<QString, QString>(), QMap<QString, QString>(), // sourceDataframeSettings will be set after df creation
-             false, -1, svgTrialRunInfo[plotSvg[name]]);
-    plotClones.append(newName);
+//    newRPlot(newName, plotType[name], QMap<QString, QString>(), QMap<QString, QString>(), // sourceDataframeSettings will be set after df creation
+//             false, -1, svgTrialRunInfo[plotSvg[name]]);
+//    plotClones.append(newName);
     return newName;
 }
 
@@ -602,7 +599,7 @@ QSvgWidget *PlotViewer::newSvg(QString name)
     plotSvg[name] = svg;
     plotPanel->addTab(svg, "");
     setSvgActive(true, svg);
-    svgIsUpToDate[svg] = true;
+    svgIsUpToDate[svg] = false;
     svgSourceModified[svg] = false;
     if (svg == currentSvgWidget())
         updateActionEnabledState(svg);
@@ -666,7 +663,6 @@ void PlotViewer::deletePlot(QString name)
     // remove all map entries, lazyNut object and svg
     QSvgWidget* svg = plotSvg.value(name);
     plotSvg.remove(name);
-    plotType.remove(name);
     anyTrialPlot.remove(name);
     SessionManager::instance()->destroyObject(name);
     if (plotClones.contains(name))
@@ -743,12 +739,6 @@ void PlotViewer::triggerPlotUpdate(QString name)
     }
 }
 
-void PlotViewer::addDataframeMerge(QString df, QString dfm)
-{
-    if (!dataframeMergeOfSource.contains(df, dfm))
-        dataframeMergeOfSource.insert(df, dfm);
-}
-
 
 void PlotViewer::setupFullScreen()
 {
@@ -770,40 +760,28 @@ void PlotViewer::generatePrettyName(QString plotName, QString type, QDomDocument
     SessionManager::instance()->setPrettyName(plotName, prettyName);
 }
 
-void PlotViewer::addSourceDataframes(QString plotName, QMap<QString, QString> sourceDataframeSettings)
+void PlotViewer::addSourceDataframes(QStringList newDataframes)
 {
-    if (plotName.isEmpty())
+    if (newDataframes.isEmpty())
     {
-        QVariant pNVariant = SessionManager::instance()->getDataFromJob(sender(), "plotName");
-        if (!pNVariant.canConvert<QString>())
+        QVariant dfVariant = SessionManager::instance()->getDataFromJob(sender(), "newDataframes");
+        if (!dfVariant.canConvert<QStringList>())
         {
-            qDebug() << "ERROR: PlotViewer::addDataframeToFilter cannot retrieve a valid string from plotName key in sender LazyNut job";
+            qDebug() << "ERROR: PlotViewer::addDataframeToFilter cannot retrieve a valid string from newDataframes key in sender LazyNut job";
             return;
         }
-        plotName = pNVariant.toString();
-        if (plotName.isEmpty())
+        newDataframes = dfVariant.toStringList();
+        if (newDataframes.isEmpty())
         {
-            qDebug() << "ERROR: PlotViewer::addDataframeToFilter string from plotName key in sender LazyNut job is empty";
+            qDebug() << "ERROR: PlotViewer::addDataframeToFilter QStringList from newDataframes key in sender LazyNut job is empty";
             return;
-        }
-        QVariant sDFVariant = SessionManager::instance()->getDataFromJob(sender(), "sourceDataframeSettings");
-        if (!sDFVariant.canConvert<QMap<QString, QString> >())
-        {
-            qDebug() << "ERROR: PlotViewer::addDataframeToFilter cannot retrieve a valid string from sourceDataframeSettings key in sender LazyNut job";
-            return;
-        }
-        sourceDataframeSettings = sDFVariant.value<QMap<QString, QString> >();
-        if (sourceDataframeSettings.isEmpty())
-        {
-             qDebug() << "ERROR: PlotViewer::addDataframeToFilter string from sourceDataframeSettings key in sender LazyNut job is empty";
-             return;
         }
     }
-    plotSourceDataframeSettings.insert(plotName, sourceDataframeSettings);
-    foreach(QString df, sourceDataframeSettings.values())
+//    plotSourceDataframeSettings.insert(plotName, sourceDataframeSettings);
+    foreach(QString df, newDataframes)
     {
-        if (!sourceDataframeOfPlots.contains(df, plotName))
-            sourceDataframeOfPlots.insert(df, plotName);
+//        if (!sourceDataframeOfPlots.contains(df, plotName))
+//            sourceDataframeOfPlots.insert(df, plotName);
         if (!SessionManager::instance()->descriptionCache->exists(df))
         {
             qDebug() << QString("ERROR: PlotViewer::addDataframeToFilter attempt to add a non-existing dataframe %1")
@@ -812,6 +790,19 @@ void PlotViewer::addSourceDataframes(QString plotName, QMap<QString, QString> so
         else
         {
             dataframeFilter->addName(df);
+        }
+    }
+}
+
+void PlotViewer::dfSourceModified(QString df)
+{
+    foreach (QString plot, SessionManager::instance()->plotsOfSourceDf(df))
+    {
+        QSvgWidget* svg = plotSvg.value(plot);
+        if (svgIsActive.value(svg))
+        {
+            svgSourceModified[svg] = true;
+            updateActivePlots();
         }
     }
 }
@@ -829,6 +820,14 @@ QString PlotViewer::uniqueName(QString name)
     }
 
     return newName;
+}
+
+QString PlotViewer::plotType(QString name)
+{
+    if (QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name))
+        return QFileInfo(XMLelement(*description)["Type"]()).fileName();
+
+    return QString();
 }
 
 void PlotViewer::snapshot(QString name)

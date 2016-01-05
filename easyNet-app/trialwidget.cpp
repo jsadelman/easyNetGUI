@@ -86,7 +86,6 @@ TrialWidget::TrialWidget(QWidget *parent)
     connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
 
     buildComboBoxesTest(QStringList());
-    enabledObservers.clear();
 
     disableObserversMsg = new QMessageBox(
                 QMessageBox::Question,
@@ -277,10 +276,10 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which model to run");
         return;
     }
-    if (runAllMode && askDisableObserver && !enabledObservers.isEmpty())
+    if (runAllMode && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
     {
         int answer = disableObserversMsg->exec();
-        suspendingObservers = answer == QMessageBox::Yes;
+        SessionManager::instance()->suspendObservers(answer == QMessageBox::Yes);
         askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
     }
     QDomDocument *trialRunInfo = createTrialRunInfo(); // will be a smart pointer
@@ -288,9 +287,9 @@ void TrialWidget::runTrial()
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
 
-    if (!suspendingObservers)
+    if (!SessionManager::instance()->suspendingObservers())
     {
-        foreach(QString observer, enabledObservers)
+        foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("(%1 default_dataframe) clear").arg(observer);
     }
     if (runAllMode)
@@ -302,9 +301,9 @@ void TrialWidget::runTrial()
             << job
             << SessionManager::instance()->updateObjectCatalogueJobs();
 
-    QMap<QString, QVariant> data;
-    data.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
-    jobs.last()->data = data;
+    QMap<QString, QVariant> jobData;
+    jobData.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
+    jobs.last()->data = jobData;
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->tableWindow, SLOT(dispatch()));
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
 
@@ -396,8 +395,8 @@ QDomDocument * TrialWidget::createTrialRunInfo()
 void TrialWidget::runTrialList(LazyNutJob *job)
 {
 
-    if (suspendingObservers)
-        foreach(QString observer, enabledObservers)
+    if (SessionManager::instance()->suspendingObservers())
+        foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("%1 disable").arg(observer);
 
     job->cmdList << QString("set %1").arg(getTrialCmd());
@@ -417,8 +416,8 @@ void TrialWidget::runTrialList(LazyNutJob *job)
                         .arg(getStimulusSet());
     }
     job->cmdList << QString("unset %1").arg(getArguments().join(" "));
-    if (suspendingObservers)
-        foreach(QString observer, enabledObservers)
+    if (SessionManager::instance()->suspendingObservers())
+        foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("%1 enable").arg(observer);
 }
 
@@ -474,32 +473,6 @@ void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
 
     setStochasticityVisible(runAllMode && isStochastic);
 }
-
-void TrialWidget::observerEnabled(QString name, bool enabled)
-{
-    if (name.isEmpty())
-    {
-        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-        if (!job)
-        {
-            qDebug() << "TrialWidget::observerEnabled sender not a LazyNutJob";
-            return;
-        }
-        name = job->data.toMap().value("observer").toString();
-        if (name.isEmpty())
-        {
-            qDebug() << "TrialWidget::observerEnabled LazyNutJob does not contain an observer name";
-            return;
-        }
-        enabled = job->data.toMap().value("enabled").toBool();
-    }
-    if (enabled)
-        enabledObservers.insert(name);
-    else
-        enabledObservers.remove(name);
-}
-
-
 
 void TrialWidget::setStochasticityVisible(bool isVisible)
 {

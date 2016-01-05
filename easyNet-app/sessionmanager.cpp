@@ -33,7 +33,8 @@ SessionManager *SessionManager::instance()
 }
 
 SessionManager::SessionManager()
-    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)(?=\\r\\n)")
+    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)(?=\\r\\n)"),
+      m_plotFlags()
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
@@ -130,6 +131,85 @@ void SessionManager::destroyObject(QString name)
     }
 }
 
+void SessionManager::addDataframeMerge(QString df, QString dfm)
+{
+    if (!dataframeMergeOfSource.contains(df, dfm))
+        dataframeMergeOfSource.insert(df, dfm);
+}
+
+void SessionManager::replacePlotSource(QString plot, QString settingsLabel, QString oldSourceDf, QString newSourceDf)
+{
+    m_plotsOfSourceDf.remove(oldSourceDf, plot);
+    m_plotsOfSourceDf.insert(newSourceDf, plot);
+    QMap<QString, QString> settings = m_plotSourceDataframeSettings.value(plot);
+    settings.insert(settingsLabel, newSourceDf);
+    m_plotSourceDataframeSettings.insert(plot, settings);
+}
+
+void SessionManager::setPlotFlags(QString name, int flags)
+{
+    m_plotFlags[name] = flags;
+}
+
+void SessionManager::observerEnabled(QString observer, bool enabled)
+{
+    if (observer.isEmpty())
+    {
+        observer = getDataFromJob(sender(), "observer").toString();
+        if (observer.isEmpty())
+        {
+            qDebug() << "ERROR: SessionManager::observerEnabled observer tag is empty";
+            return;
+        }
+        enabled  = getDataFromJob(sender(), "enabled").toBool();
+    }
+    if (enabled)
+    {
+        if (!m_enabledObservers.contains(observer))
+                m_enabledObservers.append(observer);
+    }
+    else
+        m_enabledObservers.removeAll(observer);
+}
+
+QStringList SessionManager::sourceDataframes(QString df)
+{
+    if (!exists(df))
+        return QStringList();
+
+    QSet<QString> sourceDfs({df});
+    return sourceDfs.unite(matchListFromMap(dataframeMergeOfSource, df)).toList();
+}
+
+QStringList SessionManager::affectedPlots(QString resultsDf)
+{
+    QSet<QString> plots;
+    QStringList dfList({resultsDf});
+    if (!suspendingObservers() && !enabledObservers().isEmpty())
+    {
+        QStringList observerDfs = enabledObservers();
+        observerDfs.replaceInStrings(QRegExp("^(.*)$"), "(\\1 default_dataframe)");
+        dfList.append(observerDfs);
+    }
+    foreach (QString df, dfList)
+        foreach(QString sourceDf, sourceDataframes(df))
+            foreach (QString plot, m_plotsOfSourceDf.values(sourceDf))
+                plots.insert(plot);
+    return plots.toList();
+}
+
+bool SessionManager::isAnyTrialPlot(QString name)
+{
+    if (m_plotFlags.contains(name))
+        return m_plotFlags.value(name) & Plot_AnyTrial;
+    return false;
+}
+
+QMap<QString, QString> SessionManager::plotSourceDataframeSettings(QString plotName)
+{
+    return m_plotSourceDataframeSettings.value(plotName);
+}
+
 
 
 void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
@@ -189,6 +269,13 @@ QList<LazyNutJob *> SessionManager::updateObjectCatalogueJobs()
                                 << recentlyDestroyedJob();
     jobs.last()->appendEndOfJobReceiver(this, SIGNAL(commandsCompleted()));
     return jobs;
+}
+
+bool SessionManager::exists(QString name)
+{
+    if (!descriptionCache)
+        return false;
+    return descriptionCache->exists(name);
 }
 //! [nextJob]
 

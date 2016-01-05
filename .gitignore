@@ -38,3 +38,6 @@ Makefile*
 *~
 .*.swp
 .*.swo
+
+# other
+notes.txt

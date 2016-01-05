@@ -156,5 +156,10 @@
         <file>images/tab_new.png</file>
         <file>images/view_refresh.png</file>
         <file>images/large-yellow-dot.png</file>
+        <file>images/collapse_up.png</file>
+        <file>images/expand_down.png</file>
+        <file>images/Remove_Item_icon.png</file>
+        <file>images/split-horizontally.png</file>
+        <file>images/split-vertically.png</file>
     </qresource>
 </RCC>

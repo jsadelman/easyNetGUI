@@ -49,13 +49,14 @@ public:
     virtual QString value();
     virtual QString settingMethod();
     virtual void updateWidget(QDomElement& xml);
-    virtual void setValue(QString val);
+    void setValue(QString val);
+    bool isDataframe();
 
 public slots:
     void setValueSetTrue() {valueSet = true;}
 
 signals:
-    void valueChanged();
+    void valueChanged(QString, QString); // old value, new value
     void levelsReady();
 
 

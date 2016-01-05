@@ -189,6 +189,12 @@ void PlotSettingsBaseWidget::setValue(QString val)
     }
 }
 
+bool PlotSettingsBaseWidget::isDataframe()
+{
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    return XMLAccessor::value(typeElement) == "dataframe";
+}
+
 bool PlotSettingsBaseWidget::isValueSet()
 {
     return valueSet || rawEdit->isModified();
@@ -231,10 +237,11 @@ void PlotSettingsBaseWidget::resetDefault()
     {
         setValue(defaultValue);
         valueSet = false;
-        if (currentValue != getValue())
+        QString newValue = getValue();
+        if (currentValue != newValue)
         {
-            currentValue = getValue();
-            emit valueChanged();
+            emit valueChanged(currentValue, newValue);
+            currentValue = newValue;
         }
     }
 }
@@ -292,17 +299,14 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 
 void PlotSettingsBaseWidget::emitValueChanged()
 {
-    if (currentValue != getValue())
+    QString newValue = getValue();
+    if (currentValue != newValue)
     {
-        currentValue = getValue();
-        valueSet = true;
-        // write on XML
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-        XMLAccessor::setValue(valueElement, currentValue);
-//        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
-
-        emit valueChanged();
-
+        XMLAccessor::setValue(valueElement, newValue);
+        valueSet = true;
+        emit valueChanged(currentValue, newValue);
+        currentValue = newValue;
     }
 }
 

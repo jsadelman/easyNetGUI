@@ -38,7 +38,7 @@ signals:
     void updateRequest();
 
 private slots:
-    void recordValueChange();
+    void recordValueChange(QString oldValue, QString newValue);
     void checkDependencies();
     void updateDependees(QDomDocument *newDomDoc);
     void updateSize();
@@ -49,6 +49,7 @@ private:
 //    PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
     PlotSettingsBaseWidget *createWidget(QDomElement &domElement);
     QString getSettingCmdLine(QString setting);
+
 
     QStringList tabOrder;
     QMap<QString, QVBoxLayout*> layoutMap;

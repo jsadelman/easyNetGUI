@@ -274,7 +274,7 @@ void TableWindow::preparePlot()
     settings["df"] = tableWidget->currentTable();
     QString plotName = validator->makeValid(tableWidget->currentTable().append(".plot"));
     QString plotType = "plot_mean_bars.R"; // testing!!!
-    emit createNewRPlot(plotName, plotType, settings, settings, false, -1, trialRunInfoMap.value(tableWidget->currentTable()));
+    emit createNewRPlot(plotName, plotType, settings, 0);
     emit showPlotSettings();
 }
 
@@ -329,8 +329,10 @@ void TableWindow::dataframeMerge()
         {
             trialRunInfoMap[dfName] = trialRunInfoMap[y];
         }
-        emit addDataframeMerge(x, dfName);
-        emit addDataframeMerge(y, dfName);
+//        emit addDataframeMerge(x, dfName);
+//        emit addDataframeMerge(y, dfName);
+        SessionManager::instance()->addDataframeMerge(x, dfName);
+        SessionManager::instance()->addDataframeMerge(y, dfName);
     });
 
     dialog.exec();
@@ -443,6 +445,7 @@ void TableWindow::dispatch_Impl(QDomDocument *info)
     lastResults = results;
 
     trialRunInfoMap[results] = info;
+    // should be assigned also to merged dfs that have results as source
     refreshInfo();
 }
 

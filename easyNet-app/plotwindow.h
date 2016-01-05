@@ -67,19 +67,14 @@ public:
 signals:
         void plot(QString, QByteArray);
         void showPlotViewer();
-        void setCurrentPlot(QString);
-        void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
+        void newRPlotCreated(QString);
 public slots:
-        void newRPlot(QString name, QString type,
-                                 QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
-                                 QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
-                                 bool anyTrial = false,
-                                 int dispatchOverride=-1);
-        void quietlyNewRPlot(QString name, QString type,
-                                 QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
-                                 QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
-                                 bool anyTrial = false,
-                                 int dispatchOverride=-1);
+        void newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings=QMap<QString,QString>(), int flags=0);
+//        void quietlyNewRPlot(QString name, QString type,
+//                                 QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
+//                                 QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
+//                                 bool anyTrial = false,
+//                                 int dispatchOverride=-1);
         void sendGetCmd(QString plotName);
         void sendGetCmd();
         void setPlot(QString name);

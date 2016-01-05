@@ -39,7 +39,7 @@ signals:
     void updateRequest();
 
 private slots:
-    void recordValueChange();
+    void recordValueChange(QString oldValue, QString newValue);
     virtual void checkDependencies();
     void updateDependees(QDomDocument *newDomDoc = nullptr);
     void updateSize();

@@ -56,6 +56,7 @@ void SettingsForm::build()
     for(auto tabname: tabOrder)
     {
         layoutMap[tabname]->addStretch();
+        layoutMap[tabname]->setSizeConstraint(QLayout::SetFixedSize);
         twidgetMap[tabname]->setLayout(layoutMap[tabname]);
         addTab(twidgetMap[tabname],tabname);
     }
@@ -122,14 +123,16 @@ PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement &domElement)
         widget = new PlotSettingsBaseWidget(domElement, m_useRFormat);
 
 
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(recordValueChange()));
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(checkDependencies()));
+    connect(widget, SIGNAL(valueChanged(QString, QString)), this, SLOT(recordValueChange()));
+    connect(widget, SIGNAL(valueChanged(QString, QString)), this, SLOT(checkDependencies()));
 //    connect(widget, SIGNAL(sizeChanged()), this, SLOT(updateSize()));
     return widget;
 }
 
-void SettingsForm::recordValueChange()
+void SettingsForm::recordValueChange(QString oldValue, QString newValue)
 {
+    Q_UNUSED(oldValue)
+    Q_UNUSED(newValue)
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
     hasChanged[widget->name()] = true;
 }

@@ -49,7 +49,7 @@ public:
 
     qreal autoWidth();
 signals:
-    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
+    void createNewRPlot(QString, QString, QMap<QString, QString>, int);
     void lazyNutTypeChanged();
     void plotDestroyed(QString name);
 

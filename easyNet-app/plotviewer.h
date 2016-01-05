@@ -49,6 +49,7 @@ public:
     QSvgWidget *currentSvgWidget();
     void updateActionEnabledState(QSvgWidget* svg);
     QString uniqueName(QString name);
+    QString plotType(QString name);
 public slots:
     void updateAllActivePlots();
      void setTabState(int index, int state=Tab_DefaultState); // same as in TabsTableWidget
@@ -59,8 +60,7 @@ signals:
     void setPlot(QString);
     void resized(QSize);
     void hidePlotSettings();
-    void createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
-    void quietlyCreateNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int);
+    void createNewRPlot(QString, QString, QMap<QString, QString>, int);
     void removePlot(QString);
 
 protected slots:
@@ -69,12 +69,7 @@ protected slots:
     virtual void copy() Q_DECL_OVERRIDE;
     virtual void setInfoVisible(bool visible) Q_DECL_OVERRIDE;
     virtual void refreshInfo() Q_DECL_OVERRIDE;
-    void newRPlot(QString name, QString type,
-                             QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
-                             QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
-                             bool anyTrial=false,
-                             int dispatchOverride=-1,
-                             QDomDocument *info=nullptr);
+    void newRPlot(QString name);
 
 
     virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
@@ -94,10 +89,10 @@ private slots:
     void renamePlot();
     void deletePlot(QString name);
     void triggerPlotUpdate(QString name=QString());
-    void addDataframeMerge(QString df, QString dfm);
     void setupFullScreen();
     void generatePrettyName(QString plotName, QString type, QDomDocument* domDoc);
-    void addSourceDataframes(QString plotName=QString(), QMap<QString, QString> sourceDataframeSettings=QMap<QString, QString>());
+    void addSourceDataframes(QStringList newDataframes=QStringList());
+    void dfSourceModified(QString df);
 
 
 private:
@@ -125,7 +120,7 @@ private:
 //    QLabel*         titleLabel;
     int             progressiveTabIdx;
     QMap <QString, QSvgWidget*> plotSvg;
-    QMap <QString, QString> plotType;
+//    QMap <QString, QString> plotType;
     QMap <QString, bool> anyTrialPlot;
     QMap <QString, QMap<QString, QString> > plotSourceDataframeSettings; // <rplot <key, val> >
     QMap <QSvgWidget*, bool> svgIsActive;

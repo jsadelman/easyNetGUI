@@ -29,7 +29,13 @@ enum class AnswerFormatterType
 
 enum {Dispatch_New=0, Dispatch_Overwrite, Dispatch_Append, MAX_DISPATCH_MODE};
 
+enum : unsigned int
+{
+    Plot_AnyTrial           = 0x01,
+    Plot_Backup             = 0x02
+};
 
+enum class MouseState {Normal, Hovered, Pressed};
 
 #ifdef __APPLE__
   #define EN_FONT "Helvetica Neue"

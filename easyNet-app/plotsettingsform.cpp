@@ -133,16 +133,18 @@ PlotSettingsBaseWidget *PlotSettingsForm::createWidget(QDomElement& domElement)
         widget = new PlotSettingsBaseWidget(domElement, m_useRFormat);
 
 
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(recordValueChange()));
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(checkDependencies()));
+    connect(widget, SIGNAL(valueChanged(QString, QString)), this, SLOT(recordValueChange(QString, QString)));
+    connect(widget, SIGNAL(valueChanged(QString, QString)), this, SLOT(checkDependencies()));
 //    connect(widget, SIGNAL(sizeChanged()), this, SLOT(updateSize()));
     return widget;
 }
 
-void PlotSettingsForm::recordValueChange()
+void PlotSettingsForm::recordValueChange(QString oldValue, QString newValue)
 {
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
     hasChanged[widget->name()] = true;
+    if (widget->isDataframe())
+        SessionManager::instance()->replacePlotSource(plotName(), widget->name(), oldValue, newValue);
 }
 
 void PlotSettingsForm::checkDependencies()

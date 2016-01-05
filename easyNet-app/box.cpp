@@ -248,7 +248,7 @@ void Box::defaultPlot(QString plotName, QString dataframe)
 {
     QMap<QString,QString> settings;
     settings["df"] = dataframe;
-    emit createNewRPlot(plotName, QString("%1.R").arg(defaultPlotType()), settings, settings, true, Dispatch_Overwrite);
+    emit createNewRPlot(plotName, QString("%1.R").arg(defaultPlotType()), settings, Plot_AnyTrial);
 }
 
 
@@ -300,11 +300,11 @@ void Box::enableObserver(QString observer, bool enable)
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 %2").arg(observer).arg(enable? "enable" : "disable");
-    QMap<QString, QVariant> data;
-    data.insert("observer", observer);
-    data.insert("enabled", enable);
-    job->data = data;
-    job->appendEndOfJobReceiver(MainWindow::instance()->trialWidget, SLOT(observerEnabled()));
+    QMap<QString, QVariant> jobData;
+    jobData.insert("observer", observer);
+    jobData.insert("enabled", enable);
+    job->data = jobData;
+    job->appendEndOfJobReceiver(SessionManager::instance(), SLOT(observerEnabled()));
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << job
                                 << SessionManager::instance()->recentlyModifiedJob();

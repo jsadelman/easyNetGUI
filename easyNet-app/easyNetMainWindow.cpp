@@ -230,12 +230,12 @@ void MainWindow::connectSignalsAndSlots()
             this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
             plotViewer,SLOT(loadByteArray(QString,QByteArray)));
-    connect(plotSettingsWindow, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
-            plotViewer,SLOT(newRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
+//    connect(plotSettingsWindow, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
+//            plotViewer,SLOT(newRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
 //    connect(plotViewer, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
 //            plotSettingsWindow,SLOT(newRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
-    connect(plotViewer, SIGNAL(quietlyCreateNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
-            plotSettingsWindow,SLOT(quietlyNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
+//    connect(plotViewer, SIGNAL(quietlyCreateNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
+//            plotSettingsWindow,SLOT(quietlyNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
 
 
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
@@ -268,22 +268,26 @@ void MainWindow::connectSignalsAndSlots()
 //            tableWindow,SLOT(addTrialTable(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)));
-    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)),
-            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)));
-    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)));
-    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)),
-            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)));
-    connect(tableWindow, SIGNAL(addDataframeMerge(QString,QString)),
-            plotViewer, SLOT(addDataframeMerge(QString,QString)));
+    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
+//    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)),
+//            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)));
+    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
+    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
+//    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)),
+//            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)));
+//    connect(tableWindow, SIGNAL(addDataframeMerge(QString,QString)),
+//            plotViewer, SLOT(addDataframeMerge(QString,QString)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
              tableWindow, SLOT(preDispatch(QDomDocument*)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
             plotViewer, SLOT(preDispatch(QDomDocument*)));
-    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
-            plotViewer, SLOT(setCurrentPlot(QString)));
+     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString)),
+             plotViewer, SLOT(newRPlot(QString)));
+//    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
+//            plotViewer, SLOT(setCurrentPlot(QString)));
 
     connect(plotViewer, SIGNAL(removePlot(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
