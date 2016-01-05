@@ -21,8 +21,9 @@ class SettingsForm: public QTabWidget
     Q_PROPERTY(bool useRFormat READ useRFormat WRITE setUseRFormat)
 public:
     explicit SettingsForm(QDomDocument *domDoc, QWidget *parent = 0);
-    ~SettingsForm();
+    virtual ~SettingsForm();
     void build();
+    QMap<QString, QString> getSettings();
     QStringList getSettingsCmdList();
     QString value(QString label);
     QStringList listLabels() {return XMLAccessor::listLabels(rootElement);}
@@ -31,26 +32,26 @@ public:
     // setters and getters
     bool useRFormat() {return m_useRFormat;}
     void setUseRFormat(bool useRFormat) {m_useRFormat = useRFormat;}
-//    QMap<QString, QString> defaultSettings() {return m_defaultSettings;}
+    QMap<QString, QString> defaultSettings() {return m_defaultSettings;}
     void setDefaultSettings(QMap<QString, QString> defaultSettings) {m_defaultSettings = defaultSettings;}
     bool allIsSet();
 
 signals:
     void updateRequest();
 
-private slots:
-    void recordValueChange(QString oldValue, QString newValue);
-    virtual void checkDependencies();
+protected slots:
+    virtual void recordValueChange(QString oldValue, QString newValue);
+    void checkDependencies();
     void updateDependees(QDomDocument *newDomDoc = nullptr);
     void updateSize();
 
-private:
+protected:
+    virtual void triggerUpdateDependees();
     void initDependersSet();
     PlotSettingsBaseWidget *createWidget(QDomElement &domElement);
-//    PlotSettingsBaseWidget *createWidget(XMLelement settingsElement);
 
     virtual QString getSettingCmdLine(QString setting);
-    void substituteDependentValues(QDomElement& settingsElement);
+    virtual void substituteDependentValues(QDomElement& settingsElement);
 
     QStringList tabOrder;
     QMap<QString, QVBoxLayout*> layoutMap;

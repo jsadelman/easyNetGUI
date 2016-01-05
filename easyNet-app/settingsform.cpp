@@ -69,6 +69,16 @@ void SettingsForm::build()
     }
 }
 
+QMap<QString, QString> SettingsForm::getSettings()
+{
+    QMap<QString, QString> settings;
+    foreach (QString setting, widgetMap.keys())
+    {
+        settings.insert(setting, widgetMap[setting]->value());
+    }
+    return settings;
+}
+
 void SettingsForm::initDependersSet()
 {
     QDomElement settingsElement = rootElement.firstChildElement();
@@ -123,7 +133,7 @@ PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement &domElement)
         widget = new PlotSettingsBaseWidget(domElement, m_useRFormat);
 
 
-    connect(widget, SIGNAL(valueChanged(QString, QString)), this, SLOT(recordValueChange()));
+    connect(widget, SIGNAL(valueChanged(QString, QString)), this, SLOT(recordValueChange(QString, QString)));
     connect(widget, SIGNAL(valueChanged(QString, QString)), this, SLOT(checkDependencies()));
 //    connect(widget, SIGNAL(sizeChanged()), this, SLOT(updateSize()));
     return widget;
@@ -143,7 +153,7 @@ void SettingsForm::checkDependencies()
     if (widget && dependersSet.contains(widget->name()))
     {
         dependerOnUpdate = widget->name();
-        updateDependees();
+        triggerUpdateDependees();
     }
 }
 
@@ -157,16 +167,13 @@ void SettingsForm::updateDependees(QDomDocument* newDomDoc)
     }
     if (dependerOnUpdate.isEmpty())
         return; // just safety
-//    XMLelement settingsElement = rootElement.firstChild();
     QDomElement settingsElement = rootElement.firstChildElement();
     while (!settingsElement.isNull())
     {
         QDomElement dependenciesElement = XMLAccessor::childElement(settingsElement, "dependencies");
         if ((XMLAccessor::listValues(dependenciesElement)).contains(dependerOnUpdate))
         {
-            if (!newDomDoc)
-                substituteDependentValues(settingsElement);
-
+            substituteDependentValues(settingsElement);
             widgetMap[XMLAccessor::label(settingsElement)]->updateWidget(settingsElement);
         }
         settingsElement = settingsElement.nextSiblingElement();
@@ -184,7 +191,12 @@ void SettingsForm::updateSize()
             widget(i)->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
     }
 //    layout()->activate();
-//    setFixedHeight(currentWidget()->minimumSizeHint().height());
+    //    setFixedHeight(currentWidget()->minimumSizeHint().height());
+}
+
+void SettingsForm::triggerUpdateDependees()
+{
+    updateDependees();
 }
 
 
