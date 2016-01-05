@@ -6,7 +6,7 @@
 #include <QMapIterator>
 #include <QInputDialog>
 
-#include "plotwindow.h"
+#include "plotsettingswindow.h"
 #include "codeeditor.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
@@ -310,15 +310,15 @@ void PlotSettingsWindow::newRPlot(QString name, QString rScript,
         jobData.insert("defaultSettings", QVariant::fromValue(defaultSettings));
     jobData.insert("flags", flags);
 
-    job->data = jobData;
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
-    job->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
+
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->recentlyCreatedJob();
+    jobs.last()->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
+    jobs.last()->data = jobData;
     SessionManager::instance()->submitJobs(jobs);
     plotTypes[name] = rScript;
-
 }
 
 
@@ -343,16 +343,6 @@ void PlotSettingsWindow::getSettingsXML(QString plotName)
     job->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
     SessionManager::instance()->submitJobs(job);
 }
-
-//void PlotSettingsWindow::buildSettingsForm(QDomDocument *domDoc)
-//{
-//    buildSettingsForm(currentPlotName, domDoc);
-//}
-
-//void PlotSettingsWindow::buildSettingsForm(QString plotName)
-//{
-//    buildSettingsForm(plotName, currentSettings);
-//}
 
 void PlotSettingsWindow::buildSettingsForm()
 {

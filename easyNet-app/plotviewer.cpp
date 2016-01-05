@@ -6,11 +6,10 @@
 #include "enumclasses.h"
 #include "easyNetMainWindow.h"
 #include "lazynutjob.h"
-#include "plotwindow.h"
 #include "xmlform.h"
 #include "objectnamevalidator.h"
 #include "xmlelement.h"
-
+#include "plotsettingswindow.h"
 
 
 #include <QSvgWidget>
@@ -130,7 +129,6 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
         plotPanel->setTabText(plotPanel->indexOf(plotSvg.value(plotName)), prettyName);
     });
 
-    validator = new ObjectNameValidator(this);
     setSingleTrialMode(Dispatch_New);
     setTrialListMode(Dispatch_New);
 
@@ -204,22 +202,6 @@ void PlotViewer::preDispatch(QDomDocument *info)
         return;
     }
 
-//    QSet<QString> affectedPlots;
-//    QSet<QString> sourceDfs({results});
-//    sourceDfs.unite(matchListFromMap(dataframeMergeOfSource, results));
-////    if (!dataframeMergeOfSource.values(results).isEmpty())
-////        sourceDfs.append(dataframeMergeOfSource.values(results));
-//    foreach(QString df, sourceDfs)
-//        foreach (QString rplot, sourceDataframeOfPlots.values(df))
-//            affectedPlots.insert(rplot);
-//    QMapIterator<QString, bool> anyTrialPlot_it(anyTrialPlot);
-//    while (anyTrialPlot_it.hasNext())
-//    {
-//        anyTrialPlot_it.next();
-//        if (anyTrialPlot_it.value())
-//            affectedPlots.insert(anyTrialPlot_it.key());
-//    }
-
     foreach (QString rplot, SessionManager::instance()->affectedPlots(results))
     {
         QSvgWidget* svg = plotSvg[rplot];
@@ -231,6 +213,10 @@ void PlotViewer::preDispatch(QDomDocument *info)
         else if (!dispatchModeAuto && dispatchModeOverride > -1 && svg == currentSvgWidget())
         {
             dispatchAction = dispatchModeOverride;
+        }
+        else if (SessionManager::instance()->isAnyTrialPlot(rplot))
+        {
+            dispatchAction = Dispatch_Overwrite;
         }
 //        else if (svgDispatchOverride.value(svg) > -1)
 //        {
@@ -405,30 +391,21 @@ void PlotViewer::refreshInfo()
 
 void PlotViewer::newRPlot(QString name)
 {
+    if (!SessionManager::instance()->exists(name))
+    {
+        qDebug() << "ERROR: PlotViewer::newRPlot attempt to create view for non existing plot" << name;
+        return;
+    }
     if (plotSvg.contains(name))
     {
         snapshot(name);
         deletePlot(name);
     }
-
-//    plotType.insert(name, type);
-//    anyTrialPlot.insert(name, anyTrial);
-//    addSourceDataframes(name, sourceDataframeSettings);
-//    plotSourceDataframeSettings.insert(name, sourceDataframeSettings);
-//    foreach (QString df, sourceDataframeSettings.values())
-//    {
-//        if (!sourceDataframeOfPlots.contains(df, name))
-//            sourceDataframeOfPlots.insert(df, name);
-//        dataframeFilter->addName(df);
-//    }
     newSvg(name);
-//    svgDispatchOverride.insert(svg, dispatchOverride);
-//    svgTrialRunInfo.insert(svg, info);
     plotFilter->addName(name);
     foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
         dataframeFilter->addName(df);
     updateActivePlots();
-
 }
 
 
@@ -463,15 +440,11 @@ void PlotViewer::updateActivePlots()
     }
 }
 
-QString PlotViewer::plotCloneName(QString name)
-{
-    return validator->makeValid(name);
-}
 
 
 QString PlotViewer::cloneRPlot(QString name, QString newName)
 {
-    newName =  validator->makeValid(newName.isEmpty() ? name : newName);
+    newName =  SessionManager::instance()->makeValidObjectName(newName.isEmpty() ? name : newName);
 //    plotFilter->addName(newName);
     // set df-related settings to values that are names of copies of the original df's
     QMap<QString, QString> sourceDataframeSettings = SessionManager::instance()->plotSourceDataframeSettings(name);
@@ -479,7 +452,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     while(sourceDataframeSettings_it.hasNext())
     {
         sourceDataframeSettings_it.next();
-        sourceDataframeSettings_it.setValue(validator->makeValid(sourceDataframeSettings_it.value()));
+        sourceDataframeSettings_it.setValue(SessionManager::instance()->makeValidObjectName(sourceDataframeSettings_it.value()));
     }
     // make the above mentioned df copies
     LazyNutJob *job = new LazyNutJob;

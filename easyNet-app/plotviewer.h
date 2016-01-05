@@ -100,7 +100,6 @@ private:
     void resizeEvent(QResizeEvent*);
     void setSvgActive(bool isActive, QSvgWidget *svg = nullptr);
     void updateActivePlots();
-    QString plotCloneName(QString name);
 //    QString normalisedName(QString name);
     void renamePlot(QString oldName, QString newName = QString());
 
@@ -141,7 +140,6 @@ private:
     QTabWidget*     plotPanel;
     bool            fullScreen;
     QSize           fullScreenSize;
-    ObjectNameValidator *validator;
     QMessageBox *makeSnapshotMsg;
     QCheckBox *dontAskAgainMakeSnapshotCheckBox;
     bool askMakeSnapshot;

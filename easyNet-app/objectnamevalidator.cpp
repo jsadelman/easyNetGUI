@@ -56,7 +56,7 @@ ObjectNameValidator::ObjectNameValidator(QObject *parent)
 QValidator::State ObjectNameValidator::validate(QString &input, int &pos) const
 {
     Q_UNUSED(pos)
-    if (forbiddenRex.exactMatch(input) || SessionManager::instance()->descriptionCache->exists(input))
+    if (forbiddenRex.exactMatch(input) || SessionManager::instance()->exists(input))
         return Invalid;
 
     else

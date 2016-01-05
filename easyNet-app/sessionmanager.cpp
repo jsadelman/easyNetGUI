@@ -10,6 +10,8 @@
 #include "objectcache.h"
 #include "objectcachefilter.h"
 #include "easyNetMainWindow.h"
+#include "objectnamevalidator.h"
+
 
 
 #include <QtGlobal>
@@ -56,6 +58,8 @@ SessionManager::SessionManager()
             dataframeCache,  SLOT(invalidateCache(QStringList)));
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             dataframeCache,  SLOT(destroy(QStringList)));
+
+    validator = new ObjectNameValidator(this);
 }
 
 
@@ -208,6 +212,16 @@ bool SessionManager::isAnyTrialPlot(QString name)
 QMap<QString, QString> SessionManager::plotSourceDataframeSettings(QString plotName)
 {
     return m_plotSourceDataframeSettings.value(plotName);
+}
+
+QString SessionManager::makeValidObjectName(QString name)
+{
+    return validator->makeValid(name);
+}
+
+bool SessionManager::isValidObjectName(QString name)
+{
+    return validator->isValid(name);
 }
 
 

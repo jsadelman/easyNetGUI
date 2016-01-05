@@ -15,7 +15,6 @@ SettingsForm::SettingsForm(QDomDocument *domDoc, QWidget *parent)
    : domDoc(domDoc), QTabWidget(parent)
 {
     rootElement = domDoc->documentElement();
-//    m_defaultSettings.clear();
 }
 
 SettingsForm::~SettingsForm()
@@ -27,7 +26,6 @@ SettingsForm::~SettingsForm()
 void SettingsForm::build()
 {
     QDomElement domElement = rootElement.firstChildElement();
-//    XMLelement settingsElement = rootElement.firstChild();
     while (!domElement.isNull())
     {
         PlotSettingsBaseWidget *widget = createWidget(domElement);

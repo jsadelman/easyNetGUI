@@ -42,7 +42,7 @@ SOURCES +=  \
     highlighter.cpp \
     codeeditor.cpp \
     editwindow.cpp \
-    plotwindow.cpp \
+    plotsettingswindow.cpp \
     lazynut.cpp \
     sessionmanager.cpp \
     commandsequencer.cpp \
@@ -126,7 +126,7 @@ HEADERS  += \
     highlighter.h \
     codeeditor.h \
     editwindow.h \
-    plotwindow.h \
+    plotsettingswindow.h \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \

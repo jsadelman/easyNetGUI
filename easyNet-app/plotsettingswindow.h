@@ -1,5 +1,5 @@
-#ifndef PLOTWINDOW
-#define PLOTWINDOW
+#ifndef PLOTSETTINGSWINDOW
+#define PLOTSETTINGSWINDOW
 
 #include <QMainWindow>
 #include <QWizard>
@@ -172,5 +172,5 @@ private:
 };
 
 
-#endif // PLOTWINDOW
+#endif // PLOTSETTINGSWINDOW
 

@@ -36,7 +36,6 @@ private:
     SettingsForm* form;
     QString info;
     QLineEdit *nameLineEdit;
-    ObjectNameValidator *validator;
 };
 
 #endif // SETTINGSFORMDIALOG_H

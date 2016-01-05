@@ -26,6 +26,7 @@ class LazyNut;
 class CommandSequencer;
 class ObjectCache;
 class ObjectCacheFilter;
+class ObjectNameValidator;
 
 
 class SessionManager: public QObject
@@ -63,6 +64,8 @@ public:
     QMap<QString, QString> plotSourceDataframeSettings(QString plotName);
     QStringList plotsOfSourceDf(QString df) {return m_plotsOfSourceDf.values(df);}
     QStringList plotSourceDataframes(QString plotName) {return plotSourceDataframeSettings(plotName).values();}
+    QString makeValidObjectName(QString name);
+    bool isValidObjectName(QString name);
 
 
     ObjectCache *descriptionCache;
@@ -176,6 +179,8 @@ private:
     QMap <QString, QMap<QString, QString> > m_plotSourceDataframeSettings; // <rplot <key, val> >
     QStringList m_enabledObservers;
     bool        m_suspendingObservers;
+
+    ObjectNameValidator *validator;
 
 
 };

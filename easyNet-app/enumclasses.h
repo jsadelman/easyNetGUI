@@ -116,6 +116,7 @@ static QSet<K> allKeysOfValue(QMap<K, V> map, V v)
 static QString normalisedName(QString name)
 {
     name.replace(QRegExp("[()]"), "");
+    name = name.simplified();
     name.replace(" ", "_");
     return name;
 }

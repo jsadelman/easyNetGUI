@@ -28,7 +28,7 @@
 #include "sessionmanager.h"
 #include "highlighter.h"
 #include "editwindow.h"
-#include "plotwindow.h"
+#include "plotsettingswindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "objectcache.h"

@@ -10,7 +10,6 @@
 #include "settingsform.h"
 #include "settingsformdialog.h"
 #include "easyNetMainWindow.h"
-#include "objectnamevalidator.h"
 
 
 #include <QMenu>
@@ -41,7 +40,6 @@ TableWindow::TableWindow(QWidget *parent)
     dataframeFilter->setType("dataframe");
     connect(dataframeFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeTable(QString)));
 
-    validator = new ObjectNameValidator(this);
 
     createActions();
     createToolBars();
@@ -124,7 +122,7 @@ void TableWindow::preDispatch(QDomDocument *info)
         QDomElement rootElement = description->documentElement();
         QDomElement prettyNameElement = XMLAccessor::childElement(rootElement, "pretty name");
         QString prettyName = XMLAccessor::value(prettyNameElement);
-        QString backupTable = validator->makeValid(prettyName);
+        QString backupTable = SessionManager::instance()->makeValidObjectName(prettyName);
         job->cmdList << QString("%1 copy %2").arg(results).arg(backupTable);
         job->cmdList << QString("%1 clear").arg(results);
         QMap<QString, QVariant> data;
@@ -272,7 +270,7 @@ void TableWindow::preparePlot()
         return;
     QMap<QString,QString> settings;
     settings["df"] = tableWidget->currentTable();
-    QString plotName = validator->makeValid(tableWidget->currentTable().append(".plot"));
+    QString plotName = SessionManager::instance()->makeValidObjectName(tableWidget->currentTable().append(".plot"));
     QString plotType = "plot_mean_bars.R"; // testing!!!
     emit createNewRPlot(plotName, plotType, settings, 0);
     emit showPlotSettings();

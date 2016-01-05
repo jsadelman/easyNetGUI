@@ -8,7 +8,6 @@ class QActionGroup;
 class TabsTableWidget;
 class ObjectCacheFilter;
 class QScrollArea;
-class ObjectNameValidator;
 
 
 
@@ -70,7 +69,6 @@ protected:
     QString lastOpenDir;
     QString lastSaveDir;
     QString lastResults;
-    ObjectNameValidator *validator;
 
 };
 
