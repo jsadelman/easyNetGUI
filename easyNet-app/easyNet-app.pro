@@ -111,7 +111,10 @@ SOURCES +=  \
     tabstablewidget.cpp \
     combotablewidget.cpp \
     objectcache.cpp \
-    resultswindow_if.cpp
+    resultswindow_if.cpp \
+    dataviewer.cpp \
+    ui_dataviewer.cpp \
+    ui_datatabsviewer.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -196,7 +199,10 @@ HEADERS  += \
     tabstablewidget.h \
     combotablewidget.h \
     objectcache.h \
-    resultswindow_if.h
+    resultswindow_if.h \
+    dataviewer.h \
+    ui_dataviewer.h \
+    ui_datatabsviewer.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
