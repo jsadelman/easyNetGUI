@@ -427,7 +427,8 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
 {
     // wait until all descriptions of recently_* objects have arrived
     renderList.append(domDoc);
-    if (boxFilter->isAllValid() && arrowFilter->isAllValid())
+    // HACK to allow visualisation of ocnversions and representations even when missing 'ghost' objects are present
+    if ((boxFilter->isAllValid() && arrowFilter->isAllValid()) || boxType() == "representation")
         render();
 }
 

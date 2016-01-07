@@ -189,9 +189,9 @@ void MainWindow::constructForms()
     /* ADD TABS */
     infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-//    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetForm, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
@@ -269,8 +269,8 @@ void MainWindow::connectSignalsAndSlots()
 //            this,SLOT(showPlotViewer()));
     connect(tablesWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
             plotSettingsWindow, SLOT(createNewPlotOfType(QString, QString, QMap<QString, QString>)));
-//    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-//    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
     /* signals & slots */
 //    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
 //          SessionManager::instance()->descriptionCache(), SLOT(create(QDomDocument*)));
@@ -314,12 +314,12 @@ void MainWindow::showPlotViewer()
 
 void MainWindow::diagramSceneTabChanged(int index)
 {
-//     modelScene->goToSleep();
-//     conversionScene->goToSleep();
+     modelScene->goToSleep();
+     conversionScene->goToSleep();
     if (index == modelTabIdx)
          modelScene->wakeUp();
-//    else if (index == conversionTabIdx)
-//         conversionScene->wakeUp();
+    else if (index == conversionTabIdx)
+         conversionScene->wakeUp();
 }
 
 
