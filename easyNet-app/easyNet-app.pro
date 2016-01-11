@@ -114,7 +114,8 @@ SOURCES +=  \
     resultswindow_if.cpp \
     dataviewer.cpp \
     ui_dataviewer.cpp \
-    ui_datatabsviewer.cpp
+    ui_datatabsviewer.cpp \
+    ui_datacomboviewer.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -202,7 +203,8 @@ HEADERS  += \
     resultswindow_if.h \
     dataviewer.h \
     ui_dataviewer.h \
-    ui_datatabsviewer.h
+    ui_datatabsviewer.h \
+    ui_datacomboviewer.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

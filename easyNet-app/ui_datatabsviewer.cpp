@@ -1,46 +1,61 @@
 #include "ui_datatabsviewer.h"
+#include "objectcachefilter.h"
+#include "objectupdater.h"
 
 #include <QVBoxLayout>
 
 Ui_DataTabsViewer::Ui_DataTabsViewer(QWidget *parent)
     : Ui_DataViewer(parent)
 {
-
 }
 
 Ui_DataTabsViewer::~Ui_DataTabsViewer()
 {
-
 }
 
-void Ui_DataTabsViewer::setupUi(DataViewer *dataViewer)
+QString Ui_DataTabsViewer::currentItem()
 {
-    // build widget
+    return itemMap.value(tabWidget->currentWidget());
+}
+
+void Ui_DataTabsViewer::setCurrentItem(QString name)
+{
+    tabWidget->setCurrentWidget(itemMap.value(name));
+}
+
+void Ui_DataTabsViewer::addItem(QString name, QWidget *item)
+{
+    itemMap[name] = item;
+    tabWidget->addTab(item, ""); // the (pretty) name on the tab will be set later
+    itemDescriptionFilter->addName(name);
+}
+
+void Ui_DataTabsViewer::removeItem(QString name)
+{
+    tabWidget->removeTab(tabWidget->indexOf(itemMap.value(name)));
+    itemMap.remove(name);
+    if (m_usePrettyNames)
+        itemDescriptionFilter->removeName(name);
+}
+
+void Ui_DataTabsViewer::createViewer()
+{
     tabWidget = new QTabWidget;
     tabWidget->setTabsClosable(true);
+    setCentralWidget(tabWidget);
     connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)
     {
-       emit deleteItemRequested(itemMap.key(tabWidget->widget(index)));
+        emit deleteItemRequested(itemMap.key(tabWidget->widget(index)));
     });
     connect(tabWidget, &QTabWidget::currentChanged, [=](int index)
     {
         emit currentItemChanged(itemMap.key(tabWidget->widget(index)));
     });
-    setCentralWidget(tabWidget);
 
-    // actions
-    createActions();
-    createToolBars();
+}
 
-    connect(setDispatchModeOverrideMapper, SIGNAL(mapped(int)),
-            dataViewer, SLOT(setDispatchModeOverride(int)));
-    connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
-            dataViewer, SLOT(setDispatchModeAuto(bool)));
-    dataViewer->setDispatchModeAuto(true);
-    setDispatchModeAutoAct->setChecked(true);
-    connect(openAct, SIGNAL(triggered()), dataViewer, SLOT(open()));
-    connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
-    connect(copyAct, SIGNAL(triggered()), dataViewer, SLOT(copy()));
-
+void Ui_DataTabsViewer::displayPrettyName(QString name)
+{
+    tabWidget->setTabText(tabWidget->indexOf(itemMap.value(name)), prettyName.value(name));
 }
 

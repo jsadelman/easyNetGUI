@@ -7,14 +7,16 @@
 class DataViewer;
 class QSignalMapper;
 class QActionGroup;
+class ObjectCacheFilter;
+class ObjectUpdater;
 
 class Ui_DataViewer: public QMainWindow
 {
     Q_OBJECT
 public:
-    Ui_DataViewer(QWidget * parent = 0);
-    ~Ui_DataViewer();
-    virtual void setupUi(DataViewer *dataViewer)=0;
+    Ui_DataViewer(bool usePrettyNames = false, QWidget * parent = 0);
+    virtual ~Ui_DataViewer();
+    virtual void setupUi(DataViewer *dataViewer);
     virtual QString currentItem()=0;
     virtual void setCurrentItem(QString name)=0;
 
@@ -49,8 +51,13 @@ signals:
 protected:
     virtual void createActions();
     virtual void createToolBars();
+    virtual void createViewer()=0;
+    virtual void displayPrettyName(QString name)=0;
     QMap<QString, QWidget *> itemMap;
-
+    ObjectCacheFilter *itemDescriptionFilter;
+    ObjectUpdater *itemDescriptionUpdater;
+    bool m_usePrettyNames;
+    QMap<QString, QString> prettyName;
 
 };
 
