@@ -105,7 +105,7 @@ SOURCES +=  \
     xmlaccessor.cpp \
     objectnamevalidator.cpp \
     lazynutjob.cpp \
-    trialdataframemodel.cpp \
+    prettyheadersmodel.cpp \
     tablewindow.cpp \
     tablewidgetinterface.cpp \
     tabstablewidget.cpp \
@@ -115,7 +115,8 @@ SOURCES +=  \
     dataviewer.cpp \
     ui_dataviewer.cpp \
     ui_datatabsviewer.cpp \
-    ui_datacomboviewer.cpp
+    ui_datacomboviewer.cpp \
+    dataframeviewer.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -194,7 +195,7 @@ HEADERS  += \
     objectnamevalidator.h \
     lazynutjob.h \
     jobqueue.h \
-    trialdataframemodel.h \
+    prettyheadersmodel.h \
     tablewindow.h \
     tablewidgetinterface.h \
     tabstablewidget.h \
@@ -204,7 +205,8 @@ HEADERS  += \
     dataviewer.h \
     ui_dataviewer.h \
     ui_datatabsviewer.h \
-    ui_datacomboviewer.h
+    ui_datacomboviewer.h \
+    dataframeviewer.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

@@ -41,7 +41,7 @@ bool TableWidgetInterface::contains(QString table)
     return modelMap.contains(table);
 }
 
-void TableWidgetInterface::setPrettyHeaders(QString tableName, TrialDataFrameModel* prettyHeadersModel)
+void TableWidgetInterface::setPrettyHeaders(QString tableName, PrettyHeadersModel* prettyHeadersModel)
 {
     prettyHeadersModelMap.insert(tableName, prettyHeadersModel);
 }
@@ -91,7 +91,7 @@ void TableWidgetInterface::prepareToUpdateTable(QDomDocument *domDoc, QString cm
 DataFrameModel *TableWidgetInterface::getDataFrameModel(QAbstractItemModel *model)
 {
     DataFrameModel *dFmodel = qobject_cast<DataFrameModel *>(model);
-    TrialDataFrameModel *tdFmodel = qobject_cast<TrialDataFrameModel *>(model);
+    PrettyHeadersModel *tdFmodel = qobject_cast<PrettyHeadersModel *>(model);
     if (tdFmodel)
         dFmodel = qobject_cast<DataFrameModel *>(tdFmodel->sourceModel());
     return dFmodel;
@@ -103,7 +103,7 @@ void TableWidgetInterface::updateTable(QDomDocument *domDoc, QString cmd)
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
     QString name = nameFromCmd(cmd);
     dfModel->setName(name);
-    TrialDataFrameModel *prettyHeadersModel = nullptr;
+    PrettyHeadersModel *prettyHeadersModel = nullptr;
     if (prettyHeadersModelMap.contains(name))
     {
         prettyHeadersModel = prettyHeadersModelMap.value(name);

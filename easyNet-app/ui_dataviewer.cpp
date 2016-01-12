@@ -19,7 +19,6 @@ Ui_DataViewer::Ui_DataViewer(bool usePrettyNames, QWidget *parent)
 
 Ui_DataViewer::~Ui_DataViewer()
 {
-
 }
 
 void Ui_DataViewer::setupUi(DataViewer *dataViewer)

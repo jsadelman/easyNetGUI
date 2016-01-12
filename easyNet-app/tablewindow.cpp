@@ -5,7 +5,7 @@
 #include "tabstablewidget.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
-#include "trialdataframemodel.h"
+#include "prettyheadersmodel.h"
 #include "xmlform.h"
 #include "settingsform.h"
 #include "settingsformdialog.h"
@@ -56,7 +56,7 @@ TableWindow::~TableWindow()
 
 void TableWindow::setPrettyHeaders(QString trial, QString table)
 {
-    TrialDataFrameModel *prettyHeadersModel = new TrialDataFrameModel(this);
+    PrettyHeadersModel *prettyHeadersModel = new PrettyHeadersModel(this);
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");

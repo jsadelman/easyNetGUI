@@ -1,15 +1,15 @@
-#include "trialdataframemodel.h"
+#include "prettyheadersmodel.h"
 #include "dataframemodel.h"
 #include <QDebug>
 
-TrialDataFrameModel::TrialDataFrameModel(QObject *parent)
+PrettyHeadersModel::PrettyHeadersModel(QObject *parent)
     : headerReplaceRules(), QIdentityProxyModel(parent)
 {
 //    headerReplace[Qt::Horizontal] = QList<QPair<QString, QString> > ();
 //    headerReplace[Qt::Vertical] = QList<QPair<QString, QString> > ();
 }
 
-QVariant TrialDataFrameModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant PrettyHeadersModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole)
         return QIdentityProxyModel::headerData(section, orientation, role);
@@ -28,18 +28,18 @@ QVariant TrialDataFrameModel::headerData(int section, Qt::Orientation orientatio
         return QIdentityProxyModel::headerData(section, orientation, role);
 }
 
-void TrialDataFrameModel::addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to)
+void PrettyHeadersModel::addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to)
 {
     headerReplaceRules[orientation].append(QPair<QString, QString>(from, to));
 }
 
-void TrialDataFrameModel::setHeadeReplaceRules(QMap<Qt::Orientation, QList<QPair<QString, QString> > > rules)
+void PrettyHeadersModel::setHeadeReplaceRules(QMap<Qt::Orientation, QList<QPair<QString, QString> > > rules)
 {
     headerReplaceRules = rules;
 }
 
 
-QString TrialDataFrameModel::name()
+QString PrettyHeadersModel::name()
 {
     DataFrameModel *dfModel = qobject_cast<DataFrameModel *>(sourceModel());
     if (dfModel)
@@ -48,7 +48,7 @@ QString TrialDataFrameModel::name()
         return QString();
 }
 
-QTableView *TrialDataFrameModel::view()
+QTableView *PrettyHeadersModel::view()
 {
     DataFrameModel *dfModel = qobject_cast<DataFrameModel *>(sourceModel());
     if (dfModel)

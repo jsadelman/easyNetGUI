@@ -1,6 +1,8 @@
 #include "dataviewer.h"
 #include "ui_dataviewer.h"
 
+#include <QAction>
+
 
 
 DataViewer::DataViewer(QWidget *parent)
@@ -21,11 +23,15 @@ void DataViewer::setUi(Ui_DataViewer *ui_dataViewer)
         return;
     ui->setupUi(this);
     connect(ui, SIGNAL(deleteItemRequested(QString)), this, SLOT(removeItem(QString)));
+    connect(ui, SIGNAL(currentItemChanged(QString)), this, SLOT(updateCurrentItem(QString)));
 }
 
-void DataViewer::removeItem(QString name)
+void DataViewer::enableActions(bool enable)
 {
-    ui->removeItem(name);
-    // ... Dataframe or Plot specific bookkeeping
+    if (!ui)
+        return;
+    ui->saveAct->setEnabled(enable);
+    ui->copyAct->setEnabled(enable);
+    //..
 }
 

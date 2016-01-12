@@ -9,7 +9,7 @@ class QDomDocument;
 class QAbstractItemModel;
 class DataFrameModel;
 class ObjectUpdater;
-class TrialDataFrameModel;
+class PrettyHeadersModel;
 
 class TableWidgetInterface : public QWidget
 {
@@ -20,7 +20,7 @@ public:
     virtual QString currentTable()=0;
     void addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to);
     bool contains(QString table);
-    void setPrettyHeaders(QString tableName, TrialDataFrameModel *prettyHeadersModel);
+    void setPrettyHeaders(QString tableName, PrettyHeadersModel *prettyHeadersModel);
 
 
 public slots:
@@ -58,7 +58,7 @@ protected:
     QString lastName;
     QMap<QString, DataFrameModel*> modelMap;
     QMap<Qt::Orientation , QList<QPair<QString, QString> > > headerReplaceRules;
-    QMap<QString, TrialDataFrameModel*> prettyHeadersModelMap;
+    QMap<QString, PrettyHeadersModel*> prettyHeadersModelMap;
 
 
 };

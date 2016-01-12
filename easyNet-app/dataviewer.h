@@ -18,8 +18,9 @@ protected slots:
     virtual void open()=0;
     virtual void save()=0;
     virtual void copy()=0;
-    virtual void removeItem(QString name);
-
+    virtual void removeItem(QString name)=0;
+    virtual void updateCurrentItem(QString name)=0;
+    virtual void enableActions(bool enable);
 
     Ui_DataViewer *ui;
 };

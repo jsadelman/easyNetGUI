@@ -63,7 +63,7 @@ void ComboTableWidget::updateTable_impl(QAbstractItemModel *model)
         if (!oldDFmodel)
             return;
 
-        TrialDataFrameModel *oldTDFmodel = qobject_cast<TrialDataFrameModel *>(modelMap.value(name));
+        PrettyHeadersModel *oldTDFmodel = qobject_cast<PrettyHeadersModel *>(modelMap.value(name));
         if (oldTDFmodel)
             delete oldTDFmodel;
 
@@ -87,7 +87,7 @@ void ComboTableWidget::deleteTable_impl(QString name)
     if (!dFmodel)
         return;
 
-    TrialDataFrameModel *tdFmodel = qobject_cast<TrialDataFrameModel *>(modelMap.value(name));
+    PrettyHeadersModel *tdFmodel = qobject_cast<PrettyHeadersModel *>(modelMap.value(name));
     if (tdFmodel)
         delete tdFmodel;
 

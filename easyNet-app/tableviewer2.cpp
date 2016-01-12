@@ -239,7 +239,7 @@ void TableViewer::setView(QString name)
 void TableViewer::setPrettyHeaderFromJob()
 {
     LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-    TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
+    PrettyHeadersModel *trialDataFrameModel = new PrettyHeadersModel(this);
     if (job)
     {
         QMapIterator<QString, QVariant> headerReplaceHorizontalIt(job->data.toMap());
@@ -259,11 +259,11 @@ void TableViewer::setPrettyHeaderFromJob()
 
 void TableViewer::setPrettyHeaderFromTables(QStringList tableList)
 {
-    TrialDataFrameModel *trialDataFrameModel = new TrialDataFrameModel(this);
+    PrettyHeadersModel *trialDataFrameModel = new PrettyHeadersModel(this);
     foreach(QString table, tableList)
     {
         int idx = tableMap.key(table);
-        TrialDataFrameModel *sourceTrialDataFrameModel = qobject_cast<TrialDataFrameModel *>(tables[idx]);
+        PrettyHeadersModel *sourceTrialDataFrameModel = qobject_cast<PrettyHeadersModel *>(tables[idx]);
         if (sourceTrialDataFrameModel)
             sourceTrialDataFrameModel->setHeadeReplaceRules(sourceTrialDataFrameModel->getHeaderReplace());
 //            foreach(Qt::Orientation o, sourceTrialDataFrameModel->getHeaderReplace().keys())
@@ -436,7 +436,7 @@ void TableViewer::mergeFD()
        foreach(QString sourceTable, QStringList({x,y}))
        {
            int idx = tableMap.key(sourceTable);
-           TrialDataFrameModel *sourceTrialDataFrameModel = qobject_cast<TrialDataFrameModel *>(tables[idx]->model());
+           PrettyHeadersModel *sourceTrialDataFrameModel = qobject_cast<PrettyHeadersModel *>(tables[idx]->model());
            if (sourceTrialDataFrameModel)
            {
                QList<QPair<QString, QString> > horizontalHeaderReplaceList = sourceTrialDataFrameModel->getHeaderReplace().value(Qt::Horizontal);

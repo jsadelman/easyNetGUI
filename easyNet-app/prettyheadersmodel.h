@@ -1,16 +1,16 @@
-#ifndef TRIALDATAFRAMEMODEL_H
-#define TRIALDATAFRAMEMODEL_H
+#ifndef PRETTYHEADERSMODEL_H
+#define PRETTYHEADERSMODEL_H
 
 #include <QIdentityProxyModel>
 #include <QMap>
 
 class QTableView;
 
-class TrialDataFrameModel : public QIdentityProxyModel
+class PrettyHeadersModel : public QIdentityProxyModel
 {
     Q_OBJECT
 public:
-    TrialDataFrameModel(QObject *parent=0);
+    PrettyHeadersModel(QObject *parent=0);
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
     void addHeaderReplaceRules(Qt::Orientation orientation, QString from, QString to);
     void setHeadeReplaceRules(QMap<Qt::Orientation , QList<QPair<QString, QString> > > rules);
@@ -23,4 +23,4 @@ private:
     QMap<Qt::Orientation , QList<QPair<QString, QString> > > headerReplaceRules;
 };
 
-#endif // TRIALDATAFRAMEMODEL_H
+#endif // PRETTYHEADERSMODEL_H

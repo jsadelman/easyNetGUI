@@ -155,7 +155,7 @@ void TabsTableWidget::deleteTable_impl(QString name)
         return;
     }
 
-    TrialDataFrameModel *tdFmodel = qobject_cast<TrialDataFrameModel *>(modelMap.value(name));
+    PrettyHeadersModel *tdFmodel = qobject_cast<PrettyHeadersModel *>(modelMap.value(name));
 
     QTableView *view = dFmodel->view();
     int index = tabWidget->indexOf(view);

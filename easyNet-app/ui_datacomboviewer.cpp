@@ -70,6 +70,8 @@ void Ui_DataComboViewer::createViewer()
         [=](int index)
     {
         QString name = comboBox->itemData(index, ObjectNameRole).toString();
+        // non-destructive item substitution
+        scrollArea->takeWidget();
         scrollArea->setWidget(itemMap.value(name));
         emit currentItemChanged(name);
     });

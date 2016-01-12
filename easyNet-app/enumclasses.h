@@ -61,7 +61,7 @@ enum class MouseState {Normal, Hovered, Pressed};
     #define EN_FONT_LARGE 16
 #endif
 
-
+#define eNerror qDebug() << "ERROR:" << Q_FUNC_INFO
 
 template <typename T>
 static void matchListFromMap(QMap<T, T> map, T k, QSet<T>& set)
