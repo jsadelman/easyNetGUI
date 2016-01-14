@@ -27,7 +27,7 @@ protected:
 private:
     QComboBox *comboBox;
     QScrollArea *scrollArea;
-    enum {ObjectNameRole = Qt::UserRole};
+//    enum {ObjectNameRole = Qt::UserRole};
 };
 
 #endif // UI_DATACOMBOVIEWER_H

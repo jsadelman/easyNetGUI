@@ -1,6 +1,6 @@
 #include "tabstablewidget.h"
 #include "dataframemodel.h"
-#include "trialdataframemodel.h"
+#include "prettyheadersmodel.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "sessionmanager.h"

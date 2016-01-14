@@ -15,7 +15,7 @@ Ui_DataTabsViewer::~Ui_DataTabsViewer()
 
 QString Ui_DataTabsViewer::currentItem()
 {
-    return itemMap.value(tabWidget->currentWidget());
+    return itemMap.key(tabWidget->currentWidget());
 }
 
 void Ui_DataTabsViewer::setCurrentItem(QString name)

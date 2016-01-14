@@ -10,6 +10,7 @@
 #include "plotviewer.h"
 #include "tablewindow.h"
 #include "xmlaccessor.h"
+#include "dataframeviewer.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -304,7 +305,8 @@ void TrialWidget::runTrial()
     QMap<QString, QVariant> jobData;
     jobData.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
     jobs.last()->data = jobData;
-    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->tableWindow, SLOT(dispatch()));
+//    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->tableWindow, SLOT(dispatch()));
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->dataframeResultsViewer, SLOT(dispatch()));
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
 
     if (runAllMode)

@@ -18,7 +18,7 @@ Q_DECLARE_METATYPE(QDomDocument*)
 ResultsWindow_If::ResultsWindow_If(QWidget *parent)
    :  dispatchModeOverride(-1), dispatchModeAuto(true), QMainWindow(parent)
 {
-    dispatchModeName.insert(Dispatch_New, "New Tab");
+    dispatchModeName.insert(Dispatch_New, "New Page");
     dispatchModeName.insert(Dispatch_Overwrite, "Overwrite");
     dispatchModeName.insert(Dispatch_Append, "Append");
 
@@ -110,6 +110,7 @@ void ResultsWindow_If::createActions()
 
     setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
+
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);

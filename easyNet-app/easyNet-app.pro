@@ -116,7 +116,9 @@ SOURCES +=  \
     ui_dataviewer.cpp \
     ui_datatabsviewer.cpp \
     ui_datacomboviewer.cpp \
-    dataframeviewer.cpp
+    dataframeviewer.cpp \
+    dataviewerdispatcher.cpp \
+    dataframeviewerdispatcher.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -206,7 +208,9 @@ HEADERS  += \
     ui_dataviewer.h \
     ui_datatabsviewer.h \
     ui_datacomboviewer.h \
-    dataframeviewer.h
+    dataframeviewer.h \
+    dataviewerdispatcher.h \
+    dataframeviewerdispatcher.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

@@ -11,7 +11,7 @@
 
 #include "tableviewer2.h"
 #include "dataframemodel.h"
-#include "trialdataframemodel.h"
+#include "prettyheadersmodel.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
 #include "lazynutjob.h"

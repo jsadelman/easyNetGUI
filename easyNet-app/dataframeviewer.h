@@ -3,18 +3,27 @@
 
 #include "dataviewer.h"
 
+#include <QMap>
+#include <QMultiMap>
+
 class DataFrameModel;
 class PrettyHeadersModel;
 class QTableView;
 class ObjectCacheFilter;
 class ObjectUpdater;
+class QDomDocument;
 
 class DataframeViewer : public DataViewer
 {
     Q_OBJECT
 public:
-    DataframeViewer(QWidget * parent = 0);
-    ~DataframeViewer();
+    DataframeViewer(Ui_DataViewer *ui, QWidget * parent = 0);
+    virtual bool contains(QString name) Q_DECL_OVERRIDE;
+
+public slots:
+    virtual void addItem(QString item="") Q_DECL_OVERRIDE;
+    void setPrettyHeadersForTrial(QString trial, QString df);
+    virtual void dispatch();
 
 
 protected slots:
@@ -22,12 +31,13 @@ protected slots:
     virtual void save();
     virtual void copy();
     virtual void removeItem(QString name);
-    virtual void updateCurrentItem(QString name);
+    virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
+//    virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
-    void addDataframe();
     void updateDataframe(QDomDocument* domDoc, QString name);
-    void setPrettyHeadersForTrial(QString trial, QString df);
+
+protected:
 
     QMap<QString, DataFrameModel*> modelMap;
     QMultiMap<QString, QTableView*> viewsMap;
@@ -35,7 +45,6 @@ protected slots:
     ObjectCacheFilter *dataframeFilter;
     ObjectUpdater *dataframeUpdater;
 
-    QString lastSaveDir;
 };
 
 #endif // DATAFRAMEVIEWER_H

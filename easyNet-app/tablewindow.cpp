@@ -84,14 +84,14 @@ void TableWindow::preDispatch(QDomDocument *info)
         return;
     }
 
-    int action;
+    int dispatchAction;
     if (!tableWidget->contains(results))
     {
-        action = Dispatch_Overwrite;
+        dispatchAction = Dispatch_Overwrite;
     }
     else if (!dispatchModeAuto && dispatchModeOverride > -1)
     {
-        action = dispatchModeOverride;
+        dispatchAction = dispatchModeOverride;
     }
     else
     {
@@ -108,13 +108,13 @@ void TableWindow::preDispatch(QDomDocument *info)
             qDebug() << "ERROR: TableWindow::preDispatch cannot read trial run info XML.";
             return;
         }
-        action = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
+        dispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
     }
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList();
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
-    switch(action)
+    switch(dispatchAction)
     {
     case Dispatch_New:
     {

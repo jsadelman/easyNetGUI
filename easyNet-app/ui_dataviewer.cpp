@@ -4,6 +4,7 @@
 #include "xmlaccessor.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
+#include "dataviewer.h"
 
 
 
@@ -45,15 +46,27 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
             dataViewer, SLOT(setDispatchModeOverride(int)));
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             dataViewer, SLOT(setDispatchModeAuto(bool)));
-    dataViewer->setDispatchModeAuto(true);
-    setDispatchModeAutoAct->setChecked(true);
+
     connect(openAct, SIGNAL(triggered()), dataViewer, SLOT(open()));
     connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
     connect(copyAct, SIGNAL(triggered()), dataViewer, SLOT(copy()));
+    connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
+            dataViewer, SLOT(setDispatchModeAuto(bool)));
+//    dataViewer->setDispatchModeAuto(true);
+    setDispatchModeAutoAct->setChecked(true);
+    setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
 }
 
 void Ui_DataViewer::createActions()
 {
+    dispatchModeName.insert(Dispatch_New, "New Page");
+    dispatchModeName.insert(Dispatch_Overwrite, "Overwrite");
+    dispatchModeName.insert(Dispatch_Append, "Append");
+
+    dispatchModeIconName.insert(Dispatch_New, ":/images/tab_new.png");
+    dispatchModeIconName.insert(Dispatch_Overwrite, ":/images/overwrite.png");
+    dispatchModeIconName.insert(Dispatch_Append, ":/images/append.png");
+
     setDispatchModeOverrideMapper = new QSignalMapper(this);
     setDispatchModeOverrideActGroup = new QActionGroup(this);
     for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
@@ -70,8 +83,9 @@ void Ui_DataViewer::createActions()
     }
 
     setDispatchModeAutoAct = new QAction("Auto", this);
-//    setDispatchModeAutoAct->setToolTip("Override default tabs behaviour");
+    setDispatchModeAutoAct->setToolTip("Override default page behaviour");
     setDispatchModeAutoAct->setCheckable(true);
+
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);

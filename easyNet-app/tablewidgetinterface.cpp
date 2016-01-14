@@ -2,7 +2,7 @@
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "dataframemodel.h"
-#include "trialdataframemodel.h"
+#include "prettyheadersmodel.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
 

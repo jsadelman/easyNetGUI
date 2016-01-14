@@ -19,33 +19,33 @@ Ui_DataComboViewer::~Ui_DataComboViewer()
 QString Ui_DataComboViewer::currentItem()
 {
     if (m_usePrettyNames)
-        return comboBox->currentData(ObjectNameRole).toString();
+        return comboBox->currentData().toString();
     return comboBox->currentText();
 }
 
 void Ui_DataComboViewer::setCurrentItem(QString name)
 {
     comboBox->setCurrentIndex(m_usePrettyNames ?
-                                  comboBox->findData(name, ObjectNameRole) :
+                                  comboBox->findData(name) :
                                   comboBox->findText(name));
 }
 
 void Ui_DataComboViewer::addItem(QString name, QWidget *item)
 {
     itemMap[name] = item;
-    comboBox->addItem(name);
-    scrollArea->setWidget(item);
     if (m_usePrettyNames)
     {
-        comboBox->setItemData(comboBox->findText(name), name, ObjectNameRole); // pretty name will be substituted later
+        comboBox->addItem("", name);
         itemDescriptionFilter->addName(name);
     }
+    else
+        comboBox->addItem(name);
 }
 
 void Ui_DataComboViewer::removeItem(QString name)
 {
     comboBox->removeItem(m_usePrettyNames ?
-                             comboBox->findData(name, ObjectNameRole) :
+                             comboBox->findData(name) :
                              comboBox->findText(name));
     itemMap.remove(name);
     if (m_usePrettyNames)
@@ -60,6 +60,7 @@ void Ui_DataComboViewer::createViewer()
     if (!m_usePrettyNames)
         comboBox->setInsertPolicy(QComboBox::InsertAlphabetically);
     scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
     layout->addWidget(comboBox);
     layout->addWidget(scrollArea);
     QWidget *widget = new QWidget(this);
@@ -69,7 +70,7 @@ void Ui_DataComboViewer::createViewer()
     connect(comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
         [=](int index)
     {
-        QString name = comboBox->itemData(index, ObjectNameRole).toString();
+        QString name = m_usePrettyNames ? comboBox->itemData(index).toString() : comboBox->itemText(index);
         // non-destructive item substitution
         scrollArea->takeWidget();
         scrollArea->setWidget(itemMap.value(name));
@@ -81,7 +82,7 @@ void Ui_DataComboViewer::createViewer()
 
 void Ui_DataComboViewer::displayPrettyName(QString name)
 {
-    comboBox->setItemText(comboBox->findData(name, ObjectNameRole), prettyName.value(name));
+    comboBox->setItemText(comboBox->findData(name), prettyName.value(name));
     comboBox->model()->sort(0);
 }
 

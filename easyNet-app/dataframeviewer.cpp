@@ -15,8 +15,8 @@
 #include <QFileDialog>
 #include <QTableView>
 
-DataframeViewer::DataframeViewer(QWidget *parent)
-    : DataViewer(parent), lastSaveDir("")
+DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
+    : DataViewer(ui, parent)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
@@ -26,9 +26,10 @@ DataframeViewer::DataframeViewer(QWidget *parent)
             this, SLOT(updateDataframe(QDomDocument*,QString)));
 }
 
-DataframeViewer::~DataframeViewer()
-{
 
+bool DataframeViewer::contains(QString name)
+{
+    return modelMap.contains(name);
 }
 
 void DataframeViewer::open()
@@ -56,7 +57,7 @@ void DataframeViewer::open()
         QMap<QString, QVariant> jobData;
         jobData.insert("dfName", dfName);
         jobs.last()->data = jobData;
-        jobs.last()->appendEndOfJobReceiver(this, SLOT(addDataframe()));
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
         SessionManager::instance()->submitJobs(jobs);
     }
 }
@@ -114,39 +115,42 @@ void DataframeViewer::removeItem(QString name)
     }
 }
 
-void DataframeViewer::updateCurrentItem(QString name)
+void DataframeViewer::enableActions(bool enable)
 {
-    if (name.isEmpty())
-        enableActions(false);
-    else
-        enableActions(true);
+    DataViewer::enableActions(enable);
+    // ..
 }
 
-void DataframeViewer::addDataframe()
+
+
+void DataframeViewer::addItem(QString item)
 {
-    QVariant v = SessionManager::instance()->getDataFromJob(sender(), "dfName");
-    if (!v.canConvert<QString>())
+    if (item.isEmpty())
     {
-        eNerror << "cannot retrieve a valid string from dfName key in sender LazyNut job";
-        return;
+        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "dfName");
+        if (!v.canConvert<QString>())
+        {
+            eNerror << "cannot retrieve a valid string from dfName key in sender LazyNut job";
+            return;
+        }
+        item = v.value<QString>();
     }
-    QString dfName = v.value<QString>();
-    if (dfName.isEmpty())
+    if (item.isEmpty())
     {
         eNerror << "string from dfName key in sender LazyNut job is empty";
     }
-    else if (!SessionManager::instance()->exists(dfName))
+    else if (!SessionManager::instance()->exists(item))
     {
-        eNerror << QString("attempt to add a non-existing dataframe %1").arg(dfName);
+        eNerror << QString("attempt to add a non-existing dataframe %1").arg(item);
     }
-    else if (modelMap.contains(dfName))
+    else if (modelMap.contains(item))
     {
-        eNerror << QString("attempt to create an already existing model for dataframe %!").arg(dfName);
+        eNerror << QString("attempt to create an already existing model for dataframe %!").arg(item);
     }
     else
     {
-        modelMap.insert(dfName, nullptr);
-        dataframeFilter->addName(dfName);
+        modelMap.insert(item, nullptr);
+        dataframeFilter->addName(item);
     }
 }
 
@@ -181,8 +185,11 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         delete oldDFmodel;
         delete m;
     }
-    modelMap[name] = dFmodel;
-    view->setModel(prettyHeadersModel ? prettyHeadersModel : dfModel);
+    modelMap[name] = dfModel;
+    if (prettyHeadersModel)
+        view->setModel(prettyHeadersModel);
+    else
+        view->setModel(dfModel);
     view->verticalHeader()->hide();
     view->resizeColumnsToContents();
 }
@@ -195,5 +202,10 @@ void DataframeViewer::setPrettyHeadersForTrial(QString trial, QString df)
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
     prettyHeadersModelMap.insert(df, prettyHeadersModel);
+}
+
+void DataframeViewer::dispatch()
+{
+    DataViewer::dispatch();
 }
 

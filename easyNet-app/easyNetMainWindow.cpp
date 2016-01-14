@@ -52,9 +52,13 @@
 #include "diagramscene.h"
 #include "diagramwindow.h"
 #include "tableviewer2.h"
-#include "trialdataframemodel.h"
+#include "prettyheadersmodel.h"
 #include "enumclasses.h"
 #include "tablewindow.h"
+#include "dataframeviewer.h"
+#include "dataframeviewerdispatcher.h"
+#include "ui_datatabsviewer.h"
+#include "ui_datacomboviewer.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -177,6 +181,11 @@ void MainWindow::constructForms()
 //    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
 //    tableWindow = new TableViewer("Tables",this);
     tableWindow = new TableWindow(this);
+
+    ui_dataframeResultsViewer = new Ui_DataComboViewer(this);
+    dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
+    dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
+
     dataframesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Dataframes",this);
     paramEdit = new TableEditor ("Parameters",this);
     plotViewer = new PlotViewer(easyNetHome, this);
@@ -211,7 +220,9 @@ void MainWindow::constructForms()
     dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
 
     plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
-    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
+//    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
+    outputTablesTabIdx = resultsPanel->addTab(dataframeResultsViewer, tr("Tables"));
+
 
     // perhaps use this code for detachable tabs?
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs
@@ -241,7 +252,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
-    connect(tableWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
+//    connect(tableWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
     connect(plotViewer,SIGNAL(setPlot(QString)), plotSettingsWindow, SLOT(setPlot(QString)));
 //    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
     connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
@@ -281,7 +292,8 @@ void MainWindow::connectSignalsAndSlots()
 //    connect(tableWindow, SIGNAL(addDataframeMerge(QString,QString)),
 //            plotViewer, SLOT(addDataframeMerge(QString,QString)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
-             tableWindow, SLOT(preDispatch(QDomDocument*)));
+//             tableWindow, SLOT(preDispatch(QDomDocument*)));
+            dataframeResultsViewer, SLOT(preDispatch(QDomDocument*)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
             plotViewer, SLOT(preDispatch(QDomDocument*)));
      connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString)),

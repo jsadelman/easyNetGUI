@@ -47,6 +47,10 @@ class DiagramSceneTabWidget;
 class DiagramScene;
 class DiagramWindow;
 class TableWindow;
+class DataframeViewer;
+class DataframeViewerDispatcher;
+class Ui_DataTabsViewer;
+class Ui_DataComboViewer;
 
 QT_END_NAMESPACE
 
@@ -265,6 +269,11 @@ public:
     TableEditor     *dataframesWindow;
 //    TableViewer     *tableWindow;
     TableWindow     *tableWindow;
+    DataframeViewer *dataframeResultsViewer;
+    DataframeViewerDispatcher *dataframeResultsDispatcher;
+    Ui_DataComboViewer *ui_dataframeResultsViewer;
+
+
     TableEditor     *paramEdit;
     DebugLog        *debugLog;
     QToolBar        *infoToolBar;

@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QMap>
 #include <QRegExp>
+#include <QDebug>
 
 class AsLazyNutObject;
 typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
