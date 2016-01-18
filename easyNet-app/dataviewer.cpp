@@ -16,7 +16,7 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
 {
     setUi();
     destroyedObjectsFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-//    destroyedObjectsFilter->setAllPassFilter(); // may be specialised by derived classes
+    destroyedObjectsFilter->setAllPassFilter(); // may be specialised by derived classes
     connect(destroyedObjectsFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeItem(QString)));
 }
 
@@ -100,7 +100,8 @@ void DataViewer::enableActions(bool enable)
         return;
     ui->saveAct->setEnabled(enable);
     ui->copyAct->setEnabled(enable);
-    ui->setDispatchModeAutoAct->setEnabled(enable);
+    if (dispatcher)
+        ui->setDispatchModeAutoAct->setEnabled(enable);
 }
 
 void DataViewer::setDispatchModeOverride(int mode)

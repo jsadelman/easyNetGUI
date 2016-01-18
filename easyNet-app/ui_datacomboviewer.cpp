@@ -69,7 +69,11 @@ void Ui_DataComboViewer::replaceItem(QString name, QWidget *item)
 
 void Ui_DataComboViewer::createViewer()
 {
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    QWidget *widget = new QWidget;
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    widget->setLayout(layout);
+
     comboBox = new QComboBox(this);
     comboBox->setEditable(false);
     itemMap.insert("", new QWidget(this));
@@ -81,9 +85,10 @@ void Ui_DataComboViewer::createViewer()
     scrollArea->setWidgetResizable(true);
     layout->addWidget(comboBox);
     layout->addWidget(scrollArea);
-    QWidget *widget = new QWidget(this);
-    widget->setLayout(layout);
+
     setCentralWidget(widget);
+
+
 
 
 

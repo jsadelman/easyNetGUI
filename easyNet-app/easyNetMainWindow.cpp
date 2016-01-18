@@ -187,7 +187,18 @@ void MainWindow::constructForms()
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
     dataframeResultsViewer->setLazy(true);
 
-    dataframesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Dataframes",this);
+    ui_dataframeViewer = new Ui_DataComboViewer(false);
+    dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
+    dataframeViewer->setLazy(true);
+    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    dataframeDescriptionFilter->setType("dataframe");
+    connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+            dataframeViewer, SLOT(addItem(QString)));
+
+
+    dataframesWindow = new TableEditor(SessionManager::instance()->descriptionCache,"Dataframes",this);
+
+
     paramEdit = new TableEditor ("Parameters",this);
     plotViewer = new PlotViewer(easyNetHome, this);
     diagramWindow = new DiagramWindow(diagramPanel, this);
@@ -218,7 +229,8 @@ void MainWindow::constructForms()
 
 //    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
     explorerTabIdx = explorerPanel->addTab(objExplorer, tr("Objects"));
-    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
+//    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
+    dfTabIdx = explorerPanel->addTab(dataframeViewer, tr("Dataframes"));
 
     plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
 //    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
@@ -260,7 +272,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
     connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
     connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
-    connect(dataframesWindow, SIGNAL(openFileRequest()),this,SLOT(importDataFrame()));
+//    connect(dataframesWindow, SIGNAL(openFileRequest()),this,SLOT(importDataFrame()));
 //    connect(diagramPanel, SIGNAL(currentDiagramSceneChanged(DiagramScene*)),
 //            this, SLOT(diagramSceneTabChanged(DiagramScene*)));
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
@@ -775,7 +787,7 @@ void MainWindow::updateDFComboBox()
     //show new dataframe;
     explorerDock->raise();
     explorerPanel->setCurrentIndex(dfTabIdx);
-    dataframesWindow->selectTable(df_name_for_updating_combobox);
+//    dataframesWindow->selectTable(df_name_for_updating_combobox);
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),
                                               this,SLOT(updateDFComboBox()));
 

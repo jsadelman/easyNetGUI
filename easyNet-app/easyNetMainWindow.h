@@ -267,6 +267,9 @@ public:
     PlotViewer      *plotViewer;
     TableEditor     *stimSetForm;
     TableEditor     *dataframesWindow;
+    DataframeViewer *dataframeViewer;
+    Ui_DataComboViewer *ui_dataframeViewer;
+
 //    TableViewer     *tableWindow;
 //    TableWindow     *tableWindow;
     DataframeViewer *dataframeResultsViewer;
@@ -287,6 +290,7 @@ public:
     QWidget         *spacer;
     ObjectCacheFilter* modelListFilter;
     ObjectCacheFilter* trialListFilter;
+    ObjectCacheFilter *dataframeDescriptionFilter;
     QAction         * runAllTrialMsgAct;
 
     Assistant       *assistant;

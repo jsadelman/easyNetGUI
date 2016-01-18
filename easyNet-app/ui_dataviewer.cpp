@@ -61,6 +61,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
 //    dataViewer->setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
     setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
+    setDispatchModeOverrideActGroup->setVisible(false);
 }
 
 void Ui_DataViewer::createActions()
