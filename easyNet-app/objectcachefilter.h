@@ -15,6 +15,7 @@ public:
 
 public slots:
     void setNoFilter();
+    void setAllPassFilter();
     void setName(QString txt);
     void setNameList(QStringList list);
     void addName(QString txt);

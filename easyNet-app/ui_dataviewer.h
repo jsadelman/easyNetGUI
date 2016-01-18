@@ -14,7 +14,7 @@ class Ui_DataViewer: public QMainWindow
 {
     Q_OBJECT
 public:
-    Ui_DataViewer(bool usePrettyNames = false, QWidget * parent = 0);
+    Ui_DataViewer(bool usePrettyNames);
     virtual ~Ui_DataViewer();
     virtual void setupUi(DataViewer *dataViewer);
     virtual QString currentItem()=0;
@@ -43,6 +43,7 @@ public:
 public slots:
     virtual void addItem(QString name, QWidget *item)=0;
     virtual void removeItem(QString name)=0;
+    virtual void replaceItem(QString name, QWidget *item)=0;
 
 signals:
     void deleteItemRequested(QString name);

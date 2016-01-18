@@ -5,9 +5,10 @@
 #include <QVBoxLayout>
 #include <QComboBox>
 #include <QScrollArea>
+#include <QLabel>
 
-Ui_DataComboViewer::Ui_DataComboViewer(QWidget *parent)
-    : Ui_DataViewer(parent)
+Ui_DataComboViewer::Ui_DataComboViewer(bool usePrettyNames)
+    : Ui_DataViewer(usePrettyNames)
 {
 }
 
@@ -32,14 +33,20 @@ void Ui_DataComboViewer::setCurrentItem(QString name)
 
 void Ui_DataComboViewer::addItem(QString name, QWidget *item)
 {
-    itemMap[name] = item;
-    if (m_usePrettyNames)
-    {
-        comboBox->addItem("", name);
-        itemDescriptionFilter->addName(name);
-    }
+    if (itemMap.value(name, nullptr))
+        replaceItem(name, item);
     else
-        comboBox->addItem(name);
+    {
+        // truly add
+        itemMap[name] = item;
+        if (m_usePrettyNames)
+        {
+            comboBox->addItem("", name);
+            itemDescriptionFilter->addName(name);
+        }
+        else
+            comboBox->addItem(name);
+    }
 }
 
 void Ui_DataComboViewer::removeItem(QString name)
@@ -52,11 +59,22 @@ void Ui_DataComboViewer::removeItem(QString name)
         itemDescriptionFilter->removeName(name);
 }
 
+void Ui_DataComboViewer::replaceItem(QString name, QWidget *item)
+{
+    delete itemMap.value(name);
+    itemMap[name] = item;
+    if (currentItem() == name)
+        scrollArea->setWidget(item);
+}
+
 void Ui_DataComboViewer::createViewer()
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     comboBox = new QComboBox(this);
     comboBox->setEditable(false);
+    itemMap.insert("", new QWidget(this));
+
+
     if (!m_usePrettyNames)
         comboBox->setInsertPolicy(QComboBox::InsertAlphabetically);
     scrollArea = new QScrollArea(this);
@@ -66,6 +84,8 @@ void Ui_DataComboViewer::createViewer()
     QWidget *widget = new QWidget(this);
     widget->setLayout(layout);
     setCentralWidget(widget);
+
+
 
     connect(comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
         [=](int index)
@@ -77,7 +97,7 @@ void Ui_DataComboViewer::createViewer()
         emit currentItemChanged(name);
     });
 
-
+    comboBox->addItem("", "");
 }
 
 void Ui_DataComboViewer::displayPrettyName(QString name)

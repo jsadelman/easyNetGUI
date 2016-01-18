@@ -36,6 +36,13 @@ void ObjectCacheFilter::setNoFilter()
     typeList.clear();
 }
 
+void ObjectCacheFilter::setAllPassFilter()
+{
+    setFilterRegExp("^.*$");
+    nameList.clear();
+    typeList.clear();
+}
+
 void ObjectCacheFilter::setName(QString txt)
 {
     nameList = QStringList({txt});

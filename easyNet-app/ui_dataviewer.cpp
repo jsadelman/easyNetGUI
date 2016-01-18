@@ -13,8 +13,8 @@
 #include <QDebug>
 #include <QToolBar>
 
-Ui_DataViewer::Ui_DataViewer(bool usePrettyNames, QWidget *parent)
-    : QMainWindow(parent), m_usePrettyNames(usePrettyNames)
+Ui_DataViewer::Ui_DataViewer(bool usePrettyNames)
+    : QMainWindow(), m_usePrettyNames(usePrettyNames)
 {
 }
 
@@ -24,6 +24,12 @@ Ui_DataViewer::~Ui_DataViewer()
 
 void Ui_DataViewer::setupUi(DataViewer *dataViewer)
 {
+    if (!dataViewer)
+    {
+        eNerror << "invalid DataViewer" << dataViewer;
+        return;
+    }
+    setParent(dataViewer);
     if (m_usePrettyNames)
     {
         itemDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);

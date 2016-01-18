@@ -180,11 +180,12 @@ void MainWindow::constructForms()
     stimSetForm = new TableEditor ("Stimuli",this);
 //    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
 //    tableWindow = new TableViewer("Tables",this);
-    tableWindow = new TableWindow(this);
+//    tableWindow = new TableWindow(this);
 
-    ui_dataframeResultsViewer = new Ui_DataComboViewer(this);
+    ui_dataframeResultsViewer = new Ui_DataTabsViewer(true);
     dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
+    dataframeResultsViewer->setLazy(true);
 
     dataframesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Dataframes",this);
     paramEdit = new TableEditor ("Parameters",this);
@@ -283,8 +284,8 @@ void MainWindow::connectSignalsAndSlots()
             plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
 //    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)),
 //            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)));
-    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
+//    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
+//            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
     connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
             plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
 //    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)),

@@ -3,6 +3,7 @@
 #include "sessionmanager.h"
 #include "enumclasses.h"
 #include "dataviewerdispatcher.h"
+#include "objectcachefilter.h"
 
 #include <QAction>
 #include <QDomDocument>
@@ -11,9 +12,12 @@
 Q_DECLARE_METATYPE(QDomDocument*)
 
 DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
-    : QWidget(parent), ui(ui), dispatcher(nullptr), lastOpenDir(""), lastSaveDir("")
+    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), lastOpenDir(""), lastSaveDir("")
 {
     setUi();
+    destroyedObjectsFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+//    destroyedObjectsFilter->setAllPassFilter(); // may be specialised by derived classes
+    connect(destroyedObjectsFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeItem(QString)));
 }
 
 DataViewer::~DataViewer()
@@ -34,7 +38,7 @@ void DataViewer::setUi()
     layout->addWidget(ui);
     setLayout(layout);
     enableActions(false);
-    connect(ui, SIGNAL(deleteItemRequested(QString)), this, SLOT(removeItem(QString)));
+    connect(ui, SIGNAL(deleteItemRequested(QString)), this, SLOT(initiateRemoveItem(QString)));
     connect(ui, SIGNAL(currentItemChanged(QString)), this, SLOT(updateCurrentItem(QString)));
 
 }
@@ -84,7 +88,7 @@ void DataViewer::dispatch()
 
 void DataViewer::updateCurrentItem(QString name)
 {
-    if (name.isEmpty())
+    if (name.isEmpty() || name == "<select an item>")
         enableActions(false);
     else
         enableActions(true);

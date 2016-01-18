@@ -21,7 +21,7 @@ public:
     virtual bool contains(QString name) Q_DECL_OVERRIDE;
 
 public slots:
-    virtual void addItem(QString item="") Q_DECL_OVERRIDE;
+    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
     void setPrettyHeadersForTrial(QString trial, QString df);
     virtual void dispatch();
 
@@ -30,9 +30,10 @@ protected slots:
     virtual void open();
     virtual void save();
     virtual void copy();
-    virtual void removeItem(QString name);
+    virtual void initiateRemoveItem(QString name) Q_DECL_OVERRIDE;
+    virtual void removeItem(QString name) Q_DECL_OVERRIDE;
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
-//    virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
+    virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
     void updateDataframe(QDomDocument* domDoc, QString name);

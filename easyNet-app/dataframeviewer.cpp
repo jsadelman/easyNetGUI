@@ -24,6 +24,7 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     dataframeUpdater->setProxyModel(dataframeFilter);
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
+    destroyedObjectsFilter->setType("dataframe");
 }
 
 
@@ -53,9 +54,11 @@ void DataframeViewer::open()
                             QString("%1 %2 %3").arg(dfName).arg(loadCmd).arg(fileName)});
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
-                << SessionManager::instance()->recentlyCreatedJob();
+                << SessionManager::instance()->recentlyCreatedJob()
+                << SessionManager::instance()->recentlyModifiedJob();
         QMap<QString, QVariant> jobData;
         jobData.insert("dfName", dfName);
+        jobData.insert("setCurrent", true);
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
         SessionManager::instance()->submitJobs(jobs);
@@ -88,30 +91,63 @@ void DataframeViewer::copy()
     SessionManager::instance()->submitJobs(job);
 }
 
+void DataframeViewer::initiateRemoveItem(QString name)
+{
+    if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
+    {
+        eNwarning << QString("attempt to delete lazyNut system object %1").arg(name);
+        // this should change, trigger desable default observer
+    }
+    else
+    {
+        SessionManager::instance()->destroyObject(name);
+    }
+}
+
 void DataframeViewer::removeItem(QString name)
 {
+    if (sender())
+        qDebug() << sender()->metaObject()->className();
     if (!modelMap.contains(name))
     {
-        eNerror << QString("attemt to delete non-existing dataframe %1").arg(name);
+        eNwarning << QString("attempt to delete non-existing dataframe %1").arg(name);
     }
-    else if (!modelMap.value(name))
-    {
-        eNerror << QString("dataframe %1 does not have a DataFrameModel").arg(name);
-    }
-    else if (!viewsMap.values(name).at(0)) // to be changed for splitters
-    {
-        eNerror << QString("dataframe %1 does not have a view").arg(name);
-    }
+//    else if (!modelMap.value(name))
+//    {
+//        eNerror << QString("dataframe %1 does not have a DataFrameModel").arg(name);
+//    }
+//    else if (!viewsMap.values(name).at(0)) // to be changed for splitters
+//    {
+//        eNerror << QString("dataframe %1 does not have a view").arg(name);
+//    }
+//    else if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
+//    {
+//        qDebug() << Q_FUNC_INFO <<  "WARNING: attempt to delete a default dataframe";
+//        // this should change, trigger desable default observer
+//    }
     else
     {
         ui->removeItem(name);
         delete modelMap.value(name);
-        delete viewsMap.values(name).at(0);
+        modelMap.remove(name);
+        if (viewsMap.values(name).count() > 0)
+            delete viewsMap.values(name).at(0);
+        viewsMap.remove(name);
         if (prettyHeadersModelMap.contains(name))
             delete prettyHeadersModelMap.value(name);
-        // don't destroy default dataframes
-        if (!name.contains(QRegExp("[()]"))) // their names contain brackets
-            SessionManager::instance()->destroyObject(name);
+        if (!isLazy())
+            dataframeFilter->removeName(name);
+//        if (SessionManager::instance()->exists(name))
+//        {
+//            // delete lazyNut object
+//            LazyNutJob *job = new LazyNutJob;
+//            job->logMode |= ECHO_INTERPRETER;
+//            job->cmdList = QStringList({QString("destroy %1").arg(name)});
+//            QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+//                    << job
+//                    << SessionManager::instance()->recentlyDestroyedJob();
+//            SessionManager::instance()->submitJobs(jobs);
+//        }
     }
 }
 
@@ -121,11 +157,18 @@ void DataframeViewer::enableActions(bool enable)
     // ..
 }
 
-
-
-void DataframeViewer::addItem(QString item)
+void DataframeViewer::updateCurrentItem(QString name)
 {
-    if (item.isEmpty())
+    DataViewer::updateCurrentItem(name);
+    if (isLazy())
+        dataframeFilter->setName(name);
+}
+
+
+
+void DataframeViewer::addItem(QString name, bool setCurrent)
+{
+    if (name.isEmpty())
     {
         QVariant v = SessionManager::instance()->getDataFromJob(sender(), "dfName");
         if (!v.canConvert<QString>())
@@ -133,24 +176,31 @@ void DataframeViewer::addItem(QString item)
             eNerror << "cannot retrieve a valid string from dfName key in sender LazyNut job";
             return;
         }
-        item = v.value<QString>();
+        name = v.value<QString>();
+        v = SessionManager::instance()->getDataFromJob(sender(), "setCurrent");
+        if (v.canConvert<bool>())
+            setCurrent = v.value<bool>();
     }
-    if (item.isEmpty())
+    if (name.isEmpty())
     {
         eNerror << "string from dfName key in sender LazyNut job is empty";
     }
-    else if (!SessionManager::instance()->exists(item))
+    else if (!SessionManager::instance()->exists(name))
     {
-        eNerror << QString("attempt to add a non-existing dataframe %1").arg(item);
+        eNerror << QString("attempt to add a non-existing dataframe %1").arg(name);
     }
-    else if (modelMap.contains(item))
+    else if (modelMap.contains(name))
     {
-        eNerror << QString("attempt to create an already existing model for dataframe %!").arg(item);
+        eNerror << QString("attempt to create an already existing model for dataframe %1").arg(name);
     }
     else
     {
-        modelMap.insert(item, nullptr);
-        dataframeFilter->addName(item);
+        modelMap.insert(name, nullptr);
+        ui->addItem(name, new QWidget(ui));
+        if (setCurrent)
+            ui->setCurrentItem(name);
+        if (!isLazy())
+            dataframeFilter->addName(name);
     }
 }
 

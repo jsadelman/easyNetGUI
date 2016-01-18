@@ -268,10 +268,10 @@ public:
     TableEditor     *stimSetForm;
     TableEditor     *dataframesWindow;
 //    TableViewer     *tableWindow;
-    TableWindow     *tableWindow;
+//    TableWindow     *tableWindow;
     DataframeViewer *dataframeResultsViewer;
     DataframeViewerDispatcher *dataframeResultsDispatcher;
-    Ui_DataComboViewer *ui_dataframeResultsViewer;
+    Ui_DataTabsViewer *ui_dataframeResultsViewer;
 
 
     TableEditor     *paramEdit;

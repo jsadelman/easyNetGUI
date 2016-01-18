@@ -337,9 +337,9 @@ void TableEditor::on_copy_DF_clicked()
 
 void TableEditor::updateTableView(QString text)
 {
-    qDebug() << this << "Entered updateTableView with " << text;
-    qDebug() << "currentIndex = " << view->currentIndex();
-    qDebug() << "is this param window?" << thisIsParamWindow;
+//    qDebug() << this << "Entered updateTableView with " << text;
+//    qDebug() << "currentIndex = " << view->currentIndex();
+//    qDebug() << "is this param window?" << thisIsParamWindow;
     if (!text.size())
         return;
     if (text=="Untitled")

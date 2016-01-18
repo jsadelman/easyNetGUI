@@ -1,11 +1,12 @@
 #include "ui_datatabsviewer.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
+#include "enumclasses.h"
 
 #include <QVBoxLayout>
 
-Ui_DataTabsViewer::Ui_DataTabsViewer(QWidget *parent)
-    : Ui_DataViewer(parent)
+Ui_DataTabsViewer::Ui_DataTabsViewer(bool usePrettyNames)
+    : Ui_DataViewer(usePrettyNames), quiet_tab_change(false)
 {
 }
 
@@ -25,17 +26,43 @@ void Ui_DataTabsViewer::setCurrentItem(QString name)
 
 void Ui_DataTabsViewer::addItem(QString name, QWidget *item)
 {
-    itemMap[name] = item;
-    tabWidget->addTab(item, ""); // the (pretty) name on the tab will be set later
-    itemDescriptionFilter->addName(name);
+    if (itemMap.value(name, nullptr))
+        replaceItem(name, item);
+    else
+    {
+        // truly add
+        itemMap[name] = item;
+        if (m_usePrettyNames)
+        {
+            itemDescriptionFilter->addName(name);
+            tabWidget->insertTab(0, item, ""); // the (pretty) name on the tab will be set later
+        }
+        else
+            tabWidget->insertTab(0, item, name);
+    }
 }
 
 void Ui_DataTabsViewer::removeItem(QString name)
 {
+    // does not delete the item
     tabWidget->removeTab(tabWidget->indexOf(itemMap.value(name)));
     itemMap.remove(name);
     if (m_usePrettyNames)
         itemDescriptionFilter->removeName(name);
+}
+
+void Ui_DataTabsViewer::replaceItem(QString name, QWidget *item)
+{
+    QString current = currentItem();
+    quiet_tab_change = true;
+    int index = tabWidget->indexOf(itemMap.value(name));
+    QString label = tabWidget->tabText(index);
+    tabWidget->insertTab(index, item, label);
+    tabWidget->removeTab(index + 1);
+    delete itemMap.value(name, nullptr);
+    itemMap[name] = item;
+    setCurrentItem(current);
+    quiet_tab_change = false;
 }
 
 void Ui_DataTabsViewer::createViewer()
@@ -45,11 +72,13 @@ void Ui_DataTabsViewer::createViewer()
     setCentralWidget(tabWidget);
     connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)
     {
-        emit deleteItemRequested(itemMap.key(tabWidget->widget(index)));
+        QString name = itemMap.key(tabWidget->widget(index));
+        emit deleteItemRequested(name);
     });
     connect(tabWidget, &QTabWidget::currentChanged, [=](int index)
     {
-        emit currentItemChanged(itemMap.key(tabWidget->widget(index)));
+        if (!quiet_tab_change)
+            emit currentItemChanged(itemMap.key(tabWidget->widget(index)));
     });
 
 }
