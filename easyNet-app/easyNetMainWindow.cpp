@@ -186,10 +186,12 @@ void MainWindow::constructForms()
     dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
     dataframeResultsViewer->setLazy(true);
+    dataframeResultsViewer->setDefaultDir(dfDir);
 
     ui_dataframeViewer = new Ui_DataComboViewer(false);
     dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
     dataframeViewer->setLazy(true);
+    dataframeViewer->setDefaultDir(dfDir);
     dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     dataframeDescriptionFilter->setType("dataframe");
     connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
@@ -868,6 +870,7 @@ void MainWindow::setDefaultLocations()
     scriptsDir = QString("%1/Models").arg(easyNetDataHome);
     trialsDir = QString("%1/Trials").arg(easyNetDataHome);
     stimDir = QString("%1/Databases/Stimulus_files").arg(easyNetDataHome);
+    dfDir = QString("%1/Databases").arg(easyNetDataHome);
 }
 
 void MainWindow::writeSettings()

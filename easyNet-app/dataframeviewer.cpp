@@ -25,6 +25,7 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
     destroyedObjectsFilter->setType("dataframe");
+
 }
 
 
@@ -35,8 +36,9 @@ bool DataframeViewer::contains(QString name)
 
 void DataframeViewer::open()
 {
+
     QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
-                                                    lastOpenDir.isEmpty() ? MainWindow::instance()->stimDir : lastOpenDir,
+                                                    lastOpenDir.isEmpty() ? defaultOpenDir : lastOpenDir,
                                                     tr("Database Files (*.eNd);;Text files (*.csv);;All files (*.*)"));
     if (!fileName.isEmpty())
     {
@@ -69,7 +71,7 @@ void DataframeViewer::save()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Save as CSV file"),
-                        lastSaveDir.isEmpty() ? QString("%1/Databases").arg(MainWindow::instance()->easyNetDataHome) : lastOpenDir,
+                        lastSaveDir.isEmpty() ? defaultSaveDir : lastOpenDir,
                         "CSV (*.csv)");
     if (!fileName.isEmpty())
     {

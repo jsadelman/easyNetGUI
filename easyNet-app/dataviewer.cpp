@@ -12,7 +12,8 @@
 Q_DECLARE_METATYPE(QDomDocument*)
 
 DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
-    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), lastOpenDir(""), lastSaveDir("")
+    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false),
+      lastOpenDir(""), defaultOpenDir(""), lastSaveDir(""), defaultSaveDir("")
 {
     setUi();
     destroyedObjectsFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -56,6 +57,12 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
         ui->setDispatchModeAutoAct->setVisible(true);
         setDispatchModeAuto(true);
     }
+}
+
+void DataViewer::setDefaultDir(QString dir)
+{
+    setDefaultOpenDir(dir);
+    setDefaultSaveDir(dir);
 }
 
 void DataViewer::preDispatch(QDomDocument *info)

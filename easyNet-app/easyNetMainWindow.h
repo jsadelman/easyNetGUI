@@ -204,6 +204,7 @@ public:
     QString         scriptsDir;
     QString         trialsDir;
     QString         stimDir;
+    QString         dfDir;
     QString         easyNetHome;
     QString         easyNetDataHome;
     QString         paramDataFrame;

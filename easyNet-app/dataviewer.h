@@ -21,7 +21,9 @@ public:
     virtual bool contains(QString name)=0;
     bool isLazy() {return m_lazy;}
     void setLazy (bool lazy) {m_lazy = lazy; emit lazyChanged(lazy);}
-
+    void setDefaultOpenDir(QString dir) {defaultOpenDir = dir;}
+    void setDefaultSaveDir(QString dir) {defaultSaveDir = dir;}
+    void setDefaultDir(QString dir);
 
 public slots:
     virtual void addItem(QString name="", bool setCurrent=false)=0;
@@ -50,7 +52,9 @@ protected:
     DataViewerDispatcher *dispatcher;
     ObjectCacheFilter *destroyedObjectsFilter;
     QString lastOpenDir;
+    QString defaultOpenDir;
     QString lastSaveDir;
+    QString defaultSaveDir;
     bool m_lazy;
 };
 
