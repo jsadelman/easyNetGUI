@@ -10,7 +10,7 @@ class Ui_DataComboViewer : public Ui_DataViewer
 {
     Q_OBJECT
 public:
-    Ui_DataComboViewer(bool usePrettyNames);
+    Ui_DataComboViewer();
     ~Ui_DataComboViewer();
     virtual QString currentItem();
     virtual void setCurrentItem(QString name);

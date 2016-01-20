@@ -13,16 +13,20 @@ class ObjectUpdater;
 class Ui_DataViewer: public QMainWindow
 {
     Q_OBJECT
+    Q_PROPERTY(bool usePrettyNames READ usePrettyNames WRITE setUsePrettyNames NOTIFY usePrettyNamesChanged)
 public:
-    Ui_DataViewer(bool usePrettyNames);
+    Ui_DataViewer();
     virtual ~Ui_DataViewer();
     virtual void setupUi(DataViewer *dataViewer);
     virtual QString currentItem()=0;
     virtual void setCurrentItem(QString name)=0;
+    bool usePrettyNames() {return m_usePrettyNames;}
+    void setUsePrettyNames(bool prettyNamesEnabled) {m_usePrettyNames = prettyNamesEnabled; emit usePrettyNamesChanged(prettyNamesEnabled);}
 
     QAction *openAct;
     QAction *saveAct;
     QAction *copyAct;
+    QAction *findAct;
 //    QAction *infoAct;
 
     QList<QAction *> setDispatchModeOverrideActs;
@@ -46,8 +50,9 @@ public slots:
     virtual void replaceItem(QString name, QWidget *item)=0;
 
 signals:
-    void deleteItemRequested(QString name);
-    void currentItemChanged(QString name);
+    void deleteItemRequested(QString);
+    void currentItemChanged(QString);
+    void usePrettyNamesChanged(bool);
 
 protected:
     virtual void createActions();

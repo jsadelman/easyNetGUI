@@ -12,7 +12,7 @@ class Ui_DataTabsViewer : public Ui_DataViewer
 {
     Q_OBJECT
 public:
-    Ui_DataTabsViewer(bool usePrettyNames);
+    Ui_DataTabsViewer();
     ~Ui_DataTabsViewer();
     virtual QString currentItem();
     virtual void setCurrentItem(QString name);

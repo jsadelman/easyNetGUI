@@ -31,13 +31,14 @@ public slots:
     virtual void dispatch();
     void setDispatchModeOverride(int mode);
     void setDispatchModeAuto(bool isAuto);
+    virtual void open()=0;
+    virtual void save()=0;
+    virtual void copy()=0;
 
 
 protected slots:
     void setUi();
-    virtual void open()=0;
-    virtual void save()=0;
-    virtual void copy()=0;
+
     virtual void initiateRemoveItem(QString name)=0;
     virtual void removeItem(QString name)=0;
     virtual void updateCurrentItem(QString name);

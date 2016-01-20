@@ -106,10 +106,10 @@ SOURCES +=  \
     objectnamevalidator.cpp \
     lazynutjob.cpp \
     prettyheadersmodel.cpp \
-    tablewindow.cpp \
-    tablewidgetinterface.cpp \
-    tabstablewidget.cpp \
-    combotablewidget.cpp \
+ #   tablewindow.cpp \
+ #   tablewidgetinterface.cpp \
+ #   tabstablewidget.cpp \
+ #   combotablewidget.cpp \
     objectcache.cpp \
     resultswindow_if.cpp \
     dataviewer.cpp \
@@ -198,10 +198,10 @@ HEADERS  += \
     lazynutjob.h \
     jobqueue.h \
     prettyheadersmodel.h \
-    tablewindow.h \
-    tablewidgetinterface.h \
-    tabstablewidget.h \
-    combotablewidget.h \
+#    tablewindow.h \
+#    tablewidgetinterface.h \
+#    tabstablewidget.h \
+#    combotablewidget.h \
     objectcache.h \
     resultswindow_if.h \
     dataviewer.h \

@@ -5,8 +5,8 @@
 
 #include <QVBoxLayout>
 
-Ui_DataTabsViewer::Ui_DataTabsViewer(bool usePrettyNames)
-    : Ui_DataViewer(usePrettyNames), quiet_tab_change(false)
+Ui_DataTabsViewer::Ui_DataTabsViewer()
+    : Ui_DataViewer(), quiet_tab_change(false)
 {
 }
 

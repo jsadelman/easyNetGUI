@@ -46,7 +46,7 @@ class DebugLog;
 class DiagramSceneTabWidget;
 class DiagramScene;
 class DiagramWindow;
-class TableWindow;
+//class TableWindow;
 class DataframeViewer;
 class DataframeViewerDispatcher;
 class Ui_DataTabsViewer;
@@ -94,7 +94,7 @@ signals:
 
 private slots:
 //    void about();
-    void updateTableView(QString text);
+//    void updateTableView(QString text);
 
 //    void showViewMode(int viewModeInt);
     void newScriptFile();
@@ -266,8 +266,10 @@ public:
 //    DiagramScene    *conversionScene;
     PlotSettingsWindow      *plotSettingsWindow;
     PlotViewer      *plotViewer;
-    TableEditor     *stimSetForm;
-    TableEditor     *dataframesWindow;
+//    TableEditor     *stimSetForm;
+    DataframeViewer *stimSetViewer;
+    Ui_DataComboViewer *ui_stimSetViewer;
+//    TableEditor     *dataframesWindow;
     DataframeViewer *dataframeViewer;
     Ui_DataComboViewer *ui_dataframeViewer;
 

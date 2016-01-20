@@ -177,18 +177,24 @@ void MainWindow::constructForms()
     debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
-    stimSetForm = new TableEditor ("Stimuli",this);
+//    stimSetForm = new TableEditor ("Stimuli",this);
+    ui_stimSetViewer = new Ui_DataComboViewer;
+    stimSetViewer = new DataframeViewer(ui_stimSetViewer, this);
+    stimSetViewer->setDragDropColumns(true);
+    stimSetViewer->setStimulusSet(true);
+    stimSetViewer->setDefaultDir(stimDir);
+
 //    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
 //    tableWindow = new TableViewer("Tables",this);
 //    tableWindow = new TableWindow(this);
 
-    ui_dataframeResultsViewer = new Ui_DataTabsViewer(true);
+    ui_dataframeResultsViewer = new Ui_DataTabsViewer;
+    ui_dataframeResultsViewer->setUsePrettyNames(true);
     dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
-    dataframeResultsViewer->setLazy(true);
     dataframeResultsViewer->setDefaultDir(dfDir);
 
-    ui_dataframeViewer = new Ui_DataComboViewer(false);
+    ui_dataframeViewer = new Ui_DataComboViewer;
     dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
     dataframeViewer->setLazy(true);
     dataframeViewer->setDefaultDir(dfDir);
@@ -198,7 +204,7 @@ void MainWindow::constructForms()
             dataframeViewer, SLOT(addItem(QString)));
 
 
-    dataframesWindow = new TableEditor(SessionManager::instance()->descriptionCache,"Dataframes",this);
+//    dataframesWindow = new TableEditor(SessionManager::instance()->descriptionCache,"Dataframes",this);
 
 
     paramEdit = new TableEditor ("Parameters",this);
@@ -218,7 +224,7 @@ void MainWindow::constructForms()
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
 //    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
 
-    stimSetTabIdx = methodsPanel->addTab(stimSetForm, tr("Stimuli"));
+    stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
     paramTabIdx = methodsPanel->addTab(paramEdit, tr("Parameters"));
     plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
@@ -271,9 +277,9 @@ void MainWindow::connectSignalsAndSlots()
     connect(plotViewer,SIGNAL(setPlot(QString)), plotSettingsWindow, SLOT(setPlot(QString)));
 //    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
     connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
-    connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
-    connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
-    connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
+//    connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
+//    connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
+//    connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
 //    connect(dataframesWindow, SIGNAL(openFileRequest()),this,SLOT(importDataFrame()));
 //    connect(diagramPanel, SIGNAL(currentDiagramSceneChanged(DiagramScene*)),
 //            this, SLOT(diagramSceneTabChanged(DiagramScene*)));
@@ -529,26 +535,26 @@ void MainWindow::initialiseToolBar()
 
 }
 
-void MainWindow::updateTableView(QString text)
-{
-    qDebug() << "Entered EasyNetMainWindow updateTableView with " << text;
-    if (!text.size())
-        return;
-    if (text=="Untitled")
-        return;
+//void MainWindow::updateTableView(QString text)
+//{
+//    qDebug() << "Entered EasyNetMainWindow updateTableView with " << text;
+//    if (!text.size())
+//        return;
+//    if (text=="Untitled")
+//        return;
 
-    TableEditor *table = dynamic_cast<TableEditor*> (sender());
-    qDebug() << "sender is " << sender();
-    qDebug() << "table is " << table;
-    if( table == NULL)
-        table = stimSetForm;
-    qDebug() << "table is " << table;
+//    TableEditor *table = dynamic_cast<TableEditor*> (sender());
+//    qDebug() << "sender is " << sender();
+//    qDebug() << "table is " << table;
+//    if( table == NULL)
+//        table = stimSetForm;
+//    qDebug() << "table is " << table;
 
-    LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("xml " + text + " get")});
-    job->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
-    SessionManager::instance()->submitJobs(job);
-}
+//    LazyNutJob *job = new LazyNutJob;
+//    job->cmdList = QStringList({QString("xml " + text + " get")});
+//    job->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
+//    SessionManager::instance()->submitJobs(job);
+//}
 
 
 void MainWindow::setQuietMode()
@@ -717,71 +723,81 @@ void MainWindow::loadAddOn()
 
 void MainWindow::loadStimulusSet()
 {
-    // bring up file dialog
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
-                                                    stimDir,
-                                                    tr("Database Files (*.eNd);;Text files (*.txt *.csv);;All files (*.*)"));
-    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
-    if (!fileName.isEmpty())
-    {
-        // create db
-        QFileInfo fi(fileName);
-        QString base = fi.baseName();
-
- /*
-  *        SessionManager::instance()->runCmd(QStringList({
-                                        QString("create stimulus_set %1").arg(base),
-                                        QString("%1 load %2").arg(base).arg(fileName),
-                                                       }));
-                                        //                                         ,
-                                        //               QString("xml %1 get").arg(base)
-*/
-
-        LazyNutJob *job = new LazyNutJob;
-        job->cmdList = QStringList({
-               QString("create stimulus_set %1").arg(base),
-               QString("%1 load %2").arg(base).arg(fileName),
-               QString("xml %1 get").arg(base)
-                                     });
-        job->setAnswerReceiver(stimSetForm, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
-        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                << job
-                << SessionManager::instance()->updateObjectCatalogueJobs();
-
-        SessionManager::instance()->submitJobs(jobs);
-
-        // change combobox text
-        stimSetForm->setTableText(base);
-
-        //show Stimuli;
-        methodsDock->raise();
-        methodsPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
-
-    }
+    stimSetViewer->open();
+    methodsDock->raise();
+    methodsPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
 }
+
+//    // bring up file dialog
+//    QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
+//                                                    stimDir,
+//                                                    tr("Database Files (*.eNd);;Text files (*.txt *.csv);;All files (*.*)"));
+//    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
+//    if (!fileName.isEmpty())
+//    {
+//        // create db
+//        QFileInfo fi(fileName);
+//        QString base = fi.baseName();
+
+// /*
+//  *        SessionManager::instance()->runCmd(QStringList({
+//                                        QString("create stimulus_set %1").arg(base),
+//                                        QString("%1 load %2").arg(base).arg(fileName),
+//                                                       }));
+//                                        //                                         ,
+//                                        //               QString("xml %1 get").arg(base)
+//*/
+
+//        LazyNutJob *job = new LazyNutJob;
+//        job->cmdList = QStringList({
+//               QString("create stimulus_set %1").arg(base),
+//               QString("%1 load %2").arg(base).arg(fileName),
+//               QString("xml %1 get").arg(base)
+//                                     });
+//        job->setAnswerReceiver(stimSetForm, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
+//        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+//                << job
+//                << SessionManager::instance()->updateObjectCatalogueJobs();
+
+//        SessionManager::instance()->submitJobs(jobs);
+
+//        // change combobox text
+//        stimSetForm->setTableText(base);
+
+//        //show Stimuli;
+//        methodsDock->raise();
+//        methodsPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
+
+//    }
+//}
 
 void MainWindow::importDataFrame()
 {
-    // bring up file dialog
-    QString base;
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
-                                                    stimDir,
-                                                    tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
-    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
-    if (!fileName.isEmpty())
-    {
-        // create db
-        QFileInfo fi(fileName);
-        base = fi.baseName();
-        df_name_for_updating_combobox = base;
-        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),
-                                                  this,SLOT(updateDFComboBox()));
+    dataframeViewer->open();
+    explorerDock->raise();
+    explorerPanel->setCurrentIndex(dfTabIdx);
 
-        SessionManager::instance()->runCmd(QStringList({
-                                         QString("create dataframe %1").arg(base),
-                                         QString("%1 load %2").arg(base).arg(fileName)}));
 
-    }
+//    // bring up file dialog
+//    QString base;
+//    QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
+//                                                    stimDir,
+//                                                    tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
+//    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
+//    if (!fileName.isEmpty())
+//    {
+//        // create db
+//        QFileInfo fi(fileName);
+//        base = fi.baseName();
+//        df_name_for_updating_combobox = base;
+//        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),
+//                                                  this,SLOT(updateDFComboBox()));
+
+//        SessionManager::instance()->runCmd(QStringList({
+//                                         QString("create dataframe %1").arg(base),
+//                                         QString("%1 load %2").arg(base).arg(fileName)}));
+
+//    }
 }
 
 void MainWindow::updateDFComboBox()

@@ -37,6 +37,7 @@ protected:
     };
     DataViewer *hostDataViewer;
     int previousDispatchMode;
+    QMap <QString, QDomDocument*> trialRunInfoMap;
 
 
 };

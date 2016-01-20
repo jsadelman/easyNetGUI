@@ -13,8 +13,8 @@
 #include <QDebug>
 #include <QToolBar>
 
-Ui_DataViewer::Ui_DataViewer(bool usePrettyNames)
-    : QMainWindow(), m_usePrettyNames(usePrettyNames)
+Ui_DataViewer::Ui_DataViewer()
+    : QMainWindow(), m_usePrettyNames(false)
 {
 }
 
@@ -56,12 +56,14 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     connect(openAct, SIGNAL(triggered()), dataViewer, SLOT(open()));
     connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
     connect(copyAct, SIGNAL(triggered()), dataViewer, SLOT(copy()));
+//    connect(findAct, SIGNAL(triggered()), dataViewer, SLOT(showFindDialog()));
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             dataViewer, SLOT(setDispatchModeAuto(bool)));
 //    dataViewer->setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
     setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
     setDispatchModeOverrideActGroup->setVisible(false);
+    findAct->setVisible(false); // visible only for dataframe views
 }
 
 void Ui_DataViewer::createActions()
@@ -102,6 +104,11 @@ void Ui_DataViewer::createActions()
 
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
+    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    findAct->setToolTip(tr("Find text in this table"));
+
+
 }
 
 void Ui_DataViewer::createToolBars()
@@ -112,6 +119,7 @@ void Ui_DataViewer::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
+    editToolBar->addAction(findAct);
 
     dispatchToolBar = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar->addActions(setDispatchModeOverrideActs);

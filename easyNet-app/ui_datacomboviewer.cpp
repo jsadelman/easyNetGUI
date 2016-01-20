@@ -7,8 +7,8 @@
 #include <QScrollArea>
 #include <QLabel>
 
-Ui_DataComboViewer::Ui_DataComboViewer(bool usePrettyNames)
-    : Ui_DataViewer(usePrettyNames)
+Ui_DataComboViewer::Ui_DataComboViewer()
+    : Ui_DataViewer()
 {
 }
 
@@ -45,7 +45,10 @@ void Ui_DataComboViewer::addItem(QString name, QWidget *item)
             itemDescriptionFilter->addName(name);
         }
         else
+        {
             comboBox->addItem(name);
+            comboBox->model()->sort(0);
+        }
     }
 }
 

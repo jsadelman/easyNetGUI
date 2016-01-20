@@ -8,6 +8,9 @@
 #include "objectupdater.h"
 #include "dataframemodel.h"
 #include "ui_dataviewer.h"
+#include "trialwidget.h"
+#include "finddialog.h"
+
 
 
 
@@ -16,7 +19,7 @@
 #include <QTableView>
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
-    : DataViewer(ui, parent)
+    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
@@ -25,7 +28,13 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
     destroyedObjectsFilter->setType("dataframe");
-
+    findDialog = new FindDialog(this);
+    findDialog->hideExtendedOptions();
+    connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
+            this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
+    ui->findAct->setVisible(true);
+    connect(ui->findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+    ui->findAct->setEnabled(false); // because DataframeViewer::enableActions won't be called by te ctor, only DataViewer::enableActions
 }
 
 
@@ -49,10 +58,11 @@ void DataframeViewer::open()
 
         fileName = QDir(MainWindow::instance()->easyNetDataHome).relativeFilePath(fileName);
         QString loadCmd = fi.suffix() == "csv" ? "load_csv" : "load";
+        QString dataframeType = stimulusSet() ? "stimulus_set" : "dataframe";
         LazyNutJob *job = new LazyNutJob;
         job->logMode |= ECHO_INTERPRETER;
         job->cmdList = QStringList({
-                            QString("create dataframe %1").arg(dfName),
+                            QString("create %1 %2").arg(dataframeType).arg(dfName),
                             QString("%1 %2 %3").arg(dfName).arg(loadCmd).arg(fileName)});
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
@@ -156,7 +166,7 @@ void DataframeViewer::removeItem(QString name)
 void DataframeViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
-    // ..
+    ui->findAct->setEnabled(enable);
 }
 
 void DataframeViewer::updateCurrentItem(QString name)
@@ -193,7 +203,9 @@ void DataframeViewer::addItem(QString name, bool setCurrent)
     }
     else if (modelMap.contains(name))
     {
-        eNerror << QString("attempt to create an already existing model for dataframe %1").arg(name);
+//        eNerror << QString("attempt to create an already existing model for dataframe %1").arg(name);
+        if (setCurrent)
+            ui->setCurrentItem(name);
     }
     else
     {
@@ -226,6 +238,16 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     if (isNewModel)
     {
         view = new QTableView(this);
+        if (dragDropColumns())
+        {
+             DataFrameHeader* dragDropHeader = new DataFrameHeader(view);
+             view->setHorizontalHeader(dragDropHeader);
+             dragDropHeader->setTableName(name);
+             connect(dragDropHeader, SIGNAL(columnDropped(QString)),
+                     MainWindow::instance()->trialWidget, SLOT(showSetLabel(QString)));
+             connect(dragDropHeader, SIGNAL(restoreComboBoxText()),
+                     MainWindow::instance()->trialWidget, SLOT(restoreComboBoxText()));
+        }
         viewsMap.insert(name, view);
         ui->addItem(name, view);
     }
@@ -244,6 +266,63 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         view->setModel(dfModel);
     view->verticalHeader()->hide();
     view->resizeColumnsToContents();
+}
+
+void DataframeViewer::showFindDialog()
+{
+    if (ui->currentItem().isEmpty())
+        return;
+    findDialog->show();
+    findDialog->raise();
+    findDialog->activateWindow();
+}
+
+void DataframeViewer::findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags)
+{
+    Q_UNUSED(flags)
+    QFlags<Qt::MatchFlag> flag;
+//    if (flags |= QTextDocument::FindCaseSensitively)
+//        flag = Qt::MatchCaseSensitive;
+//    else
+        flag = Qt::MatchExactly;
+    QVariant qv(str);
+    QString name = ui->currentItem();
+    if (name.isEmpty())
+        return;
+    QTableView *view = viewsMap.values(name).at(0);
+    DataFrameModel*dfModel = modelMap.value(name);
+
+    // first try searching in the current column
+    int row = view->currentIndex().row();
+    int col = view->currentIndex().column();
+    if (row<0)
+        row=0;
+    if (col<0)
+        col=0;
+
+    QModelIndexList hits = dfModel->match(dfModel->index(row, col),
+                            Qt::DisplayRole,qv,1,flag);
+    if (hits.size() == 0)
+    {
+        //now try a more systematic approach
+        for (int i=0;i<dfModel->columnCount();i++)
+        {
+            hits = dfModel->match(dfModel->index(0, i),
+                                Qt::DisplayRole,qv);
+            if (hits.size() > 0)
+                break;
+        }
+    }
+
+    if (hits.size() > 0)
+    {
+        view->setCurrentIndex(hits.first());
+//        findDialog->hide();
+    }
+    else
+        QMessageBox::warning(this, "Find",QString("The text was not found"));
+//        findDialog->hide();
+
 }
 
 void DataframeViewer::setPrettyHeadersForTrial(QString trial, QString df)

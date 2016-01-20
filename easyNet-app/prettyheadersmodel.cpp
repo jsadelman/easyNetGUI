@@ -48,11 +48,11 @@ QString PrettyHeadersModel::name()
         return QString();
 }
 
-QTableView *PrettyHeadersModel::view()
-{
-    DataFrameModel *dfModel = qobject_cast<DataFrameModel *>(sourceModel());
-    if (dfModel)
-        return dfModel->view();
-    else
-        return nullptr;
-}
+//QTableView *PrettyHeadersModel::view()
+//{
+//    DataFrameModel *dfModel = qobject_cast<DataFrameModel *>(sourceModel());
+//    if (dfModel)
+//        return dfModel->view();
+//    else
+//        return nullptr;
+//}

@@ -41,16 +41,16 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     {
         // stimulus set allows a column to be dragged
         view->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        view->setDragEnabled(true);
-        view->setDropIndicatorShown(true);
-        view->setDragDropMode(QAbstractItemView::DragOnly);
+//        view->setDragEnabled(true);
+//        view->setDropIndicatorShown(true);
+//        view->setDragDropMode(QAbstractItemView::DragOnly);
 
         DataFrameHeader* myHeader = new DataFrameHeader(view);
         view->setHorizontalHeader(myHeader);
         connect(myHeader, SIGNAL(columnDropped(QString)), this, SIGNAL(columnDropped(QString)));
         connect(myHeader, SIGNAL(restoreComboBoxText()), this, SIGNAL(restoreComboBoxText()));
         connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
-        connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
+//        connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
 
     }
 
