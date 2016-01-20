@@ -207,7 +207,18 @@ void MainWindow::constructForms()
 //    dataframesWindow = new TableEditor(SessionManager::instance()->descriptionCache,"Dataframes",this);
 
 
-    paramEdit = new TableEditor ("Parameters",this);
+//    paramEdit = new TableEditor ("Parameters",this);
+    ui_paramViewer = new Ui_DataTabsViewer;
+    paramViewer = new DataframeViewer(ui_paramViewer, this);
+    paramViewer->setParametersTable(true);
+    paramDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    paramDescriptionFilter->setFilterRegExp(QRegExp("\\(.* parameters\\)"));
+    paramDescriptionFilter->setFilterKeyColumn(ObjectCache::NameCol);
+    connect(paramDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            paramViewer, SLOT(addItem(QString)));
+
+
+
     plotViewer = new PlotViewer(easyNetHome, this);
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
@@ -226,7 +237,7 @@ void MainWindow::constructForms()
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
-    paramTabIdx = methodsPanel->addTab(paramEdit, tr("Parameters"));
+    paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
     plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
 
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
@@ -253,13 +264,13 @@ void MainWindow::connectSignalsAndSlots()
 {
     // refresh params when user clicks on param tab or changes model in combobox
     connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
-    connect(this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
-    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
+//    connect(this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
+//    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentModel(QString)));
 //    connect(this,SIGNAL(newTableSelection(QString)),tableWindow,SLOT(updateTableView(QString)));
-    connect(paramEdit, SIGNAL(newParamValueSig(QString,QString)),
-            this,SLOT(setParam(QString,QString)));
+//    connect(paramEdit, SIGNAL(newParamValueSig(QString,QString)),
+//            this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
             plotViewer,SLOT(loadByteArray(QString,QByteArray)));
 //    connect(plotSettingsWindow, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),

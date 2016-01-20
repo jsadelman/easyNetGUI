@@ -280,7 +280,9 @@ public:
     Ui_DataTabsViewer *ui_dataframeResultsViewer;
 
 
-    TableEditor     *paramEdit;
+//    TableEditor     *paramEdit;
+    DataframeViewer *paramViewer;
+    Ui_DataTabsViewer *ui_paramViewer;
     DebugLog        *debugLog;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
@@ -294,6 +296,7 @@ public:
     ObjectCacheFilter* modelListFilter;
     ObjectCacheFilter* trialListFilter;
     ObjectCacheFilter *dataframeDescriptionFilter;
+    ObjectCacheFilter *paramDescriptionFilter;
     QAction         * runAllTrialMsgAct;
 
     Assistant       *assistant;

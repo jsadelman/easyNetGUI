@@ -50,6 +50,7 @@ protected slots:
     void updateDataframe(QDomDocument* domDoc, QString name);
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
+    void setParameter(QString name, QString key_val);
 
 signals:
     void dragDropColumnsChanged(bool);

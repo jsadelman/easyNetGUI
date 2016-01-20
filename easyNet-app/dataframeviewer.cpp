@@ -306,6 +306,7 @@ void DataframeViewer::addItem(QString name, bool setCurrent)
             ui->setCurrentItem(name);
         if (!isLazy())
             dataframeFilter->addName(name);
+
     }
 }
 
@@ -316,6 +317,10 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         eNerror << QString("attempt to update non-existing dataframe %1").arg(name);
     }
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
+    if (parametersTable())
+        connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
+                this, SLOT(setParameter(QString,QString)));
+
     dfModel->setName(name); // needed?
     PrettyHeadersModel *prettyHeadersModel = nullptr;
     if (prettyHeadersModelMap.contains(name))
@@ -339,6 +344,10 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
              connect(dragDropHeader, SIGNAL(restoreComboBoxText()),
                      MainWindow::instance()->trialWidget, SLOT(restoreComboBoxText()));
         }
+        if (parametersTable())
+            view->setEditTriggers(QAbstractItemView::AllEditTriggers);
+        else
+            view->setEditTriggers(QAbstractItemView::NoEditTriggers);
         viewsMap.insert(name, view);
         ui->addItem(name, view);
     }
@@ -414,6 +423,17 @@ void DataframeViewer::findForward(const QString &str, QFlags<QTextDocument::Find
         QMessageBox::warning(this, "Find",QString("The text was not found"));
 //        findDialog->hide();
 
+}
+
+void DataframeViewer::setParameter(QString name, QString key_val)
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 set %2").arg(name).arg(key_val);
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->recentlyModifiedJob();
+    SessionManager::instance()->submitJobs(jobs);
 }
 
 void DataframeViewer::setPrettyHeadersForTrial(QString trial, QString df)

@@ -281,6 +281,7 @@ bool ObjectCache::create(QDomDocument *domDoc)
     XMLelement elem = XMLelement(*domDoc).firstChild();
     while (!elem.isNull())
     {
+        // currently recently_created does not provide subtype
         success *= create(elem(), elem["type"](), elem["subtype"]());
         elem = elem.nextSibling();
     }
