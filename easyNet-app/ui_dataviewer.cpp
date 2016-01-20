@@ -65,6 +65,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     setDispatchModeOverrideActGroup->setVisible(false);
     findAct->setVisible(false); // visible only for dataframe views
     copyDFAct->setVisible(false); // visible only for dataframe views
+    dataframeMergeAct->setVisible(false); // visible only for dataframe views
 }
 
 void Ui_DataViewer::createActions()
@@ -113,6 +114,9 @@ void Ui_DataViewer::createActions()
     copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
     copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
 
+    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
+    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
+
 }
 
 void Ui_DataViewer::createToolBars()
@@ -124,6 +128,7 @@ void Ui_DataViewer::createToolBars()
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
     editToolBar->addAction(copyDFAct);
+    editToolBar->addAction(dataframeMergeAct);
     editToolBar->addAction(findAct);
 
 

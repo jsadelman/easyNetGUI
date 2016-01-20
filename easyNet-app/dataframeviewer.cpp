@@ -11,7 +11,8 @@
 #include "trialwidget.h"
 #include "finddialog.h"
 #include "dataviewerdispatcher.h"
-
+#include "settingsform.h"
+#include "settingsformdialog.h"
 
 
 #include <QSettings>
@@ -32,12 +33,19 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     findDialog->hideExtendedOptions();
     connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
             this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
+
+    // because DataframeViewer::enableActions won't be called by te ctor, only DataViewer::enableActions
     ui->findAct->setVisible(true);
+    ui->findAct->setEnabled(false);
     connect(ui->findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
-    ui->findAct->setEnabled(false); // because DataframeViewer::enableActions won't be called by te ctor, only DataViewer::enableActions
+
     ui->copyDFAct->setVisible(true);
-    connect(ui->copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
     ui->copyDFAct->setEnabled(false);
+    connect(ui->copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
+
+    ui->dataframeMergeAct->setVisible(true);
+    ui->dataframeMergeAct->setEnabled(false);
+    connect(ui->dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
 }
 
 
@@ -131,6 +139,61 @@ void DataframeViewer::copyDataframe()
     }
 }
 
+void DataframeViewer::dataframeMerge()
+{
+    // load XML
+    QDomDocument* domDoc = new QDomDocument;
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString easyNetHome = settings.value("easyNetHome","../..").toString();
+    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(easyNetHome));
+    if (!file.open(QIODevice::ReadOnly) || !domDoc->setContent(&file))
+    {
+        delete domDoc;
+        file.close();
+        return;
+    }
+    file.close();
+    // setup form
+    SettingsForm *form = new SettingsForm(domDoc, this);
+    form->setUseRFormat(false);
+    QMap<QString, QString> preFilledSettings;
+    preFilledSettings["x"] = ui->currentItem();
+    preFilledSettings["y"] = SessionManager::instance()->currentSet();
+    form->setDefaultSettings(preFilledSettings);
+    // setup dialog
+    QString info("Select two dataframes you want to merge into one. Their key columns should match.");
+    SettingsFormDialog dialog(domDoc, form, info, this);
+
+
+    connect(&dialog, &SettingsFormDialog::dataframeMergeSettingsReady,
+            [=](QStringList cmdList, QString dfName, QString x, QString y)
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->logMode |= ECHO_INTERPRETER;
+
+        job->cmdList = cmdList;
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << SessionManager::instance()->recentlyCreatedJob();
+        QMap<QString, QVariant> jobData;
+        jobData.insert("dfName", dfName);
+        jobData.insert("setCurrent", true);
+        jobs.last()->data = jobData;
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
+        SessionManager::instance()->submitJobs(jobs);
+        if (dispatcher)
+        {
+            // only one will succeed
+            dispatcher->copyTrialRunInfo(x, dfName);
+            dispatcher->copyTrialRunInfo(y, dfName);
+        }
+        SessionManager::instance()->addDataframeMerge(x, dfName);
+        SessionManager::instance()->addDataframeMerge(y, dfName);
+    });
+    dialog.exec();
+}
+
 void DataframeViewer::initiateRemoveItem(QString name)
 {
     if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
@@ -194,6 +257,7 @@ void DataframeViewer::enableActions(bool enable)
     DataViewer::enableActions(enable);
     ui->findAct->setEnabled(enable);
     ui->copyDFAct->setEnabled(enable);
+    ui->dataframeMergeAct->setEnabled(enable);
 }
 
 void DataframeViewer::updateCurrentItem(QString name)

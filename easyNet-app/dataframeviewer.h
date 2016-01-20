@@ -37,6 +37,7 @@ public slots:
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
     void copyDataframe();
+    void dataframeMerge();
 
 protected slots:
     virtual void initiateRemoveItem(QString name) Q_DECL_OVERRIDE;

@@ -31,6 +31,13 @@ DataViewerDispatcher::~DataViewerDispatcher()
 {
 }
 
+void DataViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
+{
+    TrialRunInfo trialRunInfo(info);
+    setTrialRunInfo(trialRunInfo.results, info);
+//    qDebug() << info->toString();
+}
+
 void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
 {
     trialRunInfoMap.insert(item, info);

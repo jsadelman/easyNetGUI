@@ -19,7 +19,7 @@ public:
     DataViewerDispatcher(DataViewer *host);
     virtual ~DataViewerDispatcher();
     virtual void preDispatch(QSharedPointer<QDomDocument> info)=0;
-    virtual void dispatch(QSharedPointer<QDomDocument> info)=0;
+    virtual void dispatch(QSharedPointer<QDomDocument> info);
     void setSingleTrialMode(int mode) {dispatchDefaultMode.insert("single", mode);}
     void setTrialListMode(int mode) {dispatchDefaultMode.insert("list", mode);}
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);

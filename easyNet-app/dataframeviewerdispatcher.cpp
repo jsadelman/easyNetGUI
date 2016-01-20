@@ -71,7 +71,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         jobs << SessionManager::instance()->recentlyCreatedJob();
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(hostDataViewer, SLOT(addItem()));
-        trialRunInfoMap[backupDf] = trialRunInfoMap[trialRunInfo.results];
+        copyTrialRunInfo(trialRunInfo.results, backupDf);
         qobject_cast<DataframeViewer *>(hostDataViewer)->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
         break;
     }
@@ -80,7 +80,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
         if (!hostDataViewer->contains(trialRunInfo.results))
         {
-            hostDataViewer->addItem(trialRunInfo.results);
+            hostDataViewer->addItem(trialRunInfo.results, true);
             qobject_cast<DataframeViewer *>(hostDataViewer)->setPrettyHeadersForTrial(trialRunInfo.trial, trialRunInfo.results);
         }
         break;
@@ -108,9 +108,8 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 
 void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
-    TrialRunInfo trialRunInfo(info);
-    setTrialRunInfo(trialRunInfo.results, info);
-    qDebug() << info->toString();
+    DataViewerDispatcher::dispatch(info);
+    // ..
 }
 
 
