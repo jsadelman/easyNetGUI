@@ -315,8 +315,8 @@ void DiagramScene::wakeUp()
 {
     if (!awake)
     {
-        connect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-                this, SLOT(positionObject(QString, QString, QDomDocument*)));
+        connect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+                this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
         connect(boxFilter, SIGNAL(objectDestroyed(QString)),
                 this, SLOT(removeObject(QString)));
         connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
@@ -332,8 +332,8 @@ void DiagramScene::goToSleep()
 {
     if (awake)
     {
-        disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-                   this, SLOT(positionObject(QString, QString, QDomDocument*)));
+        disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+                   this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
         disconnect(boxFilter, SIGNAL(objectDestroyed(QString)),
                    this, SLOT(removeObject(QString)));
         disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
@@ -372,10 +372,11 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
     Canvas::mouseDoubleClickEvent(mouseEvent);
 }
 
-void DiagramScene::positionObject(QString name, QString type, QDomDocument *domDoc)
+void DiagramScene::positionObject(QString name, QString type, QString subtype, QDomDocument *domDoc)
 {
     // layers are placed on the scene before arrows
     Q_UNUSED(domDoc)
+    Q_UNUSED(subtype)
       if (type == m_boxType)
     {
         Box *box = new Box();
@@ -531,13 +532,15 @@ bool DiagramScene::isItemChange(int type)
 void DiagramScene::syncToObjCatalogue()
 {
     QString name;
+    QString subtype;
     // display new layers, hold new connections in a list
     for (int row=0;row<boxFilter->rowCount();row++)
     {
-        name = boxFilter->data(boxFilter->index(row,0)).toString();
+        name = boxFilter->data(boxFilter->index(row,ObjectCache::NameCol)).toString();
+        subtype = boxFilter->data(boxFilter->index(row,ObjectCache::SubtypeCol)).toString();
         if (!itemHash.contains(name))
         {
-            positionObject(name, m_boxType, nullptr);
+            positionObject(name, m_boxType, subtype, nullptr);
             QVariant v = boxFilter->data(boxFilter->index(row, ObjectCache::DomDocCol));
             if (v.canConvert<QDomDocument *>())
                 renderList.append(v.value<QDomDocument *>());

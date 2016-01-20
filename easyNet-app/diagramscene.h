@@ -151,7 +151,7 @@ protected:
 //    void contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent);
 
 private slots:
-    void positionObject(QString name, QString type, QDomDocument* domDoc);
+    void positionObject(QString name, QString type, QString subtype, QDomDocument* domDoc);
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
 

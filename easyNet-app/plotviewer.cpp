@@ -121,8 +121,8 @@ PlotViewer::PlotViewer(QString easyNetHomei, QWidget* parent)
     plotFilter->setFilterKeyColumn(ObjectCache::NameCol);
     plotUpdater = new ObjectUpdater(this);
     plotUpdater->setProxyModel(plotFilter);
-    connect(plotFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-            this, SLOT(generatePrettyName(QString,QString,QDomDocument*)));
+    connect(plotFilter, SIGNAL(objectCreated(QString,QString,QString, QDomDocument*)),
+            this, SLOT(generatePrettyName(QString,QString,QString, QDomDocument*)));
     connect(plotUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domDoc, QString plotName)
     {
         QString prettyName =  XMLelement(*domDoc)["pretty name"]();
@@ -723,9 +723,10 @@ void PlotViewer::setupFullScreen()
     fullScreen = false;
 }
 
-void PlotViewer::generatePrettyName(QString plotName, QString type, QDomDocument *domDoc)
+void PlotViewer::generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument *domDoc)
 {
     Q_UNUSED(type)
+    Q_UNUSED(subtype)
     Q_UNUSED(domDoc)
     QString prettyName = plotName;
     prettyName.remove(".plot");

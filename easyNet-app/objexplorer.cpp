@@ -65,8 +65,8 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
     descriptionUpdater->setProxyModel(descriptionFilter);
 
     objectModel = new LazyNutObjectModel(nullptr, this);
-    connect(descriptionFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-            objectModel, SLOT(setDescription(QString, QString, QDomDocument*)));
+    connect(descriptionFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+            objectModel, SLOT(setDescription(QString, QString, QString, QDomDocument*)));
     connect(descriptionFilter, SIGNAL(objectDestroyed(QString)),
             objectModel, SLOT(removeDescription(QString)));
     connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),

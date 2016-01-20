@@ -51,6 +51,8 @@ QVariant ObjectCache::data(const QModelIndex &index, int role) const
             return obj->name;
         case TypeCol:
             return obj->type;
+        case SubtypeCol:
+            return obj->subtype;
         case InvalidCol:
             return obj->invalid;
         case DomDocCol:
@@ -73,6 +75,8 @@ QVariant ObjectCache::headerData(int section, Qt::Orientation orientation, int r
             return "Name";
         case TypeCol:
             return "Type";
+        case SubtypeCol:
+            return "Subtype";
         case InvalidCol:
             return "Invalid";
         case DomDocCol:
@@ -96,6 +100,9 @@ bool ObjectCache::setData(const QModelIndex &index, const QVariant &value, int r
              break;
          case TypeCol:
              cache.at(index.row())->type = value.toString();
+             break;
+         case SubtypeCol:
+             cache.at(index.row())->subtype = value.toString();
              break;
          case InvalidCol:
              cache.at(index.row())->invalid = value.toBool();
@@ -148,13 +155,13 @@ void ObjectCache::clear()
     endRemoveRows();
 }
 
-bool ObjectCache::create(const QString &name, const QString &type)
+bool ObjectCache::create(const QString &name, const QString &type, const QString &subtype)
 {
     if (rowFromName(name) >= 0) // name exists already
         return false;
 
     beginInsertRows(QModelIndex(), 0, 0);
-    LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type);
+    LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type, subtype);
     cache.insert(0, elem);
     endInsertRows();
     emit dataChanged(index(0,0), index(0,columnCount()-1));
@@ -194,7 +201,7 @@ bool ObjectCache::invalidateCache(const QString &name)
         return false;
     }
     // FIRST set pending, THEN invalid, since only the latter triggers signals to filters
-    // If reversed the signal would reach a filter still with the pendinf bit false,
+    // If reversed the signal would reach a filter still with the pending bit false,
     // thus preventing updaters to request updates.
     if (!setPending(name, true))
     {
@@ -252,6 +259,11 @@ QString ObjectCache::type(const QString &name)
     return data(index(rowFromName(name), TypeCol)).toString();
 }
 
+QString ObjectCache::subtype(const QString &name)
+{
+    return data(index(rowFromName(name), SubtypeCol)).toString();
+}
+
 bool ObjectCache::exists(const QString &name)
 {
     QModelIndexList nameMatchList = match(
@@ -269,7 +281,7 @@ bool ObjectCache::create(QDomDocument *domDoc)
     XMLelement elem = XMLelement(*domDoc).firstChild();
     while (!elem.isNull())
     {
-        success *= create(elem(), elem["type"]());
+        success *= create(elem(), elem["type"](), elem["subtype"]());
         elem = elem.nextSibling();
     }
     return success;

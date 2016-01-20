@@ -105,6 +105,37 @@ void ObjectCacheFilter::removeType(QString txt)
     setFilterKeyColumn(ObjectCache::TypeCol);
 }
 
+void ObjectCacheFilter::setSubtype(QString txt)
+{
+    subtypeList = QStringList({txt});
+    setList(subtypeList);
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
+}
+
+void ObjectCacheFilter::setSubtypeList(QStringList list)
+{
+    subtypeList = list;
+    setList(subtypeList);
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
+}
+
+void ObjectCacheFilter::addSubtype(QString txt)
+{
+    if (!subtypeList.contains(txt))
+    {
+        subtypeList.append(txt);
+        setList(subtypeList);
+    }
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
+}
+
+void ObjectCacheFilter::removeSubtype(QString txt)
+{
+    subtypeList.removeAll(txt);
+    setList(subtypeList);
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
+}
+
 void ObjectCacheFilter::sendObjectCreated(QModelIndex parent, int first, int last)
 {
     Q_UNUSED(parent)
@@ -113,8 +144,9 @@ void ObjectCacheFilter::sendObjectCreated(QModelIndex parent, int first, int las
     {
         QString name = data(index(row,ObjectCache::NameCol)).toString();
         QString type = data(index(row,ObjectCache::TypeCol)).toString();
+        QString subtype = data(index(row,ObjectCache::SubtypeCol)).toString();
         QDomDocument* domDoc = static_cast<ObjectCache*>(sourceModel())->getDomDoc(name);
-        emit objectCreated(name, type, domDoc);
+        emit objectCreated(name, type, subtype, domDoc);
     }
 }
 

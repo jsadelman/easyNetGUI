@@ -20,6 +20,7 @@ class DataframeViewer : public DataViewer
     Q_OBJECT
     Q_PROPERTY(bool dragDropColumns READ dragDropColumns WRITE setDragDropColumns NOTIFY dragDropColumnsChanged)
     Q_PROPERTY(bool stimulusSet READ stimulusSet WRITE setStimulusSet NOTIFY stimulusSetChanged)
+    Q_PROPERTY(bool parametersTable READ parametersTable WRITE setParametersTable NOTIFY parametersTableChanged)
 public:
     DataframeViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     virtual bool contains(QString name) Q_DECL_OVERRIDE;
@@ -27,6 +28,8 @@ public:
     void setDragDropColumns(bool enabled) {m_dragDropColumns = enabled; emit dragDropColumnsChanged(enabled);}
     bool stimulusSet() {return m_stimulusSet;}
     void setStimulusSet(bool isStimulusSet) {m_stimulusSet = isStimulusSet; emit stimulusSetChanged(isStimulusSet);}
+    bool parametersTable() {return m_parametersTable;}
+    void setParametersTable(bool isParametersTable) {m_parametersTable = isParametersTable; emit parametersTableChanged(isParametersTable);}
 
 
 public slots:
@@ -51,6 +54,7 @@ protected slots:
 signals:
     void dragDropColumnsChanged(bool);
     void stimulusSetChanged(bool);
+    void parametersTableChanged(bool);
 
 protected:
 
@@ -61,6 +65,7 @@ protected:
     ObjectUpdater *dataframeUpdater;
     bool m_dragDropColumns;
     bool m_stimulusSet;
+    bool m_parametersTable;
     FindDialog*     findDialog;
 
 };

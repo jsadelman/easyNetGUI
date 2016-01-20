@@ -24,9 +24,13 @@ public slots:
     void setTypeList(QStringList list);
     void addType(QString txt);
     void removeType(QString txt);
+    void setSubtype(QString txt);
+    void setSubtypeList(QStringList list);
+    void addSubtype(QString txt);
+    void removeSubtype(QString txt);
 
 signals:
-    void objectCreated(QString, QString, QDomDocument*);
+    void objectCreated(QString, QString, QString, QDomDocument*);
     void objectDestroyed(QString name);
     void objectModified(QString name);
 
@@ -39,6 +43,7 @@ private:
     void setList(QStringList list);
     QStringList nameList;
     QStringList typeList;
+    QStringList subtypeList;
 };
 
 #endif // OBJECTCATALOGUEFILTER_H

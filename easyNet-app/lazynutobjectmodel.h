@@ -40,7 +40,7 @@ signals:
     void objectRequested(QString);
 
 private slots:
-    void setDescription(QString name, QString type, QDomDocument* domDoc);
+    void setDescription(QString name, QString type,  QString subtype, QDomDocument* domDoc);
     void setDescription(QDomDocument* domDoc);
     void sendObjectRequested(const QModelIndex &index);
 

@@ -43,7 +43,7 @@ TrialWidget::TrialWidget(QWidget *parent)
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     trialFilter->setType("trial");
     // cosmetics used in tabs names in TableWindow
-    connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QDomDocument*)
+    connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
     {
         QString df = QString("((%1 default_observer) default_dataframe)").arg(name);
         if (SessionManager::instance()->descriptionCache->exists(df))

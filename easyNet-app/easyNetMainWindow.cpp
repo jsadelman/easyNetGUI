@@ -200,7 +200,7 @@ void MainWindow::constructForms()
     dataframeViewer->setDefaultDir(dfDir);
     dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     dataframeDescriptionFilter->setType("dataframe");
-    connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+    connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             dataframeViewer, SLOT(addItem(QString)));
 
 
@@ -486,7 +486,7 @@ void MainWindow::initialiseToolBar()
       trialComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       trialListFilter->setType("steps");
-      connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+      connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
               trialComboBox, SLOT(setCurrentText(QString)));
 
 

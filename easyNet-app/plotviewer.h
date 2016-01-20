@@ -91,7 +91,7 @@ private slots:
     void deletePlot(QString name);
     void triggerPlotUpdate(QString name=QString());
     void setupFullScreen();
-    void generatePrettyName(QString plotName, QString type, QDomDocument* domDoc);
+    void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
     void addSourceDataframes(QStringList newDataframes=QStringList());
     void dfSourceModified(QString df);
 

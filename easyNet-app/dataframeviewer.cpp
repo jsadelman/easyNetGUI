@@ -20,7 +20,7 @@
 #include <QTableView>
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
-    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false)
+    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);

@@ -224,10 +224,11 @@ void LazyNutObjectModel::clearDescription()
     setDescription(nullptr);
 }
 
-void LazyNutObjectModel::setDescription(QString name, QString type, QDomDocument *domDoc)
+void LazyNutObjectModel::setDescription(QString name, QString type, QString subtype, QDomDocument *domDoc)
 {
     Q_UNUSED(name)
     Q_UNUSED(type)
+    Q_UNUSED(subtype)
     if (domDoc)
         setDescription(domDoc);
     else
