@@ -27,6 +27,7 @@ public:
     QAction *saveAct;
     QAction *copyAct;
     QAction *findAct;
+    QAction *copyDFAct;
 //    QAction *infoAct;
 
     QList<QAction *> setDispatchModeOverrideActs;

@@ -10,7 +10,7 @@
 #include "ui_dataviewer.h"
 #include "trialwidget.h"
 #include "finddialog.h"
-
+#include "dataviewerdispatcher.h"
 
 
 
@@ -35,6 +35,9 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     ui->findAct->setVisible(true);
     connect(ui->findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
     ui->findAct->setEnabled(false); // because DataframeViewer::enableActions won't be called by te ctor, only DataViewer::enableActions
+    ui->copyDFAct->setVisible(true);
+    connect(ui->copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
+    ui->copyDFAct->setEnabled(false);
 }
 
 
@@ -103,6 +106,31 @@ void DataframeViewer::copy()
     SessionManager::instance()->submitJobs(job);
 }
 
+void DataframeViewer::copyDataframe()
+{
+    QString originalDf = ui->currentItem();
+    if (originalDf.isEmpty())
+        return;
+    QString copyDf = SessionManager::instance()->makeValidObjectName(originalDf);
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 copy %2").arg(originalDf).arg(copyDf);
+    QMap<QString, QVariant> jobData;
+    jobData.insert("dfName", copyDf);
+    jobData.insert("setCurrent", true);
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->recentlyCreatedJob();
+    jobs.last()->data = jobData;
+    jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
+    SessionManager::instance()->submitJobs(jobs);
+    if (dispatcher)
+    {
+        dispatcher->copyTrialRunInfo(originalDf, copyDf);
+        setPrettyHeadersForTrial(dispatcher->getTrial(originalDf), copyDf);
+    }
+}
+
 void DataframeViewer::initiateRemoveItem(QString name)
 {
     if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
@@ -118,8 +146,6 @@ void DataframeViewer::initiateRemoveItem(QString name)
 
 void DataframeViewer::removeItem(QString name)
 {
-    if (sender())
-        qDebug() << sender()->metaObject()->className();
     if (!modelMap.contains(name))
     {
         eNwarning << QString("attempt to delete non-existing dataframe %1").arg(name);
@@ -167,6 +193,7 @@ void DataframeViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
     ui->findAct->setEnabled(enable);
+    ui->copyDFAct->setEnabled(enable);
 }
 
 void DataframeViewer::updateCurrentItem(QString name)

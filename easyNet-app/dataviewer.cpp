@@ -112,6 +112,18 @@ void DataViewer::enableActions(bool enable)
         ui->setDispatchModeAutoAct->setEnabled(enable);
 }
 
+void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+{
+    if (dispatcher)
+    {
+        dispatcher->setTrialRunInfo(item, info);
+    }
+    else
+    {
+        eNerror << "no dispatcher set for this viewer";
+    }
+}
+
 void DataViewer::setDispatchModeOverride(int mode)
 {
     if (dispatcher)

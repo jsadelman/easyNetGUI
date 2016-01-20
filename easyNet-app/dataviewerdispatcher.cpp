@@ -31,6 +31,38 @@ DataViewerDispatcher::~DataViewerDispatcher()
 {
 }
 
+void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+{
+    trialRunInfoMap.insert(item, info);
+}
+
+void DataViewerDispatcher::copyTrialRunInfo(QString fromItem, QString toItem)
+{
+    if (trialRunInfoMap.contains(fromItem))
+        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
+}
+
+QString DataViewerDispatcher::getTrial(QString item)
+{
+    if (trialRunInfoMap.contains(item))
+        return TrialRunInfo(trialRunInfoMap.value(item)).trial;
+    return QString();
+}
+
+QString DataViewerDispatcher::getRunMode(QString item)
+{
+    if (trialRunInfoMap.contains(item))
+        return TrialRunInfo(trialRunInfoMap.value(item)).runMode;
+    return QString();
+}
+
+QString DataViewerDispatcher::getResults(QString item)
+{
+    if (trialRunInfoMap.contains(item))
+        return TrialRunInfo(trialRunInfoMap.value(item)).results;
+    return QString();
+}
+
 
 DataViewerDispatcher::TrialRunInfo::TrialRunInfo(QSharedPointer<QDomDocument> info)
 {

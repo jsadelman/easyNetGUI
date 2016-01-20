@@ -22,6 +22,11 @@ public:
     virtual void dispatch(QSharedPointer<QDomDocument> info)=0;
     void setSingleTrialMode(int mode) {dispatchDefaultMode.insert("single", mode);}
     void setTrialListMode(int mode) {dispatchDefaultMode.insert("list", mode);}
+    void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
+    void copyTrialRunInfo(QString fromItem, QString toItem);
+    QString getTrial(QString item);
+    QString getRunMode(QString item);
+    QString getResults(QString item);
 
     int dispatchModeOverride;
     bool dispatchModeAuto;
@@ -38,7 +43,7 @@ protected:
     };
     DataViewer *hostDataViewer;
     int previousDispatchMode;
-    QMap <QString, QDomDocument*> trialRunInfoMap;
+    QMap <QString, QSharedPointer<QDomDocument> > trialRunInfoMap;
 
 
 };

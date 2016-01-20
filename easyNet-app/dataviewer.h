@@ -2,6 +2,7 @@
 #define DATAVIEWER_H
 
 #include <QWidget>
+#include <QSharedPointer>
 
 class Ui_DataViewer;
 class DataViewerDispatcher;
@@ -43,9 +44,11 @@ protected slots:
     virtual void removeItem(QString name)=0;
     virtual void updateCurrentItem(QString name);
     virtual void enableActions(bool enable);
+    void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
 
 signals:
     void lazyChanged(bool);
+    void sendTrialRunInfo(QString, QSharedPointer<QDomDocument>);
 
 protected:
 

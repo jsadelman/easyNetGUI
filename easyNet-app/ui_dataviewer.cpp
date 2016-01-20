@@ -64,6 +64,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
     setDispatchModeOverrideActGroup->setVisible(false);
     findAct->setVisible(false); // visible only for dataframe views
+    copyDFAct->setVisible(false); // visible only for dataframe views
 }
 
 void Ui_DataViewer::createActions()
@@ -104,10 +105,13 @@ void Ui_DataViewer::createActions()
 
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
+
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
     findAct->setToolTip(tr("Find text in this table"));
 
+    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
+    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
 
 }
 
@@ -119,7 +123,9 @@ void Ui_DataViewer::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
+    editToolBar->addAction(copyDFAct);
     editToolBar->addAction(findAct);
+
 
     dispatchToolBar = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar->addActions(setDispatchModeOverrideActs);
