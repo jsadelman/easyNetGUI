@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QMap>
 #include <QSet>
+#include <QSharedPointer>
+
 
 class QComboBox;
 class QLabel;
@@ -38,7 +40,7 @@ public slots:
 signals:
     void runAllModeChanged(bool);
     void trialDescriptionUpdated(QDomDocument*);
-    void aboutToRunTrial(QDomDocument*);
+    void aboutToRunTrial(QSharedPointer<QDomDocument>);
 
 private slots:
 
@@ -60,7 +62,7 @@ private slots:
     void updateModelStochasticity(QDomDocument* modelDescription);
 private:
 
-    QDomDocument * createTrialRunInfo();
+    QSharedPointer<QDomDocument> createTrialRunInfo();
     void clearLayout(QLayout *layout);
     void runSingleTrial(LazyNutJob *job);
     void runTrialList(LazyNutJob *job);

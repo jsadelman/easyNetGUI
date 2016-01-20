@@ -32,7 +32,7 @@ DataViewerDispatcher::~DataViewerDispatcher()
 }
 
 
-DataViewerDispatcher::TrialRunInfo::TrialRunInfo(QDomDocument *info)
+DataViewerDispatcher::TrialRunInfo::TrialRunInfo(QSharedPointer<QDomDocument> info)
 {
     QDomElement rootElement = info->documentElement();
     QDomElement resultsElement = XMLAccessor::childElement(rootElement, "Results");

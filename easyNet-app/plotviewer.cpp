@@ -165,7 +165,7 @@ void PlotViewer::createToolBars()
     dispatchToolBar->removeAction(setDispatchModeOverrideActs.at(Dispatch_Append));
 }
 
-void PlotViewer::dispatch_Impl(QDomDocument *info)
+void PlotViewer::dispatch_Impl(QSharedPointer<QDomDocument> info)
 {
     QMutableMapIterator<QSvgWidget*, bool> svgSourceModified_it(svgSourceModified);
     while (svgSourceModified_it.hasNext())
@@ -183,7 +183,7 @@ void PlotViewer::dispatch_Impl(QDomDocument *info)
     refreshInfo();
 }
 
-void PlotViewer::preDispatch(QDomDocument *info)
+void PlotViewer::preDispatch(QSharedPointer<QDomDocument> info)
 {
     QDomElement rootElement = info->documentElement();
     QDomElement runModeElement = XMLAccessor::childElement(rootElement, "Run mode");

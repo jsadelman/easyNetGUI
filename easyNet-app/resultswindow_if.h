@@ -36,13 +36,13 @@ protected slots:
     virtual void copy()=0;
     virtual void setInfoVisible(bool visible)=0;
     virtual void refreshInfo()=0;
-    virtual void preDispatch(QDomDocument *info)=0;
+    virtual void preDispatch(QSharedPointer<QDomDocument> info)=0;
 
 
 protected:
     virtual void createActions();
     virtual void createToolBars();
-    virtual void dispatch_Impl(QDomDocument *info)=0;
+    virtual void dispatch_Impl(QSharedPointer<QDomDocument> info)=0;
 
 
     QList<QAction *> setSingleTrialDispatchModeActs;

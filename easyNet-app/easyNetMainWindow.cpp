@@ -312,11 +312,11 @@ void MainWindow::connectSignalsAndSlots()
 //            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)));
 //    connect(tableWindow, SIGNAL(addDataframeMerge(QString,QString)),
 //            plotViewer, SLOT(addDataframeMerge(QString,QString)));
-    connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
+    connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
 //             tableWindow, SLOT(preDispatch(QDomDocument*)));
-            dataframeResultsViewer, SLOT(preDispatch(QDomDocument*)));
-    connect(trialWidget, SIGNAL(aboutToRunTrial(QDomDocument*)),
-            plotViewer, SLOT(preDispatch(QDomDocument*)));
+            dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
+    connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
+            plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
      connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString)),
              plotViewer, SLOT(newRPlot(QString)));
 //    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),

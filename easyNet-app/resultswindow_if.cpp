@@ -13,7 +13,7 @@
 #include <QDockWidget>
 #include <QScrollArea>
 
-Q_DECLARE_METATYPE(QDomDocument*)
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 ResultsWindow_If::ResultsWindow_If(QWidget *parent)
    :  dispatchModeOverride(-1), dispatchModeAuto(true), QMainWindow(parent)
@@ -58,9 +58,9 @@ ResultsWindow_If::~ResultsWindow_If()
 void ResultsWindow_If::dispatch()
 {
     QVariant info = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
-    if (info.canConvert<QDomDocument *>())
+    if (info.canConvert<QSharedPointer<QDomDocument> >())
     {
-        dispatch_Impl(info.value<QDomDocument*>());
+        dispatch_Impl(info.value<QSharedPointer<QDomDocument> >());
     }
     else
     {

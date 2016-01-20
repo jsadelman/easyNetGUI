@@ -25,10 +25,9 @@
 #include <QMessageBox>
 #include <QCheckBox>
 
-#include <memory>
 
-
-Q_DECLARE_METATYPE(QDomDocument*)
+//Q_DECLARE_METATYPE(QDomDocument*)
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument>)
 
 
 TrialWidget::TrialWidget(QWidget *parent)
@@ -283,7 +282,7 @@ void TrialWidget::runTrial()
         SessionManager::instance()->suspendObservers(answer == QMessageBox::Yes);
         askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
     }
-    QDomDocument *trialRunInfo = createTrialRunInfo(); // will be a smart pointer
+    QSharedPointer<QDomDocument> trialRunInfo = createTrialRunInfo();
     emit aboutToRunTrial(trialRunInfo);
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
@@ -358,9 +357,9 @@ void TrialWidget::runSingleTrial(LazyNutJob *job)
 //    MainWindow::instance()->tablesWindow->switchTab(displayTableName);
 }
 
-QDomDocument * TrialWidget::createTrialRunInfo()
+QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
 {
-    QDomDocument *trialRunInfo = new QDomDocument();
+    QSharedPointer<QDomDocument> trialRunInfo (new QDomDocument);
     QDomElement rootElem = trialRunInfo->createElement("string");
     rootElem.setAttribute("value", "Trial run info");
     trialRunInfo->appendChild(rootElem);
@@ -391,7 +390,7 @@ QDomDocument * TrialWidget::createTrialRunInfo()
     }
     rootElem.appendChild(valuesElem);
 
-    return trialRunInfo; // will be a smart pointer
+    return trialRunInfo;
 }
 
 void TrialWidget::runTrialList(LazyNutJob *job)

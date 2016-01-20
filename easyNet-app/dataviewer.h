@@ -27,7 +27,7 @@ public:
 
 public slots:
     virtual void addItem(QString name="", bool setCurrent=false)=0;
-    void preDispatch(QDomDocument *info);
+    void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
     void setDispatchModeOverride(int mode);
     void setDispatchModeAuto(bool isAuto);

@@ -4,6 +4,7 @@
 
 #include <QMap>
 #include <QObject>
+#include <QSharedPointer>
 
 #include "dataviewer.h"
 
@@ -17,8 +18,8 @@ class DataViewerDispatcher: public QObject
 public:
     DataViewerDispatcher(DataViewer *host);
     virtual ~DataViewerDispatcher();
-    virtual void preDispatch(QDomDocument *info)=0;
-    virtual void dispatch(QDomDocument *info)=0;
+    virtual void preDispatch(QSharedPointer<QDomDocument> info)=0;
+    virtual void dispatch(QSharedPointer<QDomDocument> info)=0;
     void setSingleTrialMode(int mode) {dispatchDefaultMode.insert("single", mode);}
     void setTrialListMode(int mode) {dispatchDefaultMode.insert("list", mode);}
 
@@ -30,7 +31,7 @@ public:
 protected:
     struct TrialRunInfo
     {
-        TrialRunInfo(QDomDocument *info);
+        TrialRunInfo(QSharedPointer<QDomDocument> info);
         QString results;
         QString trial;
         QString runMode;

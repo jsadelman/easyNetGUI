@@ -23,7 +23,7 @@ DataframeViewerDispatcher::~DataframeViewerDispatcher()
 {
 }
 
-void DataframeViewerDispatcher::preDispatch(QDomDocument *info)
+void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 {
     TrialRunInfo trialRunInfo(info);
     int currentDispatchMode = dispatchDefaultMode.value(trialRunInfo.runMode, -1);
@@ -67,6 +67,7 @@ void DataframeViewerDispatcher::preDispatch(QDomDocument *info)
         job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
         QMap<QString, QVariant> jobData;
         jobData.insert("dfName", backupDf);
+        jobData.insert("setCurrent", false);
         jobs << SessionManager::instance()->recentlyCreatedJob();
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(hostDataViewer, SLOT(addItem()));
@@ -105,7 +106,7 @@ void DataframeViewerDispatcher::preDispatch(QDomDocument *info)
     }
 }
 
-void DataframeViewerDispatcher::dispatch(QDomDocument *info)
+void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
     TrialRunInfo trialRunInfo(info);
     // ..

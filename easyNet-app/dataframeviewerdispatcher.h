@@ -13,8 +13,8 @@ class DataframeViewerDispatcher : public DataViewerDispatcher
 public:
     DataframeViewerDispatcher(DataframeViewer *host);
     virtual ~DataframeViewerDispatcher();
-    virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
-    virtual void dispatch(QDomDocument *info) Q_DECL_OVERRIDE;
+    virtual void preDispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
+    virtual void dispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
 
 
 

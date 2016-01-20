@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QTimer>
 #include <QDialog>
+#include <QSharedPointer>
 
 class QSvgWidget;
 class QToolBar;
@@ -72,11 +73,11 @@ protected slots:
     void newRPlot(QString name);
 
 
-    virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
+    virtual void preDispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
     virtual void createToolBars() Q_DECL_OVERRIDE;
-    virtual void dispatch_Impl(QDomDocument *info) Q_DECL_OVERRIDE;
+    virtual void dispatch_Impl(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
     void showInfo(QSvgWidget* svg);
     void hideInfo();
 
@@ -126,7 +127,7 @@ private:
     QMap <QSvgWidget*, QByteArray> svgByteArray;
     QMap <QSvgWidget*, bool> svgIsUpToDate;
     QMap <QSvgWidget*, bool> svgSourceModified;
-    QMap <QSvgWidget*, QDomDocument*> svgTrialRunInfo; // <svg, info XML>
+    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML>
     QMap <QSvgWidget*, int> svgDispatchOverride;
     QMultiMap <QString, QString> sourceDataframeOfPlots; // <dataframe, rplots>
     QMultiMap <QString, QString> dataframeMergeOfSource; // <dataframe, dataframe_merges>

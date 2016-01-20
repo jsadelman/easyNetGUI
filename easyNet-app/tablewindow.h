@@ -31,7 +31,7 @@ protected slots:
     void removeTable(QString name);
     virtual void setInfoVisible(bool visible) Q_DECL_OVERRIDE;
     virtual void refreshInfo() Q_DECL_OVERRIDE;
-    virtual void preDispatch(QDomDocument *info) Q_DECL_OVERRIDE;
+    virtual void preDispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
     void enableActions(bool enable);
 
 
@@ -42,7 +42,7 @@ signals:
 protected:
     virtual void createActions() Q_DECL_OVERRIDE;
     virtual void createToolBars() Q_DECL_OVERRIDE;
-    virtual void dispatch_Impl(QDomDocument *info) Q_DECL_OVERRIDE;
+    virtual void dispatch_Impl(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
     void showInfo(QString name);
     void hideInfo();
     QString newTableName();
@@ -51,7 +51,7 @@ protected:
 
     QMap <QString, int> dispatchModeMap; // <Table, Mode> NOT USED
     QMap <QString, QSet<QString> > dispatchMap; // <results df, set of Tables> NOT USED
-    QMap <QString, QDomDocument*> trialRunInfoMap; // <Table, info XML>
+    QMap <QString, QSharedPointer<QDomDocument> > trialRunInfoMap; // <Table, info XML>
     QMap <QString, QString> sourceDfMap; // reverse of dispatchMap NOT USED
 
     QAction *copyDFAct;

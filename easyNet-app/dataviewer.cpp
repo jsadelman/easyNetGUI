@@ -8,8 +8,9 @@
 #include <QAction>
 #include <QDomDocument>
 #include <QVBoxLayout>
+#include <QSharedPointer>
 
-Q_DECLARE_METATYPE(QDomDocument*)
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false),
@@ -65,7 +66,7 @@ void DataViewer::setDefaultDir(QString dir)
     setDefaultSaveDir(dir);
 }
 
-void DataViewer::preDispatch(QDomDocument *info)
+void DataViewer::preDispatch(QSharedPointer<QDomDocument> info)
 {
     if (!info)
         eNerror << "not a valid trial run info pointer";
@@ -80,12 +81,12 @@ void DataViewer::dispatch()
 //    if (!info)
 //    {
         QVariant infoVariant = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
-        if (!infoVariant.canConvert<QDomDocument *>())
+        if (!infoVariant.canConvert<QSharedPointer<QDomDocument> >())
         {
             eNerror << "unable to get trial run information";
             return;
         }
-        QDomDocument* info = infoVariant.value<QDomDocument*>();
+        QSharedPointer<QDomDocument> info = infoVariant.value<QSharedPointer<QDomDocument> >();
 //    }
     if (!dispatcher)
         eNerror << "received a trial run info object but no dispatcher set";
