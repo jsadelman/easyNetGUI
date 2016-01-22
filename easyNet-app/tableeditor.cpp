@@ -120,6 +120,7 @@ void TableEditor::selectTable(QString text)
         tableBox->setCurrentIndex(tableBox->findData(text,Qt::DisplayRole));
         qDebug() << "Selected table is" << tableBox->currentText();
     }
+    refresh();
 }
 
 void TableEditor::setFilter(QString type)
