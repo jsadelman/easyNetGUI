@@ -9,7 +9,7 @@
 #include <QDomDocument>
 
 DataframeViewerDispatcher::DataframeViewerDispatcher(DataframeViewer *host)
-    :DataViewerDispatcher(host)
+    :DataViewerDispatcher(host), host(host)
 {
     if (!host)
     {
@@ -34,7 +34,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         return;
     }
     int dispatchAction;
-    if (!hostDataViewer->contains(trialRunInfo.results))
+    if (!host->contains(trialRunInfo.results))
     {
         dispatchAction = Dispatch_Overwrite;
     }
@@ -50,6 +50,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     {
         dispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
     }
+    previousDispatchMode = currentDispatchMode;
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList();
@@ -70,18 +71,18 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         jobData.insert("setCurrent", false);
         jobs << SessionManager::instance()->recentlyCreatedJob();
         jobs.last()->data = jobData;
-        jobs.last()->appendEndOfJobReceiver(hostDataViewer, SLOT(addItem()));
+        jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
         copyTrialRunInfo(trialRunInfo.results, backupDf);
-        qobject_cast<DataframeViewer *>(hostDataViewer)->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
+        host->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
         break;
     }
     case Dispatch_Overwrite:
     {
         job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
-        if (!hostDataViewer->contains(trialRunInfo.results))
+        if (!host->contains(trialRunInfo.results))
         {
-            hostDataViewer->addItem(trialRunInfo.results, true);
-            qobject_cast<DataframeViewer *>(hostDataViewer)->setPrettyHeadersForTrial(trialRunInfo.trial, trialRunInfo.results);
+            host->addItem(trialRunInfo.results, true);
+            host->setPrettyHeadersForTrial(trialRunInfo.trial, trialRunInfo.results);
         }
         break;
     }

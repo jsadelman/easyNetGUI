@@ -46,16 +46,7 @@ TrialWidget::TrialWidget(QWidget *parent)
     connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
     {
         QString df = QString("((%1 default_observer) default_dataframe)").arg(name);
-        if (SessionManager::instance()->descriptionCache->exists(df))
-        {
-            LazyNutJob *job = new LazyNutJob;
-            job->logMode |= ECHO_INTERPRETER;
-            job->cmdList = QStringList() << QString("%1 set_pretty_name %2").arg(df).arg(name);
-            QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                    << job
-                    << SessionManager::instance()->recentlyModifiedJob();
-            SessionManager::instance()->submitJobs(jobs);
-        }
+        SessionManager::instance()->setPrettyName(df, name);
     });
 
     trialDescriptionUpdater = new ObjectUpdater(this);

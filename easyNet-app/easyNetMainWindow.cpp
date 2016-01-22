@@ -47,7 +47,9 @@
 #include "scripteditor.h"
 #include "console.h"
 #include "debuglog.h"
+#include "plotviewer_old.h"
 #include "plotviewer.h"
+#include "plotviewerdispatcher.h"
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"
@@ -218,8 +220,13 @@ void MainWindow::constructForms()
             paramViewer, SLOT(addItem(QString)));
 
 
+    ui_plotViewer = new Ui_DataTabsViewer;
+    ui_plotViewer->setUsePrettyNames(true);
+    plotViewer = new PlotViewer(ui_plotViewer, this);
+    plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
 
-    plotViewer = new PlotViewer(easyNetHome, this);
+//    plotViewer = new PlotViewer_old(easyNetHome, this);
+
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
 
@@ -272,7 +279,7 @@ void MainWindow::connectSignalsAndSlots()
 //    connect(paramEdit, SIGNAL(newParamValueSig(QString,QString)),
 //            this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
-            plotViewer,SLOT(loadByteArray(QString,QByteArray)));
+            plotViewer,SLOT(updatePlot(QString,QByteArray)));
 //    connect(plotSettingsWindow, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
 //            plotViewer,SLOT(newRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
 //    connect(plotViewer, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
@@ -285,7 +292,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
 //    connect(tableWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
-    connect(plotViewer,SIGNAL(setPlot(QString)), plotSettingsWindow, SLOT(setPlot(QString)));
+    connect(plotViewer,SIGNAL(setPlotSettings(QString)), plotSettingsWindow, SLOT(setPlotSettings(QString)));
 //    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
     connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
 //    connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
@@ -328,12 +335,12 @@ void MainWindow::connectSignalsAndSlots()
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
-     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString)),
-             plotViewer, SLOT(newRPlot(QString)));
+     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool)),
+             plotViewer, SLOT(addItem(QString, bool)));
 //    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
 //            plotViewer, SLOT(setCurrentPlot(QString)));
 
-    connect(plotViewer, SIGNAL(removePlot(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
+    connect(plotViewer, SIGNAL(removePlotSettings(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(snapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),

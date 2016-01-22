@@ -89,7 +89,7 @@ SOURCES +=  \
     console.cpp \
     finddialog.cpp \
     debuglog.cpp \
-    plotviewer.cpp \
+    plotviewer_old.cpp \
     diagramscenetabwidget.cpp \
     diagramwindow.cpp \
     diagramview.cpp \
@@ -118,7 +118,9 @@ SOURCES +=  \
     ui_datacomboviewer.cpp \
     dataframeviewer.cpp \
     dataviewerdispatcher.cpp \
-    dataframeviewerdispatcher.cpp
+    dataframeviewerdispatcher.cpp \
+    plotviewer.cpp \
+    plotviewerdispatcher.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -180,7 +182,7 @@ HEADERS  += \
     console.h \
     finddialog.h \
     debuglog.h \
-    plotviewer.h \
+    plotviewer_old.h \
     diagramscenetabwidget.h \
     diagramwindow.h \
     diagramview.h \
@@ -210,7 +212,9 @@ HEADERS  += \
     ui_datacomboviewer.h \
     dataframeviewer.h \
     dataviewerdispatcher.h \
-    dataframeviewerdispatcher.h
+    dataframeviewerdispatcher.h \
+    plotviewer.h \
+    plotviewerdispatcher.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

@@ -16,7 +16,9 @@ class QStackedWidget;
 class QProgressBar;
 class QDomDocument;
 
+class PlotViewer_old;
 class PlotViewer;
+class PlotViewerDispatcher;
 class ObjExplorer;
 class DesignWindow;
 class LazyNut;
@@ -265,6 +267,9 @@ public:
     DiagramScene    *modelScene;
 //    DiagramScene    *conversionScene;
     PlotSettingsWindow      *plotSettingsWindow;
+//    PlotViewer_old      *plotViewer;
+    Ui_DataTabsViewer *ui_plotViewer;
+    PlotViewerDispatcher *plotViewerDispatcher;
     PlotViewer      *plotViewer;
 //    TableEditor     *stimSetForm;
     DataframeViewer *stimSetViewer;

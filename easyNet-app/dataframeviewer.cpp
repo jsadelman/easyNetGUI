@@ -209,7 +209,7 @@ void DataframeViewer::initiateRemoveItem(QString name)
 
 void DataframeViewer::removeItem(QString name)
 {
-    if (!modelMap.contains(name))
+    if (!contains(name))
     {
         eNwarning << QString("attempt to delete non-existing dataframe %1").arg(name);
     }
@@ -286,7 +286,7 @@ void DataframeViewer::addItem(QString name, bool setCurrent)
     }
     if (name.isEmpty())
     {
-        eNerror << "string from dfName key in sender LazyNut job is empty";
+        eNerror << "name is empty";
     }
     else if (!SessionManager::instance()->exists(name))
     {
@@ -306,7 +306,6 @@ void DataframeViewer::addItem(QString name, bool setCurrent)
             ui->setCurrentItem(name);
         if (!isLazy())
             dataframeFilter->addName(name);
-
     }
 }
 

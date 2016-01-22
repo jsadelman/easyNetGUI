@@ -12,7 +12,7 @@
 #include "sessionmanager.h"
 #include "plotsettingsform.h"
 #include "xmlelement.h"
-#include "plotviewer.h"
+#include "plotviewer_old.h"
 #include "objectcachefilter.h"
 #include "xmlaccessor.h"
 
@@ -244,7 +244,7 @@ void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
     emit plot(plotName, plotByteArray);
 }
 
-void PlotSettingsWindow::setPlot(QString name)
+void PlotSettingsWindow::setPlotSettings(QString name)
 {
     // in case name does not match an existing plot all will be set blank
     currentPlotName = name;
@@ -373,9 +373,9 @@ void PlotSettingsWindow::buildSettingsForm()
     SessionManager::instance()->setPlotFlags(plotName, flags);
 
     buildSettingsForm(plotName, currentSettings, defaultSettings);
-    emit newRPlotCreated(plotName);
-    if (!(flags & Plot_Backup))
-        setPlot(plotName);
+    emit newRPlotCreated(plotName, !(flags & Plot_Backup));
+//    if (!(flags & Plot_Backup))
+//        setPlotSettings(plotName);
 }
 
 
@@ -661,7 +661,7 @@ void PlotSettingsWindow::newAspectRatio(QSize size)
     plotAspr_=double(size.width())/size.height();
 }
 
-void PlotSettingsWindow::removePlot(QString name)
+void PlotSettingsWindow::removePlotSettings(QString name)
 {
     if (plotForms.value(name) == plotControlPanelScrollArea->widget())
     {

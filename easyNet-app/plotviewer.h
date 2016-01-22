@@ -1,25 +1,16 @@
 #ifndef PLOTVIEWER_H
 #define PLOTVIEWER_H
 
-#include "resultswindow_if.h"
+#include "dataviewer.h"
 
 #include <QMap>
-#include <QTimer>
 #include <QDialog>
 #include <QSharedPointer>
 
 class QSvgWidget;
-class QToolBar;
-class QAction;
-class QLabel;
-class QByteArray;
-class QScrollArea;
-class ObjectNameValidator;
-class ObjectUpdater;
 class QMessageBox;
-class QCheckBox;
-
-
+class QTimer;
+class ObjectUpdater;
 
 
 class FullScreenSvgDialog: public QDialog
@@ -34,117 +25,75 @@ private:
     QSvgWidget *svg;
 };
 
-
-class ObjectCacheFilter;
-
-
-class PlotViewer: public ResultsWindow_If
+class PlotViewer: public DataViewer
 {
     Q_OBJECT
-
+    friend class PlotViewerDispatcher;
 public:
-     enum {Tab_DefaultState = 0, Tab_Updating, Tab_Ready, Tab_Old}; // same as in TabsTableWidget
-    PlotViewer(QString easyNetHome, QWidget *parent=0);
+    PlotViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     ~PlotViewer();
-
-    QSvgWidget *currentSvgWidget();
-    void updateActionEnabledState(QSvgWidget* svg);
-    QString uniqueName(QString name);
     QString plotType(QString name);
-public slots:
-    void updateAllActivePlots();
-     void setTabState(int index, int state=Tab_DefaultState); // same as in TabsTableWidget
-     void setCurrentPlot(QString name);
-signals:
-    void sendDrawCmd(QString);
-    void showPlotSettings();
-    void setPlot(QString);
-    void resized(QSize);
-    void hidePlotSettings();
-    void createNewRPlot(QString, QString, QMap<QString, QString>, int);
-    void removePlot(QString);
+    virtual bool contains(QString name) Q_DECL_OVERRIDE;
 
-protected slots:
+public slots:
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
-    virtual void setInfoVisible(bool visible) Q_DECL_OVERRIDE;
-    virtual void refreshInfo() Q_DECL_OVERRIDE;
-    void newRPlot(QString name);
+    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
+    void updateAllActivePlots();
 
 
-    virtual void preDispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
-protected:
-    virtual void createActions() Q_DECL_OVERRIDE;
-    virtual void createToolBars() Q_DECL_OVERRIDE;
-    virtual void dispatch_Impl(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
-    void showInfo(QSvgWidget* svg);
-    void hideInfo();
-
-private slots:
-    void loadByteArray(QString name, QByteArray byteArray);
+protected slots:
+    virtual void initiateRemoveItem(QString name) Q_DECL_OVERRIDE;
+    virtual void removeItem(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
-    void snapshot(QString name = QString());
-    void currentTabChanged(int index);
-    void freeze(QSvgWidget *svg = nullptr);
-    void renamePlot();
-    void deletePlot(QString name);
-    void triggerPlotUpdate(QString name=QString());
-    void setupFullScreen();
-    void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
-    void addSourceDataframes(QStringList newDataframes=QStringList());
     void dfSourceModified(QString df);
+    void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
+    void setupFullScreen();
+    void addSourceDataframes(QStringList newDataframes=QStringList());
+    virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
+    virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
+    void updatePlot(QString name, QByteArray byteArray);
 
 
-private:
-    void paintEvent(QPaintEvent * event);
-    void resizeEvent(QResizeEvent*);
-    void setSvgActive(bool isActive, QSvgWidget *svg = nullptr);
-    void updateActivePlots();
-//    QString normalisedName(QString name);
-    void renamePlot(QString oldName, QString newName = QString());
+signals:
+     void resized(QSize);
+     void sendDrawCmd(QString);
+     void showPlotSettings();
+     void createNewRPlot(QString, QString, QMap<QString, QString>, int);
+     void setPlotSettings(QString);
+     void removePlotSettings(QString);
 
+protected:
+     void updateActivePlots();
+     QSvgWidget *currentSvgWidget();
+     void addExtraActions();
+     QString cloneRPlot(QString name, QString newName=QString());
+     QSvgWidget *newSvg(QString name);
+     void paintEvent(QPaintEvent * event);
+     void resizeEvent(QResizeEvent*);
 
-    QString cloneRPlot(QString name, QString newName=QString());
-    QSvgWidget * newSvg(QString name);
+    bool            pend;
+    QTimer*         resizeTimer;
+    ObjectCacheFilter *sourceDataframeFilter;
+    ObjectCacheFilter *plotDescriptionFilter;
+    ObjectUpdater     *plotDescriptionUpdater;
+    QMap <QString, QSvgWidget*> plotSvg;
+    QMap <QSvgWidget*, bool> svgIsActive;
+    QMap <QSvgWidget*, bool> svgIsUpToDate;
+    QMap <QSvgWidget*, bool> svgSourceModified;
+    QMap <QSvgWidget*, QByteArray> svgByteArray;
+    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML>
+//    QStringList plotClones;
+
+    QAction *       settingsAct;
+    QAction *       fullScreenAct;
+    bool            fullScreen;
+    QSize           fullScreenSize;
 
     FullScreenSvgDialog *fullScreenSvgDialog;
 
-    QAction *       settingsAct;
-    QAction *       refreshAct;
-    QAction *       snapshotAct;
-    QAction *       renameAct;
-    QAction *       fullScreenAct;
 
-    QString         easyNetHome;
-//    QLabel*         titleLabel;
-    int             progressiveTabIdx;
-    QMap <QString, QSvgWidget*> plotSvg;
-//    QMap <QString, QString> plotType;
-    QMap <QString, bool> anyTrialPlot;
-    QMap <QString, QMap<QString, QString> > plotSourceDataframeSettings; // <rplot <key, val> >
-    QMap <QSvgWidget*, bool> svgIsActive;
-    QMap <QSvgWidget*, QByteArray> svgByteArray;
-    QMap <QSvgWidget*, bool> svgIsUpToDate;
-    QMap <QSvgWidget*, bool> svgSourceModified;
-    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML>
-    QMap <QSvgWidget*, int> svgDispatchOverride;
-    QMultiMap <QString, QString> sourceDataframeOfPlots; // <dataframe, rplots>
-    QMultiMap <QString, QString> dataframeMergeOfSource; // <dataframe, dataframe_merges>
-    QStringList plotClones;
-
-    QTimer*         resizeTimer;
-    bool            pend;
-    ObjectCacheFilter *dataframeFilter;
-    ObjectCacheFilter *plotFilter;
-    ObjectUpdater     *plotUpdater;
-    QTabWidget*     plotPanel;
-    bool            fullScreen;
-    QSize           fullScreenSize;
-    QMessageBox *makeSnapshotMsg;
-    QCheckBox *dontAskAgainMakeSnapshotCheckBox;
-    bool askMakeSnapshot;
-    bool makeSnapshot;
 };
 
 #endif // PLOTVIEWER_H

@@ -35,7 +35,7 @@ public:
 public slots:
     virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
     void setPrettyHeadersForTrial(QString trial, QString df);
-    virtual void dispatch();
+    virtual void dispatch() Q_DECL_OVERRIDE;
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;

@@ -128,6 +128,16 @@ void SessionManager::destroyObject(QString name)
         LazyNutJob *job = new LazyNutJob;
         job->logMode |= ECHO_INTERPRETER;
         job->cmdList << QString("destroy %1").arg(name);
+        if (descriptionCache->type(name) == "xfile" && (plotFlags(name)& Plot_Backup))
+        {
+            foreach(QString df, plotSourceDataframes(name))
+            {
+                job->cmdList << QString("destroy %1").arg(df);
+                // partial cleanup of df-plot data structures, needs proper solution
+                m_plotsOfSourceDf.remove(df, name);
+            }
+            m_plotSourceDataframeSettings.remove(name);
+        }
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
                 << recentlyDestroyedJob();

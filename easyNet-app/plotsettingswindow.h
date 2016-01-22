@@ -67,7 +67,7 @@ public:
 signals:
         void plot(QString, QByteArray);
         void showPlotViewer();
-        void newRPlotCreated(QString);
+        void newRPlotCreated(QString, bool);
 public slots:
         void newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings=QMap<QString,QString>(), int flags=0);
 //        void quietlyNewRPlot(QString name, QString type,
@@ -77,7 +77,7 @@ public slots:
 //                                 int dispatchOverride=-1);
         void sendGetCmd(QString plotName);
         void sendGetCmd();
-        void setPlot(QString name);
+        void setPlotSettings(QString name);
 //        void hidePlotSettings();
         void sendSettings();
         void sendSettings(QString name);
@@ -105,7 +105,7 @@ private slots:
     void setCurrentPlotType(QString rScript);
 //    void draw();
     void newAspectRatio(QSize);
-    void removePlot(QString name);
+    void removePlotSettings(QString name);
     void setCurrentSettings(QDomDocument *settingsList) {currentSettings = settingsList;}
     void setCurrentPlotName(QString name) {currentPlotName = name;}
     void buildWindow();
