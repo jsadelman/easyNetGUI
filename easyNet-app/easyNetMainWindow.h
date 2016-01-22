@@ -84,6 +84,7 @@ public slots:
     void loadAddOn();
     void showPlotViewer();
     void importDataFrame();
+    void loadVocab();
       void msgBox(QString msg);
 signals:
     void savedLayoutToBeLoaded(QString);
@@ -147,8 +148,9 @@ private slots:
     void showMostRecentError();
     void showPlotSettings();
     void updateDFComboBox();
-
-
+    void updateVocabComboBox();
+    void runTest();
+    void afterTestsCompleted();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -204,6 +206,7 @@ public:
     QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
     QString         curFile;
     QString         scriptsDir;
+    QString         testsDir;
     QString         trialsDir;
     QString         stimDir;
     QString         dfDir;
@@ -265,7 +268,7 @@ public:
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
-//    DiagramScene    *conversionScene;
+    DiagramScene    *conversionScene;
     PlotSettingsWindow      *plotSettingsWindow;
 //    PlotViewer_old      *plotViewer;
     Ui_DataTabsViewer *ui_plotViewer;
@@ -308,12 +311,13 @@ public:
 //    TextEdit        *textViewer;
     HelpWindow      *infoWindow;
     int             stimSetTabIdx;
+    int             vocabTabIdx;
     int             infoTabIdx;
     int             paramTabIdx;
     int             plotTabIdx;
     int             plotSettingsTabIdx;
     int             modelTabIdx;
-//    int             conversionTabIdx;
+    int             conversionTabIdx;
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
@@ -360,6 +364,8 @@ public:
     QAction         *loadAddOnAct;
     QAction         *loadStimulusSetAct;
     QAction         *importDataFrameAct;
+    QAction         *loadVocabAct;
+    QAction         *runTestAct;
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;
