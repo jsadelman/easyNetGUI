@@ -84,7 +84,6 @@ public slots:
     void loadAddOn();
     void showPlotViewer();
     void importDataFrame();
-    void loadVocab();
       void msgBox(QString msg);
 signals:
     void savedLayoutToBeLoaded(QString);
@@ -148,7 +147,6 @@ private slots:
     void showMostRecentError();
     void showPlotSettings();
     void updateDFComboBox();
-    void updateVocabComboBox();
     void runTest();
     void afterTestsCompleted();
 protected:
@@ -280,6 +278,8 @@ public:
 //    TableEditor     *dataframesWindow;
     DataframeViewer *dataframeViewer;
     Ui_DataComboViewer *ui_dataframeViewer;
+    DataframeViewer *testViewer;
+    Ui_DataTabsViewer *ui_testViewer;
 
 //    TableViewer     *tableWindow;
 //    TableWindow     *tableWindow;
@@ -305,13 +305,13 @@ public:
     ObjectCacheFilter* trialListFilter;
     ObjectCacheFilter *dataframeDescriptionFilter;
     ObjectCacheFilter *paramDescriptionFilter;
+    ObjectCacheFilter *testFilter;
     QAction         * runAllTrialMsgAct;
 
     Assistant       *assistant;
 //    TextEdit        *textViewer;
     HelpWindow      *infoWindow;
     int             stimSetTabIdx;
-    int             vocabTabIdx;
     int             infoTabIdx;
     int             paramTabIdx;
     int             plotTabIdx;
@@ -323,6 +323,7 @@ public:
     int             trialFormTabIdx;
     int             dfTabIdx;
     int             explorerTabIdx;
+    int             testsTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QSignalMapper   *setFontSignalMapper;
@@ -364,7 +365,6 @@ public:
     QAction         *loadAddOnAct;
     QAction         *loadStimulusSetAct;
     QAction         *importDataFrameAct;
-    QAction         *loadVocabAct;
     QAction         *runTestAct;
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;

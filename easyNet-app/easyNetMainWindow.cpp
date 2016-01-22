@@ -227,6 +227,15 @@ void MainWindow::constructForms()
 
 //    plotViewer = new PlotViewer_old(easyNetHome, this);
 
+
+    ui_testViewer = new Ui_DataTabsViewer;
+    testViewer = new DataframeViewer(ui_testViewer, this);
+    testFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    testFilter->setFilterRegExp(QRegExp("^.*\\.test_results$"));
+    testFilter->setFilterKeyColumn(ObjectCache::NameCol);
+    connect(testFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            testViewer, SLOT(addItem(QString)));
+
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
 
@@ -250,6 +259,7 @@ void MainWindow::constructForms()
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
     lazynutPanel->addTab(errorLog, tr("Errors"));
+    testsTabIdx = lazynutPanel->addTab(testViewer, tr("Tests"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
@@ -818,29 +828,6 @@ void MainWindow::importDataFrame()
 //    }
 }
 
-void MainWindow::loadVocab()
-{
-    // bring up file dialog
-    QString obj_name;
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Load vocabulary"),
-                                                    vocabsDir,
-                                                    tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
-    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
-    if (!fileName.isEmpty())
-    {
-        // create db
-        QFileInfo fi(fileName);
-        obj_name = "vocab"; // next step will be to add existence check, and change to vocab2 etc if necessary
-        df_name_for_updating_combobox = obj_name;
-        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),
-                                                  this,SLOT(updateVocabComboBox()));
-
-        SessionManager::instance()->runCmd(QStringList({
-                                         QString("create dataframe_for_reps %1").arg(obj_name),
-                                         QString("%1 load %2").arg(obj_name).arg(fileName)}));
-
-    }
-}
 
 void MainWindow::updateDFComboBox()
 {
@@ -852,18 +839,6 @@ void MainWindow::updateDFComboBox()
                                               this,SLOT(updateDFComboBox()));
 
 }
-
-void MainWindow::updateVocabComboBox()
-{
-    //show new dataframe;
-    methodsDock->raise();
-    methodsPanel->setCurrentIndex(vocabTabIdx);
-    vocabWindow->selectTable(df_name_for_updating_combobox);
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),
-                                              this,SLOT(updateVocabComboBox()));
-
-}
-
 
 void MainWindow::currentStimulusChanged(QString stim)
 {
@@ -1061,24 +1036,19 @@ void MainWindow::runTest()
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
-            codePanelDock->raise();
-            lazynutPanel->setCurrentIndex(scriptTabIdx); // show scripts tab
-            codePanelDock->show();
+            connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
             runScript();
-            df_name_for_updating_combobox = "test.results";
-            connect(SessionManager::instance(),SIGNAL(commandsCompleted()),
-                                                      this,SLOT(updateDFComboBox()));
-//            connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
         }
  //   }
 }
 
 void MainWindow::afterTestsCompleted()
 {
-//    tablesWindow->addTable("test.results");
-    updateTableView(QString("test.results"));
-    resultsDock->raise();
-    resultsPanel->setCurrentIndex(outputTablesTabIdx);
+    codePanelDock->raise();
+    lazynutPanel->setCurrentIndex(testsTabIdx);
+    qDebug() << "trying to change display";
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
+
 }
 
 //! [runCmdAndUpdate]
@@ -1246,12 +1216,6 @@ void MainWindow::createActions()
     importDataFrameAct->setStatusTip(tr("Import a database/dataframe"));
     connect(importDataFrameAct, SIGNAL(triggered()), this, SLOT(importDataFrame()));
 
-    loadVocabAct = new QAction(QIcon(":/images/list-2x.png"), tr("&Load a vocabulary"), this);
-    QKeySequence keySequence = Qt::Key_Alt + Qt::Key_V;
-    loadVocabAct->setShortcut(keySequence);
-    loadVocabAct->setStatusTip(tr("Load a vocabulary"));
-    connect(loadVocabAct, SIGNAL(triggered()), this, SLOT(loadVocab()));
-
     loadStimulusSetAct = new QAction(QIcon(":/images/open.png"), tr("Load &stimulus set"), this);
     loadStimulusSetAct->setStatusTip(tr("Load a stimulus set"));
     connect(loadStimulusSetAct, SIGNAL(triggered()), this, SLOT(loadStimulusSet()));
@@ -1376,7 +1340,6 @@ void MainWindow::createMenus()
     fileSubMenu->addAction(loadStimulusSetAct);
     fileSubMenu->addAction(loadScriptAct);
     fileSubMenu->addAction(importDataFrameAct);
-    fileSubMenu->addAction(loadVocabAct);
 
     //fileMenu->addAction(newAct);
     //fileMenu->addAction(openAct);
