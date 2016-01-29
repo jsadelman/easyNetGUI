@@ -80,8 +80,10 @@ void DataframeViewer::open()
                 << SessionManager::instance()->recentlyCreatedJob()
                 << SessionManager::instance()->recentlyModifiedJob();
         QMap<QString, QVariant> jobData;
-        jobData.insert("dfName", dfName);
+        jobData.insert("name", dfName);
         jobData.insert("setCurrent", true);
+        jobData.insert("isBackup", false);
+
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
         SessionManager::instance()->submitJobs(jobs);
