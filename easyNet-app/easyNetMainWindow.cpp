@@ -227,6 +227,15 @@ void MainWindow::constructForms()
 
 //    plotViewer = new PlotViewer_old(easyNetHome, this);
 
+
+    ui_testViewer = new Ui_DataTabsViewer;
+    testViewer = new DataframeViewer(ui_testViewer, this);
+    testFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    testFilter->setFilterRegExp(QRegExp("^.*\\.test_results$"));
+    testFilter->setFilterKeyColumn(ObjectCache::NameCol);
+    connect(testFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            testViewer, SLOT(addItem(QString)));
+
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
 
@@ -238,9 +247,9 @@ void MainWindow::constructForms()
     /* ADD TABS */
     infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-//    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
@@ -250,6 +259,7 @@ void MainWindow::constructForms()
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
     lazynutPanel->addTab(errorLog, tr("Errors"));
+    testsTabIdx = lazynutPanel->addTab(testViewer, tr("Tests"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
@@ -391,12 +401,12 @@ void MainWindow::showPlotViewer()
 
 void MainWindow::diagramSceneTabChanged(int index)
 {
-//     modelScene->goToSleep();
-//     conversionScene->goToSleep();
+     modelScene->goToSleep();
+     conversionScene->goToSleep();
     if (index == modelTabIdx)
          modelScene->wakeUp();
-//    else if (index == conversionTabIdx)
-//         conversionScene->wakeUp();
+    else if (index == conversionTabIdx)
+         conversionScene->wakeUp();
 }
 
 
@@ -818,6 +828,7 @@ void MainWindow::importDataFrame()
 //    }
 }
 
+
 void MainWindow::updateDFComboBox()
 {
     //show new dataframe;
@@ -828,8 +839,6 @@ void MainWindow::updateDFComboBox()
                                               this,SLOT(updateDFComboBox()));
 
 }
-
-
 
 void MainWindow::currentStimulusChanged(QString stim)
 {
@@ -902,6 +911,7 @@ void MainWindow::setDefaultLocations()
 {
     lazyNutBat = QString("%1/%2/nm_files/%3").arg(easyNetHome).arg(binDir).arg(lazyNutBasename);
     scriptsDir = QString("%1/Models").arg(easyNetDataHome);
+    testsDir = QString("%1/Tests").arg(easyNetDataHome);
     trialsDir = QString("%1/Trials").arg(easyNetDataHome);
     stimDir = QString("%1/Databases/Stimulus_files").arg(easyNetDataHome);
     dfDir = QString("%1/Databases").arg(easyNetDataHome);
@@ -1011,14 +1021,35 @@ void MainWindow::loadScript()
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
+            codePanelDock->raise();
             lazynutPanel->setCurrentIndex(scriptTabIdx); // show scripts tab
             codePanelDock->show();
         }
  //   }
 }
 
+void MainWindow::runTest()
+{
+ //   if (maybeSave())
+//    {
+        QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), QString(testsDir).append("//"+modelComboBox->currentText()), tr("Script Files (*.eNs)"));
+        if (!fileName.isEmpty())
+        {
+            loadFile(fileName);
+            connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
+            runScript();
+        }
+ //   }
+}
 
+void MainWindow::afterTestsCompleted()
+{
+    codePanelDock->raise();
+    lazynutPanel->setCurrentIndex(testsTabIdx);
+    qDebug() << "trying to change display";
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
 
+}
 
 //! [runCmdAndUpdate]
 void MainWindow::runCmdAndUpdate(QStringList cmdList)
@@ -1193,7 +1224,12 @@ void MainWindow::createActions()
 //    loadScriptAct->setShortcuts(QKeySequence::Open);
     loadScriptAct->setStatusTip(tr("Open an existing lazyNut script"));
     connect(loadScriptAct, SIGNAL(triggered()), this, SLOT(loadScript()));
-    loadScriptAct->setEnabled(true); // no script loading until after UKOG!
+    loadScriptAct->setEnabled(true);
+
+    runTestAct = new QAction(QIcon(":/images/code-2x.png"), tr("&Run test"), this);
+    runTestAct->setStatusTip(tr("Run a test of this model"));
+    connect(runTestAct, SIGNAL(triggered()), this, SLOT(runTest()));
+    runTestAct->setEnabled(true);
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
@@ -1309,6 +1345,8 @@ void MainWindow::createMenus()
     //fileMenu->addAction(openAct);
     //fileMenu->addAction(saveAct);
     //fileMenu->addAction(saveAsAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(runTestAct);
     fileMenu->addSeparator();
     fileMenu->addAction(restartInterpreterAct);
     fileMenu->addAction(exitAct);
