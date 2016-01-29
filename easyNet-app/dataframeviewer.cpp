@@ -372,6 +372,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     else
         view->setModel(dfModel);
     view->verticalHeader()->hide();
+    view->horizontalHeader()->show();
     view->resizeColumnsToContents();
 }
 
