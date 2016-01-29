@@ -18,6 +18,7 @@ class FindDialog;
 class DataframeViewer : public DataViewer
 {
     Q_OBJECT
+    friend class DataframeViewerDispatcher;
     Q_PROPERTY(bool dragDropColumns READ dragDropColumns WRITE setDragDropColumns NOTIFY dragDropColumnsChanged)
     Q_PROPERTY(bool stimulusSet READ stimulusSet WRITE setStimulusSet NOTIFY stimulusSetChanged)
     Q_PROPERTY(bool parametersTable READ parametersTable WRITE setParametersTable NOTIFY parametersTableChanged)
@@ -33,7 +34,7 @@ public:
 
 
 public slots:
-    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
+//    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
     void setPrettyHeadersForTrial(QString trial, QString df);
     virtual void dispatch() Q_DECL_OVERRIDE;
     virtual void open() Q_DECL_OVERRIDE;
@@ -58,9 +59,13 @@ signals:
     void parametersTableChanged(bool);
 
 protected:
+    virtual void addItem_impl(QString name);
+    virtual void addNameToFilter(QString name);
+    virtual void removeNameFromFilter(QString name);
+    virtual void setNameInFilter(QString name);
+
 
     QMap<QString, DataFrameModel*> modelMap;
-    QMultiMap<QString, QTableView*> viewsMap;
     QMap<QString, PrettyHeadersModel*> prettyHeadersModelMap;
     ObjectCacheFilter *dataframeFilter;
     ObjectUpdater *dataframeUpdater;

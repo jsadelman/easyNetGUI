@@ -6,6 +6,7 @@
 
 #include <QAction>
 #include <QToolBar>
+#include <QSvgWidget>
 
 PlotViewerDispatcher::PlotViewerDispatcher(PlotViewer *host)
     :DataViewerDispatcher(host), host(host)
@@ -36,13 +37,13 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     }
     foreach (QString rplot, SessionManager::instance()->affectedPlots(trialRunInfo.results))
     {
-        QSvgWidget* svg = host->plotSvg[rplot];
+        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->viewMap.value(rplot, nullptr));
         int dispatchAction;
         if (!host->svgByteArray.contains(svg))
         {
             dispatchAction = Dispatch_Overwrite;
         }
-        else if (!dispatchModeAuto && dispatchModeOverride > -1 && svg == host->currentSvgWidget())
+        else if (!dispatchModeAuto && dispatchModeOverride > -1)
         {
             dispatchAction = dispatchModeOverride;
         }
@@ -50,13 +51,17 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         {
             dispatchAction = Dispatch_Overwrite;
         }
+        else if (previousDispatchMode < 0)
+        {
+            dispatchAction = currentDispatchMode;
+        }
         else
         {
             dispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
         }
         if (dispatchAction == Dispatch_New)
         {
-            host->cloneRPlot(host->plotSvg.key(svg));
+            host->cloneRPlot(rplot);
         }
     }
     previousDispatchMode = currentDispatchMode;

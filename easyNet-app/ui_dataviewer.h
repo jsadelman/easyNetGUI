@@ -20,6 +20,7 @@ public:
     virtual void setupUi(DataViewer *dataViewer);
     virtual QString currentItem()=0;
     virtual void setCurrentItem(QString name)=0;
+    bool contains(QString name) {return itemMap.contains(name);}
     bool usePrettyNames() {return m_usePrettyNames;}
     void setUsePrettyNames(bool prettyNamesEnabled) {m_usePrettyNames = prettyNamesEnabled; emit usePrettyNamesChanged(prettyNamesEnabled);}
 

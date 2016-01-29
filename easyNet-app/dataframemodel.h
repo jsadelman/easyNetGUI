@@ -59,7 +59,7 @@ public:
 //    QTableView *view() {return m_view;}
 
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    bool setData(const QModelIndex &index, const QVariant &value, int role) Q_DECL_OVERRIDE;
 
 public slots:
     void setName(QString name) {m_name = name;}

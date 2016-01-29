@@ -335,8 +335,8 @@ void MainWindow::connectSignalsAndSlots()
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
-     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool)),
-             plotViewer, SLOT(addItem(QString, bool)));
+     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool)),
+             plotViewer, SLOT(addItem(QString, bool, bool)));
 //    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
 //            plotViewer, SLOT(setCurrentPlot(QString)));
 

@@ -7,6 +7,7 @@
 #include "plotsettingswindow.h"
 #include "xmlelement.h"
 #include "lazynutjob.h"
+#include "plotviewerdispatcher.h"
 
 
 #include <QDebug>
@@ -88,7 +89,7 @@ QString PlotViewer::plotType(QString name)
 
 bool PlotViewer::contains(QString name)
 {
-    return plotSvg.contains(name);
+    return viewMap.contains(name);
 }
 
 void PlotViewer::updateAllActivePlots()
@@ -106,7 +107,15 @@ void PlotViewer::updateAllActivePlots()
 
 void PlotViewer::initiateRemoveItem(QString name)
 {
-    SessionManager::instance()->destroyObject(name);
+    if (dispatcher)
+    {
+        dispatcher->moveFromViewerToHistory(name);
+    }
+    else
+    {
+        emit removePlotSettings(name);
+        SessionManager::instance()->destroyObject(name);
+    }
 }
 
 void PlotViewer::removeItem(QString name)
@@ -119,20 +128,20 @@ void PlotViewer::removeItem(QString name)
     {
         ui->removeItem(name);
 
-        QSvgWidget *svg = plotSvg.value(name);
+        QSvgWidget *svg = qobject_cast<QSvgWidget*>(viewMap.value(name));
         svgIsActive.remove(svg);
         svgByteArray.remove(svg);
         svgIsUpToDate.remove(svg);
         svgSourceModified.remove(svg);
         svgTrialRunInfo.remove(svg);
         delete svg;
-        plotSvg.remove(name);
+        viewMap.remove(name);
 //        if (SessionManager::instance()->plotFlags(name) & Plot_Backup)
 //        {
 //            foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
 //                SessionManager::instance()->destroyObject(df);
 //        }
-        emit removePlotSettings(name);
+
     }
 }
 
@@ -151,46 +160,53 @@ void PlotViewer::copy()
 
 }
 
-void PlotViewer::addItem(QString name, bool setCurrent)
-{
-    if (name.isEmpty())
-    {
-        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "plotName");
-        if (!v.canConvert<QString>())
-        {
-            eNerror << "cannot retrieve a valid string from plotName key in sender LazyNut job";
-            return;
-        }
-        name = v.value<QString>();
-        v = SessionManager::instance()->getDataFromJob(sender(), "setCurrent");
-        if (v.canConvert<bool>())
-            setCurrent = v.value<bool>();
-    }
-    if (name.isEmpty())
-    {
-        eNerror << "name is empty";
-    }
-    else if (!SessionManager::instance()->exists(name))
-    {
-        eNerror << QString("attempt to add a non-existing plot %1").arg(name);
-    }
-    else if (plotSvg.contains(name))
-    {
-        if (setCurrent)
-            ui->setCurrentItem(name);
-    }
-    else
-    {
-        newSvg(name);
-        plotDescriptionFilter->addName(name);
-        foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
-            sourceDataframeFilter->addName(df);
-        updateActivePlots();
-//        ui->addItem(name, new QWidget(ui));
-        if (setCurrent)
-            ui->setCurrentItem(name);
-    }
-}
+//void PlotViewer::addItem(QString name, bool setCurrent)
+//{
+//    if (name.isEmpty())
+//    {
+//        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "plotName");
+//        if (!v.canConvert<QString>())
+//        {
+//            eNerror << "cannot retrieve a valid string from plotName key in sender LazyNut job";
+//            return;
+//        }
+//        name = v.value<QString>();
+//        v = SessionManager::instance()->getDataFromJob(sender(), "setCurrent");
+//        if (v.canConvert<bool>())
+//            setCurrent = v.value<bool>();
+//    }
+//    if (name.isEmpty())
+//    {
+//        eNerror << "name is empty";
+//    }
+//    else if (!SessionManager::instance()->exists(name))
+//    {
+//        eNerror << QString("attempt to add a non-existing plot %1").arg(name);
+//    }
+//    else if (viewMap.contains(name))
+//    {
+//        if (setCurrent)
+//            ui->setCurrentItem(name);
+//    }
+//    else
+//    {
+//        QSvgWidget* svg = new QSvgWidget;
+//        viewMap[name] = svg;
+//        ui->addItem(name, svg);
+//        svgIsActive[svg] = true;
+//        svgIsUpToDate[svg] = false;
+//        svgSourceModified[svg] = false;
+
+
+//        plotDescriptionFilter->addName(name);
+//        foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
+//            sourceDataframeFilter->addName(df);
+//        updateActivePlots();
+////        ui->addItem(name, new QWidget(ui));
+//        if (setCurrent)
+//            ui->setCurrentItem(name);
+//    }
+//}
 
 void PlotViewer::resizeTimeout()
 {
@@ -203,7 +219,7 @@ void PlotViewer::dfSourceModified(QString df)
 {
     foreach (QString plot, SessionManager::instance()->plotsOfSourceDf(df))
     {
-        QSvgWidget* svg = plotSvg.value(plot);
+        QSvgWidget* svg = qobject_cast<QSvgWidget*>(viewMap.value(plot));
         if (svgIsActive.value(svg))
         {
             svgSourceModified[svg] = true;
@@ -293,7 +309,7 @@ void PlotViewer::updatePlot(QString name, QByteArray byteArray)
         fullScreenSvgDialog->loadByteArray(byteArray);
     else
     {
-        QSvgWidget* svg = plotSvg.value(name, nullptr);
+        QSvgWidget* svg = qobject_cast<QSvgWidget*>(viewMap.value(name, nullptr));
         if (svg)
         {
             svgIsUpToDate[svg] = true;
@@ -303,6 +319,37 @@ void PlotViewer::updatePlot(QString name, QByteArray byteArray)
             updateCurrentItem(name);
         }
     }
+}
+
+void PlotViewer::addItem_impl(QString name)
+{
+    QSvgWidget* svg = new QSvgWidget;
+    viewMap[name] = svg;
+    svgIsActive[svg] = true;
+    svgIsUpToDate[svg] = false;
+    svgSourceModified[svg] = false;
+}
+
+void PlotViewer::addNameToFilter(QString name)
+{
+    plotDescriptionFilter->addName(name);
+    foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
+        sourceDataframeFilter->addName(df);
+    updateActivePlots();
+}
+
+void PlotViewer::setNameInFilter(QString name)
+{
+    plotDescriptionFilter->setName(name);
+    foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
+        sourceDataframeFilter->setName(df);
+}
+
+void PlotViewer::removeNameFromFilter(QString name)
+{
+    plotDescriptionFilter->removeName(name);
+    foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
+        sourceDataframeFilter->removeName(df);
 }
 
 void PlotViewer::updateActivePlots()
@@ -322,7 +369,7 @@ void PlotViewer::updateActivePlots()
 
 QSvgWidget *PlotViewer::currentSvgWidget()
 {
-    return plotSvg.value(ui->currentItem(), nullptr);
+    return qobject_cast<QSvgWidget *>(viewMap.value(ui->currentItem(), nullptr));
 }
 
 void PlotViewer::addExtraActions()
@@ -389,7 +436,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
 QSvgWidget *PlotViewer::newSvg(QString name)
 {
     QSvgWidget* svg = new QSvgWidget;
-    plotSvg[name] = svg;
+    viewMap[name] = svg;
     ui->addItem(name, svg);
     svgIsActive[svg] = true;
     svgIsUpToDate[svg] = false;

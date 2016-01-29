@@ -373,8 +373,7 @@ void PlotSettingsWindow::buildSettingsForm()
     SessionManager::instance()->setPlotFlags(plotName, flags);
 
     buildSettingsForm(plotName, currentSettings, defaultSettings);
-    emit newRPlotCreated(plotName, !(flags & Plot_Backup));
-//    if (!(flags & Plot_Backup))
+    emit newRPlotCreated(plotName, !(flags & Plot_Backup), flags & Plot_Backup);
 //        setPlotSettings(plotName);
 }
 

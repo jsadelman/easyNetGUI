@@ -39,7 +39,7 @@ public slots:
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
-    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
+//    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
     void updateAllActivePlots();
 
 
@@ -65,6 +65,11 @@ signals:
      void removePlotSettings(QString);
 
 protected:
+     virtual void addItem_impl(QString name);
+     virtual void addNameToFilter(QString name);
+     virtual void removeNameFromFilter(QString name);
+     virtual void setNameInFilter(QString name);
+
      void updateActivePlots();
      QSvgWidget *currentSvgWidget();
      void addExtraActions();
@@ -78,7 +83,7 @@ protected:
     ObjectCacheFilter *sourceDataframeFilter;
     ObjectCacheFilter *plotDescriptionFilter;
     ObjectUpdater     *plotDescriptionUpdater;
-    QMap <QString, QSvgWidget*> plotSvg;
+//    QMap <QString, QSvgWidget*> plotSvg;
     QMap <QSvgWidget*, bool> svgIsActive;
     QMap <QSvgWidget*, bool> svgIsUpToDate;
     QMap <QSvgWidget*, bool> svgSourceModified;

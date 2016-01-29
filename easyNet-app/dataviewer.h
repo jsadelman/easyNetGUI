@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QSharedPointer>
+#include <QMap>
 
 class Ui_DataViewer;
 class DataViewerDispatcher;
@@ -15,19 +16,21 @@ class DataViewer : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(bool lazy READ isLazy WRITE setLazy NOTIFY lazyChanged)
+    friend class DataViewerDispatcher;
 public:
     DataViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     virtual ~DataViewer();
     void setDispatcher(DataViewerDispatcher *dataViewerDispatcher);
-    virtual bool contains(QString name)=0;
+    virtual bool contains(QString name) {return viewMap.contains(name);}
     bool isLazy() {return m_lazy;}
     void setLazy (bool lazy) {m_lazy = lazy; emit lazyChanged(lazy);}
     void setDefaultOpenDir(QString dir) {defaultOpenDir = dir;}
     void setDefaultSaveDir(QString dir) {defaultSaveDir = dir;}
     void setDefaultDir(QString dir);
+    QWidget *view(QString name) {return viewMap.value(name, nullptr);}
 
 public slots:
-    virtual void addItem(QString name="", bool setCurrent=false)=0;
+    virtual void addItem(QString name="", bool setCurrent=false, bool isBackup=false);
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
     void setDispatchModeOverride(int mode);
@@ -51,7 +54,12 @@ signals:
     void sendTrialRunInfo(QString, QSharedPointer<QDomDocument>);
 
 protected:
+    virtual void addItem_impl(QString name) = 0;
+    virtual void addNameToFilter(QString name) = 0;
+    virtual void removeNameFromFilter(QString name) = 0;
+    virtual void setNameInFilter(QString name) = 0;
 
+    QMap<QString, QWidget*> viewMap;
     Ui_DataViewer *ui;
     DataViewerDispatcher *dispatcher;
     ObjectCacheFilter *destroyedObjectsFilter;

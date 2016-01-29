@@ -36,6 +36,7 @@ void Ui_DataTabsViewer::addItem(QString name, QWidget *item)
         {
             itemDescriptionFilter->addName(name);
             tabWidget->insertTab(0, item, ""); // the (pretty) name on the tab will be set later
+            itemDescriptionUpdater->requestObject(name); // could be a request from history widget
         }
         else
             tabWidget->insertTab(0, item, name);
@@ -45,6 +46,8 @@ void Ui_DataTabsViewer::addItem(QString name, QWidget *item)
 void Ui_DataTabsViewer::removeItem(QString name)
 {
     // does not delete the item
+    if (!itemMap.contains(name))
+        return;
     tabWidget->removeTab(tabWidget->indexOf(itemMap.value(name)));
     itemMap.remove(name);
     if (m_usePrettyNames)

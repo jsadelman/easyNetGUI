@@ -45,6 +45,7 @@ void DataViewer::setUi()
 
 }
 
+
 void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
 {
     dispatcher = dataViewerDispatcher;
@@ -64,6 +65,55 @@ void DataViewer::setDefaultDir(QString dir)
 {
     setDefaultOpenDir(dir);
     setDefaultSaveDir(dir);
+}
+
+void DataViewer::addItem(QString name, bool setCurrent, bool isBackup)
+{
+    if (name.isEmpty())
+    {
+        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "name");
+        if (!v.canConvert<QString>())
+        {
+            eNerror << "cannot retrieve a valid string from name key in sender LazyNut job";
+            return;
+        }
+        name = v.value<QString>();
+        v = SessionManager::instance()->getDataFromJob(sender(), "setCurrent");
+        if (v.canConvert<bool>())
+            setCurrent = v.value<bool>();
+        v = SessionManager::instance()->getDataFromJob(sender(), "isBackup");
+        if (v.canConvert<bool>())
+            isBackup = v.value<bool>();
+    }
+    if (name.isEmpty())
+    {
+        eNerror << "name is empty";
+    }
+    else if (!SessionManager::instance()->exists(name))
+    {
+        eNerror << QString("attempt to add a non-existing object %1").arg(name);
+    }
+    else if (viewMap.contains(name))
+    {
+        if (setCurrent)
+            ui->setCurrentItem(name);
+    }
+    else
+    {
+        addItem_impl(name);
+        if (dispatcher && isBackup)
+        {
+            dispatcher->addToHistory(name);
+        }
+        else
+        {
+            ui->addItem(name, viewMap.value(name));
+            if (!isLazy())
+                addNameToFilter(name);
+            if (setCurrent)
+                ui->setCurrentItem(name);
+        }
+    }
 }
 
 void DataViewer::preDispatch(QSharedPointer<QDomDocument> info)
@@ -99,7 +149,11 @@ void DataViewer::updateCurrentItem(QString name)
     if (name.isEmpty() || name == "<select an item>")
         enableActions(false);
     else
+    {
         enableActions(true);
+        if (isLazy())
+            setNameInFilter(name);
+    }
 }
 
 void DataViewer::enableActions(bool enable)
@@ -109,7 +163,10 @@ void DataViewer::enableActions(bool enable)
     ui->saveAct->setEnabled(enable);
     ui->copyAct->setEnabled(enable);
     if (dispatcher)
+    {
         ui->setDispatchModeAutoAct->setEnabled(enable);
+        dispatcher->historyAct->setEnabled(enable);
+    }
 }
 
 void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)

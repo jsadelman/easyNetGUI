@@ -166,7 +166,6 @@ bool ObjectCache::create(const QString &name, const QString &type, const QString
     endInsertRows();
     emit dataChanged(index(0,0), index(0,columnCount()-1));
     return true;
-
 }
 
 bool ObjectCache::destroy(const QString &name)

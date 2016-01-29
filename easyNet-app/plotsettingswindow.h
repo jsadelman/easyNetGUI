@@ -67,7 +67,7 @@ public:
 signals:
         void plot(QString, QByteArray);
         void showPlotViewer();
-        void newRPlotCreated(QString, bool);
+        void newRPlotCreated(QString, bool, bool);
 public slots:
         void newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings=QMap<QString,QString>(), int flags=0);
 //        void quietlyNewRPlot(QString name, QString type,

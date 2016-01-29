@@ -54,6 +54,8 @@ void Ui_DataComboViewer::addItem(QString name, QWidget *item)
 
 void Ui_DataComboViewer::removeItem(QString name)
 {
+    if (!itemMap.contains(name))
+        return;
     comboBox->removeItem(m_usePrettyNames ?
                              comboBox->findData(name) :
                              comboBox->findText(name));

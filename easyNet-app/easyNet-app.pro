@@ -120,7 +120,11 @@ SOURCES +=  \
     dataviewerdispatcher.cpp \
     dataframeviewerdispatcher.cpp \
     plotviewer.cpp \
-    plotviewerdispatcher.cpp
+    plotviewerdispatcher.cpp \
+    historymodel.cpp \
+    booleandelegate.cpp \
+    closebutton.cpp \
+    historywidget.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -214,7 +218,11 @@ HEADERS  += \
     dataviewerdispatcher.h \
     dataframeviewerdispatcher.h \
     plotviewer.h \
-    plotviewerdispatcher.h
+    plotviewerdispatcher.h \
+    historymodel.h \
+    booleandelegate.h \
+    closebutton.h \
+    historywidget.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

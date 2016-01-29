@@ -68,6 +68,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     dataframeMergeAct->setVisible(false); // visible only for dataframe views
 }
 
+
 void Ui_DataViewer::createActions()
 {
     dispatchModeName.insert(Dispatch_New, "New Page");
