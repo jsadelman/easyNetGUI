@@ -14,13 +14,13 @@ class Ui_DataTabsViewer : public Ui_DataViewer
 public:
     Ui_DataTabsViewer();
     ~Ui_DataTabsViewer();
-    virtual QString currentItem();
+    virtual QString currentItemName();
     virtual void setCurrentItem(QString name);
+    virtual QWidget *currentView() Q_DECL_OVERRIDE;
 
 public slots:
-    virtual void addItem(QString name, QWidget *item) Q_DECL_OVERRIDE;
-    virtual void removeItem(QString name) Q_DECL_OVERRIDE;
-    virtual void replaceItem(QString name, QWidget *item) Q_DECL_OVERRIDE;
+    virtual void addView(QString name, QWidget *view) Q_DECL_OVERRIDE;
+    virtual QWidget *takeView(QString name) Q_DECL_OVERRIDE;
 
 protected:
     virtual void createViewer();

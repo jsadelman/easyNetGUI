@@ -21,7 +21,7 @@ public:
     DataViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     virtual ~DataViewer();
     void setDispatcher(DataViewerDispatcher *dataViewerDispatcher);
-    virtual bool contains(QString name) {return viewMap.contains(name);}
+    bool contains(QString name);
     bool isLazy() {return m_lazy;}
     void setLazy (bool lazy) {m_lazy = lazy; emit lazyChanged(lazy);}
     void setDefaultOpenDir(QString dir) {defaultOpenDir = dir;}
@@ -54,7 +54,8 @@ signals:
     void sendTrialRunInfo(QString, QSharedPointer<QDomDocument>);
 
 protected:
-    virtual void addItem_impl(QString name) = 0;
+    virtual void addItem_impl(QString name) {Q_UNUSED(name)}
+    virtual QWidget* makeView() = 0;
     virtual void addNameToFilter(QString name) = 0;
     virtual void removeNameFromFilter(QString name) = 0;
     virtual void setNameInFilter(QString name) = 0;

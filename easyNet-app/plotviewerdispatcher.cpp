@@ -37,7 +37,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     }
     foreach (QString rplot, SessionManager::instance()->affectedPlots(trialRunInfo.results))
     {
-        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->viewMap.value(rplot, nullptr));
+        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->ui->view(rplot));
         int dispatchAction;
         if (!host->svgByteArray.contains(svg))
         {

@@ -49,10 +49,6 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
 }
 
 
-bool DataframeViewer::contains(QString name)
-{
-    return modelMap.contains(name);
-}
 
 void DataframeViewer::open()
 {
@@ -100,7 +96,7 @@ void DataframeViewer::save()
     {
         LazyNutJob *job = new LazyNutJob;
         job->logMode |= ECHO_INTERPRETER;
-        job->cmdList = QStringList({QString("%1 save_csv %2").arg(ui->currentItem()).arg(fileName)});
+        job->cmdList = QStringList({QString("%1 save_csv %2").arg(ui->currentItemName()).arg(fileName)});
         SessionManager::instance()->submitJobs(job);
         lastSaveDir = QFileInfo(fileName).path();
     }
@@ -112,13 +108,13 @@ void DataframeViewer::copy()
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)")
-                                .arg(ui->currentItem())});
+                                .arg(ui->currentItemName())});
     SessionManager::instance()->submitJobs(job);
 }
 
 void DataframeViewer::copyDataframe()
 {
-    QString originalDf = ui->currentItem();
+    QString originalDf = ui->currentItemName();
     if (originalDf.isEmpty())
         return;
     QString copyDf = SessionManager::instance()->makeValidObjectName(originalDf);
@@ -159,7 +155,7 @@ void DataframeViewer::dataframeMerge()
     SettingsForm *form = new SettingsForm(domDoc, this);
     form->setUseRFormat(false);
     QMap<QString, QString> preFilledSettings;
-    preFilledSettings["x"] = ui->currentItem();
+    preFilledSettings["x"] = ui->currentItemName();
     preFilledSettings["y"] = SessionManager::instance()->currentSet();
     form->setDefaultSettings(preFilledSettings);
     // setup dialog
@@ -234,11 +230,11 @@ void DataframeViewer::removeItem(QString name)
 //    }
     else
     {
-        ui->removeItem(name);
+        delete ui->takeView(name);
         delete modelMap.value(name);
         modelMap.remove(name);
-        delete viewMap.value(name, nullptr);
-        viewMap.remove(name);
+//        delete viewMap.value(name, nullptr);
+//        viewMap.remove(name);
         if (prettyHeadersModelMap.contains(name))
             delete prettyHeadersModelMap.value(name);
         if (!isLazy())
@@ -337,7 +333,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     }
     bool isNewModel = (modelMap.value(name) == nullptr);
     // needs to be changed for splitters
-    QTableView *view = qobject_cast<QTableView*>(viewMap.value(name));
+    QTableView *view = qobject_cast<QTableView*>(ui->view(name));
     if (isNewModel)
     {
 //        view = new QTableView(this);
@@ -361,7 +357,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     else
     {
         DataFrameModel *oldDFmodel = modelMap.value(name);
-        view = qobject_cast<QTableView*>(viewMap.value(name));
+        view = qobject_cast<QTableView*>(ui->view(name));
         QItemSelectionModel *m = view->selectionModel();
         delete oldDFmodel;
         delete m;
@@ -378,7 +374,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
 
 void DataframeViewer::showFindDialog()
 {
-    if (ui->currentItem().isEmpty())
+    if (ui->currentItemName().isEmpty())
         return;
     findDialog->show();
     findDialog->raise();
@@ -394,7 +390,7 @@ void DataframeViewer::findForward(const QString &str, QFlags<QTextDocument::Find
 //    else
         flag = Qt::MatchExactly;
     QVariant qv(str);
-    QString name = ui->currentItem();
+    QString name = ui->currentItemName();
     if (name.isEmpty())
         return;
     QTableView *view = qobject_cast<QTableView*>(viewMap.value(name));
@@ -447,8 +443,13 @@ void DataframeViewer::setParameter(QString name, QString key_val)
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
-    QTableView *view = new QTableView(this);
-    viewMap.insert(name, view);
+//    QTableView *view = new QTableView(this);
+    //    viewMap.insert(name, view);
+}
+
+QWidget *DataframeViewer::makeView()
+{
+    return new QTableView(this);
 }
 
 void DataframeViewer::addNameToFilter(QString name)

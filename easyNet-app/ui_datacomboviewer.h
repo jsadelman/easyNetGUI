@@ -5,6 +5,7 @@
 
 class QComboBox;
 class QScrollArea;
+class QStackedWidget;
 
 class Ui_DataComboViewer : public Ui_DataViewer
 {
@@ -12,13 +13,13 @@ class Ui_DataComboViewer : public Ui_DataViewer
 public:
     Ui_DataComboViewer();
     ~Ui_DataComboViewer();
-    virtual QString currentItem();
-    virtual void setCurrentItem(QString name);
+    virtual QString currentItemName() Q_DECL_OVERRIDE;
+    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
+    virtual QWidget *currentView() Q_DECL_OVERRIDE;
 
 public slots:
-    virtual void addItem(QString name, QWidget *item) Q_DECL_OVERRIDE;
-    virtual void removeItem(QString name) Q_DECL_OVERRIDE;
-    virtual void replaceItem(QString name, QWidget *item) Q_DECL_OVERRIDE;
+    virtual void addView(QString name, QWidget *view) Q_DECL_OVERRIDE;
+    virtual QWidget *takeView(QString name) Q_DECL_OVERRIDE;
 
 
 protected:
@@ -29,6 +30,7 @@ protected:
 private:
     QComboBox *comboBox;
     QScrollArea *scrollArea;
+    QStackedWidget *stackedWidget;
 //    enum {ObjectNameRole = Qt::UserRole};
 };
 

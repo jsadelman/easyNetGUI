@@ -18,9 +18,11 @@ public:
     Ui_DataViewer();
     virtual ~Ui_DataViewer();
     virtual void setupUi(DataViewer *dataViewer);
-    virtual QString currentItem()=0;
+    virtual QString currentItemName()=0;
     virtual void setCurrentItem(QString name)=0;
-    bool contains(QString name) {return itemMap.contains(name);}
+    virtual QWidget *currentView()=0;
+    bool contains(QString name) {return viewMap.contains(name);}
+    QWidget *view(QString name) {return viewMap.value(name, nullptr);}
     bool usePrettyNames() {return m_usePrettyNames;}
     void setUsePrettyNames(bool prettyNamesEnabled) {m_usePrettyNames = prettyNamesEnabled; emit usePrettyNamesChanged(prettyNamesEnabled);}
 
@@ -48,9 +50,8 @@ public:
 
 
 public slots:
-    virtual void addItem(QString name, QWidget *item)=0;
-    virtual void removeItem(QString name)=0;
-    virtual void replaceItem(QString name, QWidget *item)=0;
+    virtual void addView(QString name, QWidget *view)=0;
+    virtual QWidget *takeView(QString name)=0;
 
 signals:
     void deleteItemRequested(QString);
@@ -62,7 +63,7 @@ protected:
     virtual void createToolBars();
     virtual void createViewer()=0;
     virtual void displayPrettyName(QString name)=0;
-    QMap<QString, QWidget *> itemMap;
+    QMap<QString, QWidget *> viewMap;
     ObjectCacheFilter *itemDescriptionFilter;
     ObjectUpdater *itemDescriptionUpdater;
     bool m_usePrettyNames;

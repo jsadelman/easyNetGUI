@@ -14,59 +14,58 @@ Ui_DataTabsViewer::~Ui_DataTabsViewer()
 {
 }
 
-QString Ui_DataTabsViewer::currentItem()
+QString Ui_DataTabsViewer::currentItemName()
 {
-    return itemMap.key(tabWidget->currentWidget());
+    return viewMap.key(tabWidget->currentWidget());
 }
 
 void Ui_DataTabsViewer::setCurrentItem(QString name)
 {
-    tabWidget->setCurrentWidget(itemMap.value(name));
+    tabWidget->setCurrentWidget(viewMap.value(name));
 }
 
-void Ui_DataTabsViewer::addItem(QString name, QWidget *item)
+QWidget *Ui_DataTabsViewer::currentView()
 {
-    if (itemMap.value(name, nullptr))
-        replaceItem(name, item);
-    else
+    return tabWidget->currentWidget();
+}
+
+void Ui_DataTabsViewer::addView(QString name, QWidget *view)
+{
+    viewMap[name] = view;
+    if (m_usePrettyNames)
     {
-        // truly add
-        itemMap[name] = item;
-        if (m_usePrettyNames)
-        {
-            itemDescriptionFilter->addName(name);
-            tabWidget->insertTab(0, item, ""); // the (pretty) name on the tab will be set later
-            itemDescriptionUpdater->requestObject(name); // could be a request from history widget
-        }
-        else
-            tabWidget->insertTab(0, item, name);
+        itemDescriptionFilter->addName(name);
+        tabWidget->insertTab(0, view, ""); // the (pretty) name on the tab will be set later
+        itemDescriptionUpdater->requestObject(name); // could be a request from history widget
     }
+    else
+        tabWidget->insertTab(0, view, name);
 }
 
-void Ui_DataTabsViewer::removeItem(QString name)
+QWidget *Ui_DataTabsViewer::takeView(QString name)
 {
-    // does not delete the item
-    if (!itemMap.contains(name))
-        return;
-    tabWidget->removeTab(tabWidget->indexOf(itemMap.value(name)));
-    itemMap.remove(name);
+    QWidget *view = viewMap.value(name, nullptr);
+    tabWidget->removeTab(tabWidget->indexOf(view));
+    viewMap.remove(name);
     if (m_usePrettyNames)
         itemDescriptionFilter->removeName(name);
+    return view;
 }
 
-void Ui_DataTabsViewer::replaceItem(QString name, QWidget *item)
-{
-    QString current = currentItem();
-    quiet_tab_change = true;
-    int index = tabWidget->indexOf(itemMap.value(name));
-    QString label = tabWidget->tabText(index);
-    tabWidget->insertTab(index, item, label);
-    tabWidget->removeTab(index + 1);
-    delete itemMap.value(name, nullptr);
-    itemMap[name] = item;
-    setCurrentItem(current);
-    quiet_tab_change = false;
-}
+//void Ui_DataTabsViewer::replaceItem(QString name, QWidget *item)
+//{
+//    eNerror << name;
+//    QString current = currentItemName();
+//    quiet_tab_change = true;
+//    int index = tabWidget->indexOf(viewMap.value(name));
+//    QString label = tabWidget->tabText(index);
+//    tabWidget->insertTab(index, item, label);
+//    tabWidget->removeTab(index + 1);
+//    delete viewMap.value(name, nullptr);
+//    viewMap[name] = item;
+//    setCurrentItem(current);
+//    quiet_tab_change = false;
+//}
 
 void Ui_DataTabsViewer::createViewer()
 {
@@ -75,19 +74,19 @@ void Ui_DataTabsViewer::createViewer()
     setCentralWidget(tabWidget);
     connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)
     {
-        QString name = itemMap.key(tabWidget->widget(index));
+        QString name = viewMap.key(tabWidget->widget(index));
         emit deleteItemRequested(name);
     });
     connect(tabWidget, &QTabWidget::currentChanged, [=](int index)
     {
         if (!quiet_tab_change)
-            emit currentItemChanged(itemMap.key(tabWidget->widget(index)));
+            emit currentItemChanged(viewMap.key(tabWidget->widget(index)));
     });
 
 }
 
 void Ui_DataTabsViewer::displayPrettyName(QString name)
 {
-    tabWidget->setTabText(tabWidget->indexOf(itemMap.value(name)), prettyName.value(name));
+    tabWidget->setTabText(tabWidget->indexOf(viewMap.value(name)), prettyName.value(name));
 }
 

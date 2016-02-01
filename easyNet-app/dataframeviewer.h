@@ -24,7 +24,6 @@ class DataframeViewer : public DataViewer
     Q_PROPERTY(bool parametersTable READ parametersTable WRITE setParametersTable NOTIFY parametersTableChanged)
 public:
     DataframeViewer(Ui_DataViewer *ui, QWidget * parent = 0);
-    virtual bool contains(QString name) Q_DECL_OVERRIDE;
     bool dragDropColumns() {return m_dragDropColumns;}
     void setDragDropColumns(bool enabled) {m_dragDropColumns = enabled; emit dragDropColumnsChanged(enabled);}
     bool stimulusSet() {return m_stimulusSet;}
@@ -34,7 +33,6 @@ public:
 
 
 public slots:
-//    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
     void setPrettyHeadersForTrial(QString trial, QString df);
     virtual void dispatch() Q_DECL_OVERRIDE;
     virtual void open() Q_DECL_OVERRIDE;
@@ -60,6 +58,7 @@ signals:
 
 protected:
     virtual void addItem_impl(QString name);
+    virtual QWidget *makeView();
     virtual void addNameToFilter(QString name);
     virtual void removeNameFromFilter(QString name);
     virtual void setNameInFilter(QString name);

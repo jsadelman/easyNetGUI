@@ -61,6 +61,13 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
     }
 }
 
+bool DataViewer::contains(QString name)
+{
+    if (ui)
+        return ui->contains(name);
+    return false;
+}
+
 void DataViewer::setDefaultDir(QString dir)
 {
     setDefaultOpenDir(dir);
@@ -93,7 +100,7 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup)
     {
         eNerror << QString("attempt to add a non-existing object %1").arg(name);
     }
-    else if (viewMap.contains(name))
+    else if (ui->contains(name))
     {
         if (setCurrent)
             ui->setCurrentItem(name);
@@ -107,7 +114,7 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup)
         }
         else
         {
-            ui->addItem(name, viewMap.value(name));
+            ui->addView(name, makeView());
             if (!isLazy())
                 addNameToFilter(name);
             if (setCurrent)

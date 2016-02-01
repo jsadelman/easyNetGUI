@@ -33,7 +33,6 @@ public:
     PlotViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     ~PlotViewer();
     QString plotType(QString name);
-    virtual bool contains(QString name) Q_DECL_OVERRIDE;
 
 public slots:
     virtual void open() Q_DECL_OVERRIDE;
@@ -65,7 +64,8 @@ signals:
      void removePlotSettings(QString);
 
 protected:
-     virtual void addItem_impl(QString name);
+//     virtual void addItem_impl(QString name);
+     virtual QWidget *makeView();
      virtual void addNameToFilter(QString name);
      virtual void removeNameFromFilter(QString name);
      virtual void setNameInFilter(QString name);
