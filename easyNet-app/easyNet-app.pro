@@ -124,7 +124,9 @@ SOURCES +=  \
     historymodel.cpp \
     booleandelegate.cpp \
     closebutton.cpp \
-    historywidget.cpp
+    historywidget.cpp \
+    historytreemodel.cpp \
+    trialruninfo.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -222,7 +224,9 @@ HEADERS  += \
     historymodel.h \
     booleandelegate.h \
     closebutton.h \
-    historywidget.h
+    historywidget.h \
+    historytreemodel.h \
+    trialruninfo.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

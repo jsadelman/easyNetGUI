@@ -393,7 +393,7 @@ void DataframeViewer::findForward(const QString &str, QFlags<QTextDocument::Find
     QString name = ui->currentItemName();
     if (name.isEmpty())
         return;
-    QTableView *view = qobject_cast<QTableView*>(viewMap.value(name));
+    QTableView *view = qobject_cast<QTableView*>(ui->view(name));
     DataFrameModel*dfModel = modelMap.value(name);
 
     // first try searching in the current column

@@ -27,7 +27,6 @@ public:
     void setDefaultOpenDir(QString dir) {defaultOpenDir = dir;}
     void setDefaultSaveDir(QString dir) {defaultSaveDir = dir;}
     void setDefaultDir(QString dir);
-    QWidget *view(QString name) {return viewMap.value(name, nullptr);}
 
 public slots:
     virtual void addItem(QString name="", bool setCurrent=false, bool isBackup=false);

@@ -5,10 +5,11 @@
      models.
  */
 
- #include <QtGui>
+#include <QtGui>
 
- #include "treeitem.h"
- #include "treemodel.h"
+#include "treeitem.h"
+#include "treemodel.h"
+#include "enumclasses.h"
 
  TreeModel::TreeModel(QStringList headers, QObject *parent)
      : QAbstractItemModel(parent)
@@ -173,12 +174,12 @@
   {
       if (!insertRows(rowCount(parent),1,parent))
       {
-          qDebug() << "no insertRow";
+          eNerror << "no insertRow";
           return false;
       }
       if (!setData(index(rowCount(parent)-1,column,parent),value,role))
       {
-          qDebug() << "no setData";
+          eNerror << "no setData";
           return false;
       }
       return true;

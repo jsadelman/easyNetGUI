@@ -107,7 +107,7 @@ void DataViewerDispatcher::moveFromHistoryToViewer()
         historyModel->destroy(name);
         if (!hostDataViewer->ui->contains(name))
         {
-            hostDataViewer->ui->addView(name, hostDataViewer->view(name));
+            hostDataViewer->ui->addView(name, hostDataViewer->makeView());
             if (!hostDataViewer->isLazy())
                 hostDataViewer->addNameToFilter(name);
         }
@@ -150,7 +150,7 @@ void DataViewerDispatcher::displayItemFromHistory(QString name)
         return;
     }
     removePreviousItem();
-    hostDataViewer->ui->addView(name, hostDataViewer->viewMap.value(name));
+    hostDataViewer->ui->addView(name, hostDataViewer->ui->view(name));
     if (!hostDataViewer->isLazy())
         hostDataViewer->addNameToFilter(name);
     hostDataViewer->ui->setCurrentItem(name);

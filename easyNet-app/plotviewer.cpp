@@ -373,16 +373,16 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     return newName;
 }
 
-QSvgWidget *PlotViewer::newSvg(QString name)
-{
-    QSvgWidget* svg = new QSvgWidget;
-    viewMap[name] = svg;
-    ui->addView(name, svg);
-    svgIsActive[svg] = true;
-    svgIsUpToDate[svg] = false;
-    svgSourceModified[svg] = false;
-    return svg;
-}
+//QSvgWidget *PlotViewer::newSvg(QString name)
+//{
+//    QSvgWidget* svg = new QSvgWidget;
+//    viewMap[name] = svg;
+//    ui->addView(name, svg);
+//    svgIsActive[svg] = true;
+//    svgIsUpToDate[svg] = false;
+//    svgSourceModified[svg] = false;
+//    return svg;
+//}
 
 void PlotViewer::paintEvent(QPaintEvent *event)
 {

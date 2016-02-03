@@ -74,7 +74,7 @@ protected:
      QSvgWidget *currentSvgWidget();
      void addExtraActions();
      QString cloneRPlot(QString name, QString newName=QString());
-     QSvgWidget *newSvg(QString name);
+//     QSvgWidget *newSvg(QString name);
      void paintEvent(QPaintEvent * event);
      void resizeEvent(QResizeEvent*);
 
