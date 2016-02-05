@@ -74,14 +74,12 @@ bool HistoryTreeModel::setData(const QModelIndex &index, const QVariant &value, 
             record.checked = value.toInt() == Qt::Checked;
             v.setValue(record);
             success = item->setData(0, v);
-            if (success)
-                emit checkDataChanged();
         }
     default:
         ;
     }
     if (success)
-        emit dataChanged(index, index);
+        emit dataChanged(index, index, QVector<int>({role}));
     return success;
 }
 
@@ -157,6 +155,17 @@ bool HistoryTreeModel::removeView(QString view, QString trial)
         return false;
     }
     return removeRows(index.row(), 1, trialIndex(trial));
+}
+
+bool HistoryTreeModel::setInView(QString view, QString trial, bool inView)
+{
+    return setData(viewIndex(view, trial), inView ? QVariant(Qt::Checked) : QVariant(Qt::Unchecked), Qt::CheckStateRole);
+}
+
+bool HistoryTreeModel::isInView(QString view, QString trial)
+{
+    QModelIndex index = viewIndex(view, trial);
+    return index.isValid() ? data(index, Qt::CheckStateRole).toInt() ==  Qt::Checked: false;
 }
 
 QModelIndex HistoryTreeModel::trialIndex(QString trial)

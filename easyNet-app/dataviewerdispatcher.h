@@ -5,10 +5,11 @@
 #include <QMap>
 #include <QObject>
 #include <QSharedPointer>
+#include <QModelIndex>
 
 #include "dataviewer.h"
 
-class CheckListModel;
+class HistoryTreeModel;
 class HistoryWidget;
 class QAction;
 class QDomDocument;
@@ -20,17 +21,19 @@ public:
     DataViewerDispatcher(DataViewer *host);
     virtual ~DataViewerDispatcher();
     virtual void preDispatch(QSharedPointer<QDomDocument> info)=0;
-    virtual void dispatch(QSharedPointer<QDomDocument> info);
+    virtual void dispatch(QSharedPointer<QDomDocument> info)=0;
     void setSingleTrialMode(int mode) {dispatchDefaultMode.insert("single", mode);}
     void setTrialListMode(int mode) {dispatchDefaultMode.insert("list", mode);}
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
     void copyTrialRunInfo(QString fromItem, QString toItem);
-    QString getTrial(QString name);
-    QString getRunMode(QString name);
-    QString getResults(QString name);
-    void addToHistory(QString name);
-    void moveFromViewerToHistory(QString name);
+    QString trial(QString name);
+    QString runMode(QString name);
+    QString results(QString name);
+    QSharedPointer<QDomDocument> info(QString name) {return trialRunInfoMap.value(name);}
+    void addToHistory(QString name, bool inView=false, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
+//    void moveFromViewerToHistory(QString name);
     bool inHistory(QString name);
+    void setInView(QString name, bool inView);
 
     QAction *historyAct;
     int dispatchModeOverride;
@@ -39,12 +42,13 @@ public:
     QMap<QPair<int, int>, int> dispatchModeFST; // <previous mode, current mode> -> action
 
 protected slots:
-    void moveFromHistoryToViewer();
+//    void moveFromHistoryToViewer();
 
     void removeFromHistory();
-    void displayItemFromHistory(QString name);
+//    void displayItemFromHistory(QString name);
     void setHistoryVisible(bool visible);
-
+    void updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles);
+    void updateHistory(QString item, QSharedPointer<QDomDocument> info);
 
 protected:
     struct TrialRunInfo
@@ -54,13 +58,15 @@ protected:
         QString trial;
         QString runMode;
     };
-    void removePreviousItem();
+    const QString no_trial = "<no-trial>";
+//    void removePreviousItem();
     DataViewer *hostDataViewer;
     int previousDispatchMode;
     QMap <QString, QSharedPointer<QDomDocument> > trialRunInfoMap;
-    CheckListModel *historyModel;
+    HistoryTreeModel *historyModel;
     HistoryWidget  *historyWidget;
     QString previousItem;
+    bool no_update_view;
 
 };
 

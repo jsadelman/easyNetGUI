@@ -133,7 +133,7 @@ void DataframeViewer::copyDataframe()
     if (dispatcher)
     {
         dispatcher->copyTrialRunInfo(originalDf, copyDf);
-        setPrettyHeadersForTrial(dispatcher->getTrial(originalDf), copyDf);
+        setPrettyHeadersForTrial(dispatcher->trial(originalDf), copyDf);
     }
 }
 
@@ -192,65 +192,13 @@ void DataframeViewer::dataframeMerge()
     dialog.exec();
 }
 
-void DataframeViewer::initiateRemoveItem(QString name)
-{
-    if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
-    {
-        eNwarning << QString("attempt to delete lazyNut system object %1").arg(name);
-        // this should change, trigger desable default observer
-    }
-    else if (dispatcher)
-    {
-        dispatcher->moveFromViewerToHistory(name);
-    }
-    else
-    {
-        SessionManager::instance()->destroyObject(name);
-    }
-}
 
-void DataframeViewer::removeItem(QString name)
+void DataframeViewer::removeItem_impl(QString name)
 {
-    if (!contains(name))
-    {
-        eNwarning << QString("attempt to delete non-existing dataframe %1").arg(name);
-    }
-//    else if (!modelMap.value(name))
-//    {
-//        eNerror << QString("dataframe %1 does not have a DataFrameModel").arg(name);
-//    }
-//    else if (!viewsMap.values(name).at(0)) // to be changed for splitters
-//    {
-//        eNerror << QString("dataframe %1 does not have a view").arg(name);
-//    }
-//    else if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
-//    {
-//        qDebug() << Q_FUNC_INFO <<  "WARNING: attempt to delete a default dataframe";
-//        // this should change, trigger desable default observer
-//    }
-    else
-    {
-        delete ui->takeView(name);
         delete modelMap.value(name);
         modelMap.remove(name);
-//        delete viewMap.value(name, nullptr);
-//        viewMap.remove(name);
         if (prettyHeadersModelMap.contains(name))
             delete prettyHeadersModelMap.value(name);
-        if (!isLazy())
-            dataframeFilter->removeName(name);
-//        if (SessionManager::instance()->exists(name))
-//        {
-//            // delete lazyNut object
-//            LazyNutJob *job = new LazyNutJob;
-//            job->logMode |= ECHO_INTERPRETER;
-//            job->cmdList = QStringList({QString("destroy %1").arg(name)});
-//            QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-//                    << job
-//                    << SessionManager::instance()->recentlyDestroyedJob();
-//            SessionManager::instance()->submitJobs(jobs);
-//        }
-    }
 }
 
 void DataframeViewer::enableActions(bool enable)
@@ -357,7 +305,6 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     else
     {
         DataFrameModel *oldDFmodel = modelMap.value(name);
-        view = qobject_cast<QTableView*>(ui->view(name));
         QItemSelectionModel *m = view->selectionModel();
         delete oldDFmodel;
         delete m;

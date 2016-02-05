@@ -61,7 +61,8 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         }
         if (dispatchAction == Dispatch_New)
         {
-            host->cloneRPlot(rplot);
+            /*QString newPlotName =*/ host->cloneRPlot(rplot);
+//            copyTrialRunInfo(rplot, newPlotName);
         }
     }
     previousDispatchMode = currentDispatchMode;
@@ -69,6 +70,11 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 
 void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
+    foreach(QString plot, SessionManager::instance()->affectedPlots(TrialRunInfo(info).results))
+    {
+        updateHistory(plot, info);
+        setTrialRunInfo(plot, info);
+    }
     QMutableMapIterator<QSvgWidget*, bool> svgSourceModified_it(host->svgSourceModified);
     while (svgSourceModified_it.hasNext())
     {

@@ -27,9 +27,11 @@ public:
     void setDefaultOpenDir(QString dir) {defaultOpenDir = dir;}
     void setDefaultSaveDir(QString dir) {defaultSaveDir = dir;}
     void setDefaultDir(QString dir);
+    void addView(QString name);
+    void removeView(QString name);
 
 public slots:
-    virtual void addItem(QString name="", bool setCurrent=false, bool isBackup=false);
+    virtual void addItem(QString name="", bool setCurrent=false, bool isBackup=false, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
     void setDispatchModeOverride(int mode);
@@ -42,8 +44,9 @@ public slots:
 protected slots:
     void setUi();
 
-    virtual void initiateRemoveItem(QString name)=0;
-    virtual void removeItem(QString name)=0;
+    void initiateRemoveItem(QString name);
+    virtual void removeItem(QString name);
+    virtual void removeItem_impl(QString name)=0;
     virtual void updateCurrentItem(QString name);
     virtual void enableActions(bool enable);
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
@@ -51,6 +54,7 @@ protected slots:
 signals:
     void lazyChanged(bool);
     void sendTrialRunInfo(QString, QSharedPointer<QDomDocument>);
+    void itemRemoved(QString);
 
 protected:
     virtual void addItem_impl(QString name) {Q_UNUSED(name)}
@@ -59,7 +63,7 @@ protected:
     virtual void removeNameFromFilter(QString name) = 0;
     virtual void setNameInFilter(QString name) = 0;
 
-    QMap<QString, QWidget*> viewMap;
+//    QMap<QString, QWidget*> viewMap;
     Ui_DataViewer *ui;
     DataViewerDispatcher *dispatcher;
     ObjectCacheFilter *destroyedObjectsFilter;

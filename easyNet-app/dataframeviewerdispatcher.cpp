@@ -6,7 +6,11 @@
 #include "dataframeviewer.h"
 #include "objectcache.h"
 
+#include <QSharedPointer>
 #include <QDomDocument>
+
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
+
 
 DataframeViewerDispatcher::DataframeViewerDispatcher(DataframeViewer *host)
     :DataViewerDispatcher(host), host(host)
@@ -34,7 +38,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         return;
     }
     int dispatchAction;
-    if (!host->contains(trialRunInfo.results))
+    if (!inHistory(trialRunInfo.results))
     {
         dispatchAction = Dispatch_Overwrite;
     }
@@ -70,10 +74,13 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         jobData.insert("name", backupDf);
         jobData.insert("setCurrent", false);
         jobData.insert("isBackup", true);
+        QVariant infoVariant;
+        infoVariant.setValue(trialRunInfoMap.value(trialRunInfo.results));
+        jobData.insert("trialRunInfo", infoVariant);
         jobs << SessionManager::instance()->recentlyCreatedJob();
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
-        copyTrialRunInfo(trialRunInfo.results, backupDf);
+//        copyTrialRunInfo(trialRunInfo.results, backupDf);
         host->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
         break;
     }
@@ -82,7 +89,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
         if (!host->contains(trialRunInfo.results))
         {
-            host->addItem(trialRunInfo.results, true);
+            host->addItem(trialRunInfo.results, true, false, info);
             host->setPrettyHeadersForTrial(trialRunInfo.trial, trialRunInfo.results);
         }
         break;
@@ -110,8 +117,9 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 
 void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
-    DataViewerDispatcher::dispatch(info);
-    // ..
+    QString results = TrialRunInfo(info).results;
+    updateHistory(results, info);
+    setTrialRunInfo(results, info);
 }
 
 

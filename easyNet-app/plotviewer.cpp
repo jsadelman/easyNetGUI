@@ -100,35 +100,15 @@ void PlotViewer::updateAllActivePlots()
     updateActivePlots();
 }
 
-void PlotViewer::initiateRemoveItem(QString name)
-{
-    if (dispatcher)
-    {
-        dispatcher->moveFromViewerToHistory(name);
-    }
-    else
-    {
-        emit removePlotSettings(name);
-        SessionManager::instance()->destroyObject(name);
-    }
-}
 
-void PlotViewer::removeItem(QString name)
+void PlotViewer::removeItem_impl(QString name)
 {
-    if (!contains(name))
-    {
-        eNwarning << QString("attempt to delete non-existing plot %1").arg(name);
-    }
-    else
-    {
-        QSvgWidget *svg = qobject_cast<QSvgWidget*>(ui->takeView(name));
-        svgIsActive.remove(svg);
-        svgByteArray.remove(svg);
-        svgIsUpToDate.remove(svg);
-        svgSourceModified.remove(svg);
-        svgTrialRunInfo.remove(svg);
-        delete svg;
-    }
+    QSvgWidget *svg = qobject_cast<QSvgWidget*>(ui->view(name));
+    svgIsActive.remove(svg);
+    svgByteArray.remove(svg);
+    svgIsUpToDate.remove(svg);
+    svgSourceModified.remove(svg);
+    svgTrialRunInfo.remove(svg);
 }
 
 void PlotViewer::open()
@@ -369,7 +349,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
         settings[sourceDataframeSettings_it.key()] = sourceDataframeSettings_it.value();
     }
     int flags = SessionManager::instance()->plotFlags(name) | Plot_Backup;
-    emit createNewRPlot(newName, plotType(name), settings, flags);
+    emit createNewRPlot(newName, plotType(name), settings, flags, dispatcher ? dispatcher->info(name) : QSharedPointer<QDomDocument>());
     return newName;
 }
 

@@ -17,6 +17,8 @@
 #include "xmlaccessor.h"
 
 
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
+
 
 PlotSettingsWindow::PlotSettingsWindow(QWidget *parent)
     : createNewPlotText("Create new plot"),
@@ -295,7 +297,7 @@ void PlotSettingsWindow::newPlot()
 //}
 
 void PlotSettingsWindow::newRPlot(QString name, QString rScript,
-                                     QMap <QString,QString> defaultSettings, int flags)
+                                     QMap <QString,QString> defaultSettings, int flags, QSharedPointer<QDomDocument> info)
 {
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER; // debug purpose
@@ -309,7 +311,9 @@ void PlotSettingsWindow::newRPlot(QString name, QString rScript,
     if (!defaultSettings.isEmpty())
         jobData.insert("defaultSettings", QVariant::fromValue(defaultSettings));
     jobData.insert("flags", flags);
-
+    QVariant infoVariant;
+    infoVariant.setValue(info);
+    jobData.insert("trialRunInfo", infoVariant);
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
 
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
@@ -372,8 +376,13 @@ void PlotSettingsWindow::buildSettingsForm()
         flags = jobData.value("flags").toInt();
     SessionManager::instance()->setPlotFlags(plotName, flags);
 
+    QSharedPointer<QDomDocument> info;
+    QVariant v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
+    if (v.canConvert<QSharedPointer<QDomDocument> >())
+        info = v.value<QSharedPointer<QDomDocument> >();
+
     buildSettingsForm(plotName, currentSettings, defaultSettings);
-    emit newRPlotCreated(plotName, !(flags & Plot_Backup), flags & Plot_Backup);
+    emit newRPlotCreated(plotName, !(flags & Plot_Backup), flags & Plot_Backup, info);
 //        setPlotSettings(plotName);
 }
 

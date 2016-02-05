@@ -3,43 +3,43 @@
 
 #include <QDockWidget>
 
-class QListView;
-class QButton;
+class QTreeView;
 class QAbstractItemView;
 class QToolBar;
-class CheckListModel;
+class HistoryTreeModel;
 
 class HistoryWidget : public QDockWidget
 {
     Q_OBJECT
+    friend class DataViewerDispatcher;
 public:
     HistoryWidget(QWidget* parent = 0);
-    QListView* view() {return m_view;}
-    void setModel(CheckListModel *model);
-    QAction *moveToViewerAct;
+//    QTreeView* view() {return m_view;}
+    void setModel(HistoryTreeModel *model);
+//    QAction *moveToViewerAct;
     QAction *destroyAct;
 
 signals:
     void clicked(QString);
 
 private slots:
-    void selectAll();
-    void clearSelection();
+//    void selectAll();
+//    void clearSelection();
 
 
 private:
     void buildWidget();
     void createActions();
     void createWidgets();
-    void checkAll(int check);
+//    void checkAll(int check);
 
 
-    QListView *m_view;
+    QTreeView *view;
     QAction *selectAllAct;
     QAction *clearSelectionAct;
 
     QToolBar *toolBar;
-    bool m_checkDataChanged;
+//    bool m_checkDataChanged;
 };
 
 #endif // HISTORYWIDGET_H

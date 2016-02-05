@@ -328,14 +328,14 @@ void MainWindow::connectSignalsAndSlots()
 //            tableWindow,SLOT(addTrialTable(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
+    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)));
 //    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)),
 //            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)));
 //    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
 //            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
-    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
+    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)));
 //    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)),
 //            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)));
 //    connect(tableWindow, SIGNAL(addDataframeMerge(QString,QString)),
@@ -345,12 +345,12 @@ void MainWindow::connectSignalsAndSlots()
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
-     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool)),
-             plotViewer, SLOT(addItem(QString, bool, bool)));
+     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QSharedPointer<QDomDocument>)),
+             plotViewer, SLOT(addItem(QString, bool, bool, QSharedPointer<QDomDocument>)));
 //    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
 //            plotViewer, SLOT(setCurrentPlot(QString)));
 
-    connect(plotViewer, SIGNAL(removePlotSettings(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
+    connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(snapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),

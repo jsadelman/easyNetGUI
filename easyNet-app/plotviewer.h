@@ -43,8 +43,7 @@ public slots:
 
 
 protected slots:
-    virtual void initiateRemoveItem(QString name) Q_DECL_OVERRIDE;
-    virtual void removeItem(QString name) Q_DECL_OVERRIDE;
+    virtual void removeItem_impl(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
     void dfSourceModified(QString df);
     void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
@@ -59,7 +58,7 @@ signals:
      void resized(QSize);
      void sendDrawCmd(QString);
      void showPlotSettings();
-     void createNewRPlot(QString, QString, QMap<QString, QString>, int);
+     void createNewRPlot(QString, QString, QMap<QString, QString>, int, QSharedPointer<QDomDocument>);
      void setPlotSettings(QString);
      void removePlotSettings(QString);
 
@@ -88,7 +87,7 @@ protected:
     QMap <QSvgWidget*, bool> svgIsUpToDate;
     QMap <QSvgWidget*, bool> svgSourceModified;
     QMap <QSvgWidget*, QByteArray> svgByteArray;
-    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML>
+    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML> needed?
 //    QStringList plotClones;
 
     QAction *       settingsAct;

@@ -45,6 +45,35 @@ void DataViewer::setUi()
 
 }
 
+void DataViewer::initiateRemoveItem(QString name)
+{
+    if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
+    {
+        eNwarning << QString("attempt to delete lazyNut system object %1").arg(name);
+        // this should change, trigger desable default observer
+    }
+    else if (dispatcher && sender() == ui)
+    {
+        dispatcher->setInView(name, false);
+    }
+    else
+    {
+        SessionManager::instance()->destroyObject(name);
+        emit itemRemoved(name);
+    }
+}
+
+void DataViewer::removeItem(QString name)
+{
+    if (!contains(name))
+    {
+        eNwarning << QString("attempt to delete non-existing item %1").arg(name);
+        return;
+    }
+    removeItem_impl(name);
+    removeView(name);
+}
+
 
 void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
 {
@@ -63,6 +92,8 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
 
 bool DataViewer::contains(QString name)
 {
+    if (dispatcher)
+        return dispatcher->inHistory(name);
     if (ui)
         return ui->contains(name);
     return false;
@@ -74,7 +105,21 @@ void DataViewer::setDefaultDir(QString dir)
     setDefaultSaveDir(dir);
 }
 
-void DataViewer::addItem(QString name, bool setCurrent, bool isBackup)
+void DataViewer::addView(QString name)
+{
+    ui->addView(name, makeView());
+    if (!isLazy())
+        addNameToFilter(name);
+}
+
+void DataViewer::removeView(QString name)
+{
+    if (!isLazy())
+        removeNameFromFilter(name);
+    delete ui->takeView(name);
+}
+
+void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QSharedPointer<QDomDocument> info)
 {
     if (name.isEmpty())
     {
@@ -91,6 +136,9 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup)
         v = SessionManager::instance()->getDataFromJob(sender(), "isBackup");
         if (v.canConvert<bool>())
             isBackup = v.value<bool>();
+        v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
+        if (v.canConvert<QSharedPointer<QDomDocument> >())
+            info = v.value<QSharedPointer<QDomDocument> >();
     }
     if (name.isEmpty())
     {
@@ -108,15 +156,13 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup)
     else
     {
         addItem_impl(name);
-        if (dispatcher && isBackup)
+        if (dispatcher)
         {
-            dispatcher->addToHistory(name);
+            dispatcher->addToHistory(name, !isBackup, info);
         }
         else
         {
-            ui->addView(name, makeView());
-            if (!isLazy())
-                addNameToFilter(name);
+            addView(name);
             if (setCurrent)
                 ui->setCurrentItem(name);
         }

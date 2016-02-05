@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QWizard>
 #include <QMap>
+#include <QSharedPointer>
 
 
 class CodeEditor;
@@ -67,9 +68,10 @@ public:
 signals:
         void plot(QString, QByteArray);
         void showPlotViewer();
-        void newRPlotCreated(QString, bool, bool);
+        void newRPlotCreated(QString, bool, bool, QSharedPointer<QDomDocument>);
 public slots:
-        void newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings=QMap<QString,QString>(), int flags=0);
+        void newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
+                      int flags=0, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
 //        void quietlyNewRPlot(QString name, QString type,
 //                                 QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
 //                                 QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),
