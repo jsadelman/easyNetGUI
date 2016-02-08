@@ -42,10 +42,10 @@ Qt::ItemFlags HistoryTreeModel::flags(const QModelIndex &index) const
         return 0;
 
     else if (!index.parent().isValid())
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+        return Qt::ItemIsEnabled;
 
     else
-        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemNeverHasChildren;
 }
 
 int HistoryTreeModel::columnCount(const QModelIndex &parent) const
@@ -154,7 +154,11 @@ bool HistoryTreeModel::removeView(QString view, QString trial)
         eNwarning << QString("attempt to remove view %1 from trial %2, which is not contained in this model").arg(view).arg(trial);
         return false;
     }
-    return removeRows(index.row(), 1, trialIndex(trial));
+    QModelIndex trialIdx = trialIndex(trial);
+    bool success = removeRows(index.row(), 1, trialIdx);
+    if (rowCount(trialIdx) == 0)
+        success &= removeRows(trialIdx.row(), 1);
+    return success;
 }
 
 bool HistoryTreeModel::setInView(QString view, QString trial, bool inView)
@@ -182,5 +186,16 @@ QModelIndex HistoryTreeModel::viewIndex(QString view, QString trial)
 
     QModelIndexList matchList = match(index(0, 0, trialIdx), Qt::DisplayRole, view, 1, Qt::MatchFixedString | Qt::MatchCaseSensitive);
     return matchList.isEmpty() ? QModelIndex() : matchList.first();
+}
+
+QModelIndex HistoryTreeModel::viewIndex(QString view)
+{
+    QModelIndex viewIdx = QModelIndex();
+    for(int trialRow = 0; trialRow < rowCount(); ++trialRow)
+    {
+        if ((viewIdx = viewIndex(view, data(index(trialRow, 0), Qt::DisplayRole).toString())).isValid())
+            return viewIdx;
+    }
+    return viewIdx;
 }
 

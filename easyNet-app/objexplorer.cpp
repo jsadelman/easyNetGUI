@@ -19,7 +19,6 @@
 #include "lazynutjob.h"
 #include "xmlelement.h"
 #include "expandtofillbutton.h"
-#include "lazynutlistwidget.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
@@ -284,12 +283,6 @@ void ObjExplorer::selectType(QString type)
 }
 
 
-void ObjExplorer::showList(QString cmd)
-{
-    LazyNutListWidget *listWidget = new LazyNutListWidget(cmd);
-    listWidget->setAttribute(Qt::WA_DeleteOnClose, true);
-    listWidget->show();
-}
 
 localListFiller::~localListFiller()
 {

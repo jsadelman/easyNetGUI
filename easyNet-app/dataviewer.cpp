@@ -19,7 +19,7 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     setUi();
     destroyedObjectsFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     destroyedObjectsFilter->setAllPassFilter(); // may be specialised by derived classes
-    connect(destroyedObjectsFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeItem(QString)));
+    connect(destroyedObjectsFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(destroyItem(QString)));
 }
 
 DataViewer::~DataViewer()
@@ -40,12 +40,9 @@ void DataViewer::setUi()
     layout->addWidget(ui);
     setLayout(layout);
     enableActions(false);
-    connect(ui, SIGNAL(deleteItemRequested(QString)), this, SLOT(initiateRemoveItem(QString)));
-    connect(ui, SIGNAL(currentItemChanged(QString)), this, SLOT(updateCurrentItem(QString)));
-
 }
 
-void DataViewer::initiateRemoveItem(QString name)
+void DataViewer::initiateDestroyItem(QString name)
 {
     if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
     {
@@ -63,14 +60,16 @@ void DataViewer::initiateRemoveItem(QString name)
     }
 }
 
-void DataViewer::removeItem(QString name)
+void DataViewer::destroyItem(QString name)
 {
     if (!contains(name))
     {
-        eNwarning << QString("attempt to delete non-existing item %1").arg(name);
+//        eNwarning << QString("attempt to delete non-existing item %1").arg(name) << sender()->metaObject()->className();
         return;
     }
-    removeItem_impl(name);
+    if (dispatcher)
+        dispatcher->removeFromHistory(name);
+    destroyItem_impl(name);
     removeView(name);
 }
 

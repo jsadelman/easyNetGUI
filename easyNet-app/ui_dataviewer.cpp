@@ -59,6 +59,9 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
 //    connect(findAct, SIGNAL(triggered()), dataViewer, SLOT(showFindDialog()));
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             dataViewer, SLOT(setDispatchModeAuto(bool)));
+    connect(this, SIGNAL(deleteItemRequested(QString)), dataViewer, SLOT(initiateDestroyItem(QString)));
+    connect(this, SIGNAL(currentItemChanged(QString)), dataViewer, SLOT(updateCurrentItem(QString)));
+
 //    dataViewer->setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
     setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher

@@ -101,7 +101,7 @@ void PlotViewer::updateAllActivePlots()
 }
 
 
-void PlotViewer::removeItem_impl(QString name)
+void PlotViewer::destroyItem_impl(QString name)
 {
     QSvgWidget *svg = qobject_cast<QSvgWidget*>(ui->view(name));
     svgIsActive.remove(svg);

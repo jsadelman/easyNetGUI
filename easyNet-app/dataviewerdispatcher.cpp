@@ -10,10 +10,11 @@
 #include <QAction>
 #include <QToolBar>
 #include <QTreeView>
+#include <QModelIndex>
 
 DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     : QObject(host), hostDataViewer(host), dispatchModeOverride(-1),
-      dispatchModeAuto(true), previousDispatchMode(-1), previousItem(""), no_update_view(false)
+      dispatchModeAuto(true), previousDispatchMode(-1), previousItem(""), update_view_disabled(false)
 {
     if (!host)
     {
@@ -35,28 +36,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Overwrite), Dispatch_New);
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Append), Dispatch_Append);
 
-    // history
-    historyModel = new HistoryTreeModel(this);
-    historyWidget = new HistoryWidget;
-    historyWidget->setModel(historyModel);
-    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
-    host->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
-    connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
-            this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
-    connect(historyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            historyWidget->view, SLOT(expand(QModelIndex)));
-
-//    connect(historyWidget->moveToViewerAct, SIGNAL(triggered()), this, SLOT(moveFromHistoryToViewer()));
-    connect(historyWidget->destroyAct, SIGNAL(triggered()), this, SLOT(removeFromHistory()));
-//    connect(historyWidget, SIGNAL(clicked(QString)), this, SLOT(displayItemFromHistory(QString)));
-    historyAct = historyWidget->toggleViewAction();
-    historyAct->setIcon(QIcon(":/images/History.png"));
-    historyAct->setText("History");
-    historyAct->setToolTip("show/hide history");
-    connect(historyAct, SIGNAL(triggered(bool)), this, SLOT(setHistoryVisible(bool)));
-    setHistoryVisible(false);
-    host->ui->dispatchToolBar->addAction(historyAct);
-
+    createHistory();
 }
 
 DataViewerDispatcher::~DataViewerDispatcher()
@@ -107,28 +87,12 @@ void DataViewerDispatcher::addToHistory(QString name, bool inView, QSharedPointe
     historyModel->appendView(name, trial(name), inView);
 }
 
-//void DataViewerDispatcher::moveFromHistoryToViewer()
-//{
-//    foreach(QString name, historyModel->selectedItems())
-//    {
-//        historyModel->destroy(name);
-//        if (!hostDataViewer->ui->contains(name))
-//        {
-//            hostDataViewer->ui->addView(name, hostDataViewer->makeView());
-//            if (!hostDataViewer->isLazy())
-//                hostDataViewer->addNameToFilter(name);
-//        }
-//        hostDataViewer->ui->setCurrentItem(name);
-//    }
-//}
+void DataViewerDispatcher::removeFromHistory(QString name)
+{
+    historyModel->removeView(name, trial(name));
+    trialRunInfoMap.remove(name);
+}
 
-//void DataViewerDispatcher::moveFromViewerToHistory(QString name)
-//{
-//    historyModel->create(name);
-//    hostDataViewer->ui->takeView(name);
-//    if (!hostDataViewer->isLazy())
-//        hostDataViewer->removeNameFromFilter(name);
-//}
 
 bool DataViewerDispatcher::inHistory(QString name)
 {
@@ -140,13 +104,43 @@ void DataViewerDispatcher::setInView(QString name, bool inView)
     historyModel->setInView(name, trial(name), inView);
 }
 
-void DataViewerDispatcher::removeFromHistory()
+void DataViewerDispatcher::createHistory()
 {
-//    foreach(QString item, historyModel->selectedItems())
-//    {
-//        SessionManager::instance()->destroyObject(item);
-//        historyModel->destroy(item);
-//    }
+    historyModel = new HistoryTreeModel(this);
+    historyWidget = new HistoryWidget;
+    historyWidget->setModel(historyModel);
+    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
+    hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
+    connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
+    connect(historyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            historyWidget->view, SLOT(expand(QModelIndex)));
+    connect(historyWidget->destroyAct, SIGNAL(triggered()), this, SLOT(destroySelectedItems()));
+    connect(historyWidget, SIGNAL(clicked(QString)), hostDataViewer->ui, SLOT(setCurrentItem(QString)));
+    connect(hostDataViewer->ui, &Ui_DataViewer::currentItemChanged, [=](QString name)
+    {
+        historyWidget->view->setCurrentIndex(historyModel->viewIndex(name));
+    });
+
+    historyAct = historyWidget->toggleViewAction();
+    historyAct->setIcon(QIcon(":/images/History.png"));
+    historyAct->setText("History");
+    historyAct->setToolTip("show/hide history");
+    connect(historyAct, SIGNAL(triggered(bool)), this, SLOT(setHistoryVisible(bool)));
+    setHistoryVisible(false);
+    hostDataViewer->ui->dispatchToolBar->addAction(historyAct);
+}
+
+void DataViewerDispatcher::destroySelectedItems()
+{
+    foreach(QModelIndex index, historyWidget->view->selectionModel()->selectedIndexes())
+    {
+        if (index.parent().isValid())
+        {
+            QString name = historyModel->data(index, Qt::DisplayRole).toString();
+            hostDataViewer->initiateDestroyItem(name);
+        }
+    }
 }
 
 //void DataViewerDispatcher::displayItemFromHistory(QString name)
@@ -179,8 +173,8 @@ void DataViewerDispatcher::setHistoryVisible(bool visible)
 
 void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles)
 {
-    if (no_update_view)
-        return;
+//    if (update_view_disabled)
+//        return;
     if (! (topLeft.isValid() && bottomRight.isValid() &&
            topLeft.parent().isValid() && bottomRight.parent().isValid() &&
            topLeft.column() == 0 && bottomRight.column() == 0 &&
@@ -218,21 +212,26 @@ void DataViewerDispatcher::updateHistory(QString item, QSharedPointer<QDomDocume
         return;
 
     bool inView = historyModel->isInView(item, trial(item));
-    no_update_view = true;
+//    update_view_disabled = true;
+    disconnect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
     historyModel->removeView(item, trial(item));
     historyModel->appendView(item, TrialRunInfo(info).trial, inView);
-    no_update_view = false;
+    connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+            this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
+//    update_view_disabled = false;
 }
 
-//void DataViewerDispatcher::removePreviousItem()
+//void DataViewerDispatcher::removeViews(QModelIndex index, int first, int last)
 //{
-//    if (historyModel->contains(previousItem))
+//    if (!index.isValid() || index.parent().isValid())
+//        return;
+
+//    for (int row = first; row <= last; ++row)
 //    {
-//        hostDataViewer->ui->takeView(previousItem);
-//        if (!hostDataViewer->isLazy())
-//            hostDataViewer->removeNameFromFilter(previousItem);
+//        QString name = historyModel->data(historyModel->index(row, 0, index), Qt::DisplayRole).toString();
+//        hostDataViewer->initiateRemoveItem(name);
 //    }
-////    previousItem.clear();
 //}
 
 

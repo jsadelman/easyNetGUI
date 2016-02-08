@@ -31,6 +31,7 @@ public:
     QString results(QString name);
     QSharedPointer<QDomDocument> info(QString name) {return trialRunInfoMap.value(name);}
     void addToHistory(QString name, bool inView=false, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
+    void removeFromHistory(QString name);
 //    void moveFromViewerToHistory(QString name);
     bool inHistory(QString name);
     void setInView(QString name, bool inView);
@@ -43,14 +44,16 @@ public:
 
 protected slots:
 //    void moveFromHistoryToViewer();
-
-    void removeFromHistory();
+    void destroySelectedItems();
 //    void displayItemFromHistory(QString name);
     void setHistoryVisible(bool visible);
     void updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles);
     void updateHistory(QString item, QSharedPointer<QDomDocument> info);
+//    void removeViews(QModelIndex index,int first, int last);
 
 protected:
+    void createHistory();
+
     struct TrialRunInfo
     {
         TrialRunInfo(QSharedPointer<QDomDocument> info);
@@ -66,7 +69,7 @@ protected:
     HistoryTreeModel *historyModel;
     HistoryWidget  *historyWidget;
     QString previousItem;
-    bool no_update_view;
+    bool update_view_disabled;
 
 };
 

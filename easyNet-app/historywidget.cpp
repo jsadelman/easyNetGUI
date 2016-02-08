@@ -16,14 +16,7 @@ HistoryWidget::HistoryWidget(QWidget *parent)
 void HistoryWidget::setModel(HistoryTreeModel *model)
 {
     view->setModel(model);
-//    connect(model, &CheckListModel::checkDataChanged, [=]()
-//    {
-//        m_checkDataChanged = true;
-//    });
 }
-
-
-
 
 void HistoryWidget::buildWidget()
 {
@@ -41,13 +34,8 @@ void HistoryWidget::createActions()
 //    clearSelectionAct->setToolTip("clear selection");
 //    connect(clearSelectionAct, SIGNAL(triggered()), this, SLOT(clearSelection()));
 
-//    moveToViewerAct = new QAction(QIcon(":/images/move_to.png"), "to viewer", this);
-//    moveToViewerAct->setToolTip("move selected items to viewer");
-
     destroyAct = new QAction(QIcon(":/images/icon_trash.png"), "delete", this);
     destroyAct->setToolTip("delete selected items");
-
-
 }
 
 void HistoryWidget::createWidgets()
@@ -58,20 +46,17 @@ void HistoryWidget::createWidgets()
     toolBar->addActions(QList<QAction*>{destroyAct});
     layout->addWidget(toolBar);
     view = new QTreeView;
+    view->setSelectionMode(QAbstractItemView::ExtendedSelection);
     layout->addWidget(view);
     mainWidget->setLayout(layout);
     setWidget(mainWidget);
     setWindowTitle("History");
 
-//    connect(m_view, &QListView::clicked, [=](const QModelIndex & index)
-//    {
-//        if (!m_checkDataChanged)
-//        {
-//            QString item = m_view->model()->data(index).toString();
-//            emit clicked(item);
-//        }
-//        m_checkDataChanged = false;
-//    });
+    connect(view, &QTreeView::clicked, [=](const QModelIndex & index)
+    {
+        QString item = view->model()->data(index).toString();
+        emit clicked(item);
+    });
 
 }
 

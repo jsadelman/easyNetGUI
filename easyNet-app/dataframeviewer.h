@@ -42,7 +42,7 @@ public slots:
     void dataframeMerge();
 
 protected slots:
-    virtual void removeItem_impl(QString name) Q_DECL_OVERRIDE;
+    virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
     void updateDataframe(QDomDocument* domDoc, QString name);

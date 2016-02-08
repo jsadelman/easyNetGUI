@@ -75,7 +75,6 @@ private slots:
 //    void getTaxonomySubtypes();
 //    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
 //    void connectTaxonomyModel();
-    void showList(QString cmd);
     void triggerFillList(QAbstractItemModel*,const QModelIndex&at,QString cmd);
 public slots:
     void doFillList(QAbstractItemModel*,QDomDocument*dom,const QModelIndex&at);

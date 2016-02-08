@@ -43,7 +43,7 @@ public slots:
 
 
 protected slots:
-    virtual void removeItem_impl(QString name) Q_DECL_OVERRIDE;
+    virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
     void dfSourceModified(QString df);
     void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);

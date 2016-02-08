@@ -44,9 +44,9 @@ public slots:
 protected slots:
     void setUi();
 
-    void initiateRemoveItem(QString name);
-    virtual void removeItem(QString name);
-    virtual void removeItem_impl(QString name)=0;
+    void initiateDestroyItem(QString name);
+    virtual void destroyItem(QString name);
+    virtual void destroyItem_impl(QString name)=0;
     virtual void updateCurrentItem(QString name);
     virtual void enableActions(bool enable);
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);

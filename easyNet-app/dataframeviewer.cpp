@@ -193,7 +193,7 @@ void DataframeViewer::dataframeMerge()
 }
 
 
-void DataframeViewer::removeItem_impl(QString name)
+void DataframeViewer::destroyItem_impl(QString name)
 {
         delete modelMap.value(name);
         modelMap.remove(name);

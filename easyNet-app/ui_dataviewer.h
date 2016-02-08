@@ -19,7 +19,6 @@ public:
     virtual ~Ui_DataViewer();
     virtual void setupUi(DataViewer *dataViewer);
     virtual QString currentItemName()=0;
-    virtual void setCurrentItem(QString name)=0;
     virtual QWidget *currentView()=0;
     bool contains(QString name) {return viewMap.contains(name);}
     QWidget *view(QString name) {return viewMap.value(name, nullptr);}
@@ -52,6 +51,7 @@ public:
 public slots:
     virtual void addView(QString name, QWidget *view)=0;
     virtual QWidget *takeView(QString name)=0;
+    virtual void setCurrentItem(QString name)=0;
 
 signals:
     void deleteItemRequested(QString);
