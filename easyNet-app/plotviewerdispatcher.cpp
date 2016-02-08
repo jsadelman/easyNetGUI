@@ -37,9 +37,9 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     }
     foreach (QString rplot, SessionManager::instance()->affectedPlots(trialRunInfo.results))
     {
-        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->ui->view(rplot));
+//        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->ui->view(rplot));
         int dispatchAction;
-        if (!host->svgByteArray.contains(svg))
+        if (!host->plotByteArray.contains(rplot))
         {
             dispatchAction = Dispatch_Overwrite;
         }
@@ -75,16 +75,16 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
         updateHistory(plot, info);
         setTrialRunInfo(plot, info);
     }
-    QMutableMapIterator<QSvgWidget*, bool> svgSourceModified_it(host->svgSourceModified);
-    while (svgSourceModified_it.hasNext())
+    QMutableMapIterator<QString, bool> plotSourceModified_it(host->plotSourceModified);
+    while (plotSourceModified_it.hasNext())
     {
-        svgSourceModified_it.next();
-        if (svgSourceModified_it.value())
+        plotSourceModified_it.next();
+        if (plotSourceModified_it.value())
         {
-            svgSourceModified_it.setValue(false);
-            QSvgWidget* svg = svgSourceModified_it.key();
-            host->svgIsUpToDate[svg] = false;
-            host->svgTrialRunInfo[svg] = info;
+            plotSourceModified_it.setValue(false);
+            QString plot = plotSourceModified_it.key();
+            host->plotIsUpToDate[plot] = false;
+//            host->svgTrialRunInfo[svg] = info;
         }
     }
     host->updateActivePlots();

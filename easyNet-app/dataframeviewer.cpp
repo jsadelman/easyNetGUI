@@ -390,12 +390,11 @@ void DataframeViewer::setParameter(QString name, QString key_val)
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
-//    QTableView *view = new QTableView(this);
-    //    viewMap.insert(name, view);
 }
 
-QWidget *DataframeViewer::makeView()
+QWidget *DataframeViewer::makeView(QString name)
 {
+    Q_UNUSED(name);
     return new QTableView(this);
 }
 

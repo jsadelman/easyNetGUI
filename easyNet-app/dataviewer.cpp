@@ -106,7 +106,7 @@ void DataViewer::setDefaultDir(QString dir)
 
 void DataViewer::addView(QString name)
 {
-    ui->addView(name, makeView());
+    ui->addView(name, makeView(name));
     if (!isLazy())
         addNameToFilter(name);
 }

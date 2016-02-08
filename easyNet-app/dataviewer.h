@@ -58,7 +58,7 @@ signals:
 
 protected:
     virtual void addItem_impl(QString name) {Q_UNUSED(name)}
-    virtual QWidget* makeView() = 0;
+    virtual QWidget* makeView(QString name) = 0;
     virtual void addNameToFilter(QString name) = 0;
     virtual void removeNameFromFilter(QString name) = 0;
     virtual void setNameInFilter(QString name) = 0;

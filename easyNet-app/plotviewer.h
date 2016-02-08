@@ -63,8 +63,8 @@ signals:
      void removePlotSettings(QString);
 
 protected:
-//     virtual void addItem_impl(QString name);
-     virtual QWidget *makeView();
+//     virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
+     virtual QWidget *makeView(QString name);
      virtual void addNameToFilter(QString name);
      virtual void removeNameFromFilter(QString name);
      virtual void setNameInFilter(QString name);
@@ -83,11 +83,15 @@ protected:
     ObjectCacheFilter *plotDescriptionFilter;
     ObjectUpdater     *plotDescriptionUpdater;
 //    QMap <QString, QSvgWidget*> plotSvg;
-    QMap <QSvgWidget*, bool> svgIsActive;
-    QMap <QSvgWidget*, bool> svgIsUpToDate;
-    QMap <QSvgWidget*, bool> svgSourceModified;
-    QMap <QSvgWidget*, QByteArray> svgByteArray;
-    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML> needed?
+    QMap <QString, bool> plotIsActive;
+    QMap <QString, bool> plotIsUpToDate;
+    QMap <QString, bool> plotSourceModified;
+    QMap <QString, QByteArray> plotByteArray;
+//    QMap <QSvgWidget*, bool> svgIsActive;
+//    QMap <QSvgWidget*, bool> svgIsUpToDate;
+//    QMap <QSvgWidget*, bool> svgSourceModified;
+//    QMap <QSvgWidget*, QByteArray> svgByteArray;
+//    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML> needed?
 //    QStringList plotClones;
 
     QAction *       settingsAct;

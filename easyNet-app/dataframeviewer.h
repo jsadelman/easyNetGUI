@@ -56,8 +56,8 @@ signals:
     void parametersTableChanged(bool);
 
 protected:
-    virtual void addItem_impl(QString name);
-    virtual QWidget *makeView();
+    virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
+    virtual QWidget *makeView(QString name);
     virtual void addNameToFilter(QString name);
     virtual void removeNameFromFilter(QString name);
     virtual void setNameInFilter(QString name);
