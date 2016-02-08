@@ -195,7 +195,7 @@ void DataframeViewer::dataframeMerge()
 
 void DataframeViewer::destroyItem_impl(QString name)
 {
-        delete modelMap.value(name);
+        delete modelMap.value(name, nullptr);
         modelMap.remove(name);
         if (prettyHeadersModelMap.contains(name))
             delete prettyHeadersModelMap.value(name);
@@ -400,7 +400,8 @@ QWidget *DataframeViewer::makeView(QString name)
 
 void DataframeViewer::addNameToFilter(QString name)
 {
-    dataframeFilter->addName(name);
+    if (SessionManager::instance()->exists(name))
+        dataframeFilter->addName(name);
 }
 
 void DataframeViewer::removeNameFromFilter(QString name)

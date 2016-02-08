@@ -55,8 +55,16 @@ void DataViewer::initiateDestroyItem(QString name)
     }
     else
     {
-        SessionManager::instance()->destroyObject(name);
         emit itemRemoved(name);
+        if (SessionManager::instance()->exists(name))
+        {
+            SessionManager::instance()->destroyObject(name);
+        }
+        else
+        {
+            SessionManager::instance()->removeFromExtraNamedItems(name);
+            destroyItem(name);
+        }
     }
 }
 
@@ -143,10 +151,10 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QSharedPo
     {
         eNerror << "name is empty";
     }
-    else if (!SessionManager::instance()->exists(name))
-    {
-        eNerror << QString("attempt to add a non-existing object %1").arg(name);
-    }
+//    else if (!SessionManager::instance()->exists(name))
+//    {
+//        eNerror << QString("attempt to add a non-existing object %1").arg(name);
+//    }
     else if (ui->contains(name))
     {
         if (setCurrent)

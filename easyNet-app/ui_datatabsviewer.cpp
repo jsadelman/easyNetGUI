@@ -2,6 +2,7 @@
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "enumclasses.h"
+#include "sessionmanager.h"
 
 #include <QVBoxLayout>
 
@@ -32,7 +33,7 @@ QWidget *Ui_DataTabsViewer::currentView()
 void Ui_DataTabsViewer::addView(QString name, QWidget *view)
 {
     viewMap[name] = view;
-    if (m_usePrettyNames)
+    if (m_usePrettyNames && SessionManager::instance()->exists(name))
     {
         itemDescriptionFilter->addName(name);
         tabWidget->insertTab(0, view, ""); // the (pretty) name on the tab will be set later

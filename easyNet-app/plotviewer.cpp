@@ -103,17 +103,35 @@ void PlotViewer::updateAllActivePlots()
 
 void PlotViewer::destroyItem_impl(QString name)
 {
-//    QSvgWidget *svg = qobject_cast<QSvgWidget*>(ui->view(name));
     plotIsActive.remove(name);
     plotByteArray.remove(name);
     plotIsUpToDate.remove(name);
     plotSourceModified.remove(name);
-//    svgTrialRunInfo.remove(svg);
 }
 
 void PlotViewer::open()
 {
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Load SVG File"),
+                                                    lastOpenDir.isEmpty() ? defaultOpenDir : lastOpenDir,
+                                                    tr("SVG Files (*.svg)"));
+    if (!fileName.isEmpty())
+    {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+                return;
+        QByteArray byteArray = file.readAll();
+        file.close();
+        //    replace tags that QSvgWidget doesn't like
+        byteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
+        byteArray.replace (QByteArray("</symbol"),QByteArray("</g     "));
 
+        QFileInfo fi(fileName);
+        QString plotName = SessionManager::instance()->makeValidObjectName(fi.completeBaseName());
+        SessionManager::instance()->addToExtraNamedItems(plotName);
+        addItem(plotName, true);
+        updatePlot(plotName, byteArray);
+        lastOpenDir = fi.path();
+    }
 }
 
 void PlotViewer::save()
@@ -137,7 +155,6 @@ void PlotViewer::dfSourceModified(QString df)
 {
     foreach (QString plot, SessionManager::instance()->plotsOfSourceDf(df))
     {
-//        QSvgWidget* svg = qobject_cast<QSvgWidget*>(ui->view(plot));
         if (plotIsActive.value(plot))
         {
             plotSourceModified[plot] = true;
@@ -160,9 +177,17 @@ void PlotViewer::generatePrettyName(QString plotName, QString type, QString subt
 void PlotViewer::setupFullScreen()
 {
     fullScreen = true;
-    emit resized(fullScreenSize);
-    emit sendDrawCmd(ui->currentItemName());
     fullScreenSvgDialog->clearSvg();
+    if (plotIsActive.value(ui->currentItemName()))
+    {
+        emit resized(fullScreenSize);
+        emit sendDrawCmd(ui->currentItemName());
+    }
+    else
+    {
+        fullScreenSvgDialog->loadByteArray(plotByteArray.value(ui->currentItemName()));
+    }
+
     fullScreenSvgDialog->exec();
     fullScreen = false;
 }
@@ -233,8 +258,11 @@ void PlotViewer::updatePlot(QString name, QByteArray byteArray)
             plotIsUpToDate[name] = true;
             plotByteArray[name] = byteArray;
             svg->load(byteArray);
-            ui->setCurrentItem(name);
-            updateCurrentItem(name);
+            if (name != ui->currentItemName())
+            {
+                ui->setCurrentItem(name);
+                updateCurrentItem(name);
+            }
         }
     }
 }
@@ -242,15 +270,18 @@ void PlotViewer::updatePlot(QString name, QByteArray byteArray)
 
 QWidget *PlotViewer::makeView(QString name)
 {
-    plotIsActive[name] = true;
-    plotIsUpToDate[name] = false;
+    plotIsActive[name] = SessionManager::instance()->exists(name);
+    plotIsUpToDate[name] = !plotIsActive[name];
     plotSourceModified[name] = false;
+
     return new QSvgWidget(this);
 }
 
 
 void PlotViewer::addNameToFilter(QString name)
 {
+    if (!SessionManager::instance()->exists(name))
+        return;
     plotDescriptionFilter->addName(name);
     foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
         sourceDataframeFilter->addName(df);
@@ -273,7 +304,8 @@ void PlotViewer::removeNameFromFilter(QString name)
 
 void PlotViewer::updateActivePlots()
 {
-    if (plotIsActive.value(ui->currentItemName(), false) && !plotIsUpToDate.value(ui->currentItemName(), false))
+    QString name = ui->currentItemName();
+    if (plotIsActive.value(name, false) && !plotIsUpToDate.value(name, false))
     {
         if(visibleRegion().isEmpty())
         {
@@ -281,9 +313,15 @@ void PlotViewer::updateActivePlots()
         }
         else
         {
-            emit sendDrawCmd(ui->currentItemName());
+            emit sendDrawCmd(name);
         }
     }
+    else if (!plotIsActive.value(name, false) && plotByteArray.contains(name))
+    {
+        updatePlot(name, plotByteArray.value(name));
+//        currentSvgWidget()->load(plotByteArray.value(name));
+    }
+
 }
 
 QSvgWidget *PlotViewer::currentSvgWidget()
@@ -352,16 +390,6 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
     return newName;
 }
 
-//QSvgWidget *PlotViewer::newSvg(QString name)
-//{
-//    QSvgWidget* svg = new QSvgWidget;
-//    viewMap[name] = svg;
-//    ui->addView(name, svg);
-//    svgIsActive[svg] = true;
-//    svgIsUpToDate[svg] = false;
-//    svgSourceModified[svg] = false;
-//    return svg;
-//}
 
 void PlotViewer::paintEvent(QPaintEvent *event)
 {
