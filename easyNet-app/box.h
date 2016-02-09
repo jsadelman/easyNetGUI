@@ -4,6 +4,7 @@
 #include "libdunnartcanvas/shape.h"
 
 class ObjectCacheFilter;
+class ObjectUpdater;
 
 
 class Box: public dunnart::ShapeObj
@@ -76,8 +77,11 @@ private:
     qreal m_widthOverHeight;
 
     ObjectCacheFilter *defaultDataframesFilter;
+    ObjectCacheFilter   *layersFilter;
+    ObjectUpdater       *layersUpdater;
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
+
 
 
 

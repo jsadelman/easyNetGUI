@@ -3,6 +3,7 @@
 #include "lazynutjobparam.h"
 #include "libdunnartcanvas/limitstring.h"
 #include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "lazynutjob.h"
 #include "easyNetMainWindow.h"
 #include "trialwidget.h"
@@ -39,7 +40,13 @@ void Box::setLazyNutType(const QString &lazyNutType)
 {
     m_lazyNutType = lazyNutType;
     if (m_lazyNutType == "layer")
+    {
         setFillColour(layerCol);
+        layersFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+        layersFilter->setName(m_name);
+        layersUpdater = new ObjectUpdater(this);
+        layersUpdater->setProxyModel(layersFilter);
+    }
 
     else if (m_lazyNutType == "representation")
         setFillColour(representationCol);
@@ -119,29 +126,35 @@ QRectF Box::labelBoundingRect() const
 
 QString Box::defaultPlotType()
 {
-    if (m_lazyNutType == "layer")
-    {
-        QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
-        QString subtype;
-        if (domDoc)
-            subtype = XMLelement(*domDoc)["subtype"]();
+    QString plotType;
+    if (m_lazyNutType != "layer")
+        return plotType;
+    QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
+    if (!domDoc)
+        return plotType;
+    XMLelement plotTypeElem = XMLelement(*domDoc)["hints"]["plot_type"];
+    if (plotTypeElem.isString())
+        plotType = XMLelement(*domDoc)["hints"]["plot_type"]();
+//    else if (hintsElem.isList())
+//        plotType << XMLelement(*domDoc)["hints"]["plot_type"].listValues();
+    plotType.replace(QRegExp("\\.R$"), "");
 
-        if (m_name == "spatial_code") //quick and dirty hack!!!
-            return "spactivity-3";
-        else if (m_name.startsWith("feature"))
-            return "plot_features";
-        else if (subtype == "string_layer")
-            return "string_layer";
-        else if (subtype == "wtstring_layer")
-            return "wtstring_layer";
-        else
-            return "activity";
-    }
-    else
-        return "";
+//    QString subtype;
+//    if (domDoc)
+//        subtype = XMLelement(*domDoc)["subtype"]();
 
-    // subtype wtstring_layer
-    //
+//    if (m_name == "spatial_code") //quick and dirty hack!!!
+//        return "spactivity-3";
+//    else if (m_name.startsWith("feature"))
+//        return "plot_features";
+//    else if (subtype == "string_layer")
+//        return "string_layer";
+//    else if (subtype == "wtstring_layer")
+//        return "wtstring_layer";
+//    else
+//        return "activity";
+
+    return plotType;
 }
 
 
@@ -306,6 +319,7 @@ void Box::setupDefaultDataframesFilter()
         defaultDataframesFilter->setFilterKeyColumn(ObjectCache::NameCol);
     }
 }
+
 
 void Box::enableObserver(QString observer)
 {
