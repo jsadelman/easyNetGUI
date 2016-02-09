@@ -50,6 +50,8 @@ protected slots:
     virtual void updateCurrentItem(QString name);
     virtual void enableActions(bool enable);
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
+    void setTrialRunMode(int mode);
+
 
 signals:
     void lazyChanged(bool);

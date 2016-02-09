@@ -66,9 +66,6 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     setDispatchModeAutoAct->setChecked(true);
     setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
     setDispatchModeOverrideActGroup->setVisible(false);
-    findAct->setVisible(false); // visible only for dataframe views
-    copyDFAct->setVisible(false); // visible only for dataframe views
-    dataframeMergeAct->setVisible(false); // visible only for dataframe views
 }
 
 
@@ -97,7 +94,7 @@ void Ui_DataViewer::createActions()
         setDispatchModeOverrideActGroup->addAction(setDispatchModeOverrideActs.at(mode));
     }
 
-    setDispatchModeAutoAct = new QAction("Auto", this);
+    setDispatchModeAutoAct = new QAction(QIcon(":/images/auto_icon.png"), "Auto", this);
     setDispatchModeAutoAct->setToolTip("Override default page behaviour");
     setDispatchModeAutoAct->setCheckable(true);
 
@@ -111,15 +108,7 @@ void Ui_DataViewer::createActions()
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
 
-    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
-    findAct->setShortcuts(QKeySequence::Find);
-    findAct->setToolTip(tr("Find text in this table"));
 
-    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
-    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
-
-    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
-    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
 
 }
 
@@ -131,10 +120,6 @@ void Ui_DataViewer::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
-    editToolBar->addAction(copyDFAct);
-    editToolBar->addAction(dataframeMergeAct);
-    editToolBar->addAction(findAct);
-
 
     dispatchToolBar = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar->addActions(setDispatchModeOverrideActs);

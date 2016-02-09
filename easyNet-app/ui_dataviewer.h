@@ -28,9 +28,8 @@ public:
     QAction *openAct;
     QAction *saveAct;
     QAction *copyAct;
-    QAction *findAct;
-    QAction *copyDFAct;
-    QAction *dataframeMergeAct;
+
+
 //    QAction *infoAct;
 
     QList<QAction *> setDispatchModeOverrideActs;

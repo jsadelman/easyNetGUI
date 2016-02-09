@@ -14,7 +14,9 @@
 
 DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     : QObject(host), hostDataViewer(host), dispatchModeOverride(-1),
-      dispatchModeAuto(true), previousDispatchMode(-1), previousItem(""), update_view_disabled(false)
+      dispatchModeAuto(true), previousDispatchMode(-1), previousItem(""),
+      update_view_disabled(false), trialRunMode(TrialRunMode_Single),
+      previousDispatchOverrideMode(-1)
 {
     if (!host)
     {
@@ -23,8 +25,8 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     host->setDispatcher(this);
 
 
-    dispatchDefaultMode.insert("single", -1);
-    dispatchDefaultMode.insert("list", -1);
+    dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_Single), -1);
+    dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_List), -1);
 
     dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_New), Dispatch_New);
     dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_Overwrite), Dispatch_New);
@@ -104,12 +106,26 @@ void DataViewerDispatcher::setInView(QString name, bool inView)
     historyModel->setInView(name, trial(name), inView);
 }
 
+void DataViewerDispatcher::setTrialRunMode(int mode)
+{
+    trialRunMode = mode;
+    if (!dispatchModeAuto)
+        restoreOverrideDefaultValue();
+}
+
+void DataViewerDispatcher::restoreOverrideDefaultValue()
+{
+    int mode = dispatchDefaultMode.value(trialRunModeName.value(trialRunMode));
+    hostDataViewer->ui->setDispatchModeOverrideActs.at(mode)->setChecked(true);
+    dispatchModeOverride = mode;
+}
+
 void DataViewerDispatcher::createHistory()
 {
     historyModel = new HistoryTreeModel(this);
     historyWidget = new HistoryWidget;
     historyWidget->setModel(historyModel);
-    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
+    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
     connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));

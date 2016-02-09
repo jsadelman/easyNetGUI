@@ -11,6 +11,7 @@
 #include "tablewindow.h"
 #include "xmlaccessor.h"
 #include "dataframeviewer.h"
+#include "enumclasses.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -31,7 +32,7 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument>)
 
 
 TrialWidget::TrialWidget(QWidget *parent)
-    : runAllMode(false), askDisableObserver(true), suspendingObservers(false), QWidget(parent)
+    : trialRunMode(TrialRunMode_Single), askDisableObserver(true), suspendingObservers(false), QWidget(parent)
 {
     layout = new QHBoxLayout;
     layout1 = new QHBoxLayout;
@@ -267,7 +268,7 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which model to run");
         return;
     }
-    if (runAllMode && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
+    if (trialRunMode == TrialRunMode_List && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
     {
         int answer = disableObserversMsg->exec();
         SessionManager::instance()->suspendObservers(answer == QMessageBox::Yes);
@@ -283,7 +284,7 @@ void TrialWidget::runTrial()
         foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("(%1 default_dataframe) clear").arg(observer);
     }
-    if (runAllMode)
+    if (trialRunMode == TrialRunMode_List)
         runTrialList(job);
     else
         runSingleTrial(job);
@@ -299,7 +300,7 @@ void TrialWidget::runTrial()
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->dataframeResultsViewer, SLOT(dispatch()));
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
 
-    if (runAllMode)
+    if (trialRunMode == TrialRunMode_List)
     {
         MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
         jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
@@ -360,7 +361,7 @@ QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
     rootElem.appendChild(trialElem);
     QDomElement modeElem = trialRunInfo->createElement("string");
     modeElem.setAttribute("label", "Run mode");
-    modeElem.setAttribute("value", runAllMode ? "list" : "single");
+    modeElem.setAttribute("value", trialRunModeName.value(trialRunMode));
     rootElem.appendChild(modeElem);
     QDomElement dataframeElem = trialRunInfo->createElement("object");
     dataframeElem.setAttribute("label", "Results");
@@ -463,7 +464,7 @@ void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
     else
         isStochastic = false;
 
-    setStochasticityVisible(runAllMode && isStochastic);
+    setStochasticityVisible(trialRunMode == TrialRunMode_List && isStochastic);
 }
 
 void TrialWidget::setStochasticityVisible(bool isVisible)
@@ -507,8 +508,8 @@ void TrialWidget::hideSetComboBox()
 
 //    clearArgumentBoxes();
     clearDollarArgumentBoxes();
-    runAllMode = false;
-//    emit runAllModeChanged(false);
+    trialRunMode = TrialRunMode_Single;
+    emit trialRunModeChanged(trialRunMode);
 
 }
 
@@ -517,8 +518,8 @@ void TrialWidget::showSetComboBox()
     setComboBox->show();
     setCancelButton->show();
     setStochasticityVisible(isStochastic);
-    runAllMode = true;
-//    emit runAllModeChanged(true);
+    trialRunMode = TrialRunMode_List;
+    emit trialRunModeChanged(trialRunMode);
 }
 
 void TrialWidget::showSetLabel(QString set)

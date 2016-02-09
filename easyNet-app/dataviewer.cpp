@@ -241,6 +241,12 @@ void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info
     }
 }
 
+void DataViewer::setTrialRunMode(int mode)
+{
+    if (dispatcher)
+        dispatcher->setTrialRunMode(mode);
+}
+
 void DataViewer::setDispatchModeOverride(int mode)
 {
     if (dispatcher)
@@ -255,6 +261,10 @@ void DataViewer::setDispatchModeAuto(bool isAuto)
     {
         dispatcher->dispatchModeAuto = isAuto;
         ui->setDispatchModeOverrideActGroup->setVisible(!isAuto);
+        if (isAuto)
+            dispatcher->dispatchModeOverride = -1;
+        else
+            dispatcher->restoreOverrideDefaultValue();
     }
 }
 

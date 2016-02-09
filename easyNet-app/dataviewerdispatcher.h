@@ -35,12 +35,17 @@ public:
 //    void moveFromViewerToHistory(QString name);
     bool inHistory(QString name);
     void setInView(QString name, bool inView);
+    void setTrialRunMode(int mode);
+    void restoreOverrideDefaultValue();
+
 
     QAction *historyAct;
     int dispatchModeOverride;
     bool dispatchModeAuto;
     QMap<QString, int> dispatchDefaultMode;
     QMap<QPair<int, int>, int> dispatchModeFST; // <previous mode, current mode> -> action
+    int previousDispatchOverrideMode;
+
 
 protected slots:
 //    void moveFromHistoryToViewer();
@@ -70,6 +75,7 @@ protected:
     HistoryWidget  *historyWidget;
     QString previousItem;
     bool update_view_disabled;
+    int trialRunMode;
 
 };
 

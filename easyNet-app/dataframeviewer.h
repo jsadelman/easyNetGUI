@@ -71,6 +71,9 @@ protected:
     bool m_stimulusSet;
     bool m_parametersTable;
     FindDialog*     findDialog;
+    QAction *findAct;
+    QAction *copyDFAct;
+    QAction *dataframeMergeAct;
 
 };
 

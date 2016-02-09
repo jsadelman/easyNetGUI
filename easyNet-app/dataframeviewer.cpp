@@ -35,17 +35,27 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
             this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
 
     // because DataframeViewer::enableActions won't be called by te ctor, only DataViewer::enableActions
-    ui->findAct->setVisible(true);
-    ui->findAct->setEnabled(false);
-    connect(ui->findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    findAct->setToolTip(tr("Find text in this table"));
+    findAct->setVisible(true);
+    findAct->setEnabled(false);
+    ui->editToolBar->addAction(findAct);
+    connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
 
-    ui->copyDFAct->setVisible(true);
-    ui->copyDFAct->setEnabled(false);
-    connect(ui->copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
+    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
+    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
+    copyDFAct->setVisible(true);
+    copyDFAct->setEnabled(false);
+    ui->editToolBar->addAction(copyDFAct);
+    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
 
-    ui->dataframeMergeAct->setVisible(true);
-    ui->dataframeMergeAct->setEnabled(false);
-    connect(ui->dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
+    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
+    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
+    dataframeMergeAct->setVisible(true);
+    dataframeMergeAct->setEnabled(false);
+    ui->editToolBar->addAction(dataframeMergeAct);
+    connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
 }
 
 
@@ -204,9 +214,9 @@ void DataframeViewer::destroyItem_impl(QString name)
 void DataframeViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
-    ui->findAct->setEnabled(enable);
-    ui->copyDFAct->setEnabled(enable);
-    ui->dataframeMergeAct->setEnabled(enable);
+    findAct->setEnabled(enable);
+    copyDFAct->setEnabled(enable);
+    dataframeMergeAct->setEnabled(enable);
 }
 
 void DataframeViewer::updateCurrentItem(QString name)
