@@ -107,6 +107,7 @@ private slots:
     //bool saveAs();
     //void documentWasModified();
     void loadModel();
+    void loadModelUnconfigured();
     void loadStimulusSet();
     void currentStimulusChanged(QString stim);
 
@@ -137,7 +138,8 @@ private slots:
 
 
     void setFontSize(const QString &size);
-    void afterModelLoaded();
+    void modelConfigNeeded();
+    void afterModelConfig();
     void diagramSceneTabChanged(int index);
     void runScript();
     void processHistoryKey(int dir);
@@ -184,7 +186,9 @@ private:
 
     void hideAllDocks();
     bool proceedWithRestart();
-    void loadModel(QString fileName);
+    //void loadModel(QString fileName);
+    //void loadModelUnconfigured(QString fileName);
+    void loadModel(QString fileName,bool complete);
 
 
 public:
@@ -361,6 +365,8 @@ public:
     QAction         *newLogAct;
     QAction         *loadScriptAct;
     QAction         *loadModelAct;
+    QAction         *loadModelUAct;
+    QAction         *modelFinalizeAct;
     QAction         *loadTrialAct;
     QAction         *loadAddOnAct;
     QAction         *loadStimulusSetAct;

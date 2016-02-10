@@ -129,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     #ifdef WIN32
     if (qApp->arguments().count() > 1)
-        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)));
+        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)),true);
     #endif
 }
 
@@ -606,7 +606,8 @@ void MainWindow::runScript()
     scriptEdit->runScript();
 }
 
-void MainWindow::loadModel(QString fileName)
+
+void MainWindow::loadModel(QString fileName,bool complete)
 {
     if (fileName.isEmpty())
         return;
@@ -646,7 +647,11 @@ void MainWindow::loadModel(QString fileName)
 
     // note: this synch is wrong, yet it works fine if one loads just one model while
     // no other jobs run. In general commandsCompleted() might be sent from a previous job.
-    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
+    if(complete)
+      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
+    else
+      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
+
     runScript();
     //        SessionManager::instance()->setCurrentModel(currentModel);
     // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
@@ -668,17 +673,30 @@ void MainWindow::loadModel()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     scriptsDir,
                                                     tr("easyNet Model Files (*.eNm)"));
-    loadModel(fileName);
+    loadModel(fileName,true);
+}
+void MainWindow::loadModelUnconfigured()
+{
+    // bring up file dialog
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
+                                                    scriptsDir,
+                                                    tr("easyNet Model Files (*.eNm)"));
+    loadModel(fileName,false);
+}
+void MainWindow::modelConfigNeeded()
+{
+
 }
 
-void MainWindow::afterModelLoaded()
+void MainWindow::afterModelConfig()
 {
     emit runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
     modelScene->wakeUp();
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
 }
 
 
@@ -1200,6 +1218,16 @@ void MainWindow::createActions()
     loadModelAct->setStatusTip(tr("Load a previously specified model"));
     connect(loadModelAct, SIGNAL(triggered()), this, SLOT(loadModel()));
 
+    loadModelUAct = new QAction(tr("Partially load model for configuration"), this);
+//    loadModelAct->setShortcuts(QKeySequence::Open);
+    loadModelUAct->setStatusTip(tr("Load a previously specified model, pausing to allow settings to be changed"));
+    connect(loadModelUAct, SIGNAL(triggered()), this, SLOT(loadModelUnconfigured()));
+
+    modelFinalizeAct = new QAction(tr("Finalize configured model"), this);
+//    loadModelAct->setShortcuts(QKeySequence::Open);
+    modelFinalizeAct->setStatusTip(tr("Finish loading a model, once settings have been changed"));
+    connect(modelFinalizeAct, SIGNAL(triggered()), this, SLOT(afterModelConfig()));
+
     loadTrialAct = new QAction(QIcon(":/images/cog-2x.png"), tr("&Load trial"), this);
 //    loadTrialAct->setShortcuts(QKeySequence::Open);
     loadTrialAct->setStatusTip(tr("Load a previously specified trial"));
@@ -1335,6 +1363,8 @@ void MainWindow::createMenus()
 
     fileSubMenu = fileMenu->addMenu(tr("&Load"));
     fileSubMenu->addAction(loadModelAct);
+    fileSubMenu->addAction(loadModelUAct);
+    fileSubMenu->addAction(modelFinalizeAct);
     fileSubMenu->addAction(loadTrialAct);
     fileSubMenu->addAction(loadAddOnAct);
     fileSubMenu->addAction(loadStimulusSetAct);
