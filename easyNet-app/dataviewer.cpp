@@ -44,14 +44,15 @@ void DataViewer::setUi()
 
 void DataViewer::initiateDestroyItem(QString name)
 {
-    if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
+
+    if (dispatcher && sender() == ui)
+    {
+        dispatcher->setInView(name, false);
+    }
+    else if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
     {
         eNwarning << QString("attempt to delete lazyNut system object %1").arg(name);
         // this should change, trigger desable default observer
-    }
-    else if (dispatcher && sender() == ui)
-    {
-        dispatcher->setInView(name, false);
     }
     else
     {
@@ -94,6 +95,8 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
     {
         ui->setDispatchModeAutoAct->setVisible(true);
         setDispatchModeAuto(true);
+//        ui->setDispatchModeAutoAct->setEnabled(enable);
+//        dispatcher->historyAct->setEnabled(enable);
     }
 }
 
@@ -222,11 +225,8 @@ void DataViewer::enableActions(bool enable)
         return;
     ui->saveAct->setEnabled(enable);
     ui->copyAct->setEnabled(enable);
-    if (dispatcher)
-    {
-        ui->setDispatchModeAutoAct->setEnabled(enable);
-        dispatcher->historyAct->setEnabled(enable);
-    }
+    ui->destroyAct->setEnabled(enable);
+
 }
 
 void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)

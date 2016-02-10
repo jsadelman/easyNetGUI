@@ -136,7 +136,18 @@ void PlotViewer::open()
 
 void PlotViewer::save()
 {
-
+    QString fileName = QFileDialog::getSaveFileName(this,tr("Save current plot as SVG File"),
+                                                    QString("%1/%2").arg(lastSaveDir.isEmpty() ? defaultSaveDir : lastSaveDir)
+                                                    .arg(ui->currentItemName()),
+                                                    tr("SVG Files (*.svg)"));
+    if (!fileName.isEmpty())
+    {
+          QFile file(fileName);
+          file.open(QIODevice::WriteOnly);
+          file.write(plotByteArray.value(ui->currentItemName()));
+          file.close();
+          lastSaveDir = QFileInfo(fileName).path();
+    }
 }
 
 void PlotViewer::copy()
@@ -224,16 +235,16 @@ void PlotViewer::addSourceDataframes(QStringList newDataframes)
 
 void PlotViewer::enableActions(bool enable)
 {
-//    DataViewer::enableActions(enable);
-    if (!ui)
-        return;
+    DataViewer::enableActions(enable);
+//    if (!ui)
+//        return;
     bool active = plotIsActive.value(ui->currentItemName(), false);
     settingsAct->setEnabled(enable && active);
     fullScreenAct->setEnabled(enable);
-    ui->saveAct->setEnabled(enable);
-    ui->copyAct->setEnabled(enable);
-    if (dispatcher)
-        ui->setDispatchModeAutoAct->setEnabled(enable && active);
+//    ui->saveAct->setEnabled(enable);
+//    ui->copyAct->setEnabled(enable);
+//    if (dispatcher)
+//        ui->setDispatchModeAutoAct->setEnabled(enable && active);
 
 }
 

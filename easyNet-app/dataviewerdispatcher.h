@@ -8,6 +8,7 @@
 #include <QModelIndex>
 
 #include "dataviewer.h"
+#include "enumclasses.h"
 
 class HistoryTreeModel;
 class HistoryWidget;
@@ -22,8 +23,8 @@ public:
     virtual ~DataViewerDispatcher();
     virtual void preDispatch(QSharedPointer<QDomDocument> info)=0;
     virtual void dispatch(QSharedPointer<QDomDocument> info)=0;
-    void setSingleTrialMode(int mode) {dispatchDefaultMode.insert("single", mode);}
-    void setTrialListMode(int mode) {dispatchDefaultMode.insert("list", mode);}
+    void setSingleTrialMode(int mode)   {dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_Single), mode);}
+    void setTrialListMode(int mode)     {dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_List), mode);}
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
     void copyTrialRunInfo(QString fromItem, QString toItem);
     QString trial(QString name);
