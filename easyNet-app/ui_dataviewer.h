@@ -28,6 +28,7 @@ public:
     QAction *openAct;
     QAction *saveAct;
     QAction *copyAct;
+    QAction *destroyAct;
 
 
 //    QAction *infoAct;

@@ -131,7 +131,6 @@ void DataViewerDispatcher::createHistory()
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
     connect(historyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
             historyWidget->view, SLOT(expand(QModelIndex)));
-    connect(historyWidget->destroyAct, SIGNAL(triggered()), this, SLOT(destroySelectedItems()));
     connect(historyWidget, SIGNAL(clicked(QString)), hostDataViewer->ui, SLOT(setCurrentItem(QString)));
     connect(hostDataViewer->ui, &Ui_DataViewer::currentItemChanged, [=](QString name)
     {
@@ -142,8 +141,8 @@ void DataViewerDispatcher::createHistory()
     historyAct->setIcon(QIcon(":/images/History.png"));
     historyAct->setText("History");
     historyAct->setToolTip("show/hide history");
-    connect(historyAct, SIGNAL(triggered(bool)), this, SLOT(setHistoryVisible(bool)));
-    setHistoryVisible(false);
+    connect(historyAct, SIGNAL(triggered(bool)), historyWidget, SLOT(setVisible(bool)));
+    historyWidget->setVisible(false);
     hostDataViewer->ui->dispatchToolBar->addAction(historyAct);
 }
 
@@ -157,34 +156,6 @@ void DataViewerDispatcher::destroySelectedItems()
             hostDataViewer->initiateDestroyItem(name);
         }
     }
-}
-
-//void DataViewerDispatcher::displayItemFromHistory(QString name)
-//{
-//    if (name.isEmpty())
-//        return;
-//    if (hostDataViewer->ui->contains(name))
-//    {
-//        if (hostDataViewer->ui->currentItemName() != name)
-//        {
-//            hostDataViewer->ui->setCurrentItem(name);
-//        }
-//        return;
-//    }
-//    removePreviousItem();
-//    hostDataViewer->ui->addView(name, hostDataViewer->ui->view(name));
-//    if (!hostDataViewer->isLazy())
-//        hostDataViewer->addNameToFilter(name);
-//    hostDataViewer->ui->setCurrentItem(name);
-//    previousItem = name;
-//}
-
-void DataViewerDispatcher::setHistoryVisible(bool visible)
-{
-    historyWidget->setVisible(visible);
-//    if (!visible)
-//        removePreviousItem();
-
 }
 
 void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles)

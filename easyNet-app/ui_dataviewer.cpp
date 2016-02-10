@@ -56,6 +56,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     connect(openAct, SIGNAL(triggered()), dataViewer, SLOT(open()));
     connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
     connect(copyAct, SIGNAL(triggered()), dataViewer, SLOT(copy()));
+    connect(destroyAct, SIGNAL(triggered()), dataViewer, SLOT(destroySelectedItems()));
 //    connect(findAct, SIGNAL(triggered()), dataViewer, SLOT(showFindDialog()));
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             dataViewer, SLOT(setDispatchModeAuto(bool)));
@@ -108,7 +109,8 @@ void Ui_DataViewer::createActions()
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
 
-
+    destroyAct = new QAction(QIcon(":/images/icon_trash.png"), "delete", this);
+    destroyAct->setToolTip("delete current item");
 
 }
 
@@ -120,6 +122,7 @@ void Ui_DataViewer::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
+    editToolBar->addAction(destroyAct);
 
     dispatchToolBar = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar->addActions(setDispatchModeOverrideActs);

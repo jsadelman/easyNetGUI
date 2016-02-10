@@ -32,12 +32,10 @@ public:
     QSharedPointer<QDomDocument> info(QString name) {return trialRunInfoMap.value(name);}
     void addToHistory(QString name, bool inView=false, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
     void removeFromHistory(QString name);
-//    void moveFromViewerToHistory(QString name);
     bool inHistory(QString name);
     void setInView(QString name, bool inView);
     void setTrialRunMode(int mode);
     void restoreOverrideDefaultValue();
-
 
     QAction *historyAct;
     int dispatchModeOverride;
@@ -46,15 +44,12 @@ public:
     QMap<QPair<int, int>, int> dispatchModeFST; // <previous mode, current mode> -> action
     int previousDispatchOverrideMode;
 
+public slots:
+    void destroySelectedItems();
 
 protected slots:
-//    void moveFromHistoryToViewer();
-    void destroySelectedItems();
-//    void displayItemFromHistory(QString name);
-    void setHistoryVisible(bool visible);
     void updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles);
     void updateHistory(QString item, QSharedPointer<QDomDocument> info);
-//    void removeViews(QModelIndex index,int first, int last);
 
 protected:
     void createHistory();
@@ -67,7 +62,6 @@ protected:
         QString runMode;
     };
     const QString no_trial = "<no-trial>";
-//    void removePreviousItem();
     DataViewer *hostDataViewer;
     int previousDispatchMode;
     QMap <QString, QSharedPointer<QDomDocument> > trialRunInfoMap;

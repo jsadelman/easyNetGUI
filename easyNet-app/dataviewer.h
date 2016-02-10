@@ -39,6 +39,7 @@ public slots:
     virtual void open()=0;
     virtual void save()=0;
     virtual void copy()=0;
+    virtual void destroySelectedItems();
 
 
 protected slots:

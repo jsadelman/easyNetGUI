@@ -268,3 +268,11 @@ void DataViewer::setDispatchModeAuto(bool isAuto)
     }
 }
 
+void DataViewer::destroySelectedItems()
+{
+    if (dispatcher && dispatcher->historyAct->isChecked())
+        dispatcher->destroySelectedItems();
+    else
+        initiateDestroyItem(ui->currentItemName());
+}
+
