@@ -660,7 +660,6 @@ void MainWindow::loadModel(QString fileName)
             modelButton->setEnabled(false);
     #endif
 
-
 }
 
 void MainWindow::loadModel()
@@ -674,6 +673,7 @@ void MainWindow::loadModel()
 
 void MainWindow::afterModelLoaded()
 {
+    emit runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
