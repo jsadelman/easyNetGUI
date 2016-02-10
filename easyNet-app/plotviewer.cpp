@@ -152,7 +152,12 @@ void PlotViewer::save()
 
 void PlotViewer::copy()
 {
-
+    QSvgWidget *svg = currentSvgWidget();
+    if (!svg)
+        return;
+    QPixmap currPixmap(svg->width(), svg->height());
+    svg->render(&currPixmap);
+    QApplication::clipboard()->setPixmap(currPixmap);
 }
 
 void PlotViewer::resizeTimeout()
