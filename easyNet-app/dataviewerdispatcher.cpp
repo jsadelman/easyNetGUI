@@ -6,11 +6,14 @@
 #include "historytreemodel.h"
 #include "historywidget.h"
 #include "sessionmanager.h"
+#include "xmlform.h"
 
 #include <QAction>
 #include <QToolBar>
 #include <QTreeView>
 #include <QModelIndex>
+#include <QScrollArea>
+
 
 DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     : QObject(host), hostDataViewer(host), dispatchModeOverride(-1),
@@ -39,6 +42,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Append), Dispatch_Append);
 
     createHistory();
+    createInfo();
 }
 
 DataViewerDispatcher::~DataViewerDispatcher()
@@ -123,7 +127,7 @@ void DataViewerDispatcher::restoreOverrideDefaultValue()
 void DataViewerDispatcher::createHistory()
 {
     historyModel = new HistoryTreeModel(this);
-    historyWidget = new HistoryWidget;
+    historyWidget = new HistoryWidget(hostDataViewer->ui);
     historyWidget->setModel(historyModel);
     historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
@@ -144,6 +148,26 @@ void DataViewerDispatcher::createHistory()
     connect(historyAct, SIGNAL(triggered(bool)), historyWidget, SLOT(setVisible(bool)));
     historyWidget->setVisible(false);
     hostDataViewer->ui->dispatchToolBar->addAction(historyAct);
+}
+
+
+void DataViewerDispatcher::createInfo()
+{
+    infoWidget = new QDockWidget(hostDataViewer->ui);
+    infoWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, infoWidget);
+    connect(hostDataViewer->ui, &Ui_DataViewer::currentItemChanged, [=]()
+    {
+        if (infoAct->isChecked())
+            showInfo(true);
+    });
+    infoAct = infoWidget->toggleViewAction();
+    infoAct->setIcon(QIcon(":/images/Information-icon.png"));
+    infoAct->setText("Info");
+    infoAct->setToolTip("show/hide trial run info");
+    connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(showInfo(bool)));
+    infoWidget->setVisible(false);
+    hostDataViewer->ui->dispatchToolBar->addAction(infoAct);
 }
 
 void DataViewerDispatcher::destroySelectedItems()
@@ -206,8 +230,30 @@ void DataViewerDispatcher::updateHistory(QString item, QSharedPointer<QDomDocume
     historyModel->appendView(item, TrialRunInfo(info).trial, inView);
     connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
-//    update_view_disabled = false;
+    //    update_view_disabled = false;
 }
+
+void DataViewerDispatcher::showInfo(bool show)
+{
+    if (show)
+    {
+        QSharedPointer<QDomDocument> info = trialRunInfoMap.value(hostDataViewer->ui->currentItemName());
+        if (info)
+        {
+            XMLForm *infoForm = new XMLForm(info->documentElement());
+            infoForm->build();
+            infoWidget->setWidget(infoForm);
+            infoForm->show();
+        }
+        infoWidget->setVisible(true);
+    }
+    else
+    {
+        delete infoWidget->widget();
+        infoWidget->setVisible(false);
+    }
+}
+
 
 //void DataViewerDispatcher::removeViews(QModelIndex index, int first, int last)
 //{

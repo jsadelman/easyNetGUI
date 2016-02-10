@@ -14,6 +14,7 @@ class HistoryTreeModel;
 class HistoryWidget;
 class QAction;
 class QDomDocument;
+class QDockWidget;
 
 class DataViewerDispatcher: public QObject
 {
@@ -39,11 +40,13 @@ public:
     void restoreOverrideDefaultValue();
 
     QAction *historyAct;
+    QAction *infoAct;
     int dispatchModeOverride;
     bool dispatchModeAuto;
     QMap<QString, int> dispatchDefaultMode;
     QMap<QPair<int, int>, int> dispatchModeFST; // <previous mode, current mode> -> action
     int previousDispatchOverrideMode;
+
 
 public slots:
     void destroySelectedItems();
@@ -51,9 +54,11 @@ public slots:
 protected slots:
     void updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles);
     void updateHistory(QString item, QSharedPointer<QDomDocument> info);
+    void showInfo(bool show);
 
 protected:
     void createHistory();
+    void createInfo();
 
     struct TrialRunInfo
     {
@@ -71,6 +76,7 @@ protected:
     QString previousItem;
     bool update_view_disabled;
     int trialRunMode;
+    QDockWidget  *infoWidget;
 
 };
 

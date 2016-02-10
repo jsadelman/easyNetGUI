@@ -88,6 +88,8 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
         }
     }
     host->updateActivePlots();
+    if (infoAct->isChecked())
+        showInfo(true);
 //    host->refreshInfo();
 }
 
