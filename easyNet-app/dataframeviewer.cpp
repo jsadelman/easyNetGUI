@@ -19,6 +19,9 @@
 #include <QFileDialog>
 #include <QTableView>
 
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
+
+
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false)
 {
@@ -56,6 +59,38 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     dataframeMergeAct->setEnabled(false);
     ui->editToolBar->addAction(dataframeMergeAct);
     connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
+
+    plotButton = new QToolButton(this);
+    plotButton->setIcon(QIcon(":/images/barchart2.png"));
+    plotButton->setVisible(true);
+    plotButton->setEnabled(false);
+    plotButton->setPopupMode(QToolButton::InstantPopup);
+    QMenu *plotMenu = new QMenu(plotButton);
+    // temporary: show all available R scripts
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString easyNetHome = settings.value("easyNetHome","../..").toString();
+    QDir plotsDir(QString("%1/bin/R-library/plots").arg(easyNetHome));
+    plotsDir.setNameFilters(QStringList({"*.R"}));
+    foreach(QString plotType, plotsDir.entryList())
+    {
+        QAction *plotAct = new QAction(plotType, this);
+        connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
+        plotMenu->addAction(plotAct);
+    }
+    plotButton->setMenu(plotMenu);
+    ui->editToolBar->addWidget(plotButton);
+
+//    plotAct = new QAction(QIcon(":/images/barchart2.png"), tr("plot"), this);
+//    plotAct->setStatusTip(tr("Create a plot baesd on the current dataframe"));
+//    plotAct->setVisible(true);
+//    plotAct->setEnabled(false);
+//    ui->editToolBar->addAction(plotAct);
+//    QToolButton *plotButton = qobject_cast<QToolButton *>(ui->editToolBar->widgetForAction(plotAct));
+//    plotButton->setPopupMode(QToolButton::InstantPopup);
+//    plotButton->addAction(new QAction("a", this));
+
+
+//    connect(plotAct, SIGNAL(triggered()), this, SLOT(sendCreateNewPlot()));
 }
 
 
@@ -184,18 +219,20 @@ void DataframeViewer::dataframeMerge()
                 << job
                 << SessionManager::instance()->recentlyCreatedJob();
         QMap<QString, QVariant> jobData;
-        jobData.insert("dfName", dfName);
+        jobData.insert("name", dfName);
         jobData.insert("setCurrent", true);
+        jobData.insert("isBackup", false);
+        if (dispatcher)
+        {
+            QVariant infoV;
+            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
+            jobData.insert("trialRunInfo", infoV);
+        }
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
         jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
         SessionManager::instance()->submitJobs(jobs);
-        if (dispatcher)
-        {
-            // only one will succeed
-            dispatcher->copyTrialRunInfo(x, dfName);
-            dispatcher->copyTrialRunInfo(y, dfName);
-        }
+
         SessionManager::instance()->addDataframeMerge(x, dfName);
         SessionManager::instance()->addDataframeMerge(y, dfName);
     });
@@ -217,6 +254,7 @@ void DataframeViewer::enableActions(bool enable)
     findAct->setEnabled(enable);
     copyDFAct->setEnabled(enable);
     dataframeMergeAct->setEnabled(enable);
+    plotButton->setEnabled(enable);
 }
 
 void DataframeViewer::updateCurrentItem(QString name)
@@ -395,6 +433,22 @@ void DataframeViewer::setParameter(QString name, QString key_val)
             << job
             << SessionManager::instance()->recentlyModifiedJob();
     SessionManager::instance()->submitJobs(jobs);
+}
+
+void DataframeViewer::sendNewPlotRequest()
+{
+    QAction *plotAct = qobject_cast<QAction *>(sender());
+    if (!plotAct)
+        eNerror << "invalid sender action for this method";
+    else
+    {
+        QString plotType = plotAct->text();
+        QMap<QString,QString> settings;
+        settings["df"] = ui->currentItemName();
+        QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.plot").arg(ui->currentItemName()));
+        QSharedPointer<QDomDocument> info = dispatcher ? dispatcher->info(ui->currentItemName()) : QSharedPointer<QDomDocument>();
+        emit createNewPlot(plotName, plotType, settings, 0, info);
+    }
 }
 
 void DataframeViewer::addItem_impl(QString name)

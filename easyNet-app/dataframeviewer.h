@@ -14,6 +14,7 @@ class ObjectCacheFilter;
 class ObjectUpdater;
 class QDomDocument;
 class FindDialog;
+class QToolButton;
 
 class DataframeViewer : public DataViewer
 {
@@ -49,11 +50,14 @@ protected slots:
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void setParameter(QString name, QString key_val);
+    void sendNewPlotRequest();
 
 signals:
     void dragDropColumnsChanged(bool);
     void stimulusSetChanged(bool);
     void parametersTableChanged(bool);
+    void createNewPlot(QString name, QString type, QMap<QString, QString> defaultSettings,
+                       int flags, QSharedPointer<QDomDocument> info);
 
 protected:
     virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
@@ -74,6 +78,7 @@ protected:
     QAction *findAct;
     QAction *copyDFAct;
     QAction *dataframeMergeAct;
+    QToolButton *plotButton;
 
 };
 

@@ -351,6 +351,8 @@ void MainWindow::connectSignalsAndSlots()
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
     connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
+    connect(dataframeResultsViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int,QSharedPointer<QDomDocument>)),
+            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int,QSharedPointer<QDomDocument>)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(snapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
