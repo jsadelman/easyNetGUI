@@ -7,12 +7,15 @@
 #include "historywidget.h"
 #include "sessionmanager.h"
 #include "xmlform.h"
+#include "xmlmodel.h"
+#include "lazynutobjectmodel.h"
 
 #include <QAction>
 #include <QToolBar>
 #include <QTreeView>
 #include <QModelIndex>
 #include <QScrollArea>
+#include <QHeaderView>
 
 
 DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
@@ -154,6 +157,7 @@ void DataViewerDispatcher::createHistory()
 void DataViewerDispatcher::createInfo()
 {
     infoWidget = new QDockWidget(hostDataViewer->ui);
+    infoWidget->setWindowTitle("Trial run info");
     infoWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, infoWidget);
     connect(hostDataViewer->ui, &Ui_DataViewer::currentItemChanged, [=]()
@@ -240,16 +244,28 @@ void DataViewerDispatcher::showInfo(bool show)
         QSharedPointer<QDomDocument> info = trialRunInfoMap.value(hostDataViewer->ui->currentItemName());
         if (info)
         {
-            XMLForm *infoForm = new XMLForm(info->documentElement());
-            infoForm->build();
-            infoWidget->setWidget(infoForm);
-            infoForm->show();
+            XMLModel *infoModel = new XMLModel(info, this);
+            QTreeView *infoView = new QTreeView();
+            infoView->setModel(infoModel);
+            infoView->header()->setStretchLastSection(true);
+            infoView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+            infoView->setSelectionMode(QAbstractItemView::NoSelection);
+            infoView->expandAll();
+            infoView->resizeColumnToContents(0);
+            infoView->resizeColumnToContents(1);
+            infoView->setMinimumWidth(infoView->width());
+            infoWidget->setWidget(infoView);
         }
         infoWidget->setVisible(true);
     }
     else
     {
-        delete infoWidget->widget();
+        QTreeView *infoView = qobject_cast<QTreeView *>(infoWidget->widget());
+        if (infoView)
+        {
+            delete infoView->model();
+            delete infoView;
+        }
         infoWidget->setVisible(false);
     }
 }

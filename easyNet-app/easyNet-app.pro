@@ -122,7 +122,8 @@ SOURCES +=  \
     closebutton.cpp \
     historywidget.cpp \
     historytreemodel.cpp \
-    trialruninfo.cpp
+    trialruninfo.cpp \
+    xmlmodel.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -218,7 +219,8 @@ HEADERS  += \
     closebutton.h \
     historywidget.h \
     historytreemodel.h \
-    trialruninfo.h
+    trialruninfo.h \
+    xmlmodel.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

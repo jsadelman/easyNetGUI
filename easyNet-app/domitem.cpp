@@ -10,10 +10,29 @@ DomItem::DomItem(QDomNode *node, int row, DomItem *parent)
     parentItem = parent;
 }
 
+DomItem::DomItem(QSharedPointer<QDomNode> node, int row, int skipLevel, DomItem *parent)
+{
+    if (node)
+    {
+        domNode = *node;
+        for (int skip = 1; skip <= skipLevel; ++skip)
+            domNode = domNode.childNodes().item(0);
+    }
+    // Record the item's location within its parent.
+    rowNumber = row;
+    parentItem = parent;
+}
+
 void DomItem::assign(QDomNode*node)
 {
    childItems.clear();
    domNode=*node;
+}
+
+void DomItem::assign(QSharedPointer<QDomNode> node)
+{
+    childItems.clear();
+    domNode=*node;
 }
 
 DomItem::~DomItem()
