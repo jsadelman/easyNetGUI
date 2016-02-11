@@ -31,8 +31,8 @@ void SettingsForm::build()
         PlotSettingsBaseWidget *widget = createWidget(domElement);
         widgetMap.insert(widget->name(), widget);
         hasChanged.insert(widget->name(), false);
-        QDomElement prettyElement = XMLAccessor::childElement(domElement, "pretty name");
-        QString tabname = XMLAccessor::value(prettyElement);
+        QDomElement groupingElement = XMLAccessor::childElement(domElement, "grouping");
+        QString tabname = XMLAccessor::value(groupingElement);
         QWidget* tab = 0;
         QVBoxLayout* lay = 0;
         bool novel=!twidgetMap.contains(tabname);
