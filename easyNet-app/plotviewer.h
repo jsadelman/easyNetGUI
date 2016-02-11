@@ -38,12 +38,11 @@ public slots:
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
-//    virtual void addItem(QString name="", bool setCurrent=false) Q_DECL_OVERRIDE;
     void updateAllActivePlots();
 
 
 protected slots:
-    virtual void removeItem_impl(QString name) Q_DECL_OVERRIDE;
+    virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
     void dfSourceModified(QString df);
     void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
@@ -63,8 +62,7 @@ signals:
      void removePlotSettings(QString);
 
 protected:
-//     virtual void addItem_impl(QString name);
-     virtual QWidget *makeView();
+     virtual QWidget *makeView(QString name);
      virtual void addNameToFilter(QString name);
      virtual void removeNameFromFilter(QString name);
      virtual void setNameInFilter(QString name);
@@ -73,7 +71,6 @@ protected:
      QSvgWidget *currentSvgWidget();
      void addExtraActions();
      QString cloneRPlot(QString name, QString newName=QString());
-//     QSvgWidget *newSvg(QString name);
      void paintEvent(QPaintEvent * event);
      void resizeEvent(QResizeEvent*);
 
@@ -82,13 +79,11 @@ protected:
     ObjectCacheFilter *sourceDataframeFilter;
     ObjectCacheFilter *plotDescriptionFilter;
     ObjectUpdater     *plotDescriptionUpdater;
-//    QMap <QString, QSvgWidget*> plotSvg;
-    QMap <QSvgWidget*, bool> svgIsActive;
-    QMap <QSvgWidget*, bool> svgIsUpToDate;
-    QMap <QSvgWidget*, bool> svgSourceModified;
-    QMap <QSvgWidget*, QByteArray> svgByteArray;
-    QMap <QSvgWidget*, QSharedPointer<QDomDocument> > svgTrialRunInfo; // <svg, info XML> needed?
-//    QStringList plotClones;
+    QMap <QString, bool> plotIsActive;
+    QMap <QString, bool> plotIsUpToDate;
+    QMap <QString, bool> plotSourceModified;
+    QMap <QString, QByteArray> plotByteArray;
+
 
     QAction *       settingsAct;
     QAction *       fullScreenAct;

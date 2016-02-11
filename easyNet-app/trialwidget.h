@@ -38,9 +38,9 @@ public:
 public slots:
     QStringList getArguments();
 signals:
-    void runAllModeChanged(bool);
     void trialDescriptionUpdated(QDomDocument*);
     void aboutToRunTrial(QSharedPointer<QDomDocument>);
+    void trialRunModeChanged(int);
 
 private slots:
 
@@ -98,7 +98,7 @@ private:
 
 
     QMap<QString,QString>     defs;
-    bool runAllMode;
+    int trialRunMode;
     bool isStochastic;
 
 

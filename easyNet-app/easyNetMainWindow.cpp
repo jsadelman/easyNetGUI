@@ -312,7 +312,6 @@ void MainWindow::connectSignalsAndSlots()
 //    connect(diagramPanel, SIGNAL(currentDiagramSceneChanged(DiagramScene*)),
 //            this, SLOT(diagramSceneTabChanged(DiagramScene*)));
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
-//    connect(trialWidget,SIGNAL(runAllModeChanged(bool)),this,SLOT(setRunAllMode(bool)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole2,SLOT(addText(QString)));
@@ -349,8 +348,11 @@ void MainWindow::connectSignalsAndSlots()
              plotViewer, SLOT(addItem(QString, bool, bool, QSharedPointer<QDomDocument>)));
 //    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
 //            plotViewer, SLOT(setCurrentPlot(QString)));
-
+     connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
+     connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
     connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
+    connect(dataframeResultsViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int,QSharedPointer<QDomDocument>)),
+            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int,QSharedPointer<QDomDocument>)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
 //    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(snapshot(QString)));
 //    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),

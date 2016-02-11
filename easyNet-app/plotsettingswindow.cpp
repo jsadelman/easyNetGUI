@@ -206,6 +206,8 @@ void PlotSettingsWindow::importHomonyms(QDomDocument *settingsList)
 
 void PlotSettingsWindow::sendGetCmd(QString plotName)
 {
+    if (!SessionManager::instance()->exists(plotName))
+        return;
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList({QString("%1 get %2").arg(plotName).arg(plotAspr_)});
     job->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)), AnswerFormatterType::SVG);
@@ -519,7 +521,7 @@ void PlotSettingsWindow::sendSettings()
 
 void PlotSettingsWindow::sendSettings(QString name)
 {
-    PlotSettingsForm * form = qobject_cast<PlotSettingsForm*>(plotForms[name]);
+    PlotSettingsForm * form = qobject_cast<PlotSettingsForm*>(plotForms.value(name, nullptr));
     if (form)
     {
         LazyNutJob *job = new LazyNutJob;

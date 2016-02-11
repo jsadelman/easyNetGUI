@@ -28,10 +28,9 @@ public:
     bool removeView(QString view, QString trial);
     bool setInView(QString view, QString trial, bool inView);
     bool isInView(QString view, QString trial);
-
-private:
     QModelIndex trialIndex(QString trial);
     QModelIndex viewIndex(QString view, QString trial);
+    QModelIndex viewIndex(QString view);
 };
 
 #endif // HISTORYTREEMODEL_H

@@ -14,6 +14,7 @@ class ObjectCacheFilter;
 class ObjectUpdater;
 class QDomDocument;
 class FindDialog;
+class QToolButton;
 
 class DataframeViewer : public DataViewer
 {
@@ -42,22 +43,25 @@ public slots:
     void dataframeMerge();
 
 protected slots:
-    virtual void removeItem_impl(QString name) Q_DECL_OVERRIDE;
+    virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
     void updateDataframe(QDomDocument* domDoc, QString name);
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void setParameter(QString name, QString key_val);
+    void sendNewPlotRequest();
 
 signals:
     void dragDropColumnsChanged(bool);
     void stimulusSetChanged(bool);
     void parametersTableChanged(bool);
+    void createNewPlot(QString name, QString type, QMap<QString, QString> defaultSettings,
+                       int flags, QSharedPointer<QDomDocument> info);
 
 protected:
-    virtual void addItem_impl(QString name);
-    virtual QWidget *makeView();
+    virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
+    virtual QWidget *makeView(QString name);
     virtual void addNameToFilter(QString name);
     virtual void removeNameFromFilter(QString name);
     virtual void setNameInFilter(QString name);
@@ -71,6 +75,10 @@ protected:
     bool m_stimulusSet;
     bool m_parametersTable;
     FindDialog*     findDialog;
+    QAction *findAct;
+    QAction *copyDFAct;
+    QAction *dataframeMergeAct;
+    QToolButton *plotButton;
 
 };
 

@@ -39,17 +39,20 @@ public slots:
     virtual void open()=0;
     virtual void save()=0;
     virtual void copy()=0;
+    virtual void destroySelectedItems();
 
 
 protected slots:
     void setUi();
 
-    void initiateRemoveItem(QString name);
-    virtual void removeItem(QString name);
-    virtual void removeItem_impl(QString name)=0;
+    void initiateDestroyItem(QString name);
+    virtual void destroyItem(QString name);
+    virtual void destroyItem_impl(QString name)=0;
     virtual void updateCurrentItem(QString name);
     virtual void enableActions(bool enable);
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
+    void setTrialRunMode(int mode);
+
 
 signals:
     void lazyChanged(bool);
@@ -58,7 +61,7 @@ signals:
 
 protected:
     virtual void addItem_impl(QString name) {Q_UNUSED(name)}
-    virtual QWidget* makeView() = 0;
+    virtual QWidget* makeView(QString name) = 0;
     virtual void addNameToFilter(QString name) = 0;
     virtual void removeNameFromFilter(QString name) = 0;
     virtual void setNameInFilter(QString name) = 0;

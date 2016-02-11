@@ -8,6 +8,7 @@
 
 #include <QSharedPointer>
 #include <QDomDocument>
+#include <QAction>
 
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
@@ -120,6 +121,8 @@ void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
     QString results = TrialRunInfo(info).results;
     updateHistory(results, info);
     setTrialRunInfo(results, info);
+    if (infoAct->isChecked())
+        showInfo(true);
 }
 
 

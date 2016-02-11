@@ -37,6 +37,7 @@ class SessionManager: public QObject
     Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet)
 
 friend class LazyNutJob;
+friend class ObjectNameValidator;
 
 public:
     static SessionManager* instance(); // singleton
@@ -66,6 +67,8 @@ public:
     QStringList plotSourceDataframes(QString plotName) {return plotSourceDataframeSettings(plotName).values();}
     QString makeValidObjectName(QString name);
     bool isValidObjectName(QString name);
+    void addToExtraNamedItems(QString name);
+    void removeFromExtraNamedItems(QString name);
 
 
     ObjectCache *descriptionCache;
@@ -181,6 +184,7 @@ private:
     bool        m_suspendingObservers;
 
     ObjectNameValidator *validator;
+    QStringList extraNamedItems;
 
 
 };

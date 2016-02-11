@@ -48,7 +48,6 @@ SOURCES +=  \
     commandsequencer.cpp \
         domitem.cpp \
     easyNetMainWindow.cpp \
-    macrostate.cpp \
     answerformatterfactory.cpp \
     answerformatter.cpp \
     lazynutjobparam.cpp \
@@ -56,7 +55,6 @@ SOURCES +=  \
     plotsettingsform.cpp \
     dataframemodel.cpp \
     xmlelement.cpp \
-    lazynutlistwidget.cpp \
     lazynutpairedlistwidget.cpp \
     bracketedparser.cpp \
  #   lazynutobjtablemodel.cpp \
@@ -81,7 +79,6 @@ SOURCES +=  \
     findfiledialog.cpp \
     textedit.cpp \
     helpwindow.cpp \
-    parameditor.cpp \
     trialwidget.cpp \
     mycombobox.cpp \
     commandlog.cpp \
@@ -121,12 +118,12 @@ SOURCES +=  \
     dataframeviewerdispatcher.cpp \
     plotviewer.cpp \
     plotviewerdispatcher.cpp \
-    historymodel.cpp \
     booleandelegate.cpp \
     closebutton.cpp \
     historywidget.cpp \
     historytreemodel.cpp \
-    trialruninfo.cpp
+    trialruninfo.cpp \
+    xmlmodel.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -148,7 +145,6 @@ HEADERS  += \
     enumclasses.h \
         domitem.h \
     easyNetMainWindow.h \
-    macrostate.h \
     answerformatterfactory.h \
     answerformatter.h \
     lazynutjobparam.h \
@@ -156,7 +152,6 @@ HEADERS  += \
     plotsettingsform.h \
     dataframemodel.h \
     xmlelement.h \
-    lazynutlistwidget.h \
     lazynutpairedlistwidget.h \
     bracketedparser.h \
  #   lazynutobjtablemodel.h \
@@ -180,7 +175,6 @@ HEADERS  += \
     findfiledialog.h \
     textedit.h \
     helpwindow.h \
-    parameditor.h \
     trialwidget.h \
     mycombobox.h \
     commandlog.h \
@@ -221,12 +215,12 @@ HEADERS  += \
     dataframeviewerdispatcher.h \
     plotviewer.h \
     plotviewerdispatcher.h \
-    historymodel.h \
     booleandelegate.h \
     closebutton.h \
     historywidget.h \
     historytreemodel.h \
-    trialruninfo.h
+    trialruninfo.h \
+    xmlmodel.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

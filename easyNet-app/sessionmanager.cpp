@@ -234,6 +234,17 @@ bool SessionManager::isValidObjectName(QString name)
     return validator->isValid(name);
 }
 
+void SessionManager::addToExtraNamedItems(QString name)
+{
+    if (!extraNamedItems.contains(name))
+        extraNamedItems.append(name);
+}
+
+void SessionManager::removeFromExtraNamedItems(QString name)
+{
+    extraNamedItems.removeAll(name);
+}
+
 
 
 void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
@@ -301,12 +312,6 @@ bool SessionManager::exists(QString name)
         return false;
     return descriptionCache->exists(name);
 }
-//! [nextJob]
-
-
-
-
-
 
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {

@@ -19,6 +19,9 @@
 #include <QFileDialog>
 #include <QTableView>
 
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
+
+
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false)
 {
@@ -35,17 +38,59 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
             this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
 
     // because DataframeViewer::enableActions won't be called by te ctor, only DataViewer::enableActions
-    ui->findAct->setVisible(true);
-    ui->findAct->setEnabled(false);
-    connect(ui->findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    findAct->setToolTip(tr("Find text in this table"));
+    findAct->setVisible(true);
+    findAct->setEnabled(false);
+    ui->editToolBar->addAction(findAct);
+    connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
 
-    ui->copyDFAct->setVisible(true);
-    ui->copyDFAct->setEnabled(false);
-    connect(ui->copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
+    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
+    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
+    copyDFAct->setVisible(true);
+    copyDFAct->setEnabled(false);
+    ui->editToolBar->addAction(copyDFAct);
+    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
 
-    ui->dataframeMergeAct->setVisible(true);
-    ui->dataframeMergeAct->setEnabled(false);
-    connect(ui->dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
+    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
+    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
+    dataframeMergeAct->setVisible(true);
+    dataframeMergeAct->setEnabled(false);
+    ui->editToolBar->addAction(dataframeMergeAct);
+    connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
+
+    plotButton = new QToolButton(this);
+    plotButton->setIcon(QIcon(":/images/barchart2.png"));
+    plotButton->setVisible(true);
+    plotButton->setEnabled(false);
+    plotButton->setPopupMode(QToolButton::InstantPopup);
+    QMenu *plotMenu = new QMenu(plotButton);
+    // temporary: show all available R scripts
+    QSettings settings("QtEasyNet", "nmConsole");
+    QString easyNetHome = settings.value("easyNetHome","../..").toString();
+    QDir plotsDir(QString("%1/bin/R-library/plots").arg(easyNetHome));
+    plotsDir.setNameFilters(QStringList({"*.R"}));
+    foreach(QString plotType, plotsDir.entryList())
+    {
+        QAction *plotAct = new QAction(plotType, this);
+        connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
+        plotMenu->addAction(plotAct);
+    }
+    plotButton->setMenu(plotMenu);
+    ui->editToolBar->addWidget(plotButton);
+
+//    plotAct = new QAction(QIcon(":/images/barchart2.png"), tr("plot"), this);
+//    plotAct->setStatusTip(tr("Create a plot baesd on the current dataframe"));
+//    plotAct->setVisible(true);
+//    plotAct->setEnabled(false);
+//    ui->editToolBar->addAction(plotAct);
+//    QToolButton *plotButton = qobject_cast<QToolButton *>(ui->editToolBar->widgetForAction(plotAct));
+//    plotButton->setPopupMode(QToolButton::InstantPopup);
+//    plotButton->addAction(new QAction("a", this));
+
+
+//    connect(plotAct, SIGNAL(triggered()), this, SLOT(sendCreateNewPlot()));
 }
 
 
@@ -174,18 +219,20 @@ void DataframeViewer::dataframeMerge()
                 << job
                 << SessionManager::instance()->recentlyCreatedJob();
         QMap<QString, QVariant> jobData;
-        jobData.insert("dfName", dfName);
+        jobData.insert("name", dfName);
         jobData.insert("setCurrent", true);
+        jobData.insert("isBackup", false);
+        if (dispatcher)
+        {
+            QVariant infoV;
+            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
+            jobData.insert("trialRunInfo", infoV);
+        }
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
         jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
         SessionManager::instance()->submitJobs(jobs);
-        if (dispatcher)
-        {
-            // only one will succeed
-            dispatcher->copyTrialRunInfo(x, dfName);
-            dispatcher->copyTrialRunInfo(y, dfName);
-        }
+
         SessionManager::instance()->addDataframeMerge(x, dfName);
         SessionManager::instance()->addDataframeMerge(y, dfName);
     });
@@ -193,9 +240,9 @@ void DataframeViewer::dataframeMerge()
 }
 
 
-void DataframeViewer::removeItem_impl(QString name)
+void DataframeViewer::destroyItem_impl(QString name)
 {
-        delete modelMap.value(name);
+        delete modelMap.value(name, nullptr);
         modelMap.remove(name);
         if (prettyHeadersModelMap.contains(name))
             delete prettyHeadersModelMap.value(name);
@@ -204,9 +251,10 @@ void DataframeViewer::removeItem_impl(QString name)
 void DataframeViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
-    ui->findAct->setEnabled(enable);
-    ui->copyDFAct->setEnabled(enable);
-    ui->dataframeMergeAct->setEnabled(enable);
+    findAct->setEnabled(enable);
+    copyDFAct->setEnabled(enable);
+    dataframeMergeAct->setEnabled(enable);
+    plotButton->setEnabled(enable);
 }
 
 void DataframeViewer::updateCurrentItem(QString name)
@@ -387,21 +435,37 @@ void DataframeViewer::setParameter(QString name, QString key_val)
     SessionManager::instance()->submitJobs(jobs);
 }
 
+void DataframeViewer::sendNewPlotRequest()
+{
+    QAction *plotAct = qobject_cast<QAction *>(sender());
+    if (!plotAct)
+        eNerror << "invalid sender action for this method";
+    else
+    {
+        QString plotType = plotAct->text();
+        QMap<QString,QString> settings;
+        settings["df"] = ui->currentItemName();
+        QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.plot").arg(ui->currentItemName()));
+        QSharedPointer<QDomDocument> info = dispatcher ? dispatcher->info(ui->currentItemName()) : QSharedPointer<QDomDocument>();
+        emit createNewPlot(plotName, plotType, settings, 0, info);
+    }
+}
+
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
-//    QTableView *view = new QTableView(this);
-    //    viewMap.insert(name, view);
 }
 
-QWidget *DataframeViewer::makeView()
+QWidget *DataframeViewer::makeView(QString name)
 {
+    Q_UNUSED(name);
     return new QTableView(this);
 }
 
 void DataframeViewer::addNameToFilter(QString name)
 {
-    dataframeFilter->addName(name);
+    if (SessionManager::instance()->exists(name))
+        dataframeFilter->addName(name);
 }
 
 void DataframeViewer::removeNameFromFilter(QString name)

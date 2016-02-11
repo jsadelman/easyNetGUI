@@ -56,16 +56,17 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     connect(openAct, SIGNAL(triggered()), dataViewer, SLOT(open()));
     connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
     connect(copyAct, SIGNAL(triggered()), dataViewer, SLOT(copy()));
+    connect(destroyAct, SIGNAL(triggered()), dataViewer, SLOT(destroySelectedItems()));
 //    connect(findAct, SIGNAL(triggered()), dataViewer, SLOT(showFindDialog()));
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             dataViewer, SLOT(setDispatchModeAuto(bool)));
+    connect(this, SIGNAL(deleteItemRequested(QString)), dataViewer, SLOT(initiateDestroyItem(QString)));
+    connect(this, SIGNAL(currentItemChanged(QString)), dataViewer, SLOT(updateCurrentItem(QString)));
+
 //    dataViewer->setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
     setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
     setDispatchModeOverrideActGroup->setVisible(false);
-    findAct->setVisible(false); // visible only for dataframe views
-    copyDFAct->setVisible(false); // visible only for dataframe views
-    dataframeMergeAct->setVisible(false); // visible only for dataframe views
 }
 
 
@@ -94,7 +95,7 @@ void Ui_DataViewer::createActions()
         setDispatchModeOverrideActGroup->addAction(setDispatchModeOverrideActs.at(mode));
     }
 
-    setDispatchModeAutoAct = new QAction("Auto", this);
+    setDispatchModeAutoAct = new QAction(QIcon(":/images/auto_icon.png"), "Auto", this);
     setDispatchModeAutoAct->setToolTip("Override default page behaviour");
     setDispatchModeAutoAct->setCheckable(true);
 
@@ -108,15 +109,8 @@ void Ui_DataViewer::createActions()
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
 
-    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
-    findAct->setShortcuts(QKeySequence::Find);
-    findAct->setToolTip(tr("Find text in this table"));
-
-    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
-    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
-
-    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
-    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
+    destroyAct = new QAction(QIcon(":/images/icon_trash.png"), "delete", this);
+    destroyAct->setToolTip("delete current item");
 
 }
 
@@ -128,10 +122,7 @@ void Ui_DataViewer::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
-    editToolBar->addAction(copyDFAct);
-    editToolBar->addAction(dataframeMergeAct);
-    editToolBar->addAction(findAct);
-
+    editToolBar->addAction(destroyAct);
 
     dispatchToolBar = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar->addActions(setDispatchModeOverrideActs);

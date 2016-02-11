@@ -40,7 +40,13 @@ void Box::setLazyNutType(const QString &lazyNutType)
 {
     m_lazyNutType = lazyNutType;
     if (m_lazyNutType == "layer")
+    {
         setFillColour(layerCol);
+        layersFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+        layersFilter->setName(m_name);
+        layersUpdater = new ObjectUpdater(this);
+        layersUpdater->setProxyModel(layersFilter);
+    }
 
     else if (m_lazyNutType == "representation")
         setFillColour(representationCol);
@@ -118,28 +124,37 @@ QRectF Box::labelBoundingRect() const
                                    -width()*m_widthMarginProportionToLongestLabel, 0);
 }
 
-QString Box::defaultPlotType()
+QStringList Box::defaultPlotTypes()
 {
-    if (m_lazyNutType == "layer")
-    {
-        QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
-        QString subtype;
-        if (domDoc)
-            subtype = XMLelement(*domDoc)["subtype"]();
+    QStringList plotTypes;
+    if (m_lazyNutType != "layer")
+        return plotTypes;
+    QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
+    if (!domDoc)
+        return plotTypes;
+    XMLelement plotTypeElem = XMLelement(*domDoc)["hints"]["plot_type"];
+    if (plotTypeElem.isString())
+        plotTypes << XMLelement(*domDoc)["hints"]["plot_type"]();
+    else if (plotTypeElem.isList())
+        plotTypes << XMLelement(*domDoc)["hints"]["plot_type"].listValues();
+    plotTypes.replaceInStrings(QRegExp("\\.R$"), "");
 
-        if (m_name == "spatial_code") //quick and dirty hack!!!
-            return "spactivity-3";
-        else if (m_name.startsWith("feature"))
-            return "plot_features";
-        else if (subtype == "string_layer")
-            return "string_layer";
-        else if (subtype == "wtstring_layer")
-            return "wtstring_layer";
-        else
-            return "activity";
-    }
-    else
-        return "";
+//    QString subtype;
+//    if (domDoc)
+//        subtype = XMLelement(*domDoc)["subtype"]();
+
+//    if (m_name == "spatial_code") //quick and dirty hack!!!
+//        return "spactivity-3";
+//    else if (m_name.startsWith("feature"))
+//        return "plot_features";
+//    else if (subtype == "string_layer")
+//        return "string_layer";
+//    else if (subtype == "wtstring_layer")
+//        return "wtstring_layer";
+//    else
+//        return "activity";
+
+    return plotTypes;
 }
 
 
@@ -153,46 +168,86 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
     {
         QMenu *plotMenu = new QMenu("Plot");
         QList<QAction*> actionList;
+
         for (int row = 0; row < defaultObserverFilter->rowCount(); ++row)
         {
             QString observer = defaultObserverFilter->data(defaultObserverFilter->index(row, ObjectCache::NameCol)).toString();
             QString dataframe = QString("(%1 default_dataframe)").arg(observer);
-            QMap <QString, QVariant> plotData; // QMap <QString, QString> is not allowed
-            plotData["dataframe"] = dataframe;
-            plotData["observer"] = observer;
+
+            QString portPrettyName, rplotName;
             if (observer.contains("default_observer"))
             {
-                plotData["rplotName"] = QString("%1.state.plot").arg(m_name);
-                plotData["displayName"] = "state";
+                portPrettyName = "state";
+                rplotName = QString("%1.state").arg(m_name);
             }
             else if (observer.contains("default_input_observer"))
             {
                 int i = default_input_observer_Rex.indexIn(observer);
-                if (i < 0)
-                    qDebug() << "cannot find default input port";
-                else
-                {
-                    plotData["displayName"] = m_ports.value(default_input_observer_Rex.cap(1));
-                    plotData["rplotName"] = QString("%1.%2.plot")
-                            .arg(m_name)
-                            .arg(plotData["displayName"].toString());
-                }
+                portPrettyName = m_ports.value(default_input_observer_Rex.cap(1));
+                rplotName = QString("%1.%2").arg(m_name).arg(portPrettyName);
             }
-            if (!observerOfPlot.contains(plotData["rplotName"].toString()))
+            QMenu *portMenu = plotMenu->addMenu(portPrettyName);
+            foreach(QString plotType, defaultPlotTypes())
             {
-                observerOfPlot.insert(plotData["rplotName"].toString(), observer);
-                plotFilter->addName(plotData["rplotName"].toString());
+                QMap <QString, QVariant> plotData; // QMap <QString, QString> is not allowed
+                plotData["dataframe"] = dataframe;
+                plotData["observer"] = observer;
+                plotData["plotType"] = plotType;
+                rplotName.append(QString(".%1").arg(plotType)).remove(QRegExp("\\.R$"));
+                plotData["rplotName"] = rplotName;
+                actionList.append(portMenu->addAction(plotType));
+                actionList.last()->setData(plotData);
+                actionList.last()->setCheckable(true);
+                actionList.last()->setChecked(observerOfPlot.contains(rplotName));
+
+
             }
 
-            actionList.append(plotMenu->addAction(plotData["displayName"].toString()));
-            actionList.at(row)->setCheckable(true);
-            QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(observer);
-            bool enabled = false;
-            if (domDoc)
-                enabled = XMLelement(*domDoc)["Enabled"]() == "1";
-            actionList.at(row)->setChecked(enabled);
-            actionList.at(row)->setData(plotData);
+
+
+
+
+//            if (observer.contains("default_observer"))
+//            {
+//                plotData["rplotName"] = QString("%1.state").arg(m_name);
+//                plotData["portPrettyName"] = "state";
+//            }
+//            else if (observer.contains("default_input_observer"))
+//            {
+//                int i = default_input_observer_Rex.indexIn(observer);
+//                if (i < 0)
+//                    qDebug() << "cannot find default input port";
+//                else
+//                {
+//                    plotData["portPrettyName"] = m_ports.value(default_input_observer_Rex.cap(1));
+//                    plotData["rplotName"] = QString("%1.%2")
+//                            .arg(m_name)
+//                            .arg(plotData["portPrettyName"].toString());
+//                }
+//            }
+
+
+
+
+
+
+
+//            if (!observerOfPlot.contains(plotData["rplotName"].toString()))
+//            {
+//                observerOfPlot.insert(plotData["rplotName"].toString(), observer);
+//                plotFilter->addName(plotData["rplotName"].toString());
+//            }
+
+//            actionList.append(plotMenu->addAction(plotData["portPrettyName"].toString()));
+//            actionList.at(row)->setCheckable(true);
+//            QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(observer);
+//            bool enabled = false;
+//            if (domDoc)
+//                enabled = XMLelement(*domDoc)["Enabled"]() == "1";
+//            actionList.at(row)->setChecked(enabled);
+//            actionList.at(row)->setData(plotData);
         }
+
         QString layerTransfer;
         QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
         if (domDoc)
@@ -205,27 +260,38 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         unlesionAct->setVisible(layerTransfer == "lesion_transfer");
 
         QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
-        for (int row = 0; row < defaultObserverFilter->rowCount(); ++row)
+
+        if (actionList.contains(action))
         {
-            if (action == actionList.at(row))
+            QMap <QString, QVariant> plotData = action->data().toMap();
+            if (action->isChecked())
             {
-                QMap <QString, QVariant> plotData = action->data().toMap();
-                if (action->isChecked())
+                if (!observerOfPlot.contains(plotData.value("rplotName").toString()))
                 {
-                    enableObserver(plotData.value("observer").toString(), true);
-                    if (!SessionManager::instance()->descriptionCache->exists(plotData.value("rplotName").toString()))
-                        defaultPlot(plotData.value("rplotName").toString(), plotData.value("dataframe").toString());
-                    return action;
+                    observerOfPlot.insert(plotData.value("rplotName").toString(), plotData.value("observer").toString());
+                    plotFilter->addName(plotData.value("rplotName").toString());
                 }
-                else
+                enableObserver(plotData.value("observer").toString(), true);
+                if (!SessionManager::instance()->descriptionCache->exists(plotData.value("rplotName").toString()))
                 {
-                    enableObserver(plotData.value("observer").toString(), false);
-//                    SessionManager::instance()->runCmd(QString("destroy %1").arg(plotData.value("rplotName").toString()));
-//                    emit plotDestroyed(plotData.value("rplotName").toString());
-                    return action;
+                    QMap<QString,QString> settings;
+                    settings["df"] = plotData.value("dataframe").toString();
+                    emit createNewRPlot(plotData.value("rplotName").toString(),
+                                        plotData.value("plotType").toString().append(".R"),
+                                        settings, Plot_AnyTrial);
                 }
+                return action;
+            }
+            else
+            {
+                observerOfPlot.remove(plotData.value("rplotName").toString());
+                enableObserver(plotData.value("observer").toString(), false);
+                //                    SessionManager::instance()->runCmd(QString("destroy %1").arg(plotData.value("rplotName").toString()));
+                //                    emit plotDestroyed(plotData.value("rplotName").toString());
+                return action;
             }
         }
+
 
         if (action == lesionAct)
             lesionBox(true);
@@ -243,13 +309,6 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
 }
 
 
-
-void Box::defaultPlot(QString plotName, QString dataframe)
-{
-    QMap<QString,QString> settings;
-    settings["df"] = dataframe;
-    emit createNewRPlot(plotName, QString("%1.R").arg(defaultPlotType()), settings, Plot_AnyTrial);
-}
 
 
 void Box::setupDefaultObserverFilter()
@@ -285,10 +344,12 @@ void Box::setupDefaultObserverFilter()
         plotFilter->setFilterKeyColumn(ObjectCache::NameCol);
         connect(plotFilter, &ObjectCacheFilter::objectDestroyed, [=](QString name)
         {
-            if (observerOfPlot.contains(name))
+            QString observer = observerOfPlot.value(name);
+            if (!observer.isEmpty())
             {
-                enableObserver(observerOfPlot.value(name), false);
                 observerOfPlot.remove(name);
+                if (!observerOfPlot.values().contains(observer))
+                    enableObserver(observerOfPlot.value(name), false);
             }
 //            updateObservedState();
         });
@@ -296,6 +357,7 @@ void Box::setupDefaultObserverFilter()
 }
 
 void Box::enableObserver(QString observer, bool enable)
+
 {
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;

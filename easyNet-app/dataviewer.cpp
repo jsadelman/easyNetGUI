@@ -19,7 +19,7 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     setUi();
     destroyedObjectsFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     destroyedObjectsFilter->setAllPassFilter(); // may be specialised by derived classes
-    connect(destroyedObjectsFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(removeItem(QString)));
+    connect(destroyedObjectsFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(destroyItem(QString)));
 }
 
 DataViewer::~DataViewer()
@@ -40,37 +40,45 @@ void DataViewer::setUi()
     layout->addWidget(ui);
     setLayout(layout);
     enableActions(false);
-    connect(ui, SIGNAL(deleteItemRequested(QString)), this, SLOT(initiateRemoveItem(QString)));
-    connect(ui, SIGNAL(currentItemChanged(QString)), this, SLOT(updateCurrentItem(QString)));
-
 }
 
-void DataViewer::initiateRemoveItem(QString name)
+void DataViewer::initiateDestroyItem(QString name)
 {
-    if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
+
+    if (dispatcher && sender() == ui)
+    {
+        dispatcher->setInView(name, false);
+    }
+    else if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
     {
         eNwarning << QString("attempt to delete lazyNut system object %1").arg(name);
         // this should change, trigger desable default observer
     }
-    else if (dispatcher && sender() == ui)
-    {
-        dispatcher->setInView(name, false);
-    }
     else
     {
-        SessionManager::instance()->destroyObject(name);
         emit itemRemoved(name);
+        if (SessionManager::instance()->exists(name))
+        {
+            SessionManager::instance()->destroyObject(name);
+        }
+        else
+        {
+            SessionManager::instance()->removeFromExtraNamedItems(name);
+            destroyItem(name);
+        }
     }
 }
 
-void DataViewer::removeItem(QString name)
+void DataViewer::destroyItem(QString name)
 {
     if (!contains(name))
     {
-        eNwarning << QString("attempt to delete non-existing item %1").arg(name);
+//        eNwarning << QString("attempt to delete non-existing item %1").arg(name) << sender()->metaObject()->className();
         return;
     }
-    removeItem_impl(name);
+    if (dispatcher)
+        dispatcher->removeFromHistory(name);
+    destroyItem_impl(name);
     removeView(name);
 }
 
@@ -87,6 +95,8 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
     {
         ui->setDispatchModeAutoAct->setVisible(true);
         setDispatchModeAuto(true);
+//        ui->setDispatchModeAutoAct->setEnabled(enable);
+//        dispatcher->historyAct->setEnabled(enable);
     }
 }
 
@@ -107,7 +117,7 @@ void DataViewer::setDefaultDir(QString dir)
 
 void DataViewer::addView(QString name)
 {
-    ui->addView(name, makeView());
+    ui->addView(name, makeView(name));
     if (!isLazy())
         addNameToFilter(name);
 }
@@ -144,10 +154,10 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QSharedPo
     {
         eNerror << "name is empty";
     }
-    else if (!SessionManager::instance()->exists(name))
-    {
-        eNerror << QString("attempt to add a non-existing object %1").arg(name);
-    }
+//    else if (!SessionManager::instance()->exists(name))
+//    {
+//        eNerror << QString("attempt to add a non-existing object %1").arg(name);
+//    }
     else if (ui->contains(name))
     {
         if (setCurrent)
@@ -215,11 +225,8 @@ void DataViewer::enableActions(bool enable)
         return;
     ui->saveAct->setEnabled(enable);
     ui->copyAct->setEnabled(enable);
-    if (dispatcher)
-    {
-        ui->setDispatchModeAutoAct->setEnabled(enable);
-        dispatcher->historyAct->setEnabled(enable);
-    }
+    ui->destroyAct->setEnabled(enable);
+
 }
 
 void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
@@ -232,6 +239,12 @@ void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info
     {
         eNerror << "no dispatcher set for this viewer";
     }
+}
+
+void DataViewer::setTrialRunMode(int mode)
+{
+    if (dispatcher)
+        dispatcher->setTrialRunMode(mode);
 }
 
 void DataViewer::setDispatchModeOverride(int mode)
@@ -248,6 +261,18 @@ void DataViewer::setDispatchModeAuto(bool isAuto)
     {
         dispatcher->dispatchModeAuto = isAuto;
         ui->setDispatchModeOverrideActGroup->setVisible(!isAuto);
+        if (isAuto)
+            dispatcher->dispatchModeOverride = -1;
+        else
+            dispatcher->restoreOverrideDefaultValue();
     }
+}
+
+void DataViewer::destroySelectedItems()
+{
+    if (dispatcher && dispatcher->historyAct->isChecked())
+        dispatcher->destroySelectedItems();
+    else
+        initiateDestroyItem(ui->currentItemName());
 }
 
