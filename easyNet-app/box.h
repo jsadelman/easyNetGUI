@@ -45,7 +45,7 @@ public:
     virtual void paintLabel(QPainter *painter);
     virtual QRectF labelBoundingRect(void) const;
 
-    QString defaultPlotType();
+    QStringList defaultPlotTypes();
 
     qreal autoWidth();
 signals:
@@ -63,7 +63,6 @@ private slots:
 //    void updateObservedState();
 
 private:
-    void defaultPlot(QString plotName, QString dataframe);
     void enableObserver(QString observer, bool enable);
     void lesionBox(bool lesion);
 
@@ -81,8 +80,14 @@ private:
     QSet<QString>     defaultObserverSet;
     ObjectCacheFilter *plotFilter;
     QMap <QString, QString> observerOfPlot;
+
+    ObjectCacheFilter *defaultDataframesFilter;
+    ObjectCacheFilter   *layersFilter;
+    ObjectUpdater       *layersUpdater;
+
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
+
 
 
 
