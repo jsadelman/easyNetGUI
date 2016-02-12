@@ -38,29 +38,29 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
                    .arg(trialRunInfo.runMode);
         return;
     }
-    int dispatchAction;
+//    int currentDispatchAction;
     if (!inHistory(trialRunInfo.results))
     {
-        dispatchAction = Dispatch_Overwrite;
+        currentDispatchAction = Dispatch_Overwrite;
     }
     else if (!dispatchModeAuto && dispatchModeOverride > -1)
     {
-        dispatchAction = dispatchModeOverride;
+        currentDispatchAction = dispatchModeOverride;
     }
     else if (previousDispatchMode < 0)
     {
-        dispatchAction = currentDispatchMode;
+        currentDispatchAction = currentDispatchMode;
     }
     else
     {
-        dispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
+        currentDispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
     }
     previousDispatchMode = currentDispatchMode;
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList();
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
-    switch(dispatchAction)
+    switch(currentDispatchAction)
     {
     case Dispatch_New:
     {
@@ -75,8 +75,8 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         jobData.insert("name", backupDf);
         jobData.insert("setCurrent", false);
         jobData.insert("isBackup", true);
-        QVariant infoVariant;
-        infoVariant.setValue(trialRunInfoMap.value(trialRunInfo.results));
+        QVariant infoVariant = infoVariantList(trialRunInfo.results);
+//        infoVariant.setValue(trialRunInfoMap.value(trialRunInfo.results));
         jobData.insert("trialRunInfo", infoVariant);
         jobs << SessionManager::instance()->recentlyCreatedJob();
         jobs.last()->data = jobData;
@@ -90,7 +90,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
         if (!host->contains(trialRunInfo.results))
         {
-            host->addItem(trialRunInfo.results, true, false, info);
+            host->addItem(trialRunInfo.results, true, false, QList<QSharedPointer<QDomDocument> >({info}));
             host->setPrettyHeadersForTrial(trialRunInfo.trial, trialRunInfo.results);
         }
         break;
@@ -120,8 +120,20 @@ void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
     QString results = TrialRunInfo(info).results;
     updateHistory(results, info);
-    setTrialRunInfo(results, info);
-    if (infoAct->isChecked())
+    switch(currentDispatchAction)
+    {
+    case Dispatch_New:
+        ;
+    case Dispatch_Overwrite:
+        setTrialRunInfo(results, info);
+        break;
+    case Dispatch_Append:
+        appendTrialRunInfo(results, info);
+        break;
+    default:
+        eNerror << "the computed dispatch action was not recognised";
+    }
+    if (infoIsVisible)
         showInfo(true);
 }
 

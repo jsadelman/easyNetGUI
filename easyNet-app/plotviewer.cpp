@@ -402,7 +402,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
         settings[sourceDataframeSettings_it.key()] = sourceDataframeSettings_it.value();
     }
     int flags = SessionManager::instance()->plotFlags(name) | Plot_Backup;
-    emit createNewRPlot(newName, plotType(name), settings, flags, dispatcher ? dispatcher->info(name) : QSharedPointer<QDomDocument>());
+    emit createNewRPlot(newName, plotType(name), settings, flags, dispatcher ? dispatcher->info(name) : QList<QSharedPointer<QDomDocument> >());
     return newName;
 }
 

@@ -281,36 +281,15 @@ void MainWindow::connectSignalsAndSlots()
 {
     // refresh params when user clicks on param tab or changes model in combobox
     connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
-//    connect(this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
-//    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentModel(QString)));
-//    connect(this,SIGNAL(newTableSelection(QString)),tableWindow,SLOT(updateTableView(QString)));
-//    connect(paramEdit, SIGNAL(newParamValueSig(QString,QString)),
-//            this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
             plotViewer,SLOT(updatePlot(QString,QByteArray)));
-//    connect(plotSettingsWindow, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
-//            plotViewer,SLOT(newRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
-//    connect(plotViewer, SIGNAL(createNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
-//            plotSettingsWindow,SLOT(newRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
-//    connect(plotViewer, SIGNAL(quietlyCreateNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)),
-//            plotSettingsWindow,SLOT(quietlyNewRPlot(QString, QString, QMap<QString, QString>, QMap<QString, QString>, bool, int)));
-
-
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
-//    connect(tableWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
     connect(plotViewer,SIGNAL(setPlotSettings(QString)), plotSettingsWindow, SLOT(setPlotSettings(QString)));
-//    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
     connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
-//    connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
-//    connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
-//    connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
-//    connect(dataframesWindow, SIGNAL(openFileRequest()),this,SLOT(importDataFrame()));
-//    connect(diagramPanel, SIGNAL(currentDiagramSceneChanged(DiagramScene*)),
-//            this, SLOT(diagramSceneTabChanged(DiagramScene*)));
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
@@ -323,50 +302,23 @@ void MainWindow::connectSignalsAndSlots()
             trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
-//    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
-//            tableWindow,SLOT(addTrialTable(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)));
-//    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)),
-//            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int)));
-//    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int)),
-//            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int)));
-    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QSharedPointer<QDomDocument>)));
-//    connect(tableWindow,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)),
-//            plotViewer,SLOT(newRPlot(QString,QString,QMap<QString,QString>, QMap<QString,QString>, bool, int, QDomDocument*)));
-//    connect(tableWindow, SIGNAL(addDataframeMerge(QString,QString)),
-//            plotViewer, SLOT(addDataframeMerge(QString,QString)));
+    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
+    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
-//             tableWindow, SLOT(preDispatch(QDomDocument*)));
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
-     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QSharedPointer<QDomDocument>)),
-             plotViewer, SLOT(addItem(QString, bool, bool, QSharedPointer<QDomDocument>)));
-//    connect(plotSettingsWindow, SIGNAL(setCurrentPlot(QString)),
-//            plotViewer, SLOT(setCurrentPlot(QString)));
+     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
+             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
     connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
-    connect(dataframeResultsViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int,QSharedPointer<QDomDocument>)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int,QSharedPointer<QDomDocument>)));
-//    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
-//    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(snapshot(QString)));
-//    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
-//            this,SLOT(showPlotViewer()));
-
-//    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-//    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    /* signals & slots */
-//    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
-//          SessionManager::instance()->descriptionCache(), SLOT(create(QDomDocument*)));
-//    connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
-//          SessionManager::instance()->descriptionCache(), SLOT(invalidateCache(QStringList)));
-//    connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
-//          SessionManager::instance()->descriptionCache(), SLOT(destroy(QStringList)));
+    connect(dataframeResultsViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),

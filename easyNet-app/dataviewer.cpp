@@ -129,7 +129,7 @@ void DataViewer::removeView(QString name)
     delete ui->takeView(name);
 }
 
-void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QSharedPointer<QDomDocument> info)
+void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QList<QSharedPointer<QDomDocument> > info)
 {
     if (name.isEmpty())
     {
@@ -147,8 +147,16 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QSharedPo
         if (v.canConvert<bool>())
             isBackup = v.value<bool>();
         v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
-        if (v.canConvert<QSharedPointer<QDomDocument> >())
-            info = v.value<QSharedPointer<QDomDocument> >();
+        if (v.canConvert<QList<QVariant> >())
+        {
+            foreach(QVariant vi, v.toList())
+            {
+                if (vi.canConvert<QSharedPointer<QDomDocument> >())
+                    info.append(vi.value<QSharedPointer<QDomDocument> >());
+            }
+        }
+//        if (v.canConvert<QSharedPointer<QDomDocument> >())
+//            info = v.value<QSharedPointer<QDomDocument> >();
     }
     if (name.isEmpty())
     {

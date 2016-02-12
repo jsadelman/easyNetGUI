@@ -15,6 +15,7 @@ class HistoryWidget;
 class QAction;
 class QDomDocument;
 class QDockWidget;
+class QScrollArea;
 
 class DataViewerDispatcher: public QObject
 {
@@ -26,13 +27,16 @@ public:
     virtual void dispatch(QSharedPointer<QDomDocument> info)=0;
     void setSingleTrialMode(int mode)   {dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_Single), mode);}
     void setTrialListMode(int mode)     {dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_List), mode);}
+    void setTrialRunInfo(QString item, QList<QSharedPointer<QDomDocument> > info);
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
+    void appendTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
     void copyTrialRunInfo(QString fromItem, QString toItem);
     QString trial(QString name);
     QString runMode(QString name);
     QString results(QString name);
-    QSharedPointer<QDomDocument> info(QString name) {return trialRunInfoMap.value(name);}
-    void addToHistory(QString name, bool inView=false, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
+    QList<QSharedPointer<QDomDocument> > info(QString name) {return trialRunInfoMap.value(name);}
+    QList<QVariant> infoVariantList(QString name);
+    void addToHistory(QString name, bool inView=false, QList<QSharedPointer<QDomDocument> > info=QList<QSharedPointer<QDomDocument> >());
     void removeFromHistory(QString name);
     bool inHistory(QString name);
     void setInView(QString name, bool inView);
@@ -70,13 +74,16 @@ protected:
     const QString no_trial = "<no-trial>";
     DataViewer *hostDataViewer;
     int previousDispatchMode;
-    QMap <QString, QSharedPointer<QDomDocument> > trialRunInfoMap;
+    int currentDispatchAction;
+    // preferred over QMultiMap since order of values is guaranteed and easy to clear QLists
+    QMap <QString, QList<QSharedPointer<QDomDocument> > > trialRunInfoMap;
     HistoryTreeModel *historyModel;
     HistoryWidget  *historyWidget;
     QString previousItem;
-    bool update_view_disabled;
+    bool infoIsVisible;
     int trialRunMode;
-    QDockWidget  *infoWidget;
+    QDockWidget  *infoDock;
+    QScrollArea *infoScroll;
 
 };
 

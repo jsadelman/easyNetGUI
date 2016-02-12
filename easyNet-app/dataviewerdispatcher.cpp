@@ -16,12 +16,16 @@
 #include <QModelIndex>
 #include <QScrollArea>
 #include <QHeaderView>
+#include <QVBoxLayout>
+
+
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     : QObject(host), hostDataViewer(host), dispatchModeOverride(-1),
-      dispatchModeAuto(true), previousDispatchMode(-1), previousItem(""),
-      update_view_disabled(false), trialRunMode(TrialRunMode_Single),
+      dispatchModeAuto(true), previousDispatchMode(-1), currentDispatchAction(-1), previousItem(""),
+      infoIsVisible(false), trialRunMode(TrialRunMode_Single),
       previousDispatchOverrideMode(-1)
 {
     if (!host)
@@ -53,46 +57,65 @@ DataViewerDispatcher::~DataViewerDispatcher()
 }
 
 
+void DataViewerDispatcher::setTrialRunInfo(QString item, QList<QSharedPointer<QDomDocument> > info)
+{
+    trialRunInfoMap[item] = info;
+}
+
 void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
 {
-    trialRunInfoMap.insert(item, info);
+    setTrialRunInfo(item, QList<QSharedPointer<QDomDocument> >({info}));
+}
+
+void DataViewerDispatcher::appendTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+{
+    trialRunInfoMap[item].append(info);
 }
 
 void DataViewerDispatcher::copyTrialRunInfo(QString fromItem, QString toItem)
 {
     if (trialRunInfoMap.contains(fromItem))
-        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
+        trialRunInfoMap[toItem] = trialRunInfoMap.value(fromItem);
+//        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
 }
 
 QString DataViewerDispatcher::trial(QString name)
 {
     if (trialRunInfoMap.contains(name))
-        return  trialRunInfoMap.value(name) ? TrialRunInfo(trialRunInfoMap.value(name)).trial : no_trial;
+        return !trialRunInfoMap.value(name).isEmpty() && trialRunInfoMap.value(name).last() ? TrialRunInfo(trialRunInfoMap.value(name).last()).trial : no_trial;
     return QString();
 }
 
 QString DataViewerDispatcher::runMode(QString name)
 {
     if (trialRunInfoMap.contains(name))
-        return TrialRunInfo(trialRunInfoMap.value(name)).runMode;
+        return !trialRunInfoMap.value(name).isEmpty() ? TrialRunInfo(trialRunInfoMap.value(name).last()).runMode : QString();
     return QString();
 }
 
 QString DataViewerDispatcher::results(QString name)
 {
     if (trialRunInfoMap.contains(name))
-        return TrialRunInfo(trialRunInfoMap.value(name)).results;
+        return !trialRunInfoMap.value(name).isEmpty() &&  trialRunInfoMap.value(name).last() ? TrialRunInfo(trialRunInfoMap.value(name).last()).results : QString();
     return QString();
 }
 
-void DataViewerDispatcher::addToHistory(QString name, bool inView, QSharedPointer<QDomDocument> info)
+QList<QVariant> DataViewerDispatcher::infoVariantList(QString name)
+{
+    QList<QVariant> vList;
+    foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(name))
+        vList.append(QVariant::fromValue(info));
+    return vList;
+}
+
+void DataViewerDispatcher::addToHistory(QString name, bool inView, QList<QSharedPointer<QDomDocument> > info)
 {
     if (trialRunInfoMap.contains(name))
     {
         eNwarning << QString("attempt to add item %1 to History, the item is in History already").arg(name);
         return;
     }
-    trialRunInfoMap.insert(name, info);
+    setTrialRunInfo(name, info);
     historyModel->appendView(name, trial(name), inView);
 }
 
@@ -156,21 +179,24 @@ void DataViewerDispatcher::createHistory()
 
 void DataViewerDispatcher::createInfo()
 {
-    infoWidget = new QDockWidget(hostDataViewer->ui);
-    infoWidget->setWindowTitle("Trial run info");
-    infoWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, infoWidget);
+    infoDock = new QDockWidget(hostDataViewer->ui);
+    infoDock->setWindowTitle("Trial run info");
+    infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    infoScroll = new QScrollArea(hostDataViewer->ui);
+    infoDock->setWidget(infoScroll);
+    infoScroll->setWidgetResizable(true);
+    hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, infoDock);
     connect(hostDataViewer->ui, &Ui_DataViewer::currentItemChanged, [=]()
     {
         if (infoAct->isChecked())
             showInfo(true);
     });
-    infoAct = infoWidget->toggleViewAction();
+    infoAct = infoDock->toggleViewAction();
     infoAct->setIcon(QIcon(":/images/Information-icon.png"));
     infoAct->setText("Info");
     infoAct->setToolTip("show/hide trial run info");
     connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(showInfo(bool)));
-    infoWidget->setVisible(false);
+    infoDock->setVisible(false);
     hostDataViewer->ui->dispatchToolBar->addAction(infoAct);
 }
 
@@ -239,9 +265,31 @@ void DataViewerDispatcher::updateHistory(QString item, QSharedPointer<QDomDocume
 
 void DataViewerDispatcher::showInfo(bool show)
 {
+    QVBoxLayout *infoLayout;
+    QWidget *infoWidget = infoScroll->takeWidget();
+    if (infoWidget)
+    {
+        infoLayout = qobject_cast<QVBoxLayout *>(infoWidget->layout());
+        QLayoutItem *item;
+        while ((item = infoLayout->takeAt(0)) != 0)
+        {
+            QTreeView *infoView = qobject_cast<QTreeView *>(item->widget());
+            if (infoView)
+            {
+                delete infoView->model();
+                delete infoView;
+            }
+        }
+    }
+    delete infoWidget;
     if (show)
     {
-        QSharedPointer<QDomDocument> info = trialRunInfoMap.value(hostDataViewer->ui->currentItemName());
+        infoWidget = new QWidget;
+        infoLayout = new QVBoxLayout;
+        infoLayout->setSizeConstraint(QLayout::SetFixedSize);
+        infoWidget->setLayout(infoLayout);
+
+        foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(hostDataViewer->ui->currentItemName()))
         if (info)
         {
             XMLModel *infoModel = new XMLModel(info, this);
@@ -254,20 +302,20 @@ void DataViewerDispatcher::showInfo(bool show)
             infoView->resizeColumnToContents(0);
             infoView->resizeColumnToContents(1);
             infoView->setMinimumWidth(infoView->width());
-            infoWidget->setWidget(infoView);
+            infoView->setHeaderHidden(true);
+            infoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//            infoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//            infoView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            infoLayout->addWidget(infoView);
         }
-        infoWidget->setVisible(true);
+        infoScroll->setWidget(infoWidget);
+        infoDock->setVisible(true);
     }
     else
     {
-        QTreeView *infoView = qobject_cast<QTreeView *>(infoWidget->widget());
-        if (infoView)
-        {
-            delete infoView->model();
-            delete infoView;
-        }
-        infoWidget->setVisible(false);
+        infoDock->setVisible(false);
     }
+    infoIsVisible = show;
 }
 
 

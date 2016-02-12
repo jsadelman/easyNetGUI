@@ -169,17 +169,18 @@ void DataframeViewer::copyDataframe()
     QMap<QString, QVariant> jobData;
     jobData.insert("dfName", copyDf);
     jobData.insert("setCurrent", true);
+    if (dispatcher)
+    {
+        jobData.insert("trialRunInfo", dispatcher->infoVariantList(originalDf));
+        setPrettyHeadersForTrial(dispatcher->trial(originalDf), copyDf);
+    }
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->recentlyCreatedJob();
     jobs.last()->data = jobData;
     jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
     SessionManager::instance()->submitJobs(jobs);
-    if (dispatcher)
-    {
-        dispatcher->copyTrialRunInfo(originalDf, copyDf);
-        setPrettyHeadersForTrial(dispatcher->trial(originalDf), copyDf);
-    }
+
 }
 
 void DataframeViewer::dataframeMerge()
@@ -224,8 +225,9 @@ void DataframeViewer::dataframeMerge()
         jobData.insert("isBackup", false);
         if (dispatcher)
         {
-            QVariant infoV;
-            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
+            QVariant infoV = !dispatcher->info(x).isEmpty() ?
+                        dispatcher->infoVariantList(x) : dispatcher->infoVariantList(y);
+//            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
             jobData.insert("trialRunInfo", infoV);
         }
         jobs.last()->data = jobData;
@@ -446,7 +448,7 @@ void DataframeViewer::sendNewPlotRequest()
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
         QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.plot").arg(ui->currentItemName()));
-        QSharedPointer<QDomDocument> info = dispatcher ? dispatcher->info(ui->currentItemName()) : QSharedPointer<QDomDocument>();
+        QList<QSharedPointer<QDomDocument> > info = dispatcher ? dispatcher->info(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         emit createNewPlot(plotName, plotType, settings, 0, info);
     }
 }
