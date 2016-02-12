@@ -26,6 +26,7 @@ class LazyNut;
 class CommandSequencer;
 class ObjectCache;
 class ObjectCacheFilter;
+class ObjectNameValidator;
 
 
 class SessionManager: public QObject
@@ -36,6 +37,7 @@ class SessionManager: public QObject
     Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet)
 
 friend class LazyNutJob;
+friend class ObjectNameValidator;
 
 public:
     static SessionManager* instance(); // singleton
@@ -46,11 +48,28 @@ public:
 
     void submitJobs(QList<LazyNutJob*> jobs);
     void submitJobs(LazyNutJob* job) {submitJobs(QList<LazyNutJob*>{job});}
+    QVariant getDataFromJob(QObject *obj, QString key);
 
     LazyNutJob* recentlyCreatedJob();
     LazyNutJob* recentlyModifiedJob();
     LazyNutJob* recentlyDestroyedJob();
     QList<LazyNutJob*> updateObjectCatalogueJobs();
+
+    bool exists(QString name);
+    QStringList sourceDataframes(QString df);
+    QStringList affectedPlots(QString resultsDf);
+    QStringList enabledObservers() {return m_enabledObservers;}
+    bool suspendingObservers() {return m_suspendingObservers;}
+    bool isAnyTrialPlot(QString name);
+    int plotFlags(QString name) {return m_plotFlags.value(name, 0);}
+    QMap<QString, QString> plotSourceDataframeSettings(QString plotName);
+    QStringList plotsOfSourceDf(QString df) {return m_plotsOfSourceDf.values(df);}
+    QStringList plotSourceDataframes(QString plotName) {return plotSourceDataframeSettings(plotName).values();}
+    QString makeValidObjectName(QString name);
+    bool isValidObjectName(QString name);
+    void addToExtraNamedItems(QString name);
+    void removeFromExtraNamedItems(QString name);
+
 
     ObjectCache *descriptionCache;
     ObjectCache *dataframeCache;
@@ -112,6 +131,14 @@ public slots:
     void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
     void setCurrentTrial(QString s) {m_currentTrial = s;}
     void setCurrentSet(QString s) {m_currentSet = s;}
+    void setPrettyName(QString name, QString prettyName);
+    void destroyObject(QString name);
+    void addDataframeMerge(QString df, QString dfm);
+    void replacePlotSource(QString plot, QString settingsLabel, QString oldSourceDf, QString newSourceDf);
+    void setPlotFlags(QString name, int flags);
+    void observerEnabled(QString observer=QString(), bool enabled=false);
+    void suspendObservers(bool suspending) {m_suspendingObservers = suspending;}
+
 
 private slots:
 
@@ -148,6 +175,17 @@ private:
     QString lazyNutHeaderBuffer;
     QRegExp OOBrex;
     QString OOBsecret;
+
+    QMap <QString, int> m_plotFlags;
+    QMultiMap <QString, QString> m_plotsOfSourceDf; // <dataframe, rplots>
+    QMultiMap <QString, QString> dataframeMergeOfSource; // <dataframe, dataframe_merges>
+    QMap <QString, QMap<QString, QString> > m_plotSourceDataframeSettings; // <rplot <key, val> >
+    QStringList m_enabledObservers;
+    bool        m_suspendingObservers;
+
+    ObjectNameValidator *validator;
+    QStringList extraNamedItems;
+
 
 };
 

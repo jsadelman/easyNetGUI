@@ -10,6 +10,8 @@
 #include "objectcache.h"
 #include "objectcachefilter.h"
 #include "easyNetMainWindow.h"
+#include "objectnamevalidator.h"
+
 
 
 #include <QtGlobal>
@@ -33,7 +35,8 @@ SessionManager *SessionManager::instance()
 }
 
 SessionManager::SessionManager()
-    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)(?=\\r\\n)")
+    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)(?=\\r\\n)"),
+      m_plotFlags()
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
@@ -48,16 +51,15 @@ SessionManager::SessionManager()
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             descriptionCache,  SLOT(destroy(QStringList)));
 
-    ObjectCacheFilter *dfFilter = new ObjectCacheFilter(descriptionCache, this);
-    dfFilter->setType("dataframe");
-
     dataframeCache = new ObjectCache(this);
-    connect(dfFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-            dataframeCache, SLOT(create(QString,QString)));
-    connect(dfFilter, SIGNAL(objectModified(QString)),
-            dataframeCache, SLOT(invalidateCache(QString)));
-    connect(dfFilter, SIGNAL(objectDestroyed(QString)),
-            dataframeCache, SLOT(destroy(QString)));
+    connect(this, SIGNAL(recentlyCreated(QDomDocument*)),
+            dataframeCache, SLOT(create(QDomDocument*)));
+    connect(this,  SIGNAL(recentlyModified(QStringList)),
+            dataframeCache,  SLOT(invalidateCache(QStringList)));
+    connect(this, SIGNAL(recentlyDestroyed(QStringList)),
+            dataframeCache,  SLOT(destroy(QStringList)));
+
+    validator = new ObjectNameValidator(this);
 }
 
 
@@ -106,11 +108,165 @@ void SessionManager::restartLazyNut(QString lazyNutBat)
     startLazyNut(lazyNutBat);
 }
 
+void SessionManager::setPrettyName(QString name, QString prettyName)
+{
+    if (!descriptionCache->exists(name))
+        return;
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList << QString("%1 set_pretty_name %2").arg(name).arg(prettyName);
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << job
+                                << recentlyModifiedJob();
+    submitJobs(jobs);
+}
+
+void SessionManager::destroyObject(QString name)
+{
+    if (descriptionCache->exists(name))
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->logMode |= ECHO_INTERPRETER;
+        job->cmdList << QString("destroy %1").arg(name);
+        if (descriptionCache->type(name) == "xfile" && (plotFlags(name)& Plot_Backup))
+        {
+            foreach(QString df, plotSourceDataframes(name))
+            {
+                job->cmdList << QString("destroy %1").arg(df);
+                // partial cleanup of df-plot data structures, needs proper solution
+                m_plotsOfSourceDf.remove(df, name);
+            }
+            m_plotSourceDataframeSettings.remove(name);
+        }
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << recentlyDestroyedJob();
+        submitJobs(jobs);
+    }
+}
+
+void SessionManager::addDataframeMerge(QString df, QString dfm)
+{
+    if (!dataframeMergeOfSource.contains(df, dfm))
+        dataframeMergeOfSource.insert(df, dfm);
+}
+
+void SessionManager::replacePlotSource(QString plot, QString settingsLabel, QString oldSourceDf, QString newSourceDf)
+{
+    m_plotsOfSourceDf.remove(oldSourceDf, plot);
+    m_plotsOfSourceDf.insert(newSourceDf, plot);
+    QMap<QString, QString> settings = m_plotSourceDataframeSettings.value(plot);
+    settings.insert(settingsLabel, newSourceDf);
+    m_plotSourceDataframeSettings.insert(plot, settings);
+}
+
+void SessionManager::setPlotFlags(QString name, int flags)
+{
+    m_plotFlags[name] = flags;
+}
+
+void SessionManager::observerEnabled(QString observer, bool enabled)
+{
+    if (observer.isEmpty())
+    {
+        observer = getDataFromJob(sender(), "observer").toString();
+        if (observer.isEmpty())
+        {
+            qDebug() << "ERROR: SessionManager::observerEnabled observer tag is empty";
+            return;
+        }
+        enabled  = getDataFromJob(sender(), "enabled").toBool();
+    }
+    if (enabled)
+    {
+        if (!m_enabledObservers.contains(observer))
+                m_enabledObservers.append(observer);
+    }
+    else
+        m_enabledObservers.removeAll(observer);
+}
+
+QStringList SessionManager::sourceDataframes(QString df)
+{
+    if (!exists(df))
+        return QStringList();
+
+    QSet<QString> sourceDfs({df});
+    return sourceDfs.unite(matchListFromMap(dataframeMergeOfSource, df)).toList();
+}
+
+QStringList SessionManager::affectedPlots(QString resultsDf)
+{
+    QSet<QString> plots;
+    QStringList dfList({resultsDf});
+    if (!suspendingObservers() && !enabledObservers().isEmpty())
+    {
+        QStringList observerDfs = enabledObservers();
+        observerDfs.replaceInStrings(QRegExp("^(.*)$"), "(\\1 default_dataframe)");
+        dfList.append(observerDfs);
+    }
+    foreach (QString df, dfList)
+        foreach(QString sourceDf, sourceDataframes(df))
+            foreach (QString plot, m_plotsOfSourceDf.values(sourceDf))
+                plots.insert(plot);
+    return plots.toList();
+}
+
+bool SessionManager::isAnyTrialPlot(QString name)
+{
+    if (m_plotFlags.contains(name))
+        return m_plotFlags.value(name) & Plot_AnyTrial;
+    return false;
+}
+
+QMap<QString, QString> SessionManager::plotSourceDataframeSettings(QString plotName)
+{
+    return m_plotSourceDataframeSettings.value(plotName);
+}
+
+QString SessionManager::makeValidObjectName(QString name)
+{
+    return validator->makeValid(name);
+}
+
+bool SessionManager::isValidObjectName(QString name)
+{
+    return validator->isValid(name);
+}
+
+void SessionManager::addToExtraNamedItems(QString name)
+{
+    if (!extraNamedItems.contains(name))
+        extraNamedItems.append(name);
+}
+
+void SessionManager::removeFromExtraNamedItems(QString name)
+{
+    extraNamedItems.removeAll(name);
+}
+
 
 
 void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
 {
     jobQueue->tryRun(jobs);
+}
+
+QVariant SessionManager::getDataFromJob(QObject *obj, QString key)
+{
+    LazyNutJob *job = qobject_cast<LazyNutJob *>(obj);
+    if (!job)
+    {
+        qDebug() << "ERROR: SessionManager::getDataFromJob cannot extract LazyNutJob from sender";
+        return QVariant();
+    }
+    QMap<QString, QVariant> data = job->data.toMap();
+    if (!data.contains(key))
+    {
+        qDebug() << "ERROR: SessionManager::getDataFromJob LazyNutJob->data does not contain key entry" << key;
+        return QVariant();
+    }
+    return data.value(key);
 }
 
 LazyNutJob *SessionManager::recentlyCreatedJob()
@@ -149,12 +305,13 @@ QList<LazyNutJob *> SessionManager::updateObjectCatalogueJobs()
     jobs.last()->appendEndOfJobReceiver(this, SIGNAL(commandsCompleted()));
     return jobs;
 }
-//! [nextJob]
 
-
-
-
-
+bool SessionManager::exists(QString name)
+{
+    if (!descriptionCache)
+        return false;
+    return descriptionCache->exists(name);
+}
 
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {

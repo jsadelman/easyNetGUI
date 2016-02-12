@@ -8,7 +8,10 @@
 #include "lazynutjob.h"
 #include "tableviewer2.h"
 #include "plotviewer.h"
+#include "tablewindow.h"
 #include "xmlaccessor.h"
+#include "dataframeviewer.h"
+#include "enumclasses.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -23,23 +26,31 @@
 #include <QMessageBox>
 #include <QCheckBox>
 
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument>)
+
 
 TrialWidget::TrialWidget(QWidget *parent)
-    : runAllMode(false), askDisableObserver(true), suspendingObservers(true), QWidget(parent)
+    : trialRunMode(TrialRunMode_Single), askDisableObserver(true), suspendingObservers(false), QWidget(parent)
 {
     layout = new QHBoxLayout;
     layout1 = new QHBoxLayout;
     layout2 = new QHBoxLayout;
     layout3 = new QVBoxLayout;
 
-
-
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    trialFilter->setType("trial");
+    // cosmetics used in tabs names in TableWindow
+    connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
+    {
+        QString df = QString("((%1 default_observer) default_dataframe)").arg(name);
+        SessionManager::instance()->setPrettyName(df, name);
+    });
+
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
-    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
             this,SLOT(buildComboBoxes(QDomDocument*)));
-    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*)),
+    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
             this,SIGNAL(trialDescriptionUpdated(QDomDocument*)));
 
     modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -48,7 +59,7 @@ TrialWidget::TrialWidget(QWidget *parent)
 
     modelDescriptionUpdater = new ObjectUpdater(this);
     modelDescriptionUpdater->setProxyModel(modelFilter);
-    connect(modelDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*)),
+    connect(modelDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*, QString)),
            this, SLOT(updateModelStochasticity(QDomDocument*)));
 
 
@@ -63,7 +74,6 @@ TrialWidget::TrialWidget(QWidget *parent)
     connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
 
     buildComboBoxesTest(QStringList());
-    enabledObservers.clear();
 
     disableObserversMsg = new QMessageBox(
                 QMessageBox::Question,
@@ -83,13 +93,9 @@ TrialWidget::~TrialWidget()
 
 void TrialWidget::update(QString trialName)
 {
-//    trialDescriptionUpdater->requestDescription(trialName); // 3/7/15 -> added cos currently no descriptions for trials
-//    qDebug() << "Entered trialwidget update" << trialName;
     if (trialName.isEmpty())
         return;
     trialFilter->setName(trialName);
-//    qDebug() << "called setName";
-
 }
 
 void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
@@ -202,7 +208,6 @@ void TrialWidget::clearLayout(QLayout *layout)
         if (item->layout())
         {
             clearLayout(item->layout());
-//            delete item->layout();
         }
         if (item->widget())
         {
@@ -228,8 +233,6 @@ QString TrialWidget::getTrialCmd()
         ++i;
     }
     return (cmd);
-
-
 }
 
 QString TrialWidget::getStochasticCmd()
@@ -256,71 +259,102 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which model to run");
         return;
     }
-
-    if (runAllMode)
-        runTrialList();
-    else
-        runSingleTrial();
-}
-
-void TrialWidget::runSingleTrial()
-{
+    if (trialRunMode == TrialRunMode_List && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
+    {
+        int answer = disableObserversMsg->exec();
+        SessionManager::instance()->suspendObservers(answer == QMessageBox::Yes);
+        askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
+    }
+    QSharedPointer<QDomDocument> trialRunInfo = createTrialRunInfo();
+    emit aboutToRunTrial(trialRunInfo);
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER;
 
-    QString tableName = QString("((%1 default_observer) default_dataframe)")
-            .arg(SessionManager::instance()->currentTrial());
-    job->cmdList << QString("%1 clear").arg(tableName);
+    if (!SessionManager::instance()->suspendingObservers())
+    {
+        foreach(QString observer, SessionManager::instance()->enabledObservers())
+            job->cmdList << QString("(%1 default_dataframe) clear").arg(observer);
+    }
+    if (trialRunMode == TrialRunMode_List)
+        runTrialList(job);
+    else
+        runSingleTrial(job);
 
-    // case hack to avoid problems with UPPERCASE!!!
-//    QString trialString = getTrialCmd().toLower();
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCatalogueJobs();
+
+    QMap<QString, QVariant> jobData;
+    jobData.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
+    jobs.last()->data = jobData;
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->dataframeResultsViewer, SLOT(dispatch()));
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
+
+    if (trialRunMode == TrialRunMode_List)
+    {
+        MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
+        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
+    }
+    SessionManager::instance()->submitJobs(jobs);
+}
+
+QString TrialWidget::defaultDataframe()
+{
+    return QString("((%1 default_observer) default_dataframe)")
+            .arg(SessionManager::instance()->currentTrial());
+}
+
+void TrialWidget::runSingleTrial(LazyNutJob *job)
+{
     job->cmdList << QString("%1 %2 step %3")
             .arg(MainWindow::instance()->quietMode)
             .arg(SessionManager::instance()->currentTrial())
             .arg(getTrialCmd());
-
-    QString displayTableName = SessionManager::instance()->currentTrial();
-    displayTableName.append(".table");
-
-    // now rbind the data to existing trial table
-    job->cmdList << QString("R << eN[\"%1\"] <- rbind(eN[\"%1\"],eN[\"%2\"])")
-            .arg(displayTableName)
-            .arg(tableName);
-
-    // display table of means after running set
-    job->cmdList << QString("xml %1 get").arg(displayTableName);
-    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-    job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
-    job->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(updateActivePlots()));
-
-    QMap<QString, QVariant> headerReplace;
-    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
-    headerReplace.insert("event_pattern", "");
-    headerReplace.insert("\\(", "");
-    headerReplace.insert("\\)", "");
-    job->data = headerReplace;
-
-    SessionManager::instance()->submitJobs(job);
-
-    MainWindow::instance()->tablesWindow->switchTab(displayTableName);
 }
 
-void TrialWidget::runTrialList()
+QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
 {
-    if (askDisableObserver)
+    QSharedPointer<QDomDocument> trialRunInfo (new QDomDocument);
+    QDomElement rootElem = trialRunInfo->createElement("string");
+    rootElem.setAttribute("label", "Title");
+    rootElem.setAttribute("value", "Trial run info");
+    trialRunInfo->appendChild(rootElem);
+    QDomElement trialElem = trialRunInfo->createElement("string");
+    trialElem.setAttribute("label", "Trial");
+    trialElem.setAttribute("value", SessionManager::instance()->currentTrial());
+    rootElem.appendChild(trialElem);
+    QDomElement modeElem = trialRunInfo->createElement("string");
+    modeElem.setAttribute("label", "Run mode");
+    modeElem.setAttribute("value", trialRunModeName.value(trialRunMode));
+    rootElem.appendChild(modeElem);
+    QDomElement dataframeElem = trialRunInfo->createElement("object");
+    dataframeElem.setAttribute("label", "Results");
+    dataframeElem.setAttribute("value", QString("((%1 default_observer) default_dataframe)")
+                               .arg(SessionManager::instance()->currentTrial()
+                               ));
+    rootElem.appendChild(dataframeElem);
+    QDomElement valuesElem = trialRunInfo->createElement("map");
+    valuesElem.setAttribute("label", "Values");
+    QMapIterator<QString, myComboBox*> argumentMap_it(argumentMap);
+    while(argumentMap_it.hasNext())
     {
-        int answer = disableObserversMsg->exec();
-        suspendingObservers = answer == QMessageBox::Yes;
-        askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
+        argumentMap_it.next();
+        QDomElement valueElem = trialRunInfo->createElement("string");
+        valueElem.setAttribute("label", argumentMap_it.key());
+        valueElem.setAttribute("value", static_cast<myComboBox*>(argumentMap[argumentMap_it.key()])->currentText());
+        valuesElem.appendChild(valueElem);
     }
-    if (suspendingObservers)
-        suspendObservers();
+    rootElem.appendChild(valuesElem);
 
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    QString tableName = QString("((%1 default_observer) default_dataframe)")
-            .arg(SessionManager::instance()->currentTrial());
-    job->cmdList << QString("%1 clear").arg(tableName);
+    return trialRunInfo;
+}
+
+void TrialWidget::runTrialList(LazyNutJob *job)
+{
+    if (SessionManager::instance()->suspendingObservers())
+        foreach(QString observer, SessionManager::instance()->enabledObservers())
+            job->cmdList << QString("%1 disable").arg(observer);
+
     job->cmdList << QString("set %1").arg(getTrialCmd());
     if (isStochastic)
     {
@@ -338,33 +372,9 @@ void TrialWidget::runTrialList()
                         .arg(getStimulusSet());
     }
     job->cmdList << QString("unset %1").arg(getArguments().join(" "));
-    QString displayTableName = MainWindow::instance()->tablesWindow->addTable();
-    job->cmdList << QString("%1 copy %2").arg(tableName).arg(displayTableName);
-      // display table of means after running set
-    job->cmdList << QString("xml %1 get").arg(displayTableName);
-    job->setAnswerReceiver(MainWindow::instance()->tablesWindow, SLOT(prepareToAddDataFrameToWidget(QDomDocument*, QString)), AnswerFormatterType::XML);
-    job->appendEndOfJobReceiver(MainWindow::instance()->tablesWindow, SLOT(setPrettyHeaderFromJob()));
-    job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
-    if (suspendingObservers)
-        job->appendEndOfJobReceiver(this, SLOT(restoreObservers()));
-
-    QMap<QString, QVariant> headerReplace;
-    headerReplace.insert(SessionManager::instance()->currentTrial(), "");
-    headerReplace.insert("event_pattern", "");
-    headerReplace.insert("\\(", "");
-    headerReplace.insert("\\)", "");
-    job->data = headerReplace;
-
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << SessionManager::instance()->updateObjectCatalogueJobs();
-
-    SessionManager::instance()->submitJobs(jobs);
-
-    MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
-
-    MainWindow::instance()->resultsDock->raise();
-    MainWindow::instance()->resultsPanel->setCurrentIndex(MainWindow::instance()->outputTablesTabIdx);
+    if (SessionManager::instance()->suspendingObservers())
+        foreach(QString observer, SessionManager::instance()->enabledObservers())
+            job->cmdList << QString("%1 enable").arg(observer);
 }
 
 bool TrialWidget::checkIfReadyToRun()
@@ -396,7 +406,6 @@ void TrialWidget::clearDollarArgumentBoxes()
     QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
     while (i != argumentMap.constEnd())
     {
-        qDebug()<<static_cast<myComboBox*>(argumentMap[i.key()])->currentText();
         if(!static_cast<myComboBox*>(argumentMap[i.key()])->currentText().isEmpty()) // fix Jamesbug
             if (static_cast<myComboBox*>(argumentMap[i.key()])->currentText().at(0)=='$')
         {
@@ -417,67 +426,7 @@ void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
     else
         isStochastic = false;
 
-    setStochasticityVisible(runAllMode && isStochastic);
-}
-
-void TrialWidget::observerEnabled(QString name)
-{
-    if (name.isEmpty())
-    {
-        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-        if (!job)
-        {
-            qDebug() << "TrialWidget::observerEnabled sender not a LazyNutJob";
-            return;
-        }
-        name = job->data.toMap().value("observer").toString();
-        if (name.isEmpty())
-        {
-            qDebug() << "TrialWidget::observerEnabled LazyNutJob does not contain an observer name";
-            return;
-        }
-    }
-    enabledObservers.insert(name);
-}
-
-void TrialWidget::observerDisabled(QString name)
-{
-    if (name.isEmpty())
-    {
-        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
-        if (!job)
-        {
-            qDebug() << "TrialWidget::observerDisabled sender not a LazyNutJob";
-            return;
-        }
-        name = job->data.toMap().value("observer").toString();
-        if (name.isEmpty())
-        {
-            qDebug() << "TrialWidget::observerDisabled LazyNutJob does not contain an observer name";
-            return;
-        }
-    }
-    enabledObservers.remove(name);
-}
-
-void TrialWidget::suspendObservers()
-{
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    foreach(QString observer, enabledObservers)
-        job->cmdList << QString("%1 disable").arg(observer);
-
-    SessionManager::instance()->submitJobs(job);
-}
-
-void TrialWidget::restoreObservers()
-{
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    foreach(QString observer, enabledObservers)
-        job->cmdList << QString("%1 enable").arg(observer);
-
-    SessionManager::instance()->submitJobs(job);
+    setStochasticityVisible(trialRunMode == TrialRunMode_List && isStochastic);
 }
 
 void TrialWidget::setStochasticityVisible(bool isVisible)
@@ -518,11 +467,9 @@ void TrialWidget::hideSetComboBox()
     setComboBox->hide();
     setCancelButton->hide();
     setStochasticityVisible(false);
-
-//    clearArgumentBoxes();
     clearDollarArgumentBoxes();
-    runAllMode = false;
-//    emit runAllModeChanged(false);
+    trialRunMode = TrialRunMode_Single;
+    emit trialRunModeChanged(trialRunMode);
 
 }
 
@@ -531,13 +478,12 @@ void TrialWidget::showSetComboBox()
     setComboBox->show();
     setCancelButton->show();
     setStochasticityVisible(isStochastic);
-    runAllMode = true;
-//    emit runAllModeChanged(true);
+    trialRunMode = TrialRunMode_List;
+    emit trialRunModeChanged(trialRunMode);
 }
 
 void TrialWidget::showSetLabel(QString set)
 {
-    qDebug() << "Entered showsetLabel";
     showSetComboBox();
     setComboBox->addItem(set);
     setComboBox->setCurrentIndex(setComboBox->findData(set,Qt::DisplayRole));
@@ -546,14 +492,11 @@ void TrialWidget::showSetLabel(QString set)
 
 void TrialWidget::restoreComboBoxText()
 {
-    qDebug() << "Entered restoreComboBoxText";
     if (argChanged.isEmpty())
         return;
     if (argumentMap.isEmpty())
         return;
     myComboBox* box = static_cast<myComboBox*>(argumentMap[argChanged]);
-    qDebug() << "combobox is" << box;
-    qDebug() << "combobox text should be" << box->savedComboBoxText;
     box->restoreComboBoxText();
 
 }

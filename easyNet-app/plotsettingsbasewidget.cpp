@@ -145,8 +145,8 @@ void PlotSettingsBaseWidget::createLevelsListModel()
             cmdElement = cmdElement.nextSiblingElement("object");
         }
         levelsCmdObjectWatcher->setNameList(objectsInCmd);
-        connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
-                this, SLOT(getLevels()));
+//        connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
+//                this, SLOT(getLevels()));
         connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
         {
             static_cast<StringListModel*>(levelsListModel)->updateList(QStringList());
@@ -179,12 +179,20 @@ void PlotSettingsBaseWidget::setValue(QString val)
     {
     case RawEditMode:
     {
+//        qDebug() << "RawEditMode set value" << val;
         rawEdit->setText(val);
         break;
     }
     case WidgetEditMode:
+//        qDebug() << "WidgetEditMode set value" << val;
         setWidgetValue(raw2widgetValue(val));
     }
+}
+
+bool PlotSettingsBaseWidget::isDataframe()
+{
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    return XMLAccessor::value(typeElement) == "dataframe";
 }
 
 bool PlotSettingsBaseWidget::isValueSet()
@@ -229,10 +237,11 @@ void PlotSettingsBaseWidget::resetDefault()
     {
         setValue(defaultValue);
         valueSet = false;
-        if (currentValue != getValue())
+        QString newValue = getValue();
+        if (currentValue != newValue)
         {
-            currentValue = getValue();
-            emit valueChanged();
+            emit valueChanged(currentValue, newValue);
+            currentValue = newValue;
         }
     }
 }
@@ -290,17 +299,14 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 
 void PlotSettingsBaseWidget::emitValueChanged()
 {
-    if (currentValue != getValue())
+    QString newValue = getValue();
+    if (currentValue != newValue)
     {
-        currentValue = getValue();
-        valueSet = true;
-        // write on XML
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-        XMLAccessor::setValue(valueElement, currentValue);
-
-        emit valueChanged();
-//        qDebug() << "In PlotSettingsBaseWidget, emitValueChanged" << currentValue;
-
+        XMLAccessor::setValue(valueElement, newValue);
+        valueSet = true;
+        emit valueChanged(currentValue, newValue);
+        currentValue = newValue;
     }
 }
 
@@ -547,7 +553,8 @@ void PlotSettingsMultipleChoiceWidget::buildEditWidget()
     vboxLayout->addWidget(editExtraWidget);
 
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-    currentValue = XMLAccessor::value(valueElement);
+    currentValue = value();
+    currentValue = currentValue.isEmpty() ? XMLAccessor::value(valueElement) : currentValue;
     setWidgetValue(raw2widgetValue(currentValue));
     updateEditDisplayWidget();
 

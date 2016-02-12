@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QMap>
 #include <QSet>
+#include <QSharedPointer>
+
 
 class QComboBox;
 class QLabel;
@@ -15,6 +17,7 @@ class QDomDocument;
 class QAction;
 class QToolButton;
 class myComboBox;
+class LazyNutJob;
 class QMessageBox;
 class QCheckBox;
 
@@ -31,17 +34,18 @@ public:
     QString getStochasticCmd();
     bool checkIfReadyToRun();
     QString getStimulusSet();
+    QString defaultDataframe();
 public slots:
     QStringList getArguments();
 signals:
-    void runAllModeChanged(bool);
     void trialDescriptionUpdated(QDomDocument*);
+    void aboutToRunTrial(QSharedPointer<QDomDocument>);
+    void trialRunModeChanged(int);
 
 private slots:
 
     void runTrial();
-    void runSingleTrial();
-    void runTrialList();
+
 
     void update(QString trialName);
     void buildComboBoxes(QDomDocument* domDoc);
@@ -56,12 +60,12 @@ private slots:
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
     void updateModelStochasticity(QDomDocument* modelDescription);
-    void observerEnabled(QString name= QString());
-    void observerDisabled(QString name= QString());
-    void suspendObservers();
-    void restoreObservers();
 private:
 
+    QSharedPointer<QDomDocument> createTrialRunInfo();
+    void clearLayout(QLayout *layout);
+    void runSingleTrial(LazyNutJob *job);
+    void runTrialList(LazyNutJob *job);
     void setStochasticityVisible(bool isVisible);
 
     ObjectCacheFilter* trialFilter;
@@ -94,12 +98,10 @@ private:
 
 
     QMap<QString,QString>     defs;
-    bool runAllMode;
+    int trialRunMode;
     bool isStochastic;
 
 
-
-    void clearLayout(QLayout *layout);
 };
 
 #endif // TRIALWIDGET_H

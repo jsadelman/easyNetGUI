@@ -16,7 +16,9 @@ class QStackedWidget;
 class QProgressBar;
 class QDomDocument;
 
+class PlotViewer_old;
 class PlotViewer;
+class PlotViewerDispatcher;
 class ObjExplorer;
 class DesignWindow;
 class LazyNut;
@@ -46,6 +48,11 @@ class DebugLog;
 class DiagramSceneTabWidget;
 class DiagramScene;
 class DiagramWindow;
+//class TableWindow;
+class DataframeViewer;
+class DataframeViewerDispatcher;
+class Ui_DataTabsViewer;
+class Ui_DataComboViewer;
 
 QT_END_NAMESPACE
 
@@ -89,7 +96,7 @@ signals:
 
 private slots:
 //    void about();
-    void updateTableView(QString text);
+//    void updateTableView(QString text);
 
 //    void showViewMode(int viewModeInt);
     void newScriptFile();
@@ -140,8 +147,8 @@ private slots:
     void showMostRecentError();
     void showPlotSettings();
     void updateDFComboBox();
-
-
+    void runTest();
+    void afterTestsCompleted();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -197,8 +204,10 @@ public:
     QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
     QString         curFile;
     QString         scriptsDir;
+    QString         testsDir;
     QString         trialsDir;
     QString         stimDir;
+    QString         dfDir;
     QString         easyNetHome;
     QString         easyNetDataHome;
     QString         paramDataFrame;
@@ -257,13 +266,31 @@ public:
     DesignWindow    *designWindow;
     DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
-//    DiagramScene    *conversionScene;
+    DiagramScene    *conversionScene;
     PlotSettingsWindow      *plotSettingsWindow;
+//    PlotViewer_old      *plotViewer;
+    Ui_DataTabsViewer *ui_plotViewer;
+    PlotViewerDispatcher *plotViewerDispatcher;
     PlotViewer      *plotViewer;
-    TableEditor     *stimSetForm;
-    TableEditor     *dataframesWindow;
-    TableViewer     *tablesWindow;
-    TableEditor     *paramEdit;
+//    TableEditor     *stimSetForm;
+    DataframeViewer *stimSetViewer;
+    Ui_DataComboViewer *ui_stimSetViewer;
+//    TableEditor     *dataframesWindow;
+    DataframeViewer *dataframeViewer;
+    Ui_DataComboViewer *ui_dataframeViewer;
+    DataframeViewer *testViewer;
+    Ui_DataTabsViewer *ui_testViewer;
+
+//    TableViewer     *tableWindow;
+//    TableWindow     *tableWindow;
+    DataframeViewer *dataframeResultsViewer;
+    DataframeViewerDispatcher *dataframeResultsDispatcher;
+    Ui_DataTabsViewer *ui_dataframeResultsViewer;
+
+
+//    TableEditor     *paramEdit;
+    DataframeViewer *paramViewer;
+    Ui_DataTabsViewer *ui_paramViewer;
     DebugLog        *debugLog;
     QToolBar        *infoToolBar;
     QToolBar        *toolbar;
@@ -276,6 +303,9 @@ public:
     QWidget         *spacer;
     ObjectCacheFilter* modelListFilter;
     ObjectCacheFilter* trialListFilter;
+    ObjectCacheFilter *dataframeDescriptionFilter;
+    ObjectCacheFilter *paramDescriptionFilter;
+    ObjectCacheFilter *testFilter;
     QAction         * runAllTrialMsgAct;
 
     Assistant       *assistant;
@@ -287,12 +317,13 @@ public:
     int             plotTabIdx;
     int             plotSettingsTabIdx;
     int             modelTabIdx;
-//    int             conversionTabIdx;
+    int             conversionTabIdx;
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
     int             dfTabIdx;
     int             explorerTabIdx;
+    int             testsTabIdx;
 
     QSignalMapper   *viewModeSignalMapper;
     QSignalMapper   *setFontSignalMapper;
@@ -334,6 +365,7 @@ public:
     QAction         *loadAddOnAct;
     QAction         *loadStimulusSetAct;
     QAction         *importDataFrameAct;
+    QAction         *runTestAct;
 //    QAction         *saveAct;
 //    QAction         *saveAsAct;
     QAction         *exitAct;

@@ -42,13 +42,12 @@ SOURCES +=  \
     highlighter.cpp \
     codeeditor.cpp \
     editwindow.cpp \
-    plotwindow.cpp \
+    plotsettingswindow.cpp \
     lazynut.cpp \
     sessionmanager.cpp \
     commandsequencer.cpp \
         domitem.cpp \
     easyNetMainWindow.cpp \
-    macrostate.cpp \
     answerformatterfactory.cpp \
     answerformatter.cpp \
     lazynutjobparam.cpp \
@@ -56,7 +55,6 @@ SOURCES +=  \
     plotsettingsform.cpp \
     dataframemodel.cpp \
     xmlelement.cpp \
-    lazynutlistwidget.cpp \
     lazynutpairedlistwidget.cpp \
     bracketedparser.cpp \
  #   lazynutobjtablemodel.cpp \
@@ -81,7 +79,6 @@ SOURCES +=  \
     findfiledialog.cpp \
     textedit.cpp \
     helpwindow.cpp \
-    parameditor.cpp \
     trialwidget.cpp \
     mycombobox.cpp \
     commandlog.cpp \
@@ -89,7 +86,7 @@ SOURCES +=  \
     console.cpp \
     finddialog.cpp \
     debuglog.cpp \
-    plotviewer.cpp \
+    plotviewer_old.cpp \
     diagramscenetabwidget.cpp \
     diagramwindow.cpp \
     diagramview.cpp \
@@ -105,12 +102,28 @@ SOURCES +=  \
     xmlaccessor.cpp \
     objectnamevalidator.cpp \
     lazynutjob.cpp \
-    trialdataframemodel.cpp \
-    tablewindow.cpp \
-    tablewidgetinterface.cpp \
-    tabstablewidget.cpp \
-    combotablewidget.cpp \
-    objectcache.cpp
+    prettyheadersmodel.cpp \
+ #   tablewindow.cpp \
+ #   tablewidgetinterface.cpp \
+ #   tabstablewidget.cpp \
+ #   combotablewidget.cpp \
+    objectcache.cpp \
+    resultswindow_if.cpp \
+    dataviewer.cpp \
+    ui_dataviewer.cpp \
+    ui_datatabsviewer.cpp \
+    ui_datacomboviewer.cpp \
+    dataframeviewer.cpp \
+    dataviewerdispatcher.cpp \
+    dataframeviewerdispatcher.cpp \
+    plotviewer.cpp \
+    plotviewerdispatcher.cpp \
+    booleandelegate.cpp \
+    closebutton.cpp \
+    historywidget.cpp \
+    historytreemodel.cpp \
+    trialruninfo.cpp \
+    xmlmodel.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -125,14 +138,13 @@ HEADERS  += \
     highlighter.h \
     codeeditor.h \
     editwindow.h \
-    plotwindow.h \
+    plotsettingswindow.h \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
     enumclasses.h \
         domitem.h \
     easyNetMainWindow.h \
-    macrostate.h \
     answerformatterfactory.h \
     answerformatter.h \
     lazynutjobparam.h \
@@ -140,7 +152,6 @@ HEADERS  += \
     plotsettingsform.h \
     dataframemodel.h \
     xmlelement.h \
-    lazynutlistwidget.h \
     lazynutpairedlistwidget.h \
     bracketedparser.h \
  #   lazynutobjtablemodel.h \
@@ -164,7 +175,6 @@ HEADERS  += \
     findfiledialog.h \
     textedit.h \
     helpwindow.h \
-    parameditor.h \
     trialwidget.h \
     mycombobox.h \
     commandlog.h \
@@ -172,7 +182,7 @@ HEADERS  += \
     console.h \
     finddialog.h \
     debuglog.h \
-    plotviewer.h \
+    plotviewer_old.h \
     diagramscenetabwidget.h \
     diagramwindow.h \
     diagramview.h \
@@ -189,12 +199,28 @@ HEADERS  += \
     objectnamevalidator.h \
     lazynutjob.h \
     jobqueue.h \
-    trialdataframemodel.h \
-    tablewindow.h \
-    tablewidgetinterface.h \
-    tabstablewidget.h \
-    combotablewidget.h \
-    objectcache.h
+    prettyheadersmodel.h \
+#    tablewindow.h \
+#    tablewidgetinterface.h \
+#    tabstablewidget.h \
+#    combotablewidget.h \
+    objectcache.h \
+    resultswindow_if.h \
+    dataviewer.h \
+    ui_dataviewer.h \
+    ui_datatabsviewer.h \
+    ui_datacomboviewer.h \
+    dataframeviewer.h \
+    dataviewerdispatcher.h \
+    dataframeviewerdispatcher.h \
+    plotviewer.h \
+    plotviewerdispatcher.h \
+    booleandelegate.h \
+    closebutton.h \
+    historywidget.h \
+    historytreemodel.h \
+    trialruninfo.h \
+    xmlmodel.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

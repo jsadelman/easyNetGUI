@@ -5,8 +5,8 @@ LazyNutObjectCacheElem::LazyNutObjectCacheElem()
     init();
 }
 
-LazyNutObjectCacheElem::LazyNutObjectCacheElem(const QString &name, const QString &type)
-    : name(name), type(type)
+LazyNutObjectCacheElem::LazyNutObjectCacheElem(const QString &name, const QString &type, const QString &subtype)
+    : name(name), type(type), subtype(subtype)
 {
     init();
 }

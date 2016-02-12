@@ -138,8 +138,7 @@ signals:
 //    void layoutSaveAttempted();
 
     void animationFinished();
-    void createNewPlotOfType(QString name, QString type,
-                             QMap<QString, QString> _defaultSettings=QMap<QString,QString>());
+    void createNewRPlot(QString, QString, QMap<QString, QString>, int, QList<QSharedPointer<QDomDocument> > info = QList<QSharedPointer<QDomDocument> >());
     void plotDestroyed(QString name);
 
 
@@ -152,7 +151,7 @@ protected:
 //    void contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent);
 
 private slots:
-    void positionObject(QString name, QString type, QDomDocument* domDoc);
+    void positionObject(QString name, QString type, QString subtype, QDomDocument* domDoc);
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
 

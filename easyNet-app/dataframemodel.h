@@ -53,17 +53,17 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
     QStringList rowNames();
     QStringList colNames();
-    QStringList mimeTypes() const;
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
+//    QStringList mimeTypes() const;
+//    QMimeData *mimeData(const QModelIndexList &indexes) const;
     QString name() {return m_name;}
-    QTableView *view() {return m_view;}
+//    QTableView *view() {return m_view;}
 
 
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    bool setData(const QModelIndex &index, const QVariant &value, int role) Q_DECL_OVERRIDE;
 
 public slots:
     void setName(QString name) {m_name = name;}
-    void setView(QTableView *view) {m_view = view;}
+//    void setView(QTableView *view) {m_view = view;}
 signals:
     void newParamValueSig (QString,QString);
 
@@ -74,7 +74,7 @@ private:
     QDomDocument *domDoc;
     Qt::ItemFlags flags(const QModelIndex &index) const;
     QString m_name;
-    QTableView *m_view;
+//    QTableView *m_view;
 
 };
 

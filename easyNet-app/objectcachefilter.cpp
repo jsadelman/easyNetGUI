@@ -6,7 +6,7 @@
 Q_DECLARE_METATYPE(QDomDocument*)
 
 ObjectCacheFilter::ObjectCacheFilter(ObjectCache *objectCache, QObject *parent)
-    : QSortFilterProxyModel(parent)
+    : nameList(), typeList(), QSortFilterProxyModel(parent)
 {
     setSourceModel(objectCache);
     connect(this, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -15,7 +15,7 @@ ObjectCacheFilter::ObjectCacheFilter(ObjectCache *objectCache, QObject *parent)
             this, SLOT(sendObjectDestroyed(QModelIndex,int,int)));
     connect(this, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(sendObjectModified(QModelIndex,QModelIndex,QVector<int>)));
-    setName(""); // initialise with a no-pass filter
+    setNoFilter(); // initialise with a no-pass filter
 
 }
 
@@ -29,28 +29,111 @@ bool ObjectCacheFilter::isAllValid()
     return !invalid;
 }
 
+void ObjectCacheFilter::setNoFilter()
+{
+    setFilterRegExp("^$");
+    nameList.clear();
+    typeList.clear();
+}
+
+void ObjectCacheFilter::setAllPassFilter()
+{
+    setFilterRegExp("^.*$");
+    nameList.clear();
+    typeList.clear();
+}
+
 void ObjectCacheFilter::setName(QString txt)
 {
-    setList(QStringList({txt}));
+    nameList = QStringList({txt});
+    setList(nameList);
     setFilterKeyColumn(ObjectCache::NameCol);
 }
 
 void ObjectCacheFilter::setNameList(QStringList list)
 {
-    setList(list);
+    nameList = list;
+    setList(nameList);
+    setFilterKeyColumn(ObjectCache::NameCol);
+}
+
+void ObjectCacheFilter::addName(QString txt)
+{
+    if (!nameList.contains(txt))
+    {
+        nameList.append(txt);
+        setList(nameList);
+    }
+    setFilterKeyColumn(ObjectCache::NameCol);
+}
+
+void ObjectCacheFilter::removeName(QString txt)
+{
+    nameList.removeAll(txt);
+    setList(nameList);
     setFilterKeyColumn(ObjectCache::NameCol);
 }
 
 void ObjectCacheFilter::setType(QString txt)
 {
-    setList(QStringList({txt}));
+    typeList = QStringList({txt});
+    setList(typeList);
     setFilterKeyColumn(ObjectCache::TypeCol);
 }
 
 void ObjectCacheFilter::setTypeList(QStringList list)
 {
-    setList(list);
+    typeList = list;
+    setList(typeList);
     setFilterKeyColumn(ObjectCache::TypeCol);
+}
+
+void ObjectCacheFilter::addType(QString txt)
+{
+    if (!typeList.contains(txt))
+    {
+        typeList.append(txt);
+        setList(typeList);
+    }
+    setFilterKeyColumn(ObjectCache::TypeCol);
+}
+
+void ObjectCacheFilter::removeType(QString txt)
+{
+    typeList.removeAll(txt);
+    setList(typeList);
+    setFilterKeyColumn(ObjectCache::TypeCol);
+}
+
+void ObjectCacheFilter::setSubtype(QString txt)
+{
+    subtypeList = QStringList({txt});
+    setList(subtypeList);
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
+}
+
+void ObjectCacheFilter::setSubtypeList(QStringList list)
+{
+    subtypeList = list;
+    setList(subtypeList);
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
+}
+
+void ObjectCacheFilter::addSubtype(QString txt)
+{
+    if (!subtypeList.contains(txt))
+    {
+        subtypeList.append(txt);
+        setList(subtypeList);
+    }
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
+}
+
+void ObjectCacheFilter::removeSubtype(QString txt)
+{
+    subtypeList.removeAll(txt);
+    setList(subtypeList);
+    setFilterKeyColumn(ObjectCache::SubtypeCol);
 }
 
 void ObjectCacheFilter::sendObjectCreated(QModelIndex parent, int first, int last)
@@ -61,8 +144,9 @@ void ObjectCacheFilter::sendObjectCreated(QModelIndex parent, int first, int las
     {
         QString name = data(index(row,ObjectCache::NameCol)).toString();
         QString type = data(index(row,ObjectCache::TypeCol)).toString();
+        QString subtype = data(index(row,ObjectCache::SubtypeCol)).toString();
         QDomDocument* domDoc = static_cast<ObjectCache*>(sourceModel())->getDomDoc(name);
-        emit objectCreated(name, type, domDoc);
+        emit objectCreated(name, type, subtype, domDoc);
     }
 }
 

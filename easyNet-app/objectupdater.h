@@ -6,6 +6,7 @@
 
 class QSortFilterProxyModel;
 class ObjectCache;
+class ObjectCacheFilter;
 class QDomDocument;
 
 class ObjectUpdater : public QObject
@@ -14,15 +15,17 @@ class ObjectUpdater : public QObject
 public:
     explicit ObjectUpdater(QObject *parent = 0);
     void setProxyModel(QSortFilterProxyModel *proxy);
-    void requestObject(QString name);
+    void setFilter(ObjectCacheFilter *filter);
+
 
 signals:
-    void objectUpdated(QDomDocument*);
+    void objectUpdated(QDomDocument*, QString);
 
 public slots:
     void goToSleep();
     void wakeUpUpdate();
     void setCommand(QString command) {m_command = command;}
+    void requestObject(QString name);
 private slots:
     void requestObjects(QModelIndex top, QModelIndex bottom);
     void requestObjects(QModelIndex parent, int first, int last);

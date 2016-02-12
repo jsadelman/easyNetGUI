@@ -149,6 +149,22 @@
         <file>images/barchart2.png</file>
         <file>images/Merge_Icon.png</file>
         <file>images/Radioactive-icon.png</file>
+        <file>images/Information-icon.png</file>
         <file>images/Full_screen_view.png</file>
+        <file>images/overwrite.png</file>
+        <file>images/append.png</file>
+        <file>images/tab_new.png</file>
+        <file>images/view_refresh.png</file>
+        <file>images/large-yellow-dot.png</file>
+        <file>images/collapse_up.png</file>
+        <file>images/expand_down.png</file>
+        <file>images/Remove_Item_icon.png</file>
+        <file>images/split-horizontally.png</file>
+        <file>images/split-vertically.png</file>
+        <file>images/move_to.png</file>
+        <file>images/select_all.png</file>
+        <file>images/clear_selection.png</file>
+        <file>images/History.png</file>
+        <file>images/auto_icon.png</file>
     </qresource>
 </RCC>

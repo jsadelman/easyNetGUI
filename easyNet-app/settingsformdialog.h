@@ -22,7 +22,7 @@ public slots:
 
 signals:
     void cmdListReady(QStringList);
-    void dfNameReady(QString, QString, QString);
+    void dataframeMergeSettingsReady(QStringList, QString, QString, QString);
 
 private slots:
     void validateName();
@@ -36,7 +36,6 @@ private:
     SettingsForm* form;
     QString info;
     QLineEdit *nameLineEdit;
-    ObjectNameValidator *validator;
 };
 
 #endif // SETTINGSFORMDIALOG_H

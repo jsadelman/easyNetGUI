@@ -276,7 +276,6 @@ void DiagramWindow::createMenus()
     sceneScaleCombo->addItems(scales);
     sceneScaleCombo->setCurrentIndex(4);
 
-    // input validator
     QRegExp zoomRex("\\d{1,3}%?");
     QValidator *zoomValidator = new QRegExpValidator(zoomRex, sceneScaleCombo);
     QLineEdit *zoomEdit = new QLineEdit(sceneScaleCombo);

@@ -127,10 +127,10 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     arrowDescriptionUpdater = new ObjectUpdater(this);
     arrowDescriptionUpdater->setProxyModel(arrowFilter);
 
-    connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
+    connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
             this, SLOT(renderObject(QDomDocument*)));
 
-    connect(arrowDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
+    connect(arrowDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
             this, SLOT(renderObject(QDomDocument*)));
     connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 
@@ -315,8 +315,8 @@ void DiagramScene::wakeUp()
 {
     if (!awake)
     {
-        connect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-                this, SLOT(positionObject(QString, QString, QDomDocument*)));
+        connect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+                this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
         connect(boxFilter, SIGNAL(objectDestroyed(QString)),
                 this, SLOT(removeObject(QString)));
         connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
@@ -332,8 +332,8 @@ void DiagramScene::goToSleep()
 {
     if (awake)
     {
-        disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-                   this, SLOT(positionObject(QString, QString, QDomDocument*)));
+        disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+                   this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
         disconnect(boxFilter, SIGNAL(objectDestroyed(QString)),
                    this, SLOT(removeObject(QString)));
         disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
@@ -372,15 +372,16 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
     Canvas::mouseDoubleClickEvent(mouseEvent);
 }
 
-void DiagramScene::positionObject(QString name, QString type, QDomDocument *domDoc)
+void DiagramScene::positionObject(QString name, QString type, QString subtype, QDomDocument *domDoc)
 {
     // layers are placed on the scene before arrows
     Q_UNUSED(domDoc)
+    Q_UNUSED(subtype)
       if (type == m_boxType)
     {
         Box *box = new Box();
-        connect(box, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString, QString>)),
-                this, SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
+        connect(box, SIGNAL(createNewRPlot(QString,QString,QMap<QString, QString>,int,QList<QSharedPointer<QDomDocument> >)),
+                this, SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>,int,QList<QSharedPointer<QDomDocument> >)));
 
         addItem(box);
         box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers
@@ -427,7 +428,8 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
 {
     // wait until all descriptions of recently_* objects have arrived
     renderList.append(domDoc);
-    if (boxFilter->isAllValid() && arrowFilter->isAllValid())
+    // HACK to allow visualisation of ocnversions and representations even when missing 'ghost' objects are present
+    if ((boxFilter->isAllValid() && arrowFilter->isAllValid()) || boxType() == "representation")
         render();
 }
 
@@ -531,13 +533,15 @@ bool DiagramScene::isItemChange(int type)
 void DiagramScene::syncToObjCatalogue()
 {
     QString name;
+    QString subtype;
     // display new layers, hold new connections in a list
     for (int row=0;row<boxFilter->rowCount();row++)
     {
-        name = boxFilter->data(boxFilter->index(row,0)).toString();
+        name = boxFilter->data(boxFilter->index(row,ObjectCache::NameCol)).toString();
+        subtype = boxFilter->data(boxFilter->index(row,ObjectCache::SubtypeCol)).toString();
         if (!itemHash.contains(name))
         {
-            positionObject(name, m_boxType, nullptr);
+            positionObject(name, m_boxType, subtype, nullptr);
             QVariant v = boxFilter->data(boxFilter->index(row, ObjectCache::DomDocCol));
             if (v.canConvert<QDomDocument *>())
                 renderList.append(v.value<QDomDocument *>());

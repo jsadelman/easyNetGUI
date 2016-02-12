@@ -10,7 +10,7 @@ class ObjectCache : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    enum {NameCol = 0, TypeCol, InvalidCol, DomDocCol, COLUMN_COUNT};
+    enum {NameCol = 0, TypeCol, SubtypeCol, InvalidCol, DomDocCol, COLUMN_COUNT};
     explicit ObjectCache(QObject * parent = 0);
     ~ObjectCache();
     int rowCount(const QModelIndex & parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -27,10 +27,11 @@ public:
     bool isInvalid(const QString& name);
     bool isPending(const QString& name);
     QString type(const QString& name);
+    QString subtype(const QString& name);
     bool exists(const QString& name);
 
 public slots:
-    bool create(const QString& name, const QString& type);
+    bool create(const QString& name, const QString& type, const QString& subtype=QString());
     bool create(QDomDocument* domDoc);
     bool destroy(QStringList names);
     bool destroy(const QString& name);

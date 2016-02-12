@@ -28,7 +28,7 @@ class DataFrameModel;
 class DataFrameHeader;
 //class ObjectCatalogueFilter;
 class FindDialog;
-class TrialDataFrameModel;
+class PrettyHeadersModel;
 
 QT_END_NAMESPACE
 

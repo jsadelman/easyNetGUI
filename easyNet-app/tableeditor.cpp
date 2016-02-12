@@ -41,16 +41,16 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
     {
         // stimulus set allows a column to be dragged
         view->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        view->setDragEnabled(true);
-        view->setDropIndicatorShown(true);
-        view->setDragDropMode(QAbstractItemView::DragOnly);
+//        view->setDragEnabled(true);
+//        view->setDropIndicatorShown(true);
+//        view->setDragDropMode(QAbstractItemView::DragOnly);
 
         DataFrameHeader* myHeader = new DataFrameHeader(view);
         view->setHorizontalHeader(myHeader);
         connect(myHeader, SIGNAL(columnDropped(QString)), this, SIGNAL(columnDropped(QString)));
         connect(myHeader, SIGNAL(restoreComboBoxText()), this, SIGNAL(restoreComboBoxText()));
         connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
-        connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
+//        connect(this,SIGNAL(newTableName(QString)),myHeader,SLOT(setTableName(QString)));
 
     }
 
@@ -120,6 +120,7 @@ void TableEditor::selectTable(QString text)
         tableBox->setCurrentIndex(tableBox->findData(text,Qt::DisplayRole));
         qDebug() << "Selected table is" << tableBox->currentText();
     }
+    refresh();
 }
 
 void TableEditor::setFilter(QString type)
@@ -337,9 +338,9 @@ void TableEditor::on_copy_DF_clicked()
 
 void TableEditor::updateTableView(QString text)
 {
-    qDebug() << this << "Entered updateTableView with " << text;
-    qDebug() << "currentIndex = " << view->currentIndex();
-    qDebug() << "is this param window?" << thisIsParamWindow;
+//    qDebug() << this << "Entered updateTableView with " << text;
+//    qDebug() << "currentIndex = " << view->currentIndex();
+//    qDebug() << "is this param window?" << thisIsParamWindow;
     if (!text.size())
         return;
     if (text=="Untitled")

@@ -28,7 +28,7 @@
 #include "sessionmanager.h"
 #include "highlighter.h"
 #include "editwindow.h"
-#include "plotwindow.h"
+#include "plotsettingswindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "objectcache.h"
@@ -47,13 +47,20 @@
 #include "scripteditor.h"
 #include "console.h"
 #include "debuglog.h"
+#include "plotviewer_old.h"
 #include "plotviewer.h"
+#include "plotviewerdispatcher.h"
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"
 #include "tableviewer2.h"
-#include "trialdataframemodel.h"
+#include "prettyheadersmodel.h"
 #include "enumclasses.h"
+#include "tablewindow.h"
+#include "dataframeviewer.h"
+#include "dataframeviewerdispatcher.h"
+#include "ui_datatabsviewer.h"
+#include "ui_datacomboviewer.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -172,12 +179,63 @@ void MainWindow::constructForms()
     debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
-    stimSetForm = new TableEditor ("Stimuli",this);
+//    stimSetForm = new TableEditor ("Stimuli",this);
+    ui_stimSetViewer = new Ui_DataComboViewer;
+    stimSetViewer = new DataframeViewer(ui_stimSetViewer, this);
+    stimSetViewer->setDragDropColumns(true);
+    stimSetViewer->setStimulusSet(true);
+    stimSetViewer->setDefaultDir(stimDir);
+
 //    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
-    tablesWindow = new TableViewer("Tables",this);
-    dataframesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Dataframes",this);
-    paramEdit = new TableEditor ("Parameters",this);
-    plotViewer = new PlotViewer(easyNetHome, this);
+//    tableWindow = new TableViewer("Tables",this);
+//    tableWindow = new TableWindow(this);
+
+    ui_dataframeResultsViewer = new Ui_DataTabsViewer;
+    ui_dataframeResultsViewer->setUsePrettyNames(true);
+    dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
+    dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
+    dataframeResultsViewer->setDefaultDir(dfDir);
+
+    ui_dataframeViewer = new Ui_DataComboViewer;
+    dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
+    dataframeViewer->setLazy(true);
+    dataframeViewer->setDefaultDir(dfDir);
+    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    dataframeDescriptionFilter->setType("dataframe");
+    connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            dataframeViewer, SLOT(addItem(QString)));
+
+
+//    dataframesWindow = new TableEditor(SessionManager::instance()->descriptionCache,"Dataframes",this);
+
+
+//    paramEdit = new TableEditor ("Parameters",this);
+    ui_paramViewer = new Ui_DataTabsViewer;
+    paramViewer = new DataframeViewer(ui_paramViewer, this);
+    paramViewer->setParametersTable(true);
+    paramDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    paramDescriptionFilter->setFilterRegExp(QRegExp("\\(.* parameters\\)"));
+    paramDescriptionFilter->setFilterKeyColumn(ObjectCache::NameCol);
+    connect(paramDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            paramViewer, SLOT(addItem(QString)));
+
+
+    ui_plotViewer = new Ui_DataTabsViewer;
+    ui_plotViewer->setUsePrettyNames(true);
+    plotViewer = new PlotViewer(ui_plotViewer, this);
+    plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
+
+//    plotViewer = new PlotViewer_old(easyNetHome, this);
+
+
+    ui_testViewer = new Ui_DataTabsViewer;
+    testViewer = new DataframeViewer(ui_testViewer, this);
+    testFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    testFilter->setFilterRegExp(QRegExp("^.*\\.test_results$"));
+    testFilter->setFilterKeyColumn(ObjectCache::NameCol);
+    connect(testFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            testViewer, SLOT(addItem(QString)));
+
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
 
@@ -189,27 +247,31 @@ void MainWindow::constructForms()
     /* ADD TABS */
     infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-//    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
 
-    stimSetTabIdx = methodsPanel->addTab(stimSetForm, tr("Stimuli"));
+    stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
-    paramTabIdx = methodsPanel->addTab(paramEdit, tr("Parameters"));
+    paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
     plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
 
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
     lazynutPanel->addTab(errorLog, tr("Errors"));
+    testsTabIdx = lazynutPanel->addTab(testViewer, tr("Tests"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
 //    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
     explorerTabIdx = explorerPanel->addTab(objExplorer, tr("Objects"));
-    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
+//    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
+    dfTabIdx = explorerPanel->addTab(dataframeViewer, tr("Dataframes"));
 
     plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
-    outputTablesTabIdx = resultsPanel->addTab(tablesWindow, tr("Tables"));
+//    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
+    outputTablesTabIdx = resultsPanel->addTab(dataframeResultsViewer, tr("Tables"));
+
 
     // perhaps use this code for detachable tabs?
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs
@@ -219,33 +281,16 @@ void MainWindow::connectSignalsAndSlots()
 {
     // refresh params when user clicks on param tab or changes model in combobox
     connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
-    connect(this,SIGNAL(paramTabEntered(QString)),paramEdit,SLOT(updateParamTable(QString)));
-    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),paramEdit,SLOT(updateParamTable(QString)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentModel(QString)));
-    connect(this,SIGNAL(newTableSelection(QString)),tablesWindow,SLOT(updateTableView(QString)));
-    connect(paramEdit, SIGNAL(newParamValueSig(QString,QString)),
-            this,SLOT(setParam(QString,QString)));
     connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
-            plotViewer,SLOT(loadByteArray(QString,QByteArray)));
-    connect(plotSettingsWindow, SIGNAL(newPlotSignal(QString)),
-            plotViewer,SLOT(addPlot(QString)));
-
+            plotViewer,SLOT(updatePlot(QString,QByteArray)));
     connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
     connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
     connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
-    connect(tablesWindow,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
-    connect(plotViewer,SIGNAL(setPlot(QString)), plotSettingsWindow, SLOT(setPlot(QString)));
-//    connect(plotViewer,SIGNAL(hidePlotSettings()), plotSettingsWindow, SLOT(hidePlotSettings()));
+    connect(plotViewer,SIGNAL(setPlotSettings(QString)), plotSettingsWindow, SLOT(setPlotSettings(QString)));
     connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
-    connect(stimSetForm, SIGNAL(columnDropped(QString)),trialWidget,SLOT(showSetLabel(QString)));
-    connect(stimSetForm, SIGNAL(restoreComboBoxText()),trialWidget,SLOT(restoreComboBoxText()));
-    connect(stimSetForm, SIGNAL(openFileRequest()),this,SLOT(loadStimulusSet()));
-    connect(dataframesWindow, SIGNAL(openFileRequest()),this,SLOT(importDataFrame()));
-//    connect(diagramPanel, SIGNAL(currentDiagramSceneChanged(DiagramScene*)),
-//            this, SLOT(diagramSceneTabChanged(DiagramScene*)));
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
-//    connect(trialWidget,SIGNAL(runAllModeChanged(bool)),this,SLOT(setRunAllMode(bool)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole2,SLOT(addText(QString)));
@@ -257,27 +302,23 @@ void MainWindow::connectSignalsAndSlots()
             trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
-    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
-            tablesWindow,SLOT(addTrialTable(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
-            plotSettingsWindow,SLOT(createNewPlotOfType(QString,QString,QMap<QString,QString>)));
-    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotSettingsWindow, SLOT(removePlot(QString)));
-    connect(modelScene, SIGNAL(plotDestroyed(QString)), plotViewer, SLOT(makeSnapshot(QString)));
-//    connect(modelScene,SIGNAL(createNewPlotOfType(QString,QString,QMap<QString,QString>)),
-//            this,SLOT(showPlotViewer()));
-    connect(tablesWindow, SIGNAL(createNewPlotOfType(QString, QString, QMap<QString, QString>)),
-            plotSettingsWindow, SLOT(createNewPlotOfType(QString, QString, QMap<QString, QString>)));
-//    connect(conversionScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-//    connect(conversionScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    /* signals & slots */
-//    connect(SessionManager::instance(), SIGNAL(recentlyCreated(QDomDocument*)),
-//          SessionManager::instance()->descriptionCache(), SLOT(create(QDomDocument*)));
-//    connect(SessionManager::instance(), SIGNAL(recentlyModified(QStringList)),
-//          SessionManager::instance()->descriptionCache(), SLOT(invalidateCache(QStringList)));
-//    connect(SessionManager::instance(), SIGNAL(recentlyDestroyed(QStringList)),
-//          SessionManager::instance()->descriptionCache(), SLOT(destroy(QStringList)));
+    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
+    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
+    connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
+            dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
+    connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
+            plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
+     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
+             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
+     connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
+     connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
+    connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
+    connect(dataframeResultsViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
@@ -314,12 +355,12 @@ void MainWindow::showPlotViewer()
 
 void MainWindow::diagramSceneTabChanged(int index)
 {
-//     modelScene->goToSleep();
-//     conversionScene->goToSleep();
+     modelScene->goToSleep();
+     conversionScene->goToSleep();
     if (index == modelTabIdx)
          modelScene->wakeUp();
-//    else if (index == conversionTabIdx)
-//         conversionScene->wakeUp();
+    else if (index == conversionTabIdx)
+         conversionScene->wakeUp();
 }
 
 
@@ -427,7 +468,7 @@ void MainWindow::initialiseToolBar()
       trialComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       trialListFilter->setType("steps");
-      connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
+      connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
               trialComboBox, SLOT(setCurrentText(QString)));
 
 
@@ -476,26 +517,26 @@ void MainWindow::initialiseToolBar()
 
 }
 
-void MainWindow::updateTableView(QString text)
-{
-    qDebug() << "Entered EasyNetMainWindow updateTableView with " << text;
-    if (!text.size())
-        return;
-    if (text=="Untitled")
-        return;
+//void MainWindow::updateTableView(QString text)
+//{
+//    qDebug() << "Entered EasyNetMainWindow updateTableView with " << text;
+//    if (!text.size())
+//        return;
+//    if (text=="Untitled")
+//        return;
 
-    TableEditor *table = dynamic_cast<TableEditor*> (sender());
-    qDebug() << "sender is " << sender();
-    qDebug() << "table is " << table;
-    if( table == NULL)
-        table = stimSetForm;
-    qDebug() << "table is " << table;
+//    TableEditor *table = dynamic_cast<TableEditor*> (sender());
+//    qDebug() << "sender is " << sender();
+//    qDebug() << "table is " << table;
+//    if( table == NULL)
+//        table = stimSetForm;
+//    qDebug() << "table is " << table;
 
-    LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("xml " + text + " get")});
-    job->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
-    SessionManager::instance()->submitJobs(job);
-}
+//    LazyNutJob *job = new LazyNutJob;
+//    job->cmdList = QStringList({QString("xml " + text + " get")});
+//    job->setAnswerReceiver(table, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
+//    SessionManager::instance()->submitJobs(job);
+//}
 
 
 void MainWindow::setQuietMode()
@@ -664,85 +705,94 @@ void MainWindow::loadAddOn()
 
 void MainWindow::loadStimulusSet()
 {
-    // bring up file dialog
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
-                                                    stimDir,
-                                                    tr("Database Files (*.eNd);;Text files (*.txt *.csv);;All files (*.*)"));
-    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
-    if (!fileName.isEmpty())
-    {
-        // create db
-        QFileInfo fi(fileName);
-        QString base = fi.baseName();
-
- /*
-  *        SessionManager::instance()->runCmd(QStringList({
-                                        QString("create stimulus_set %1").arg(base),
-                                        QString("%1 load %2").arg(base).arg(fileName),
-                                                       }));
-                                        //                                         ,
-                                        //               QString("xml %1 get").arg(base)
-*/
-
-        LazyNutJob *job = new LazyNutJob;
-        job->cmdList = QStringList({
-               QString("create stimulus_set %1").arg(base),
-               QString("%1 load %2").arg(base).arg(fileName),
-               QString("xml %1 get").arg(base)
-                                     });
-        job->setAnswerReceiver(stimSetForm, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
-        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                << job
-                << SessionManager::instance()->updateObjectCatalogueJobs();
-
-        SessionManager::instance()->submitJobs(jobs);
-
-        // change combobox text
-        stimSetForm->setTableText(base);
-
-        //show Stimuli;
-        methodsDock->raise();
-        methodsPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
-
-    }
+    stimSetViewer->open();
+    methodsDock->raise();
+    methodsPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
 }
+
+//    // bring up file dialog
+//    QString fileName = QFileDialog::getOpenFileName(this,tr("Load stimulus set"),
+//                                                    stimDir,
+//                                                    tr("Database Files (*.eNd);;Text files (*.txt *.csv);;All files (*.*)"));
+//    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
+//    if (!fileName.isEmpty())
+//    {
+//        // create db
+//        QFileInfo fi(fileName);
+//        QString base = fi.baseName();
+
+// /*
+//  *        SessionManager::instance()->runCmd(QStringList({
+//                                        QString("create stimulus_set %1").arg(base),
+//                                        QString("%1 load %2").arg(base).arg(fileName),
+//                                                       }));
+//                                        //                                         ,
+//                                        //               QString("xml %1 get").arg(base)
+//*/
+
+//        LazyNutJob *job = new LazyNutJob;
+//        job->cmdList = QStringList({
+//               QString("create stimulus_set %1").arg(base),
+//               QString("%1 load %2").arg(base).arg(fileName),
+//               QString("xml %1 get").arg(base)
+//                                     });
+//        job->setAnswerReceiver(stimSetForm, SLOT(addDataFrameToWidget(QDomDocument*)), AnswerFormatterType::XML);
+//        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+//                << job
+//                << SessionManager::instance()->updateObjectCatalogueJobs();
+
+//        SessionManager::instance()->submitJobs(jobs);
+
+//        // change combobox text
+//        stimSetForm->setTableText(base);
+
+//        //show Stimuli;
+//        methodsDock->raise();
+//        methodsPanel->setCurrentIndex(stimSetTabIdx); // show StimSet tab
+
+//    }
+//}
 
 void MainWindow::importDataFrame()
 {
-    // bring up file dialog
-    QString base;
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
-                                                    stimDir,
-                                                    tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
-    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
-    if (!fileName.isEmpty())
-    {
-        // create db
-        QFileInfo fi(fileName);
-        base = fi.baseName();
-        df_name_for_updating_combobox = base;
-        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),
-                                                  this,SLOT(updateDFComboBox()));
+    dataframeViewer->open();
+    explorerDock->raise();
+    explorerPanel->setCurrentIndex(dfTabIdx);
 
-        SessionManager::instance()->runCmd(QStringList({
-                                         QString("create dataframe %1").arg(base),
-                                         QString("%1 load %2").arg(base).arg(fileName)}));
 
-    }
+//    // bring up file dialog
+//    QString base;
+//    QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
+//                                                    stimDir,
+//                                                    tr("Database Files (*.eNd);;Text files (*.txt);;All files (*.*)"));
+//    fileName = QDir(easyNetDataHome).relativeFilePath(fileName);
+//    if (!fileName.isEmpty())
+//    {
+//        // create db
+//        QFileInfo fi(fileName);
+//        base = fi.baseName();
+//        df_name_for_updating_combobox = base;
+//        connect(SessionManager::instance(),SIGNAL(commandsCompleted()),
+//                                                  this,SLOT(updateDFComboBox()));
+
+//        SessionManager::instance()->runCmd(QStringList({
+//                                         QString("create dataframe %1").arg(base),
+//                                         QString("%1 load %2").arg(base).arg(fileName)}));
+
+//    }
 }
+
 
 void MainWindow::updateDFComboBox()
 {
     //show new dataframe;
     explorerDock->raise();
     explorerPanel->setCurrentIndex(dfTabIdx);
-    dataframesWindow->selectTable(df_name_for_updating_combobox);
+//    dataframesWindow->selectTable(df_name_for_updating_combobox);
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),
                                               this,SLOT(updateDFComboBox()));
 
 }
-
-
 
 void MainWindow::currentStimulusChanged(QString stim)
 {
@@ -815,8 +865,10 @@ void MainWindow::setDefaultLocations()
 {
     lazyNutBat = QString("%1/%2/nm_files/%3").arg(easyNetHome).arg(binDir).arg(lazyNutBasename);
     scriptsDir = QString("%1/Models").arg(easyNetDataHome);
+    testsDir = QString("%1/Tests").arg(easyNetDataHome);
     trialsDir = QString("%1/Trials").arg(easyNetDataHome);
     stimDir = QString("%1/Databases/Stimulus_files").arg(easyNetDataHome);
+    dfDir = QString("%1/Databases").arg(easyNetDataHome);
 }
 
 void MainWindow::writeSettings()
@@ -923,14 +975,35 @@ void MainWindow::loadScript()
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
+            codePanelDock->raise();
             lazynutPanel->setCurrentIndex(scriptTabIdx); // show scripts tab
             codePanelDock->show();
         }
  //   }
 }
 
+void MainWindow::runTest()
+{
+ //   if (maybeSave())
+//    {
+        QString fileName = QFileDialog::getOpenFileName(this,tr("Open script"), QString(testsDir).append("//"+modelComboBox->currentText()), tr("Script Files (*.eNs)"));
+        if (!fileName.isEmpty())
+        {
+            loadFile(fileName);
+            connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
+            runScript();
+        }
+ //   }
+}
 
+void MainWindow::afterTestsCompleted()
+{
+    codePanelDock->raise();
+    lazynutPanel->setCurrentIndex(testsTabIdx);
+    qDebug() << "trying to change display";
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
 
+}
 
 //! [runCmdAndUpdate]
 void MainWindow::runCmdAndUpdate(QStringList cmdList)
@@ -1105,7 +1178,12 @@ void MainWindow::createActions()
 //    loadScriptAct->setShortcuts(QKeySequence::Open);
     loadScriptAct->setStatusTip(tr("Open an existing lazyNut script"));
     connect(loadScriptAct, SIGNAL(triggered()), this, SLOT(loadScript()));
-    loadScriptAct->setEnabled(true); // no script loading until after UKOG!
+    loadScriptAct->setEnabled(true);
+
+    runTestAct = new QAction(QIcon(":/images/code-2x.png"), tr("&Run test"), this);
+    runTestAct->setStatusTip(tr("Run a test of this model"));
+    connect(runTestAct, SIGNAL(triggered()), this, SLOT(runTest()));
+    runTestAct->setEnabled(true);
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
@@ -1222,6 +1300,8 @@ void MainWindow::createMenus()
     //fileMenu->addAction(saveAct);
     //fileMenu->addAction(saveAsAct);
     fileMenu->addSeparator();
+    fileMenu->addAction(runTestAct);
+    fileMenu->addSeparator();
     fileMenu->addAction(restartInterpreterAct);
     fileMenu->addAction(exitAct);
 
@@ -1316,29 +1396,6 @@ void MainWindow::createStatusBar()
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             this, SLOT(showCmdOnStatusBar(QString)));
 
-//     connect(SessionManager::instance(), &SessionManager::commandExecuted, [=](QString cmd, QString /*timString*/)
-//     {
-//        statusBar()->showMessage(QString("LAST EXEC COMMAND: %1").arg(cmd));
-//     });
-//    lazyNutErrorLabel = new QLabel;
-//    lazyNutErrorLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-//    lazyNutErrorLabel->setStyleSheet("QLabel {"
-//                                 "font-weight: bold;"
-//                                 "color: red"
-//                                 "}");
-//    statusBar()->addWidget(lazyNutErrorLabel, 1);
-
-//    lazyNutErrorBox = new QComboBox;
-//    lazyNutErrorBox->setToolTip("list of lazyNut ERRORs");
-//    lazyNutErrorBox->addItem("");
-//    lazyNutErrorBox->setStyleSheet("QComboBox {"
-//                                 "font-weight: bold;"
-//                                 "color: red"
-//                                 "}");
-//    lazyNutErrorBox->setEditable(false);
-//    statusBar()->addWidget(lazyNutErrorBox, 1);
-//    connect(lazyNutErrorBox,SIGNAL(activated(int)),this,SLOT(showMostRecentError()));
-
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
     {
        if (!errorList.isEmpty())
@@ -1400,178 +1457,6 @@ void MainWindow::addOneToLazyNutProgressBar()
 {
     lazyNutProgressBar->setValue(lazyNutProgressBar->value()+1);
 }
-
-
-/*********************************************************
- * old view menu stuff here
- *
- */
-
-/*
-void EasyNetMainWindow::createToolBars()
-{
-    infoToolBar = new QToolBar(this);
-    infoToolBar->setStyleSheet("QToolButton::menu-indicator {image: url(myindicator.png); \
-                subcontrol-position: right center; subcontrol-origin: padding; left: -2px;}"
-    "QToolButton {font-size: 9pt; color: \"white\"; icon-size: 30px; min-width: 5em; padding: 3px;} "
-    "QToolButton:pressed {border: 2px solid #8f8f91; border-radius: 6px; background-color:red;}"
-    "QLabel { font-size: 8pt; color: \"white\"; icon-size: 30px; } "
-    "QToolBar { background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1, "
-    "stop: 0 #66e, stop: 1 #bbf); background: qlineargradient(x1: 0, y1: 0.2, x2: 1, y2: 1, "
-    "stop: 0 #bbf, stop: 1 #55f) } ");
-
-    QWidget *viewModeButtonsWidget = new QWidget;
-    QVBoxLayout *viewModeLayout = new QVBoxLayout;
-
-    viewModeSignalMapper = new QSignalMapper(this);
-
-    for (int viewModeInt = ViewMode_BEGIN; viewModeInt != ViewMode_END; viewModeInt++)
-    {
-        // ViewMode viewMode = static_cast<ViewMode>(viewModeInt);
-        QToolButton *button = new QToolButton(this);
-        button->setAutoRaise(true);
-        button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-        viewModeButtons.insert(viewModeInt, button);
-        button->addAction(viewActions.at(viewModeInt));
-        button->setDefaultAction(viewActions.at(viewModeInt));
-        viewModeLayout->addWidget(button);
-    }
-
-    QLabel *spacing = new QLabel(tr("____________"));
-    viewModeLayout->addWidget(spacing);
-
-    QToolButton *button = new QToolButton(this);
-    button->setAutoRaise(true);
-    button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    viewModeLayout->addWidget(button);
-    button->addAction(runAction);
-    button->setDefaultAction(runAction);
-    viewModeLayout->addWidget(button);
-
-
-
-//    vbox->addWidget(spacing);
-//    vbox->addWidget(modelLabel);
-//    vbox->addWidget(trialLabel);
-
-    viewModeButtonsWidget->setLayout(viewModeLayout);
-    infoToolBar->addWidget(viewModeButtonsWidget);
-    addToolBar(Qt::LeftToolBarArea, infoToolBar);
-}
-
-void EasyNetMainWindow::initViewActions()
-{
-    viewActionIcons.insert(Welcome, new QIcon(":/images/zebra_64x64.png"));
-    viewActionIcons.insert(Model, new QIcon(":/images/layers-8x.png"));
-    viewActionIcons.insert(Trial, new QIcon(":/images/cog-8x.png"));
-    viewActionIcons.insert(Input, new QIcon(":/images/list-8x.png"));
-    viewActionIcons.insert(Output, new QIcon(":/images/bar-chart-8x.png"));
-    viewActionIcons.insert(Params, new QIcon(":/images/dial-8x.png"));
-    viewActionIcons.insert(Interpreter, new QIcon(":/images/terminal-8x.png"));
-    viewActionIcons.insert(Code, new QIcon(":/images/code-8x.png"));
-
-    viewActionTexts.insert(Welcome, tr("&Welcome"));
-    viewActionTexts.insert(Model, tr("&Model"));
-    viewActionTexts.insert(Trial, tr("&Trial"));
-    viewActionTexts.insert(Input, tr("&Input"));
-    viewActionTexts.insert(Output, tr("&Output"));
-    viewActionTexts.insert(Params, tr("&Parameters"));
-    viewActionTexts.insert(Interpreter, tr("&Interpreter"));
-    viewActionTexts.insert(Code, tr("&Code"));
-
-    viewActionStatusTips.insert(Welcome, tr("Welcome to easyNet"));
-    viewActionStatusTips.insert(Model, tr("Display model view"));
-    viewActionStatusTips.insert(Trial, tr("Display trial editor"));
-    viewActionStatusTips.insert(Input, tr("Display input view"));
-    viewActionStatusTips.insert(Output, tr("Display output view"));
-    viewActionStatusTips.insert(Params, tr("Display parameter view"));
-    viewActionStatusTips.insert(Interpreter, tr("Display interpreter view"));
-    viewActionStatusTips.insert(Code, tr("Display code view"));
-}
-
-void EasyNetMainWindow::createViewActions()
-{
-    initViewActions();
-    viewModeSignalMapper = new QSignalMapper(this);
-    // iterate over ViewMode enum
-    // http://stackoverflow.com/questions/261963/how-can-i-iterate-over-an-enum
-    // http://stackoverflow.com/questions/1390703/enumerate-over-an-enum-in-c
-    for (int viewModeInt = ViewMode_BEGIN; viewModeInt != ViewMode_END; viewModeInt++)
-    {
-        // ViewMode viewMode = static_cast<ViewMode>(viewModeInt);
-        QAction *action = new QAction(this);
-        viewActions.insert(viewModeInt, action);
-        action->setIcon(*viewActionIcons.at(viewModeInt));
-        action->setText(viewActionTexts.at(viewModeInt));
-        action->setStatusTip(viewActionStatusTips.at(viewModeInt));
-        connect(action, SIGNAL(triggered()), viewModeSignalMapper, SLOT(map()));
-        viewModeSignalMapper->setMapping(action, viewModeInt);
-    }
-    connect(viewModeSignalMapper,SIGNAL(mapped(int)),this,SIGNAL(viewModeClicked(int)));
-    connect(this,SIGNAL(viewModeClicked(int)),this,SLOT(showViewMode(int)));
-}
-
-void EasyNetMainWindow::hideAllDocks()
-{
-    dockWelcome->hide();
-//    dockWebWelcome->hide();
-    dockEdit->hide();
-    dockInterpreter->hide();
-//    dockInput->hide();
-    dockOutput->hide();
-    dockExplorer->hide();
-    dockDesignWindow->hide();
-    dockCommandLog->hide();
-    statusBar()->show();
-
-}
-
-
-void EasyNetMainWindow::showViewMode(int viewModeInt)
-{
-    hideAllDocks();
-    switch (viewModeInt) {
-    case Welcome:
-        welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
-//        QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true);
-//        webWelcomeScreen->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
-//        webWelcomeScreen->setUrl(tr("http://www.adelmanlab.org/easyNet/"));
-
-//        dockWebWelcome->show();
-        dockWelcome->show();
-        break;
-    case Model:
-        dockDesignWindow->show();
-        dockExplorer->show();
-        break;
-    case Trial:
-        break;
-    case Input:
-        break;
-    case Output:
-        dockOutput->show();
-        break;
-    case Params:
-        break;
-    case Interpreter:
-        dockInterpreter->show();
-        break;
-    case Code:
-        dockEdit->show();
-        dockCommandLog->show();
-        dockInterpreter->show();
-        break;
-    default:
-        break;
-    }
-
-    statusBar()->show();
-//    showNormal();
-//    this->showMinimized();
-//    this->showMaximized();
-}
-*/
-
 
 void MainWindow::processHistoryKey(int dir)
 {

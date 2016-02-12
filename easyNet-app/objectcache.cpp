@@ -51,6 +51,8 @@ QVariant ObjectCache::data(const QModelIndex &index, int role) const
             return obj->name;
         case TypeCol:
             return obj->type;
+        case SubtypeCol:
+            return obj->subtype;
         case InvalidCol:
             return obj->invalid;
         case DomDocCol:
@@ -73,6 +75,8 @@ QVariant ObjectCache::headerData(int section, Qt::Orientation orientation, int r
             return "Name";
         case TypeCol:
             return "Type";
+        case SubtypeCol:
+            return "Subtype";
         case InvalidCol:
             return "Invalid";
         case DomDocCol:
@@ -96,6 +100,9 @@ bool ObjectCache::setData(const QModelIndex &index, const QVariant &value, int r
              break;
          case TypeCol:
              cache.at(index.row())->type = value.toString();
+             break;
+         case SubtypeCol:
+             cache.at(index.row())->subtype = value.toString();
              break;
          case InvalidCol:
              cache.at(index.row())->invalid = value.toBool();
@@ -148,18 +155,17 @@ void ObjectCache::clear()
     endRemoveRows();
 }
 
-bool ObjectCache::create(const QString &name, const QString &type)
+bool ObjectCache::create(const QString &name, const QString &type, const QString &subtype)
 {
     if (rowFromName(name) >= 0) // name exists already
         return false;
 
     beginInsertRows(QModelIndex(), 0, 0);
-    LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type);
+    LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type, subtype);
     cache.insert(0, elem);
     endInsertRows();
     emit dataChanged(index(0,0), index(0,columnCount()-1));
     return true;
-
 }
 
 bool ObjectCache::destroy(const QString &name)
@@ -172,7 +178,10 @@ bool ObjectCache::setDomDocAndValidCache(QDomDocument *domDoc, QString cmd)
 {
     QString name = nameFromCmd(cmd);
     if (!exists(name))
+    {
+        qDebug() << "ERROR: ObjectCache::setDomDocAndValidCache non-existing name" << name;
         return false;
+    }
 
     int row = rowFromName(name);
     if (!setData(index(row, DomDocCol), QVariant::fromValue(domDoc)))
@@ -183,10 +192,27 @@ bool ObjectCache::setDomDocAndValidCache(QDomDocument *domDoc, QString cmd)
 bool ObjectCache::invalidateCache(const QString &name)
 {
     if (rowFromName(name) == -1)
+    {
+        // this can happen any time an object is listed both in recently_created and recently_modified
+        // then the latter tries to invalidate cache of an object that is not yet in the cache,
+        // since the XML has not beed received yet from lazyNut.
+        //qDebug() << "WARNING: ObjectCache::invalidateCache no row corresponding to" << name;
         return false;
+    }
+    // FIRST set pending, THEN invalid, since only the latter triggers signals to filters
+    // If reversed the signal would reach a filter still with the pending bit false,
+    // thus preventing updaters to request updates.
+    if (!setPending(name, true))
+    {
+        qDebug() << "ERROR: ObjectCache::invalidateCache cannot set pending " << name;
+        return false;
+    }
     if (!setInvalid(name, true))
+    {
+        qDebug() << "ERROR: ObjectCache::invalidateCache cannot invalidate " << name;
         return false;
-    return setPending(name, true);
+    }
+    return true;
 }
 
 QDomDocument *ObjectCache::getDomDoc(const QString &name)
@@ -195,7 +221,10 @@ QDomDocument *ObjectCache::getDomDoc(const QString &name)
     if (v.canConvert<QDomDocument *>())
         return v.value<QDomDocument *>();
     else
+    {
+        qDebug() << "ERROR: ObjectCache::getDomDoc cannot get QDomDocument for" << name;
         return nullptr;
+    }
 }
 
 bool ObjectCache::setInvalid(const QString &name, bool invalid)
@@ -229,6 +258,11 @@ QString ObjectCache::type(const QString &name)
     return data(index(rowFromName(name), TypeCol)).toString();
 }
 
+QString ObjectCache::subtype(const QString &name)
+{
+    return data(index(rowFromName(name), SubtypeCol)).toString();
+}
+
 bool ObjectCache::exists(const QString &name)
 {
     QModelIndexList nameMatchList = match(
@@ -246,7 +280,8 @@ bool ObjectCache::create(QDomDocument *domDoc)
     XMLelement elem = XMLelement(*domDoc).firstChild();
     while (!elem.isNull())
     {
-        success *= create(elem(), elem["type"]());
+        // currently recently_created does not provide subtype
+        success *= create(elem(), elem["type"](), elem["subtype"]());
         elem = elem.nextSibling();
     }
     return success;

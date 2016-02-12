@@ -9,10 +9,11 @@ class ObjectNameValidator : public QValidator {
 public:
     explicit ObjectNameValidator(QObject* parent = 0);
     QValidator::State validate(QString& input, int& pos) const Q_DECL_OVERRIDE;
-    bool isValid(QString input);
+    bool isValid(QString name);
+    QString makeValid(QString name);
 
 private:
-    QStringList forbiddenNames;
+    QRegExp forbiddenRex;
 
 };
 

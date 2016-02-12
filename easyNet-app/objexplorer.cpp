@@ -19,7 +19,6 @@
 #include "lazynutjob.h"
 #include "xmlelement.h"
 #include "expandtofillbutton.h"
-#include "lazynutlistwidget.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
@@ -65,11 +64,11 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
     descriptionUpdater->setProxyModel(descriptionFilter);
 
     objectModel = new LazyNutObjectModel(nullptr, this);
-    connect(descriptionFilter, SIGNAL(objectCreated(QString, QString, QDomDocument*)),
-            objectModel, SLOT(setDescription(QString, QString, QDomDocument*)));
+    connect(descriptionFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+            objectModel, SLOT(setDescription(QString, QString, QString, QDomDocument*)));
     connect(descriptionFilter, SIGNAL(objectDestroyed(QString)),
             objectModel, SLOT(removeDescription(QString)));
-    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*)),
+    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
             objectModel, SLOT(updateDescription(QDomDocument*)));
 
 
@@ -284,12 +283,6 @@ void ObjExplorer::selectType(QString type)
 }
 
 
-void ObjExplorer::showList(QString cmd)
-{
-    LazyNutListWidget *listWidget = new LazyNutListWidget(cmd);
-    listWidget->setAttribute(Qt::WA_DeleteOnClose, true);
-    listWidget->show();
-}
 
 localListFiller::~localListFiller()
 {

@@ -14,14 +14,23 @@ public:
     bool isAllValid();
 
 public slots:
-    void setNoFilter() {setFilterRegExp(QString());}
+    void setNoFilter();
+    void setAllPassFilter();
     void setName(QString txt);
     void setNameList(QStringList list);
+    void addName(QString txt);
+    void removeName(QString txt);
     void setType(QString txt);
     void setTypeList(QStringList list);
+    void addType(QString txt);
+    void removeType(QString txt);
+    void setSubtype(QString txt);
+    void setSubtypeList(QStringList list);
+    void addSubtype(QString txt);
+    void removeSubtype(QString txt);
 
 signals:
-    void objectCreated(QString, QString, QDomDocument*);
+    void objectCreated(QString, QString, QString, QDomDocument*);
     void objectDestroyed(QString name);
     void objectModified(QString name);
 
@@ -32,6 +41,9 @@ private slots:
 
 private:
     void setList(QStringList list);
+    QStringList nameList;
+    QStringList typeList;
+    QStringList subtypeList;
 };
 
 #endif // OBJECTCATALOGUEFILTER_H

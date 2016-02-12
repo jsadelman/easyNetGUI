@@ -49,7 +49,7 @@ public:
                          const QModelIndex &parent = QModelIndex());
     bool removeRows(int position, int rows,
                          const QModelIndex &parent = QModelIndex());
-    bool appendValue(const QVariant &value, const QModelIndex &parent = QModelIndex(),
+    virtual bool appendValue(const QVariant &value, const QModelIndex &parent = QModelIndex(),
                      int column = 0, int role = Qt::EditRole);
     bool appendSubtree(const TreeItem * subtree, const QModelIndex &parent = QModelIndex());
     TreeItem* getRootItem();
@@ -62,7 +62,7 @@ signals:
     void sendGenealogy(QList<QVariant>) const;
 
 
-private:
+protected:
     void recursiveGetGenealogy(const QModelIndex &index);
 
     //void setupModelData(const QStringList &lines, TreeItem *parent);

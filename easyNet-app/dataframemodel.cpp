@@ -5,7 +5,7 @@
 
 
 DataFrameModel::DataFrameModel(QDomDocument *domDoc, QObject *parent)
-    :domDoc(domDoc), m_name(), m_view(nullptr), QAbstractTableModel(parent)
+    :domDoc(domDoc), m_name(), QAbstractTableModel(parent)
 {
 }
 
@@ -93,30 +93,30 @@ Qt::ItemFlags DataFrameModel::flags (const QModelIndex &index) const
 
 }
 
-QStringList DataFrameModel::mimeTypes() const
-{
-    QStringList types;
-    types << "application/vnd.text.list";
-    return types;
-}
+//QStringList DataFrameModel::mimeTypes() const
+//{
+//    QStringList types;
+//    types << "application/vnd.text.list";
+//    return types;
+//}
 
-QMimeData* DataFrameModel::mimeData(const QModelIndexList &indexes) const
-{
-    QMimeData *mimeData = new QMimeData();
-    QByteArray encodedData;
+//QMimeData* DataFrameModel::mimeData(const QModelIndexList &indexes) const
+//{
+//    QMimeData *mimeData = new QMimeData();
+//    QByteArray encodedData;
 
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+//    QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    foreach (const QModelIndex &index, indexes) {
-        if (index.isValid()) {
-            QString text = data(index, Qt::DisplayRole).toString();
-            stream << text;
-        }
-    }
+//    foreach (const QModelIndex &index, indexes) {
+//        if (index.isValid()) {
+//            QString text = data(index, Qt::DisplayRole).toString();
+//            stream << text;
+//        }
+//    }
 
-    mimeData->setData("application/vnd.text.list", encodedData);
-    return mimeData;
-}
+//    mimeData->setData("application/vnd.text.list", encodedData);
+//    return mimeData;
+//}
 
 
 DataFrameHeader::DataFrameHeader(QWidget *parent)

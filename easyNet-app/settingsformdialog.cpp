@@ -1,6 +1,6 @@
 #include "settingsformdialog.h"
 #include "settingsform.h"
-#include "objectnamevalidator.h"
+#include "sessionmanager.h"
 
 
 #include <QDomDocument>
@@ -28,20 +28,11 @@ SettingsFormDialog::~SettingsFormDialog()
 
 void SettingsFormDialog::accept()
 {
-    // just print for the moment
-//    QStringList settingsList = form->getSettingsCmdList();
     QStringList cmdList;
     QString dfName = nameLineEdit->text();
     cmdList << QString("create dataframe_merge %1").arg(dfName);
     cmdList << form->getSettingsCmdList().replaceInStrings(QRegExp("^"), QString("%1 set_").arg(dfName));
-//    cmdList.replaceInStrings(QRegExp("(set_[xy]_key) (.*)$"), "\\1 \"\\2\"");
-//    cmdList << QString ("%1 get").arg(dfName);
-//    qDebug() << cmdList;
-
-    // order matters, first cmdListReady then dfNameReady
-    emit cmdListReady(cmdList);
-    emit dfNameReady(dfName, form->value("x"), form->value("y"));
-
+    emit dataframeMergeSettingsReady(cmdList, dfName, form->value("x"), form->value("y"));
     QDialog::accept();
 }
 
@@ -76,7 +67,6 @@ void SettingsFormDialog::build()
     // db name
     QFormLayout *nameLayout = new QFormLayout;
     nameLineEdit = new QLineEdit;
-    validator = new ObjectNameValidator(this);
     connect(nameLineEdit, SIGNAL(editingFinished()), this, SLOT(validateName()));
     nameLayout->addRow("Dataframe name:", nameLineEdit);
     mainLayout->addLayout(nameLayout);
@@ -93,7 +83,7 @@ void SettingsFormDialog::build()
 
 void SettingsFormDialog::validateName()
 {
-    if (!validator->isValid(nameLineEdit->text()))
+    if (!SessionManager::instance()->isValidObjectName(nameLineEdit->text()))
     {
         QMessageBox::critical(this, "Illegal dataframe name",QString("The name you chose is not valid, since it conflicts with an existing name or command.\n"
                                                                      "Please select another name."));

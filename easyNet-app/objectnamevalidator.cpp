@@ -1,10 +1,12 @@
 #include "objectnamevalidator.h"
 #include "objectcache.h"
 #include "sessionmanager.h"
+#include "enumclasses.h"
 
 ObjectNameValidator::ObjectNameValidator(QObject *parent)
+    : QValidator(parent)
 {
-    forbiddenNames
+    QStringList forbiddenNames = QStringList()
                       << "\\s+.*"
                       << "[#(0-9].*"
                       << "query"
@@ -48,19 +50,14 @@ ObjectNameValidator::ObjectNameValidator(QObject *parent)
                       << "unset"
                       << "R"
                          ;
+    forbiddenRex = QRegExp(QString("^(%1)$").arg(forbiddenNames.join("|")));
 }
 
 QValidator::State ObjectNameValidator::validate(QString &input, int &pos) const
 {
     Q_UNUSED(pos)
-    QRegExp forbiddenRex(QString("^(%1)$").arg(forbiddenNames.join("|")));
-    QModelIndexList objectMatchList = SessionManager::instance()->descriptionCache->match(
-                SessionManager::instance()->descriptionCache->index(0,0),
-                Qt::DisplayRole,
-                input,
-                1,
-                Qt::MatchExactly);
-    if (forbiddenRex.exactMatch(input) || objectMatchList.length() > 0)
+    if (forbiddenRex.exactMatch(input) || SessionManager::instance()->exists(input) ||
+            SessionManager::instance()->extraNamedItems.contains(input))
         return Invalid;
 
     else
@@ -68,8 +65,35 @@ QValidator::State ObjectNameValidator::validate(QString &input, int &pos) const
 
 }
 
-bool ObjectNameValidator::isValid(QString input)
+bool ObjectNameValidator::isValid(QString name)
 {
     int pos(0);
-    return validate(input, pos) == QValidator::Acceptable;
+    return validate(name, pos) == QValidator::Acceptable;
+}
+
+QString ObjectNameValidator::makeValid(QString name)
+{
+    // first eliminate brackets and spaces
+    name = normalisedName(name);
+    // then, if name is not valid appends .1 or .2 etc. until a valid name is found.
+    if (isValid(name))
+        return name;
+
+    QRegExp countRx("\\.(\\d+)$");
+    int count = 1;
+    if (countRx.indexIn(name) == -1)
+    {
+        name.append(".1");
+    }
+    else
+    {
+        count = countRx.cap(1).toInt();
+    }
+    while (!isValid(name))
+    {
+        name.replace(QRegExp(QString("\\.%1$").arg(QString::number(count))),
+                     QString(".%1").arg(QString::number(count + 1)));
+        ++count;
+    }
+    return name;
 }

@@ -4,6 +4,8 @@
 #include "libdunnartcanvas/shape.h"
 
 class ObjectCacheFilter;
+class ObjectUpdater;
+
 
 
 class Box: public dunnart::ShapeObj
@@ -43,29 +45,27 @@ public:
     virtual void paintLabel(QPainter *painter);
     virtual QRectF labelBoundingRect(void) const;
 
-    QString defaultPlotType();
+    QStringList defaultPlotTypes();
 
     qreal autoWidth();
 signals:
-    void createNewPlotOfType(QString, QString, QMap<QString, QString>);
+    void createNewRPlot(QString, QString, QMap<QString, QString>, int, QList<QSharedPointer<QDomDocument> > info = QList<QSharedPointer<QDomDocument> >());
     void lazyNutTypeChanged();
     void plotDestroyed(QString name);
 
 
 protected:
-    virtual QAction *buildAndExecContextMenu(
-            QGraphicsSceneMouseEvent *event, QMenu& menu);
+    virtual QAction *buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu& menu);
 
 private slots:
 //    void sendCreateNewPlotOfType();
-    void setupDefaultDataframesFilter();
+    void setupDefaultObserverFilter();
+//    void updateObservedState();
 
 private:
-    void defaultPlot(QString plotName, QString dataframe);
-    void enableObserver(QString observer);
-    void disableObserver(QString observer);
-    void lesion();
-    void unlesion();
+    void enableObserver(QString observer, bool enable);
+    void lesionBox(bool lesion);
+
 
     QString m_name;
     QString m_lazyNutType;
@@ -75,9 +75,19 @@ private:
     qreal m_widthMarginProportionToLongestLabel;
     qreal m_widthOverHeight;
 
+    ObjectCacheFilter *defaultObserverFilter;
+    ObjectUpdater     *defaultObserverUpdater;
+    QSet<QString>     defaultObserverSet;
+    ObjectCacheFilter *plotFilter;
+    QMap <QString, QString> observerOfPlot;
+
     ObjectCacheFilter *defaultDataframesFilter;
+    ObjectCacheFilter   *layersFilter;
+    ObjectUpdater       *layersUpdater;
+
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
+
 
 
 
