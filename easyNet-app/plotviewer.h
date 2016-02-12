@@ -57,7 +57,7 @@ signals:
      void resized(QSize);
      void sendDrawCmd(QString);
      void showPlotSettings();
-     void createNewRPlot(QString, QString, QMap<QString, QString>, int, QSharedPointer<QDomDocument>);
+     void createNewRPlot(QString, QString, QMap<QString, QString>, int, QList<QSharedPointer<QDomDocument> >);
      void setPlotSettings(QString);
      void removePlotSettings(QString);
 

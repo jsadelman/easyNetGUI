@@ -68,10 +68,10 @@ public:
 signals:
         void plot(QString, QByteArray);
         void showPlotViewer();
-        void newRPlotCreated(QString, bool, bool, QSharedPointer<QDomDocument>);
+        void newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >);
 public slots:
         void newRPlot(QString name, QString type, QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
-                      int flags=0, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
+                      int flags=0, QList<QSharedPointer<QDomDocument> > infoList=QList<QSharedPointer<QDomDocument> >());
 //        void quietlyNewRPlot(QString name, QString type,
 //                                 QMap<QString, QString> defaultSettings=QMap<QString,QString>(),
 //                                 QMap<QString, QString> sourceDataframeSettings=QMap<QString,QString>(),

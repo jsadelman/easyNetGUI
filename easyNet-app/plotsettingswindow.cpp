@@ -299,7 +299,7 @@ void PlotSettingsWindow::newPlot()
 //}
 
 void PlotSettingsWindow::newRPlot(QString name, QString rScript,
-                                     QMap <QString,QString> defaultSettings, int flags, QSharedPointer<QDomDocument> info)
+                                     QMap <QString,QString> defaultSettings, int flags, QList<QSharedPointer<QDomDocument> > infoList)
 {
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER; // debug purpose
@@ -313,9 +313,12 @@ void PlotSettingsWindow::newRPlot(QString name, QString rScript,
     if (!defaultSettings.isEmpty())
         jobData.insert("defaultSettings", QVariant::fromValue(defaultSettings));
     jobData.insert("flags", flags);
-    QVariant infoVariant;
-    infoVariant.setValue(info);
-    jobData.insert("trialRunInfo", infoVariant);
+    QList<QVariant> vList;
+    foreach(QSharedPointer<QDomDocument> info, infoList)
+        vList.append(QVariant::fromValue(info));
+//    QVariant infoVariant;
+//    infoVariant.setValue(infoList);
+    jobData.insert("trialRunInfo", vList);
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
 
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
@@ -378,11 +381,16 @@ void PlotSettingsWindow::buildSettingsForm()
         flags = jobData.value("flags").toInt();
     SessionManager::instance()->setPlotFlags(plotName, flags);
 
-    QSharedPointer<QDomDocument> info;
+    QList<QSharedPointer<QDomDocument> > info;
     QVariant v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
-    if (v.canConvert<QSharedPointer<QDomDocument> >())
-        info = v.value<QSharedPointer<QDomDocument> >();
-
+    if (v.canConvert<QList<QVariant> >())
+    {
+        foreach(QVariant vi, v.toList())
+        {
+            if (vi.canConvert<QSharedPointer<QDomDocument> >())
+                info.append(vi.value<QSharedPointer<QDomDocument> >());
+        }
+    }
     buildSettingsForm(plotName, currentSettings, defaultSettings);
     emit newRPlotCreated(plotName, !(flags & Plot_Backup), flags & Plot_Backup, info);
 //        setPlotSettings(plotName);

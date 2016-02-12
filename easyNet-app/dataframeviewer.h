@@ -57,7 +57,7 @@ signals:
     void stimulusSetChanged(bool);
     void parametersTableChanged(bool);
     void createNewPlot(QString name, QString type, QMap<QString, QString> defaultSettings,
-                       int flags, QSharedPointer<QDomDocument> info);
+                       int flags, QList<QSharedPointer<QDomDocument> > info);
 
 protected:
     virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;

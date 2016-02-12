@@ -380,8 +380,8 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
       if (type == m_boxType)
     {
         Box *box = new Box();
-        connect(box, SIGNAL(createNewRPlot(QString,QString,QMap<QString, QString>,int,QSharedPointer<QDomDocument>)),
-                this, SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>,int,QSharedPointer<QDomDocument>)));
+        connect(box, SIGNAL(createNewRPlot(QString,QString,QMap<QString, QString>,int,QList<QSharedPointer<QDomDocument> >)),
+                this, SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>,int,QList<QSharedPointer<QDomDocument> >)));
 
         addItem(box);
         box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers

@@ -31,7 +31,7 @@ public:
     void removeView(QString name);
 
 public slots:
-    virtual void addItem(QString name="", bool setCurrent=false, bool isBackup=false, QSharedPointer<QDomDocument> info=QSharedPointer<QDomDocument>());
+    virtual void addItem(QString name="", bool setCurrent=false, bool isBackup=false, QList<QSharedPointer<QDomDocument> > info=QList<QSharedPointer<QDomDocument> >());
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
     void setDispatchModeOverride(int mode);

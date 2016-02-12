@@ -38,28 +38,28 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     foreach (QString rplot, SessionManager::instance()->affectedPlots(trialRunInfo.results))
     {
 //        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->ui->view(rplot));
-        int dispatchAction;
+        currentDispatchAction;
         if (!host->plotByteArray.contains(rplot))
         {
-            dispatchAction = Dispatch_Overwrite;
+            currentDispatchAction = Dispatch_Overwrite;
         }
         else if (!dispatchModeAuto && dispatchModeOverride > -1)
         {
-            dispatchAction = dispatchModeOverride;
+            currentDispatchAction = dispatchModeOverride;
         }
         else if (SessionManager::instance()->isAnyTrialPlot(rplot))
         {
-            dispatchAction = Dispatch_Overwrite;
+            currentDispatchAction = Dispatch_Overwrite;
         }
         else if (previousDispatchMode < 0)
         {
-            dispatchAction = currentDispatchMode;
+            currentDispatchAction = currentDispatchMode;
         }
         else
         {
-            dispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
+            currentDispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
         }
-        if (dispatchAction == Dispatch_New)
+        if (currentDispatchAction == Dispatch_New)
         {
             /*QString newPlotName =*/ host->cloneRPlot(rplot);
 //            copyTrialRunInfo(rplot, newPlotName);
@@ -88,7 +88,7 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
         }
     }
     host->updateActivePlots();
-    if (infoAct->isChecked())
+    if (infoIsVisible)
         showInfo(true);
 //    host->refreshInfo();
 }
