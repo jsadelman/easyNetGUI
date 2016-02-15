@@ -446,6 +446,8 @@ void MainWindow::initialiseToolBar()
     modelButton->setFlat(true);
     modelButton->setEnabled(true);
 
+    addonButton = new QToolButton(this);
+    addonButton->setIcon(QIcon(":/images/add-on.png"));
 //    QLabel* trialBoxLabel = new QLabel("Trial:");
     trialButton = new QPushButton("Trial:");
     trialButton->setFlat(true);
@@ -462,6 +464,8 @@ void MainWindow::initialiseToolBar()
               this, SLOT(loadModel()));
     connect(trialButton, SIGNAL(clicked()),
               this, SLOT(loadTrial()));
+    connect(addonButton, SIGNAL(clicked()),
+              this, SLOT(loadAddOn()));
 
       modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
       modelComboBox->setModel(modelListFilter);
@@ -489,6 +493,10 @@ void MainWindow::initialiseToolBar()
     toolbar->addWidget(modelComboBox);
 //    toolbar->addAction(openAct);
 //    toolbar->addAction(QIcon(openpix), "Open File");
+//    toolbar->addSeparator();
+
+
+    toolbar->addWidget(addonButton);
     toolbar->addSeparator();
 
 

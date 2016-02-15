@@ -305,6 +305,7 @@ public:
     TrialEditor     *trialEditor;
     QPushButton     * trialButton;
     QPushButton     * modelButton;
+    QToolButton * addonButton;
     QWidget         *spacer;
     ObjectCacheFilter* modelListFilter;
     ObjectCacheFilter* trialListFilter;
