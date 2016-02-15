@@ -483,11 +483,12 @@ void DataframeViewer::setNameInFilter(QString name)
 void DataframeViewer::setPrettyHeadersForTrial(QString trial, QString df)
 {
     PrettyHeadersModel *prettyHeadersModel = new PrettyHeadersModel(this);
-    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
+/*    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
     prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
     prettyHeadersModelMap.insert(df, prettyHeadersModel);
+*/
 }
 
 void DataframeViewer::dispatch()
