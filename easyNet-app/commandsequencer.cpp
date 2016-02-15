@@ -17,6 +17,7 @@ void CommandSequencer::initProcessLazyNutOutput()
     beginRex = QRegExp("BEGIN: ([^\\r\\n]+)");
     emptyLineRex = QRegExp("^[\\s\\t]*$");
     errorRex = QRegExp("ERROR: ([^\\r\\n]*)"); //(?=\\n)
+    rRex = QRegExp("\\bR: ([^\\r\\n]*)"); //(?=\\n)
 //    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
     answerRex = QRegExp("(ANSWER: [^\\n]*\\n)+");
 
@@ -110,6 +111,17 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         }
         if (!errorList.isEmpty())
             emit cmdError(currentCmd,errorList);
+
+        // extract R lines
+        int rOffset = rRex.indexIn(lazyNutBuffer,beginOffset);
+        QStringList rList = QStringList();
+        while (beginOffset < rOffset && rOffset < endOffset)
+        {
+            rList << rRex.cap(0);
+            rOffset = rRex.indexIn(lazyNutBuffer,rOffset+1);
+        }
+        if (!rList.isEmpty())
+            emit cmdR(currentCmd,rList);
 
         if (getAnswer)
         {

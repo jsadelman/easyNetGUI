@@ -46,6 +46,8 @@ signals:
     // errors
     void cmdError(QString,QStringList);
 
+    void cmdR(QString,QStringList);
+
 private:
 
     void initProcessLazyNutOutput();
@@ -60,7 +62,7 @@ private:
     int baseOffset;
     QRegExp beginRex;
     QRegExp emptyLineRex;
-    QRegExp errorRex;
+    QRegExp errorRex,rRex;
     QRegExp answerRex;
     QRegExp eNelementsRex;
     QRegExp xmlStartRex;

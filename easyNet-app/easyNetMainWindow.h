@@ -263,6 +263,7 @@ public:
 //    EditWindow       *commandLog;
     CommandLog       *commandLog;
     CommandLog       *errorLog;
+    CommandLog       *rLog;
     Highlighter     *highlighter;
     Highlighter     *highlighter2;
     Highlighter     *highlighter3;

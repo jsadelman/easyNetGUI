@@ -176,6 +176,7 @@ void MainWindow::constructForms()
     highlighter2 = new Highlighter(commandLog->textEdit->document());
     errorLog = new CommandLog(this);
     highlighter3 = new Highlighter(errorLog->textEdit->document());
+    rLog = new CommandLog(this);
     debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
@@ -259,6 +260,7 @@ void MainWindow::constructForms()
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
     lazynutPanel->addTab(errorLog, tr("Errors"));
+    lazynutPanel->addTab(rLog, tr("R"));
     testsTabIdx = lazynutPanel->addTab(testViewer, tr("Tests"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
@@ -327,6 +329,11 @@ void MainWindow::connectSignalsAndSlots()
     {
        foreach(QString error, errorList)
            errorLog->addText(error);
+    });
+    connect(SessionManager::instance(), &SessionManager::cmdR, [=](QString /*cmd*/, QStringList rList)
+    {
+       foreach(QString fb, rList)
+           rLog->addText(fb);
     });
 
 }

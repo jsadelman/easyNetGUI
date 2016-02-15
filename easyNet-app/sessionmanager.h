@@ -84,6 +84,7 @@ signals:
     void isReady(bool);
     void isPaused(bool);
     void cmdError(QString,QStringList);
+    void cmdR(QString,QStringList);
     void commandExecuted(QString, QString);
     void commandSent(QString);
     void logCommand(QString);
