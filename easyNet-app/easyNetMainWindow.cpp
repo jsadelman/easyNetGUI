@@ -677,6 +677,21 @@ void MainWindow::loadTrial()
                                                     tr("Script Files (*.eNs *.eNt)"));
     if (!fileName.isEmpty())
     {
+        int len=easyNetDataHome.length();
+        QString fn;
+        if(fileName.left(len)==easyNetDataHome)
+        {
+            if(easyNetDataHome.right(1)!="/") len++;
+            fn=fileName.right(fileName.length()-len);
+        }
+        else fn=fileName;
+        QString x="include ";
+        x.append(fn);
+        runCmdAndUpdate({x});
+    }
+    return;
+    if (!fileName.isEmpty())
+    {
         // load and run script
         loadFile(fileName);
 
@@ -712,6 +727,20 @@ void MainWindow::loadAddOn()
                                                     trialsDir,
                                                     "Add-ons (" + currentModel + ".*.eNa)");
     if (!fileName.isEmpty())
+    {
+        int len=easyNetDataHome.length();
+        QString fn;
+        if(fileName.left(len)==easyNetDataHome)
+        {
+            if(easyNetDataHome.right(1)!="/") len++;
+            fn=fileName.right(fileName.length()-len);
+        }
+        else fn=fileName;
+        QString x="include ";
+        x.append(fn);
+        runCmdAndUpdate({x});
+    }
+    return;
     {
         // load and run script
         loadFile(fileName);
