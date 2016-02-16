@@ -133,6 +133,12 @@ void PlotSettingsBaseWidget::createLevelsListModel()
         static_cast<ObjectCacheFilter*>(levelsListModel)->setType(XMLAccessor::type(levelsElement));
 
     }
+    else if (levelsElement.tagName() == "list")
+    {
+        qDebug()<<"list branch";
+        levelsListModel=new StringListModel(XMLAccessor::listValues(levelsElement), this);
+        qDebug()<<XMLAccessor::listValues(levelsElement);
+    }
     else if (levelsElement.tagName() == "command")
     {
         levelsListModel = new StringListModel(QStringList(), this);
@@ -423,10 +429,15 @@ void PlotSettingsSingleChoiceWidget::createEditWidget()
 {
     QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
 
-    if (levelsElement.tagName() == "parameter")
+    if (levelsElement.tagName() == "parameter" )
         buildEditWidget();
     else if (levelsElement.tagName() == "command")
         getLevels();
+    else if (levelsElement.tagName() == "list")
+    {
+        qDebug()<<"here";
+        buildEditWidget();
+    }
     else
     {
         rawEditModeButton->setEnabled(false);
@@ -527,6 +538,8 @@ void PlotSettingsMultipleChoiceWidget::createEditWidget()
     QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
 
     if (levelsElement.tagName() == "parameter")
+        buildEditWidget();
+    else if (levelsElement.tagName() == "list")
         buildEditWidget();
     else if (levelsElement.tagName() == "command")
         getLevels();

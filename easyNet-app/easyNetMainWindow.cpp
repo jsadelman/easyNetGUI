@@ -129,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     #ifdef WIN32
     if (qApp->arguments().count() > 1)
-        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)));
+        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)),true);
     #endif
 }
 
@@ -176,6 +176,7 @@ void MainWindow::constructForms()
     highlighter2 = new Highlighter(commandLog->textEdit->document());
     errorLog = new CommandLog(this);
     highlighter3 = new Highlighter(errorLog->textEdit->document());
+    rLog = new CommandLog(this);
     debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
@@ -259,6 +260,7 @@ void MainWindow::constructForms()
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
     lazynutPanel->addTab(errorLog, tr("Errors"));
+    lazynutPanel->addTab(rLog, tr("R"));
     testsTabIdx = lazynutPanel->addTab(testViewer, tr("Tests"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
@@ -327,6 +329,11 @@ void MainWindow::connectSignalsAndSlots()
     {
        foreach(QString error, errorList)
            errorLog->addText(error);
+    });
+    connect(SessionManager::instance(), &SessionManager::cmdR, [=](QString /*cmd*/, QStringList rList)
+    {
+       foreach(QString fb, rList)
+           rLog->addText(fb);
     });
 
 }
@@ -439,6 +446,8 @@ void MainWindow::initialiseToolBar()
     modelButton->setFlat(true);
     modelButton->setEnabled(true);
 
+    addonButton = new QToolButton(this);
+    addonButton->setIcon(QIcon(":/images/add-on.png"));
 //    QLabel* trialBoxLabel = new QLabel("Trial:");
     trialButton = new QPushButton("Trial:");
     trialButton->setFlat(true);
@@ -454,6 +463,8 @@ void MainWindow::initialiseToolBar()
     connect(modelButton, SIGNAL(clicked()),
               this, SLOT(loadModel()));
     connect(trialButton, SIGNAL(clicked()),
+              this, SLOT(loadTrial()));
+    connect(addonButton, SIGNAL(clicked()),
               this, SLOT(loadAddOn()));
 
       modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -482,6 +493,10 @@ void MainWindow::initialiseToolBar()
     toolbar->addWidget(modelComboBox);
 //    toolbar->addAction(openAct);
 //    toolbar->addAction(QIcon(openpix), "Open File");
+//    toolbar->addSeparator();
+
+
+    toolbar->addWidget(addonButton);
     toolbar->addSeparator();
 
 
@@ -560,7 +575,8 @@ void MainWindow::runScript()
     scriptEdit->runScript();
 }
 
-void MainWindow::loadModel(QString fileName)
+
+void MainWindow::loadModel(QString fileName,bool complete)
 {
     if (fileName.isEmpty())
         return;
@@ -600,7 +616,11 @@ void MainWindow::loadModel(QString fileName)
 
     // note: this synch is wrong, yet it works fine if one loads just one model while
     // no other jobs run. In general commandsCompleted() might be sent from a previous job.
-    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
+    if(complete)
+      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
+    else
+      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
+
     runScript();
     //        SessionManager::instance()->setCurrentModel(currentModel);
     // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
@@ -614,7 +634,6 @@ void MainWindow::loadModel(QString fileName)
             modelButton->setEnabled(false);
     #endif
 
-
 }
 
 void MainWindow::loadModel()
@@ -623,17 +642,30 @@ void MainWindow::loadModel()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     scriptsDir,
                                                     tr("easyNet Model Files (*.eNm)"));
-    loadModel(fileName);
+    loadModel(fileName,true);
+}
+void MainWindow::loadModelUnconfigured()
+{
+    // bring up file dialog
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
+                                                    scriptsDir,
+                                                    tr("easyNet Model Files (*.eNm)"));
+    loadModel(fileName,false);
+}
+void MainWindow::modelConfigNeeded()
+{
+
 }
 
-void MainWindow::afterModelLoaded()
+void MainWindow::afterModelConfig()
 {
-    qDebug() << Q_FUNC_INFO;
+    emit runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
     modelScene->wakeUp();
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelLoaded()));
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
 }
 
 
@@ -1155,6 +1187,16 @@ void MainWindow::createActions()
     loadModelAct->setStatusTip(tr("Load a previously specified model"));
     connect(loadModelAct, SIGNAL(triggered()), this, SLOT(loadModel()));
 
+    loadModelUAct = new QAction(tr("Partially load model for configuration"), this);
+//    loadModelAct->setShortcuts(QKeySequence::Open);
+    loadModelUAct->setStatusTip(tr("Load a previously specified model, pausing to allow settings to be changed"));
+    connect(loadModelUAct, SIGNAL(triggered()), this, SLOT(loadModelUnconfigured()));
+
+    modelFinalizeAct = new QAction(tr("Finalize configured model"), this);
+//    loadModelAct->setShortcuts(QKeySequence::Open);
+    modelFinalizeAct->setStatusTip(tr("Finish loading a model, once settings have been changed"));
+    connect(modelFinalizeAct, SIGNAL(triggered()), this, SLOT(afterModelConfig()));
+
     loadTrialAct = new QAction(QIcon(":/images/cog-2x.png"), tr("&Load trial"), this);
 //    loadTrialAct->setShortcuts(QKeySequence::Open);
     loadTrialAct->setStatusTip(tr("Load a previously specified trial"));
@@ -1290,6 +1332,8 @@ void MainWindow::createMenus()
 
     fileSubMenu = fileMenu->addMenu(tr("&Load"));
     fileSubMenu->addAction(loadModelAct);
+    fileSubMenu->addAction(loadModelUAct);
+    fileSubMenu->addAction(modelFinalizeAct);
     fileSubMenu->addAction(loadTrialAct);
     fileSubMenu->addAction(loadAddOnAct);
     fileSubMenu->addAction(loadStimulusSetAct);

@@ -336,6 +336,8 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(isReady(bool)));
     connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
             this, SIGNAL(cmdError(QString,QStringList)));
+    connect(commandSequencer, SIGNAL(cmdR(QString,QStringList)),
+            this, SIGNAL(cmdR(QString,QStringList)));
     connect(commandSequencer, SIGNAL(commandExecuted(QString,QString)),
             this, SIGNAL(commandExecuted(QString,QString)));
     connect(commandSequencer, SIGNAL(commandsInJob(int)),
