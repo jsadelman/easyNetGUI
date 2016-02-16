@@ -164,6 +164,10 @@ void Box::cacheFromDescription(QDomDocument *description, QString name)
 
 QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
 {
+    // a workaround for the following bug (feature?) of Dunnart or Qt:
+    // if right click on Box A without clicking on an action, then right click on Box B, the event on B is delivered to A.
+    if (!contains(event->pos()))
+        return nullptr;
     if (!menu.isEmpty())
     {
         menu.addSeparator();
