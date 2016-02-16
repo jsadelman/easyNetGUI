@@ -198,12 +198,11 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 plotData["dataframe"] = dataframe;
                 plotData["observer"] = observer;
                 plotData["plotType"] = plotType;
-                rplotName.append(QString(".%1").arg(plotType)).remove(QRegExp("\\.R$"));
-                plotData["rplotName"] = rplotName;
+                plotData["rplotName"] = QString("%1.%2").arg(rplotName).arg(plotType).remove(QRegExp("\\.R$"));
                 actionList.append(portMenu->addAction(plotType));
                 actionList.last()->setData(plotData);
                 actionList.last()->setCheckable(true);
-                actionList.last()->setChecked(observerOfPlot.contains(rplotName));
+                actionList.last()->setChecked(observerOfPlot.contains(plotData["rplotName"].toString()));
             }
         }
         menu.addMenu(plotMenu);
