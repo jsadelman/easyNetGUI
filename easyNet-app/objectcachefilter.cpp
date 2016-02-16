@@ -34,6 +34,7 @@ void ObjectCacheFilter::setNoFilter()
     setFilterRegExp("^$");
     nameList.clear();
     typeList.clear();
+    Q_ASSERT(rowCount() == 0);
 }
 
 void ObjectCacheFilter::setAllPassFilter()
