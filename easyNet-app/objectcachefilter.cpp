@@ -34,6 +34,7 @@ void ObjectCacheFilter::setNoFilter()
     setFilterRegExp("^$");
     nameList.clear();
     typeList.clear();
+    setFilterKeyColumn(ObjectCache::NameCol);
     Q_ASSERT(rowCount() == 0);
 }
 

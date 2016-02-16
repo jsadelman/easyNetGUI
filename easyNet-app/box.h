@@ -60,7 +60,7 @@ protected:
 private slots:
 //    void sendCreateNewPlotOfType();
     void setupDefaultObserverFilter();
-    void cacheDefaultPlotTypes(QDomDocument* description);
+    void cacheDefaultPlotTypes(QDomDocument* description, QString name);
 
 //    void updateObservedState();
 
@@ -84,8 +84,8 @@ private:
     QMap <QString, QString> observerOfPlot;
 
     ObjectCacheFilter *defaultDataframesFilter;
-    ObjectCacheFilter   *layerFilter;
-    ObjectUpdater       *layerUpdater;
+//    ObjectCacheFilter   *layerFilter;
+//    ObjectUpdater       *layerUpdater;
 
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
