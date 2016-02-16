@@ -53,7 +53,7 @@ void ObjectUpdater::wakeUpUpdate()
 //    }
 //    else
 //    {
-        connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+        connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,const QVector<int> &)),
                 this, SLOT(requestObjects(QModelIndex,QModelIndex)));
         connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(requestObjects(QModelIndex,int,int)));
@@ -102,7 +102,9 @@ void ObjectUpdater::errorHandler(QString cmd, QStringList errorList)
 void ObjectUpdater::requestObjects(int first, int last)
 {
     foreach (QString name, getObjectNames(first, last))
-            requestObject(name);
+    {
+        requestObject(name);
+    }
 }
 
 QStringList ObjectUpdater::getObjectNames(int first, int last)

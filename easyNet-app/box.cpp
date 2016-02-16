@@ -42,10 +42,18 @@ void Box::setLazyNutType(const QString &lazyNutType)
     if (m_lazyNutType == "layer")
     {
         setFillColour(layerCol);
-        layersFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-        layersFilter->setName(m_name);
-        layersUpdater = new ObjectUpdater(this);
-        layersUpdater->setProxyModel(layersFilter);
+        layerFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+        layerUpdater = new ObjectUpdater(this);
+        layerUpdater->setProxyModel(layerFilter);
+
+        connect(layerUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(cacheDefaultPlotTypes(QDomDocument*)));
+//        connect(layerUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domdoc,QString name)
+//        {
+//            qDebug() <<  "ObjectUpdater::objectUpdated" << (domdoc != 0) << name;
+//        });
+        layerFilter->setName(m_name);
+        layerUpdater->requestObject(m_name);
+
     }
 
     else if (m_lazyNutType == "representation")
@@ -126,35 +134,24 @@ QRectF Box::labelBoundingRect() const
 
 QStringList Box::defaultPlotTypes()
 {
-    QStringList plotTypes;
-    if (m_lazyNutType != "layer")
-        return plotTypes;
-    QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
-    if (!domDoc)
-        return plotTypes;
-    XMLelement plotTypeElem = XMLelement(*domDoc)["hints"]["plot_type"];
+    if (m_lazyNutType == "layer")
+        return m_defaultPlotTypes;
+
+    return QStringList();
+}
+
+void Box::cacheDefaultPlotTypes(QDomDocument *description)
+{
+    m_defaultPlotTypes.clear();
+    if (m_lazyNutType != "layer" || !description)
+        return;
+
+    XMLelement plotTypeElem = XMLelement(*description)["hints"]["plot_type"];
     if (plotTypeElem.isString())
-        plotTypes << XMLelement(*domDoc)["hints"]["plot_type"]();
+        m_defaultPlotTypes << XMLelement(*description)["hints"]["plot_type"]();
     else if (plotTypeElem.isList())
-        plotTypes << XMLelement(*domDoc)["hints"]["plot_type"].listValues();
-    plotTypes.replaceInStrings(QRegExp("\\.R$"), "");
-
-//    QString subtype;
-//    if (domDoc)
-//        subtype = XMLelement(*domDoc)["subtype"]();
-
-//    if (m_name == "spatial_code") //quick and dirty hack!!!
-//        return "spactivity-3";
-//    else if (m_name.startsWith("feature"))
-//        return "plot_features";
-//    else if (subtype == "string_layer")
-//        return "string_layer";
-//    else if (subtype == "wtstring_layer")
-//        return "wtstring_layer";
-//    else
-//        return "activity";
-
-    return plotTypes;
+        m_defaultPlotTypes << XMLelement(*description)["hints"]["plot_type"].listValues();
+    m_defaultPlotTypes.replaceInStrings(QRegExp("\\.R$"), "");
 }
 
 
