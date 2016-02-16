@@ -628,7 +628,6 @@ void MainWindow::loadModel()
 
 void MainWindow::afterModelLoaded()
 {
-    qDebug() << Q_FUNC_INFO;
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());

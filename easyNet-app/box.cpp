@@ -27,8 +27,9 @@ Box::Box()
       m_widthOverHeight(1.618),
       m_labelPointSize(9),
       default_input_observer_Rex("default_input_observer (\\d+)"),
-      defaultObserverSet(),
-      m_defaultPlotTypes()
+      enabledObserverSet(),
+      m_defaultPlotTypes(),
+      m_layerTransfer()
 {
     labelFont = canvas() ? canvas()->canvasFont() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
@@ -143,7 +144,7 @@ QStringList Box::defaultPlotTypes()
     return QStringList();
 }
 
-void Box::cacheDefaultPlotTypes(QDomDocument *description, QString name)
+void Box::cacheFromDescription(QDomDocument *description, QString name)
 {
 
 
@@ -156,6 +157,8 @@ void Box::cacheDefaultPlotTypes(QDomDocument *description, QString name)
     else if (plotTypeElem.isList())
         m_defaultPlotTypes << XMLelement(*description)["hints"]["plot_type"].listValues();
     m_defaultPlotTypes.replaceInStrings(QRegExp("\\.R$"), "");
+
+    m_layerTransfer = XMLelement(*description)["subtype"]["layer_transfer"]();
 }
 
 
@@ -169,12 +172,9 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
     {
         QMenu *plotMenu = new QMenu("Plot");
         QList<QAction*> actionList;
-
-        for (int row = 0; row < defaultObserverFilter->rowCount(); ++row)
+        foreach (QString observer, defaultObservers.keys())
         {
-            QString observer = defaultObserverFilter->data(defaultObserverFilter->index(row, ObjectCache::NameCol)).toString();
             QString dataframe = QString("(%1 default_dataframe)").arg(observer);
-
             QString portPrettyName, rplotName;
             if (observer.contains("default_observer"))
             {
@@ -200,65 +200,13 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 actionList.last()->setData(plotData);
                 actionList.last()->setCheckable(true);
                 actionList.last()->setChecked(observerOfPlot.contains(rplotName));
-
-
             }
-
-
-
-
-
-//            if (observer.contains("default_observer"))
-//            {
-//                plotData["rplotName"] = QString("%1.state").arg(m_name);
-//                plotData["portPrettyName"] = "state";
-//            }
-//            else if (observer.contains("default_input_observer"))
-//            {
-//                int i = default_input_observer_Rex.indexIn(observer);
-//                if (i < 0)
-//                    qDebug() << "cannot find default input port";
-//                else
-//                {
-//                    plotData["portPrettyName"] = m_ports.value(default_input_observer_Rex.cap(1));
-//                    plotData["rplotName"] = QString("%1.%2")
-//                            .arg(m_name)
-//                            .arg(plotData["portPrettyName"].toString());
-//                }
-//            }
-
-
-
-
-
-
-
-//            if (!observerOfPlot.contains(plotData["rplotName"].toString()))
-//            {
-//                observerOfPlot.insert(plotData["rplotName"].toString(), observer);
-//                plotFilter->addName(plotData["rplotName"].toString());
-//            }
-
-//            actionList.append(plotMenu->addAction(plotData["portPrettyName"].toString()));
-//            actionList.at(row)->setCheckable(true);
-//            QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(observer);
-//            bool enabled = false;
-//            if (domDoc)
-//                enabled = XMLelement(*domDoc)["Enabled"]() == "1";
-//            actionList.at(row)->setChecked(enabled);
-//            actionList.at(row)->setData(plotData);
         }
-
-        QString layerTransfer;
-        QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
-        if (domDoc)
-            layerTransfer =  XMLelement(*domDoc)["subtype"]["layer_transfer"]();
-
         menu.addMenu(plotMenu);
         QAction *lesionAct = menu.addAction(tr("Lesion layer"));
-        lesionAct->setVisible(layerTransfer != "lesion_transfer");
+        lesionAct->setVisible(m_layerTransfer != "lesion_transfer");
         QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
-        unlesionAct->setVisible(layerTransfer == "lesion_transfer");
+        unlesionAct->setVisible(m_layerTransfer == "lesion_transfer");
 
         QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
 
@@ -281,20 +229,16 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                                         plotData.value("plotType").toString().append(".R"),
                                         settings, Plot_AnyTrial);
                 }
-                return action;
             }
             else
             {
                 observerOfPlot.remove(plotData.value("rplotName").toString());
-                enableObserver(plotData.value("observer").toString(), false);
-                //                    SessionManager::instance()->runCmd(QString("destroy %1").arg(plotData.value("rplotName").toString()));
-                //                    emit plotDestroyed(plotData.value("rplotName").toString());
-                return action;
+                if (!observerOfPlot.values().contains(plotData.value("observer").toString()))
+                    enableObserver(plotData.value("observer").toString(), false);
             }
         }
 
-
-        if (action == lesionAct)
+        else if (action == lesionAct)
             lesionBox(true);
 
         else if (action == unlesionAct)
@@ -329,16 +273,14 @@ void Box::setupDefaultObserverFilter()
         }
         connect(defaultObserverUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domDoc, QString observer)
         {
-            bool enabled = XMLelement(*domDoc)["Enabled"]() == "1";
-            if (enabled)
-                defaultObserverSet.insert(observer);
-            else
-                defaultObserverSet.remove(observer);
-
-            if (defaultObserverSet.isEmpty())
-                setFillColour(layerCol);
-            else
+            defaultObservers[observer] = XMLelement(*domDoc)["Enabled"]() == "1";
+            bool anyEnabled = false;
+            foreach(bool enabled, defaultObservers.values())
+                anyEnabled |= enabled;
+            if (anyEnabled)
                 setFillColour(observedCol);
+            else
+                setFillColour(layerCol);
         });
 
         plotFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);

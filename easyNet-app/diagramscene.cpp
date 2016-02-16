@@ -389,7 +389,7 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
         connect(box, SIGNAL(plotDestroyed(QString)), this, SIGNAL(plotDestroyed(QString)));
         if (m_boxType == "layer")
             connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
-                    box, SLOT(cacheDefaultPlotTypes(QDomDocument*,QString)));
+                    box, SLOT(cacheFromDescription(QDomDocument*,QString)));
 
 
 
