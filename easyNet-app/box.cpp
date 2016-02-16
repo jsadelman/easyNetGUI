@@ -27,7 +27,8 @@ Box::Box()
       m_widthOverHeight(1.618),
       m_labelPointSize(9),
       default_input_observer_Rex("default_input_observer (\\d+)"),
-      defaultObserverSet()
+      defaultObserverSet(),
+      m_defaultPlotTypes()
 {
     labelFont = canvas() ? canvas()->canvasFont() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
@@ -42,17 +43,19 @@ void Box::setLazyNutType(const QString &lazyNutType)
     if (m_lazyNutType == "layer")
     {
         setFillColour(layerCol);
-        layerFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-        layerUpdater = new ObjectUpdater(this);
-        layerUpdater->setProxyModel(layerFilter);
+//        layerFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+//        layerUpdater = new ObjectUpdater(this);
+//        layerUpdater->setProxyModel(layerFilter);
+//        if (m_name == "letters")
+//            qDebug() << Q_FUNC_INFO << "this " << this << "layerUpdater" << layerUpdater;
 
-        connect(layerUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(cacheDefaultPlotTypes(QDomDocument*)));
-//        connect(layerUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domdoc,QString name)
-//        {
-//            qDebug() <<  "ObjectUpdater::objectUpdated" << (domdoc != 0) << name;
-//        });
-        layerFilter->setName(m_name);
-        layerUpdater->requestObject(m_name);
+//        connect(layerUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(cacheDefaultPlotTypes(QDomDocument*)));
+////        connect(layerUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domdoc,QString name)
+////        {
+////            qDebug() <<  "ObjectUpdater::objectUpdated" << (domdoc != 0) << name;
+////        });
+//        layerFilter->setName(m_name);
+//        layerUpdater->requestObject(m_name);
 
     }
 
@@ -140,12 +143,13 @@ QStringList Box::defaultPlotTypes()
     return QStringList();
 }
 
-void Box::cacheDefaultPlotTypes(QDomDocument *description)
+void Box::cacheDefaultPlotTypes(QDomDocument *description, QString name)
 {
-    m_defaultPlotTypes.clear();
-    if (m_lazyNutType != "layer" || !description)
-        return;
 
+
+    if (m_lazyNutType != "layer" || name != m_name || !description)
+        return;
+    m_defaultPlotTypes.clear();
     XMLelement plotTypeElem = XMLelement(*description)["hints"]["plot_type"];
     if (plotTypeElem.isString())
         m_defaultPlotTypes << XMLelement(*description)["hints"]["plot_type"]();
