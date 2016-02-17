@@ -387,7 +387,9 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
         box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers
         box->setLazyNutType(m_boxType);
         connect(box, SIGNAL(plotDestroyed(QString)), this, SIGNAL(plotDestroyed(QString)));
-
+        if (m_boxType == "layer")
+            connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
+                    box, SLOT(cacheFromDescription(QDomDocument*,QString)));
 
 
 

@@ -54,6 +54,7 @@ public:
 
 public slots:
     void setValueSetTrue() {valueSet = true;}
+    void emitValueChanged();
 
 signals:
     void valueChanged(QString, QString); // old value, new value
@@ -65,7 +66,7 @@ protected slots:
     virtual void setRawEditMode(bool on);
     virtual void setRawEditModeOn();
     virtual void setRawEditModeOff();
-    void emitValueChanged();
+
     void getLevels();
 
 protected:

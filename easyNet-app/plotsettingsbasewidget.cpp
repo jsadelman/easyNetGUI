@@ -12,10 +12,17 @@
 #include "proxymodelextrarows.h"
 #include "xmlaccessor.h"
 #include <QMetaObject>
+#include <QSortFilterProxyModel>
 
 
 PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, bool _useRFormat, QWidget *parent)
-    : settingsElement(settingsElement), useRFormat(_useRFormat), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
+    : settingsElement(settingsElement),
+      useRFormat(_useRFormat),
+      levelsListModel(nullptr),
+      levelsCmdObjectWatcher(nullptr),
+      editDisplayWidget(nullptr),
+      currentValue(),
+      QFrame(parent)
 {
     createDisplay();
     createLevelsListModel();
@@ -47,6 +54,7 @@ void PlotSettingsBaseWidget::createDisplay()
     QDomElement settingsDefault = XMLAccessor::childElement(settingsElement, "default");
     QDomElement settingsComment = XMLAccessor::childElement(settingsElement, "comment");
 
+
     if (XMLAccessor::value(settingsValue).isEmpty())
     {
         if (hasDefault())
@@ -54,9 +62,9 @@ void PlotSettingsBaseWidget::createDisplay()
     }
      else
         rawEdit->setText(XMLAccessor::value(settingsValue));
-
-
     connect(rawEdit, SIGNAL(textChanged(QString)), this, SLOT(emitValueChanged()));
+
+
     commentLabel = new QLabel;
     commentLabel->setText(XMLAccessor::value(settingsComment));
     commentLabel->setWordWrap(true);
@@ -93,7 +101,7 @@ void PlotSettingsBaseWidget::createDisplay()
     vboxLayout = new QVBoxLayout;
     vboxLayout->addLayout(gridLayout);
     vboxLayout->addWidget(rawEdit);
-    rawEdit->hide();
+//    rawEdit->hide();
 //    vboxLayout->addStretch();
     setLayout(vboxLayout);
 
@@ -102,7 +110,6 @@ void PlotSettingsBaseWidget::createDisplay()
                 !(XMLAccessor::value(settingsValue)).isEmpty();
 
     currentValue = XMLAccessor::value(settingsValue);
-
 
     // set max size to fit text
     // http://stackoverflow.com/questions/6639012/minimum-size-width-of-a-qpushbutton-that-is-created-from-code
@@ -121,6 +128,9 @@ void PlotSettingsBaseWidget::createLevelsListModel()
 {
     delete levelsCmdObjectWatcher;
     levelsCmdObjectWatcher = nullptr;
+    QSortFilterProxyModel *proxy = qobject_cast<QSortFilterProxyModel *>(levelsListModel);
+    if (proxy)
+        delete proxy->sourceModel();
     delete levelsListModel;
     levelsListModel = nullptr;
 
@@ -141,7 +151,9 @@ void PlotSettingsBaseWidget::createLevelsListModel()
     }
     else if (levelsElement.tagName() == "command")
     {
-        levelsListModel = new StringListModel(QStringList(), this);
+        StringListModel *stringListModel = new StringListModel(QStringList(), this);
+        levelsListModel = new QSortFilterProxyModel(this);
+        static_cast<QSortFilterProxyModel *>(levelsListModel)->setSourceModel(stringListModel);
         levelsCmdObjectWatcher = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
         QStringList objectsInCmd;
         QDomElement cmdElement = levelsElement.firstChildElement("object");
@@ -155,7 +167,7 @@ void PlotSettingsBaseWidget::createLevelsListModel()
 //                this, SLOT(getLevels()));
         connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
         {
-            static_cast<StringListModel*>(levelsListModel)->updateList(QStringList());
+             static_cast<StringListModel *>(static_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel())->updateList(QStringList());
         });
     }
     else
@@ -185,12 +197,10 @@ void PlotSettingsBaseWidget::setValue(QString val)
     {
     case RawEditMode:
     {
-//        qDebug() << "RawEditMode set value" << val;
         rawEdit->setText(val);
         break;
     }
     case WidgetEditMode:
-//        qDebug() << "WidgetEditMode set value" << val;
         setWidgetValue(raw2widgetValue(val));
     }
 }
@@ -306,14 +316,15 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 void PlotSettingsBaseWidget::emitValueChanged()
 {
     QString newValue = getValue();
-    if (currentValue != newValue)
-    {
+//    qDebug() << Q_FUNC_INFO << name() << currentValue << newValue;
+//    if (currentValue != newValue)
+//    {
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
         XMLAccessor::setValue(valueElement, newValue);
         valueSet = true;
         emit valueChanged(currentValue, newValue);
         currentValue = newValue;
-    }
+//    }
 }
 
 void PlotSettingsBaseWidget::getLevels()
@@ -331,7 +342,8 @@ void PlotSettingsBaseWidget::getLevels()
     // get the levels
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList({(XMLAccessor::command(levelsElement)).prepend("xml ")});
-    job->setAnswerReceiver(qobject_cast<StringListModel*>(levelsListModel), SLOT(updateList(QStringList)), AnswerFormatterType::ListOfValues);
+    job->setAnswerReceiver(qobject_cast<StringListModel*>(qobject_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel()),
+                           SLOT(updateList(QStringList)), AnswerFormatterType::ListOfValues);
     job->appendEndOfJobReceiver(this, SIGNAL(levelsReady()));
     SessionManager::instance()->submitJobs(job);
 }
@@ -454,10 +466,12 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
     editDisplayWidget = nullptr;
 
     editDisplayWidget = new QComboBox;
+    levelsListModel->sort(0);
     static_cast<QComboBox*>(editDisplayWidget)->setModel(levelsListModel);
 
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
     currentValue = XMLAccessor::value(valueElement);
+
     setWidgetValue(raw2widgetValue(currentValue));
     valueSet = !currentValue.isEmpty();
     connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
@@ -468,6 +482,7 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
             [=](int index){
 //        qDebug() << "PlotSettingsSingleChoiceWidget index changed" << index;
     });
+//    qDebug () << Q_FUNC_INFO << name() << currentValue << value();
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);
     rawEditModeButton->setChecked(false);

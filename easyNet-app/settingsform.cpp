@@ -234,8 +234,12 @@ void SettingsForm::substituteDependentValues(QDomElement &settingsElement)
 
 void SettingsForm::setDefaultModelSetting(QString setting, QString value)
 {
+    bool forceEmitValueChanged = widgetMap[setting]->value() == value && !value.isEmpty() && value != "NULL";
     widgetMap[setting]->setValue(value);
     widgetMap[setting]->setValueSetTrue();
+    if (forceEmitValueChanged)
+        widgetMap[setting]->emitValueChanged();
+
 }
 
 bool SettingsForm::allIsSet()

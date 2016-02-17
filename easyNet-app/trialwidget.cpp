@@ -109,7 +109,6 @@ void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
         defs[arg.label()]=(arg.value());
         arg = arg.nextSibling();
     }
-    qDebug() << "buildComboBoxes args = " << argList << "defs = " << defs;
     if (argList.size())
         buildComboBoxesTest(argList);
 
