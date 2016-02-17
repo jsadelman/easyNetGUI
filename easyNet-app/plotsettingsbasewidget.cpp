@@ -128,6 +128,9 @@ void PlotSettingsBaseWidget::createLevelsListModel()
 {
     delete levelsCmdObjectWatcher;
     levelsCmdObjectWatcher = nullptr;
+    QSortFilterProxyModel *proxy = qobject_cast<QSortFilterProxyModel *>(levelsListModel);
+    if (proxy)
+        delete proxy->sourceModel();
     delete levelsListModel;
     levelsListModel = nullptr;
 
