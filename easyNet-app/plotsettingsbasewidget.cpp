@@ -101,7 +101,7 @@ void PlotSettingsBaseWidget::createDisplay()
     vboxLayout = new QVBoxLayout;
     vboxLayout->addLayout(gridLayout);
     vboxLayout->addWidget(rawEdit);
-    rawEdit->hide();
+//    rawEdit->hide();
 //    vboxLayout->addStretch();
     setLayout(vboxLayout);
 
