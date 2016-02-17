@@ -391,7 +391,23 @@ void PlotSettingsWindow::buildSettingsForm()
                 info.append(vi.value<QSharedPointer<QDomDocument> >());
         }
     }
-    buildSettingsForm(plotName, currentSettings, defaultSettings);
+    // add values != NULL or "" to defaultSettings
+    QMap<QString, QString> completeDefaultSettings;
+    QDomElement domElement = currentSettings->documentElement().firstChildElement();
+    while (!domElement.isNull())
+    {
+        QDomElement valueElement = XMLAccessor::childElement(domElement, "value");
+        QString value = XMLAccessor::value(valueElement);
+        if (!value.isEmpty() && value != "NULL")
+            completeDefaultSettings[XMLAccessor::label(domElement)] = value;
+        domElement = domElement.nextSiblingElement();
+    }
+    foreach(QString setting, defaultSettings.keys())
+        completeDefaultSettings[setting] = defaultSettings[setting];
+//    qDebug() << completeDefaultSettings;
+
+
+    buildSettingsForm(plotName, currentSettings, completeDefaultSettings);
     emit newRPlotCreated(plotName, !(flags & Plot_Backup), flags & Plot_Backup, info);
 //        setPlotSettings(plotName);
 }

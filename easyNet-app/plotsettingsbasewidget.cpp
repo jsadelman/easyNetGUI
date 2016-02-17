@@ -15,7 +15,13 @@
 
 
 PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, bool _useRFormat, QWidget *parent)
-    : settingsElement(settingsElement), useRFormat(_useRFormat), levelsListModel(nullptr), levelsCmdObjectWatcher(nullptr), editDisplayWidget(nullptr), QFrame(parent)
+    : settingsElement(settingsElement),
+      useRFormat(_useRFormat),
+      levelsListModel(nullptr),
+      levelsCmdObjectWatcher(nullptr),
+      editDisplayWidget(nullptr),
+      currentValue(),
+      QFrame(parent)
 {
     createDisplay();
     createLevelsListModel();
@@ -47,6 +53,7 @@ void PlotSettingsBaseWidget::createDisplay()
     QDomElement settingsDefault = XMLAccessor::childElement(settingsElement, "default");
     QDomElement settingsComment = XMLAccessor::childElement(settingsElement, "comment");
 
+
     if (XMLAccessor::value(settingsValue).isEmpty())
     {
         if (hasDefault())
@@ -54,9 +61,9 @@ void PlotSettingsBaseWidget::createDisplay()
     }
      else
         rawEdit->setText(XMLAccessor::value(settingsValue));
-
-
     connect(rawEdit, SIGNAL(textChanged(QString)), this, SLOT(emitValueChanged()));
+
+
     commentLabel = new QLabel;
     commentLabel->setText(XMLAccessor::value(settingsComment));
     commentLabel->setWordWrap(true);
@@ -102,7 +109,6 @@ void PlotSettingsBaseWidget::createDisplay()
                 !(XMLAccessor::value(settingsValue)).isEmpty();
 
     currentValue = XMLAccessor::value(settingsValue);
-
 
     // set max size to fit text
     // http://stackoverflow.com/questions/6639012/minimum-size-width-of-a-qpushbutton-that-is-created-from-code
@@ -185,12 +191,10 @@ void PlotSettingsBaseWidget::setValue(QString val)
     {
     case RawEditMode:
     {
-//        qDebug() << "RawEditMode set value" << val;
         rawEdit->setText(val);
         break;
     }
     case WidgetEditMode:
-//        qDebug() << "WidgetEditMode set value" << val;
         setWidgetValue(raw2widgetValue(val));
     }
 }
@@ -306,14 +310,15 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 void PlotSettingsBaseWidget::emitValueChanged()
 {
     QString newValue = getValue();
-    if (currentValue != newValue)
-    {
+//    qDebug() << Q_FUNC_INFO << name() << currentValue << newValue;
+//    if (currentValue != newValue)
+//    {
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
         XMLAccessor::setValue(valueElement, newValue);
         valueSet = true;
         emit valueChanged(currentValue, newValue);
         currentValue = newValue;
-    }
+//    }
 }
 
 void PlotSettingsBaseWidget::getLevels()
@@ -458,6 +463,7 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
 
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
     currentValue = XMLAccessor::value(valueElement);
+
     setWidgetValue(raw2widgetValue(currentValue));
     valueSet = !currentValue.isEmpty();
     connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
@@ -468,6 +474,7 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
             [=](int index){
 //        qDebug() << "PlotSettingsSingleChoiceWidget index changed" << index;
     });
+//    qDebug () << Q_FUNC_INFO << name() << currentValue << value();
     gridLayout->addWidget(editDisplayWidget, 0, 1);
     rawEditModeButton->setEnabled(true);
     rawEditModeButton->setChecked(false);
