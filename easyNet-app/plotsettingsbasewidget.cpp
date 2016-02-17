@@ -12,6 +12,7 @@
 #include "proxymodelextrarows.h"
 #include "xmlaccessor.h"
 #include <QMetaObject>
+#include <QSortFilterProxyModel>
 
 
 PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, bool _useRFormat, QWidget *parent)
@@ -147,7 +148,9 @@ void PlotSettingsBaseWidget::createLevelsListModel()
     }
     else if (levelsElement.tagName() == "command")
     {
-        levelsListModel = new StringListModel(QStringList(), this);
+        StringListModel *stringListModel = new StringListModel(QStringList(), this);
+        levelsListModel = new QSortFilterProxyModel(this);
+        static_cast<QSortFilterProxyModel *>(levelsListModel)->setSourceModel(stringListModel);
         levelsCmdObjectWatcher = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
         QStringList objectsInCmd;
         QDomElement cmdElement = levelsElement.firstChildElement("object");
@@ -161,7 +164,7 @@ void PlotSettingsBaseWidget::createLevelsListModel()
 //                this, SLOT(getLevels()));
         connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
         {
-            static_cast<StringListModel*>(levelsListModel)->updateList(QStringList());
+             static_cast<StringListModel *>(static_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel())->updateList(QStringList());
         });
     }
     else
@@ -336,7 +339,8 @@ void PlotSettingsBaseWidget::getLevels()
     // get the levels
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList({(XMLAccessor::command(levelsElement)).prepend("xml ")});
-    job->setAnswerReceiver(qobject_cast<StringListModel*>(levelsListModel), SLOT(updateList(QStringList)), AnswerFormatterType::ListOfValues);
+    job->setAnswerReceiver(qobject_cast<StringListModel*>(qobject_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel()),
+                           SLOT(updateList(QStringList)), AnswerFormatterType::ListOfValues);
     job->appendEndOfJobReceiver(this, SIGNAL(levelsReady()));
     SessionManager::instance()->submitJobs(job);
 }
@@ -459,6 +463,7 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
     editDisplayWidget = nullptr;
 
     editDisplayWidget = new QComboBox;
+    levelsListModel->sort(0);
     static_cast<QComboBox*>(editDisplayWidget)->setModel(levelsListModel);
 
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
