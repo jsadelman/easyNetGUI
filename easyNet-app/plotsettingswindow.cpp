@@ -191,7 +191,8 @@ void PlotSettingsWindow::refreshForm()
         return;
     sendSettings();
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("xml %1 list_settings").arg(currentPlotName)});
+    job->cmdList   << QString("%1 set_type %2").arg(currentPlotName).arg(plotTypes[currentPlotName])
+                   << QString("xml %1 list_settings").arg(currentPlotName);
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
     job->appendEndOfJobReceiver(this, SLOT(rebuildForm()));
     SessionManager::instance()->submitJobs(job);
@@ -358,6 +359,7 @@ void PlotSettingsWindow::rebuildForm()
         domElement = domElement.nextSiblingElement();
     }
     buildSettingsForm(currentPlotName, currentSettings, completeDefaultSettings);
+    setPlotSettings(currentPlotName);
 }
 
 

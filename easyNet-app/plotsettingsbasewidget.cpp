@@ -445,7 +445,6 @@ void PlotSettingsSingleChoiceWidget::createEditWidget()
         getLevels();
     else if (levelsElement.tagName() == "list")
     {
-        qDebug()<<"here";
         buildEditWidget();
     }
     else
