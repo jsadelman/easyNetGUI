@@ -18,6 +18,8 @@ $$DUNNARTHEADERS/libcola \
 $$DUNNARTHEADERS/libtopology \
 $$DUNNARTHEADERS/libdunnartcanvas \
 
+include($$DUNNARTHEADERS/common_options.pri)
+
 DEPENDPATH =  .. .
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -26,7 +28,7 @@ TARGET = easyNet1
 TEMPLATE = app
 
 
-LIBS += -L$${PWD}/../dll -ldunnartcanvas -lavoid
+LIBS += -L$$DLLDESTDIR -ldunnartcanvas -lavoid
 
 SOURCES +=  \
     main.cpp \
