@@ -32,15 +32,7 @@ PlotSettingsWindow::PlotSettingsWindow(QWidget *parent)
 {
     setUnifiedTitleAndToolBarOnMac(true);
     createActions();
-    createPlotControlPanel();
     buildWindow();
-    QWidget* dummyWidget = new QWidget(this);
-    QVBoxLayout* vlayout = new QVBoxLayout;
-    vlayout->addLayout(gridLayout);
-    vlayout->addWidget(plotControlPanelScrollArea);
-    dummyWidget->setLayout(vlayout);
-    setCentralWidget(dummyWidget);
-
 }
 
 int PlotSettingsWindow::getValueFromByteArray(QByteArray ba, QString key)
@@ -70,48 +62,6 @@ int PlotSettingsWindow::getValueFromByteArray(QByteArray ba, QString key)
 */
     }
     return(value);
-}
-
-
-void PlotSettingsWindow::createPlotControlPanel()
-{
-    // actions and menus
-//    plotsMenu = new LazyNutListMenu;
-//    menuBar()->addMenu(plotsMenu);
-//    plotsMenu->setTitle("Plots");
-//    plotsMenu->setGetListCmd("xml list rplot");
-//    connect(plotsMenu, SIGNAL(selected(QString)), this, SLOT(setPlot(QString)));
-////    plotsMenu->prePopulate(QStringList({createNewPlotText, openPlotSettingsText, savePlotSettingsText, savePlotSettingsAsText}));
-//    plotsMenu->prePopulate(createNewPlotText);
-
-//    selectRScriptAct = new QAction(tr("&Select R script"), this);
-//    selectRScriptAct->setStatusTip(tr("Select an existing R script"));
-//    connect(selectRScriptAct, SIGNAL(triggered()), this, SLOT(selectRScript()));
-
-//    for (int i = 0; i < MaxRecentRScripts; ++i)
-//    {
-//        recentRScriptsActs[i] = new QAction(this);
-//        recentRScriptsActs[i]->setVisible(false);
-//        connect(recentRScriptsActs[i], SIGNAL(triggered()),
-//                this, SLOT(selectRecentRScript()));
-//    }
-
-//    typeMenu = menuBar()->addMenu(tr("Plot &type"));
-//    typeMenu->addAction(selectRScriptAct);
-//    separatorAct = typeMenu->addSeparator();
-//    for (int i = 0; i < MaxRecentRScripts; ++i)
-//        typeMenu->addAction(recentRScriptsActs[i]);
-//    updateRecentRScriptsActs();
-
-//    drawAct = new QAction(tr("&Draw"), this);
-//    connect(drawAct, SIGNAL(triggered()), this, SLOT(draw()));
-//    QToolBar *plotToolbar = addToolBar("");
-//    plotToolbar->addAction(drawAct);
-    plotControlPanelScrollArea = new QScrollArea;
-//    plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    plotControlPanelScrollArea->setWidgetResizable(true);
-    setCentralWidget(plotControlPanelScrollArea);
-
 }
 
 void PlotSettingsWindow::openPlotSettings()
@@ -146,20 +96,32 @@ void PlotSettingsWindow::loadSettings(QString fileName)
 
 void PlotSettingsWindow::createActions()
 {
-    refreshAct = new QAction(QIcon(":/images/refresh.png"), tr("&Refresh"), this);
+    refreshAct = new QAction(this);
     refreshAct->setShortcuts(QKeySequence::Refresh);
-    connect(refreshAct, &QAction::triggered, this, [=]{
+    refreshAct->setToolTip("reload current plot settings form");
+    connect(refreshAct, SIGNAL(triggered()), this, SLOT(refreshForm()));
+
+    plotAct = new QAction(this);
+    plotAct->setToolTip("plot according to current settings");
+    connect(plotAct, &QAction::triggered, this, [=]{
+        if (!currentPlotName.isEmpty())
+        {
             sendSettings();
+            emit showPlotViewer();
             sendGetCmd();
+        }
     });
     newPlotAct = new QAction(QIcon(":/images/add-icon.png"), tr("&New Plot"), this);
     newPlotAct->setShortcuts(QKeySequence::New);
     connect(newPlotAct, SIGNAL(triggered()), this, SLOT(newPlot()));
+
+//    enableActions(false);
 }
 
 void PlotSettingsWindow::triggerRefresh()
 {
     sendSettings();
+    emit showPlotViewer();
     sendGetCmd();
 }
 
@@ -182,11 +144,6 @@ void PlotSettingsWindow::updateRecentRScriptsActs()
         separatorAct->setVisible(numRecentRScripts > 0);
 }
 
-
-
-
-
-
 void PlotSettingsWindow::importHomonyms(QDomDocument *settingsList)
 {
 //    XMLelement xml = XMLelement(*settingsList);
@@ -201,8 +158,9 @@ void PlotSettingsWindow::importHomonyms(QDomDocument *settingsList)
 //            else
 //                xml[label]["value"].setValue(value);
 //        }
-//    }
+    //    }
 }
+
 
 void PlotSettingsWindow::sendGetCmd(QString plotName)
 {
@@ -225,6 +183,19 @@ void PlotSettingsWindow::sendDrawCmd(QString plotName)
 {
     sendSettings(plotName);
     sendGetCmd(plotName);
+}
+
+void PlotSettingsWindow::refreshForm()
+{
+    if (currentPlotName.isEmpty())
+        return;
+    sendSettings();
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList   << QString("%1 set_type %2").arg(currentPlotName).arg(plotTypes[currentPlotName])
+                   << QString("xml %1 list_settings").arg(currentPlotName);
+    job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
+    job->appendEndOfJobReceiver(this, SLOT(rebuildForm()));
+    SessionManager::instance()->submitJobs(job);
 }
 
 void PlotSettingsWindow::displaySVG(QByteArray plotByteArray, QString cmd)
@@ -256,26 +227,12 @@ void PlotSettingsWindow::setPlotSettings(QString name)
     plotControlPanelScrollArea->setWidget(plotForms[currentPlotName]);
     plotNameBox->setText(name);
     plotTypeBox->setText(plotTypes[name]);
-
+//    enableActions(plotControlPanelScrollArea->widget());
 }
 
-//void PlotSettingsWindow::hidePlotSettings()
-//{
-//    plotControlPanelScrollArea->takeWidget();
-//    plotNameBox->setText("");
-//    plotTypeBox->setText("");
-//}
 
 void PlotSettingsWindow::newPlot()
 {
-//    bool ok;
-//    QString name = QInputDialog::getText(this, tr("New plot"), tr("Plot name:"), QLineEdit::Normal,
-//                                         QString(), &ok);
-//    if (ok && !name.isEmpty())
-//    {
-//        createNewPlot(name);
-//        currentPlot = name;
-//    }
     NewPlotWizard *plotWizard = new NewPlotWizard(this);
     connect(plotWizard, SIGNAL(newRPlotCreated(QString,QString)),
             this, SLOT(newRPlot(QString,QString)));
@@ -286,17 +243,6 @@ void PlotSettingsWindow::newPlot()
     plotWizard->show();
 }
 
-
-//void PlotSettingsWindow::createNewRPlot(QString name)
-//{
-//    setCurrentPlotType(QString());
-//    LazyNutJob *job = new LazyNutJob;
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
-//    job->cmdList = QStringList({QString("create rplot %1").arg(name)});
-//    SessionManager::instance()->submitJobs(job);
-//    emit newPlotSignal(name);
-//    getSettingsXML(name);
-//}
 
 void PlotSettingsWindow::newRPlot(QString name, QString rScript,
                                      QMap <QString,QString> defaultSettings, int flags, QList<QSharedPointer<QDomDocument> > infoList)
@@ -316,8 +262,6 @@ void PlotSettingsWindow::newRPlot(QString name, QString rScript,
     QList<QVariant> vList;
     foreach(QSharedPointer<QDomDocument> info, infoList)
         vList.append(QVariant::fromValue(info));
-//    QVariant infoVariant;
-//    infoVariant.setValue(infoList);
     jobData.insert("trialRunInfo", vList);
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
 
@@ -330,16 +274,6 @@ void PlotSettingsWindow::newRPlot(QString name, QString rScript,
     plotTypes[name] = rScript;
 }
 
-
-//void PlotSettingsWindow::setType(QString rScript)
-//{
-//    setCurrentPlotType(rScript);
-//    LazyNutJob *job = new LazyNutJob;
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
-//    job->cmdList = QStringList({QString("%1 set_type %2").arg(currentPlotName).arg(rScript)});
-//    SessionManager::instance()->submitJobs(job);
-//    getSettingsXML(currentPlotName);
-//}
 
 void PlotSettingsWindow::getSettingsXML(QString plotName)
 {
@@ -358,19 +292,19 @@ void PlotSettingsWindow::buildSettingsForm()
     LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
     if (!job)
     {
-        qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() cannot extract LazyNutJob from sender";
+        eNerror << "cannot extract LazyNutJob from sender";
         return;
     }
     QMap<QString, QVariant> jobData = job->data.toMap();
     if (!jobData.contains("plotName"))
     {
-        qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() LazyNutJob->data does not contain plotName entry";
+        eNerror << "LazyNutJob->data does not contain plotName entry";
         return;
     }
     QString plotName = jobData.value("plotName").toString();
     if (plotName.isEmpty())
     {
-        qDebug() << "ERROR: PlotSettingsWindow::buildSettingsForm() LazyNutJob->data contains an empty plotName entry";
+        eNerror << "LazyNutJob->data contains an empty plotName entry";
         return;
     }
     QMap<QString, QString> defaultSettings;
@@ -404,12 +338,28 @@ void PlotSettingsWindow::buildSettingsForm()
     }
     foreach(QString setting, defaultSettings.keys())
         completeDefaultSettings[setting] = defaultSettings[setting];
-//    qDebug() << completeDefaultSettings;
 
 
     buildSettingsForm(plotName, currentSettings, completeDefaultSettings);
     emit newRPlotCreated(plotName, !(flags & Plot_Backup), flags & Plot_Backup, info);
-//        setPlotSettings(plotName);
+}
+
+void PlotSettingsWindow::rebuildForm()
+{
+    delete plotForms.value(currentPlotName, nullptr);
+    // add values != NULL or "" to defaultSettings
+    QMap<QString, QString> completeDefaultSettings;
+    QDomElement domElement = currentSettings->documentElement().firstChildElement();
+    while (!domElement.isNull())
+    {
+        QDomElement valueElement = XMLAccessor::childElement(domElement, "value");
+        QString value = XMLAccessor::value(valueElement);
+        if (!value.isEmpty() && value != "NULL")
+            completeDefaultSettings[XMLAccessor::label(domElement)] = value;
+        domElement = domElement.nextSiblingElement();
+    }
+    buildSettingsForm(currentPlotName, currentSettings, completeDefaultSettings);
+    setPlotSettings(currentPlotName);
 }
 
 
@@ -427,14 +377,6 @@ void PlotSettingsWindow::buildWindow()
 {
     QString backCol("white");
     QString textCol("black");
-//    plotTitleLabel = new QLabel(QString("%1 (%2)").arg(currentPlot).arg(currentPlotType));
-//    plotTitleLabel->setStyleSheet("QLabel {"
-//                             "background-color: " + backCol + ";"
-//                             "color: " + textCol + ";"
-//                             "border: 1px solid black;"
-//                             "padding: 4px;"
-//                             "font: bold 12pt;"
-//                             "}");
     QLabel* pnbLabel = new QLabel("Name:",this);
     QLabel* ptbLabel = new QLabel("Type:",this);
     pnbLabel->setStyleSheet("QLabel {"
@@ -451,24 +393,6 @@ void PlotSettingsWindow::buildWindow()
                              "padding: 4px;"
                              "font: bold 12pt;"
                              "}");
-//    pnbLabel->setMinimumWidth(100);
-//    ptbLabel->setMinimumWidth(100);
-
-//    plotNameBox = new QComboBox(this);
-//    plotNameBox->setStyleSheet("QComboBox {"
-//                               "background-color: " + backCol + ";"
-//                               "color: " + textCol + ";"
-////                             "padding: 4px;"
-//                             "font: bold 12pt;"
-//                             "}");
-//    plotListFilter = new ObjectCatalogueFilter(this);
-//    plotNameBox->setModel(plotListFilter);
-//    plotNameBox->setModelColumn(0);
-//    plotListFilter->setType("xfile");
-//    connect(plotListFilter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-//            plotNameBox, SLOT(addItem(QString)));
-//    connect(plotNameBox, SIGNAL(currentIndexChanged(QString)),
-//            this, SLOT(setPlot(QString)));
 
     plotNameBox = new QLabel(this);
     plotNameBox->setText(currentPlotName);
@@ -478,24 +402,6 @@ void PlotSettingsWindow::buildWindow()
                              "padding: 4px;"
                              "font: bold 12pt;"
                              "}");
-
-/*
-      QComboBox* plotTypeBox = new QComboBox(this);
-//    plotNameBox->addItem(currentPlot);
-    QSettings settings("QtEasyNet", "nmConsole");
-    QStringList rScripts = settings.value("recentRScripts").toStringList();
-    foreach (QString script, rScripts)
-        if (!script.isEmpty())
-            plotTypeBox->addItem(script);
-    plotTypeBox->setCurrentIndex(plotTypeBox->findText(currentPlotType));
-    plotTypeBox->setStyleSheet("QComboBox {"
-                               "background-color: " + backCol + ";"
-                             "color: " + textCol + ";"
-//                             "padding: 4px;"
-                             "font: bold 12pt;"
-                             "}");
-    connect(plotTypeBox,SIGNAL(currentIndexChanged(QString)),this,SLOT(setType(QString)));
-*/
 
     plotTypeBox = new QLabel(this);
     plotTypeBox->setText(currentPlotType);
@@ -520,32 +426,36 @@ void PlotSettingsWindow::buildWindow()
     newButton->setIconSize(QSize(40, 40));
     newButton->show();
 
+    QToolButton* plotButton = new QToolButton(this);
+    plotButton->setAutoRaise(true);
+    plotButton->setDefaultAction(plotAct);
+    plotButton->setIcon(QIcon(":/images/barchart2.png"));
+    plotButton->setIconSize(QSize(40, 40));
+    plotButton->show();
+
     gridLayout = new QGridLayout();
     gridLayout->addWidget(pnbLabel,0,0,1,1);
-    gridLayout->addWidget(plotNameBox,0,1,1,7);
+    gridLayout->addWidget(plotNameBox,0,1,1,6);
     gridLayout->addWidget(ptbLabel,1,0,1,1);
-    gridLayout->addWidget(plotTypeBox,1,1,1,7);
+    gridLayout->addWidget(plotTypeBox,1,1,1,6);
+    gridLayout->addWidget(plotButton,0,7,2,1);
     gridLayout->addWidget(refreshButton,0,8,2,1);
     gridLayout->addWidget(newButton,0,9,2,1);
-}
 
-
-void PlotSettingsWindow::sendSettings()
-{
-    PlotSettingsForm * form = qobject_cast<PlotSettingsForm*>(plotControlPanelScrollArea->widget());
-    if (form)
-    {
-        LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER; // debug purpose
-        job->cmdList = form->getSettingsCmdList();
-        SessionManager::instance()->submitJobs(job);
-        emit showPlotViewer();
-    }
+    plotControlPanelScrollArea = new QScrollArea;
+//    plotControlPanelScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    plotControlPanelScrollArea->setWidgetResizable(true);
+    QWidget* dummyWidget = new QWidget(this);
+    QVBoxLayout* vlayout = new QVBoxLayout;
+    vlayout->addLayout(gridLayout);
+    vlayout->addWidget(plotControlPanelScrollArea);
+    dummyWidget->setLayout(vlayout);
+    setCentralWidget(dummyWidget);
 }
 
 void PlotSettingsWindow::sendSettings(QString name)
 {
-    PlotSettingsForm * form = qobject_cast<PlotSettingsForm*>(plotForms.value(name, nullptr));
+    PlotSettingsForm * form = plotForms.value(name.isEmpty() ? currentPlotName : name, nullptr);
     if (form)
     {
         LazyNutJob *job = new LazyNutJob;
@@ -565,44 +475,9 @@ void PlotSettingsWindow::getPlotType()
 
 void PlotSettingsWindow::extractPlotType(QDomDocument *description)
 {
-//    QDomElement descriptionElement = description->documentElement();
-//    QDomElement typeElement = XMLAccessor::childElement(descriptionElement, "Type");
     currentPlotType = QFileInfo(XMLelement(*description)["Type"]()).fileName();
     plotTypeBox->setText(currentPlotType);
 }
-
-//void PlotWindow::updateSettingsForm()
-//{
-//    sendSettings(this, SLOT(getSettingsXML()));
-//}
-
-//void PlotSettingsWindow::draw()
-//{
-//    if (plotSettingsForm)
-//        sendSettings(this, SLOT(sendDrawCmd()));
-
-//    else
-//        SessionManager::instance()->setupNoOp(sender());
-//}
-
-
-
-//void PlotSettingsWindow::selectRScript()
-//{
-//    QSettings settings("QtEasyNet", "nmConsole");
-//    QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
-//    QString rScript = QFileDialog::getOpenFileName(this,tr("Please select an R script"),
-//                                                   rScriptsHome,"*.R");
-//    if (!rScript.isEmpty())
-//        setType(QFileInfo(rScript).fileName());
-//}
-
-//void PlotSettingsWindow::selectRecentRScript()
-//{
-//    QAction *action = qobject_cast<QAction *>(sender());
-//    if (action)
-//        setType(action->data().toString());
-//}
 
 void PlotSettingsWindow::setCurrentPlotType(QString rScript)
 {
@@ -635,7 +510,7 @@ NewPlotWizard::NewPlotWizard(QWidget *parent)
 
 void NewPlotWizard::accept()
 {
-    emit createNewRPlot(field("name").toString(), field("type").toString());
+    emit newRPlotCreated(field("name").toString(), field("type").toString());
     QDialog::accept();
 }
 

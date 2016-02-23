@@ -145,9 +145,7 @@ void PlotSettingsBaseWidget::createLevelsListModel()
     }
     else if (levelsElement.tagName() == "list")
     {
-        qDebug()<<"list branch";
-        levelsListModel=new StringListModel(XMLAccessor::listValues(levelsElement), this);
-        qDebug()<<XMLAccessor::listValues(levelsElement);
+        levelsListModel = new StringListModel(XMLAccessor::listValues(levelsElement), this);
     }
     else if (levelsElement.tagName() == "command")
     {
@@ -447,7 +445,6 @@ void PlotSettingsSingleChoiceWidget::createEditWidget()
         getLevels();
     else if (levelsElement.tagName() == "list")
     {
-        qDebug()<<"here";
         buildEditWidget();
     }
     else

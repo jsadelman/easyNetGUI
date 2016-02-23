@@ -35,7 +35,7 @@ void ObjectCacheFilter::setNoFilter()
     nameList.clear();
     typeList.clear();
     setFilterKeyColumn(ObjectCache::NameCol);
-    Q_ASSERT(rowCount() == 0);
+    wakeup();
 }
 
 void ObjectCacheFilter::setAllPassFilter()
@@ -43,6 +43,7 @@ void ObjectCacheFilter::setAllPassFilter()
     setFilterRegExp("^.*$");
     nameList.clear();
     typeList.clear();
+    wakeup();
 }
 
 void ObjectCacheFilter::setName(QString txt)
@@ -50,6 +51,7 @@ void ObjectCacheFilter::setName(QString txt)
     nameList = QStringList({txt});
     setList(nameList);
     setFilterKeyColumn(ObjectCache::NameCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::setNameList(QStringList list)
@@ -57,6 +59,7 @@ void ObjectCacheFilter::setNameList(QStringList list)
     nameList = list;
     setList(nameList);
     setFilterKeyColumn(ObjectCache::NameCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::addName(QString txt)
@@ -67,6 +70,7 @@ void ObjectCacheFilter::addName(QString txt)
         setList(nameList);
     }
     setFilterKeyColumn(ObjectCache::NameCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::removeName(QString txt)
@@ -74,6 +78,7 @@ void ObjectCacheFilter::removeName(QString txt)
     nameList.removeAll(txt);
     setList(nameList);
     setFilterKeyColumn(ObjectCache::NameCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::setType(QString txt)
@@ -81,6 +86,7 @@ void ObjectCacheFilter::setType(QString txt)
     typeList = QStringList({txt});
     setList(typeList);
     setFilterKeyColumn(ObjectCache::TypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::setTypeList(QStringList list)
@@ -88,6 +94,7 @@ void ObjectCacheFilter::setTypeList(QStringList list)
     typeList = list;
     setList(typeList);
     setFilterKeyColumn(ObjectCache::TypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::addType(QString txt)
@@ -98,6 +105,7 @@ void ObjectCacheFilter::addType(QString txt)
         setList(typeList);
     }
     setFilterKeyColumn(ObjectCache::TypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::removeType(QString txt)
@@ -105,6 +113,7 @@ void ObjectCacheFilter::removeType(QString txt)
     typeList.removeAll(txt);
     setList(typeList);
     setFilterKeyColumn(ObjectCache::TypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::setSubtype(QString txt)
@@ -112,6 +121,7 @@ void ObjectCacheFilter::setSubtype(QString txt)
     subtypeList = QStringList({txt});
     setList(subtypeList);
     setFilterKeyColumn(ObjectCache::SubtypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::setSubtypeList(QStringList list)
@@ -119,6 +129,7 @@ void ObjectCacheFilter::setSubtypeList(QStringList list)
     subtypeList = list;
     setList(subtypeList);
     setFilterKeyColumn(ObjectCache::SubtypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::addSubtype(QString txt)
@@ -129,6 +140,7 @@ void ObjectCacheFilter::addSubtype(QString txt)
         setList(subtypeList);
     }
     setFilterKeyColumn(ObjectCache::SubtypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::removeSubtype(QString txt)
@@ -136,6 +148,7 @@ void ObjectCacheFilter::removeSubtype(QString txt)
     subtypeList.removeAll(txt);
     setList(subtypeList);
     setFilterKeyColumn(ObjectCache::SubtypeCol);
+    wakeup();
 }
 
 void ObjectCacheFilter::sendObjectCreated(QModelIndex parent, int first, int last)
