@@ -127,6 +127,9 @@ PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement &domElement)
     else if ((type == "dataframe" || type == "factor") && choice == "multiple")
         widget = new PlotSettingsMultipleChoiceWidget(domElement, m_useRFormat);
 
+    else if (type == "filename")
+        widget = new PlotSettingsFilenameWidget(domElement, m_useRFormat);
+
     else
         widget = new PlotSettingsBaseWidget(domElement, m_useRFormat);
 

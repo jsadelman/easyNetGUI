@@ -1,4 +1,8 @@
 #include <QtWidgets>
+#include <QMetaObject>
+#include <QSortFilterProxyModel>
+#include <QFontMetrics>
+#include <QFont>
 
 #include "plotsettingsbasewidget.h"
 #include "lazynutjob.h"
@@ -11,8 +15,8 @@
 #include "objectcache.h"
 #include "proxymodelextrarows.h"
 #include "xmlaccessor.h"
-#include <QMetaObject>
-#include <QSortFilterProxyModel>
+#include "easyNetMainWindow.h"
+
 
 
 PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, bool _useRFormat, QWidget *parent)
@@ -217,6 +221,16 @@ bool PlotSettingsBaseWidget::isValueSet()
 bool PlotSettingsBaseWidget::hasDefault()
 {
     return (XMLAccessor::listLabels(settingsElement)).contains("default");
+}
+
+QString PlotSettingsBaseWidget::defaultValue()
+{
+    if (hasDefault())
+    {
+        QDomElement settingsDefault = XMLAccessor::childElement(settingsElement, "default");
+        return XMLAccessor::value(settingsDefault);
+    }
+    return QString();
 }
 
 
@@ -671,3 +685,70 @@ QString PlotSettingsMultipleChoiceWidget::widget2rawValue(QVariant val)
         QString("c(%1)").arg(stringListVal.replaceInStrings(QRegExp("^|$"),"\"").join(", ")) :
         stringListVal.join(' ');
 }
+
+
+/////////////////////////// PlotSettingsFilenameWidget
+
+PlotSettingsFilenameWidget::PlotSettingsFilenameWidget(QDomElement &settingsElement, bool useRFormat, QWidget *parent)
+    : PlotSettingsBaseWidget(settingsElement, useRFormat, parent)
+{
+    createEditWidget();
+}
+
+void PlotSettingsFilenameWidget::createEditWidget()
+{
+    QWidget *editDisplayWidgetContainer = new QWidget(this);
+    QHBoxLayout *editDisplayWidgetContainerLayout = new QHBoxLayout;
+    editDisplayWidget = new QLineEdit();
+    static_cast<QLineEdit*>(editDisplayWidget)->setReadOnly(true);
+    editDisplayWidgetContainerLayout->addWidget(editDisplayWidget);
+    QPushButton *browseButton = new QPushButton("Browse");
+    connect(browseButton,  SIGNAL(clicked()), this, SLOT(browseFilename()));
+    editDisplayWidgetContainerLayout->addWidget(browseButton);
+    editDisplayWidgetContainer->setLayout(editDisplayWidgetContainerLayout);
+    gridLayout->addWidget(editDisplayWidgetContainer, 0, 1);
+    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
+    setWidgetValue(XMLAccessor::value(valueElement));
+    connect(static_cast<QLineEdit*>(editDisplayWidget), SIGNAL(textChanged(QString)),
+            this, SLOT(emitValueChanged()));
+    currentValue = XMLAccessor::value(valueElement);
+    valueSet = !currentValue.isEmpty();
+    rawEditModeButton->setEnabled(true);
+    rawEditModeButton->setChecked(false);
+    setRawEditModeOff();
+}
+
+void PlotSettingsFilenameWidget::browseFilename()
+{
+    QFileInfo defaultFullPathInfo(QString("%1/%2").arg(MainWindow::instance()->easyNetDataHome).arg(defaultValue()));
+    QString fileName = QFileDialog::getOpenFileName(this, name(),
+                                                    defaultFullPathInfo.absoluteFilePath(),
+                                                    QString("(*.%1)").arg(defaultFullPathInfo.suffix()));
+    setValue(QDir(MainWindow::instance()->easyNetDataHome).relativeFilePath(fileName));
+
+}
+
+QVariant PlotSettingsFilenameWidget::getWidgetValue()
+{
+    return static_cast<QLineEdit *>(editDisplayWidget)->text();
+}
+
+void PlotSettingsFilenameWidget::setWidgetValue(QVariant val)
+{
+    static_cast<QLineEdit *>(editDisplayWidget)->setText(val.toString());
+    // resize to content
+    int pixelsWide = qApp->fontMetrics().width(static_cast<QLineEdit *>(editDisplayWidget)->text()) + 10;
+    static_cast<QLineEdit*>(editDisplayWidget)->setMinimumWidth(pixelsWide);
+    adjustSize();
+}
+
+QVariant PlotSettingsFilenameWidget::raw2widgetValue(QString val)
+{
+    return val;
+}
+
+QString PlotSettingsFilenameWidget::widget2rawValue(QVariant val)
+{
+    return val.toString();
+}
+

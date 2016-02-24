@@ -12,7 +12,7 @@
 #include "finddialog.h"
 #include "dataviewerdispatcher.h"
 #include "settingsform.h"
-#include "settingsformdialog.h"
+#include "dataframemergesettingsformdialog.h"
 
 
 #include <QSettings>
@@ -206,10 +206,11 @@ void DataframeViewer::dataframeMerge()
     form->setDefaultSettings(preFilledSettings);
     // setup dialog
     QString info("Select two dataframes you want to merge into one. Their key columns should match.");
-    SettingsFormDialog dialog(domDoc, form, info, this);
+    DataframeMergeSettingsFormDialog dialog(domDoc, form, info, this);
+    dialog.build();
 
 
-    connect(&dialog, &SettingsFormDialog::dataframeMergeSettingsReady,
+    connect(&dialog, &DataframeMergeSettingsFormDialog::dataframeMergeSettingsReady,
             [=](QStringList cmdList, QString dfName, QString x, QString y)
     {
         LazyNutJob *job = new LazyNutJob;

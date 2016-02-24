@@ -98,8 +98,8 @@ SOURCES +=  \
     objectxml.cpp \
     trialxml.cpp \
     trialeditor.cpp \
-    tableviewer2.cpp \
     settingsform.cpp \
+    dataframemergesettingsformdialog.cpp \
     settingsformdialog.cpp \
     xmlaccessor.cpp \
     objectnamevalidator.cpp \
@@ -194,9 +194,9 @@ HEADERS  += \
     objectxml.h \
     trialxml.h \
     trialeditor.h \
-    tableviewer2.h \
-   settingsform.h \
+    settingsform.h \
     settingsformdialog.h \
+    dataframemergesettingsformdialog.h \
     xmlaccessor.h \
     objectnamevalidator.h \
     lazynutjob.h \
@@ -223,6 +223,7 @@ HEADERS  += \
     historytreemodel.h \
     trialruninfo.h \
     xmlmodel.h
+
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

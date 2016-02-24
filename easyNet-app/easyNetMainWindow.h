@@ -139,6 +139,7 @@ private slots:
 
     void setFontSize(const QString &size);
     void modelConfigNeeded();
+    void createModelSettingsDialog(QDomDocument* domDoc);
     void afterModelConfig();
     void diagramSceneTabChanged(int index);
     void runScript();
@@ -151,6 +152,8 @@ private slots:
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
+
+
 protected:
     void closeEvent(QCloseEvent *event);
 
