@@ -6,7 +6,6 @@
 #include "sessionmanager.h"
 #include "easyNetMainWindow.h"
 #include "lazynutjob.h"
-#include "tableviewer2.h"
 #include "plotviewer.h"
 #include "tablewindow.h"
 #include "xmlaccessor.h"

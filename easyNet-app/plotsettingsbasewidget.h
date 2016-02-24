@@ -79,6 +79,7 @@ protected:
     virtual void setWidgetValue(QVariant val){}
     bool isValueSet();
     bool hasDefault();
+    QString defaultValue();
     virtual QVariant raw2widgetValue(QString val){return QVariant();}
     virtual QString widget2rawValue(QVariant val){return QString();}
 
@@ -116,7 +117,7 @@ public:
     virtual ~PlotSettingsNumericWidget() {}
 
 protected:
-    void createEditWidget();
+    void createEditWidget() Q_DECL_OVERRIDE;
     virtual QVariant getWidgetValue() Q_DECL_OVERRIDE;
     virtual void setWidgetValue(QVariant val) Q_DECL_OVERRIDE;
     virtual QVariant raw2widgetValue(QString val) Q_DECL_OVERRIDE;
@@ -177,6 +178,25 @@ protected:
     LazyNutListWidget *factorList;
     QWidget *editExtraWidget;
 };
+
+class PlotSettingsFilenameWidget : public PlotSettingsBaseWidget
+{
+    Q_OBJECT
+public:
+    explicit PlotSettingsFilenameWidget(QDomElement& settingsElement, bool useRFormat, QWidget *parent = 0);
+    virtual ~PlotSettingsFilenameWidget() {}
+
+protected slots:
+    void browseFilename();
+
+protected:
+    void createEditWidget() Q_DECL_OVERRIDE;
+    virtual QVariant getWidgetValue() Q_DECL_OVERRIDE;
+    virtual void setWidgetValue(QVariant val) Q_DECL_OVERRIDE;
+    virtual QVariant raw2widgetValue(QString val) Q_DECL_OVERRIDE;
+    virtual QString widget2rawValue(QVariant val) Q_DECL_OVERRIDE;
+};
+
 
 
 #endif // PLOTSETTINGSBASEWIDGET_H

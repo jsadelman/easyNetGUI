@@ -6,36 +6,42 @@
 class QDomDocument;
 class SettingsForm;
 class QLineEdit;
-class ObjectNameValidator;
+class QVBoxLayout;
+class QHBoxLayout;
+class QLabel;
 
 
 class SettingsFormDialog: public QDialog
 {
     Q_OBJECT
 public:
-    // This class should become a base class. Now it's specific to merge dataframes.
     SettingsFormDialog(QDomDocument* domDoc, SettingsForm* form, QString info, QWidget* parent=0);
     ~SettingsFormDialog();
+    void build();
 
 public slots:
     virtual void accept() Q_DECL_OVERRIDE;
 
-signals:
-    void cmdListReady(QStringList);
-    void dataframeMergeSettingsReady(QStringList, QString, QString, QString);
+protected slots:
+    virtual void checkBeforeAccept();
 
-private slots:
-    void validateName();
-    void checkBeforeAccept();
-
-
-private:
-    void build();
+protected:
+    virtual void addExtraWidgets() {}
 
     QDomDocument* domDoc;
     SettingsForm* form;
     QString info;
-    QLineEdit *nameLineEdit;
+
+    QVBoxLayout* mainLayout;
+    QHBoxLayout* topLayout;
+    QLabel* infobLabel;
+    QVBoxLayout* buttonsLayout;
+    QPushButton* okButton;
+    QPushButton* cancelButton;
+
+
+
+
 };
 
 #endif // SETTINGSFORMDIALOG_H

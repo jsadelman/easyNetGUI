@@ -53,7 +53,6 @@
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"
-#include "tableviewer2.h"
 #include "prettyheadersmodel.h"
 #include "enumclasses.h"
 #include "tablewindow.h"
@@ -61,6 +60,9 @@
 #include "dataframeviewerdispatcher.h"
 #include "ui_datatabsviewer.h"
 #include "ui_datacomboviewer.h"
+#include "settingsform.h"
+#include "settingsformdialog.h"
+#include "modelsettingsdisplay.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -239,6 +241,8 @@ void MainWindow::constructForms()
 
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
+    modelSettingsDisplay = new ModelSettingsDisplay(this);
+    modelSettingsDisplay->setCommand("list_settings");
 
     infoWindow = new HelpWindow;
     assistant = new Assistant(easyNetDataHome + "/documentation/easyNetDemo.qhc");
@@ -254,6 +258,7 @@ void MainWindow::constructForms()
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
+    modelSettingsTabIdx = methodsPanel->addTab(modelSettingsDisplay, tr("Model"));
     paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
     plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
 
@@ -654,16 +659,38 @@ void MainWindow::loadModelUnconfigured()
 }
 void MainWindow::modelConfigNeeded()
 {
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("xml %1 list_settings").arg(SessionManager::instance()->currentModel());
+    job->setAnswerReceiver(this, SLOT(createModelSettingsDialog(QDomDocument*)), AnswerFormatterType::XML);
+    SessionManager::instance()->submitJobs(job);
+}
 
+void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
+{
+    SettingsForm *form = new SettingsForm(domDoc, this);
+    form->setUseRFormat(false);
+    SettingsFormDialog dialog(domDoc, form, QString("Configure model %1").arg(SessionManager::instance()->currentModel()), this);
+    dialog.build();
+    int result = dialog.exec();
+    if (result == QDialog::Accepted)
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList << form->getSettingsCmdList().replaceInStrings(QRegExp("^"), QString("%1 setting ")
+                                                                    .arg(SessionManager::instance()->currentModel()));
+        job->appendEndOfJobReceiver(this, SLOT(afterModelConfig()));
+        SessionManager::instance()->submitJobs(job);
+    }
 }
 
 void MainWindow::afterModelConfig()
 {
-    emit runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
+    modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
+    runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
     modelScene->wakeUp();
+
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
 }

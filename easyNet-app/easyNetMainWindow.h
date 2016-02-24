@@ -43,6 +43,7 @@ class TextEdit;
 class HelpWindow;
 class TrialWidget;
 class TrialEditor;
+class ModelSettingsDisplay;
 class Console;
 class DebugLog;
 class DiagramSceneTabWidget;
@@ -139,6 +140,7 @@ private slots:
 
     void setFontSize(const QString &size);
     void modelConfigNeeded();
+    void createModelSettingsDialog(QDomDocument* domDoc);
     void afterModelConfig();
     void diagramSceneTabChanged(int index);
     void runScript();
@@ -151,6 +153,8 @@ private slots:
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
+
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -303,6 +307,9 @@ public:
     QComboBox       *trialComboBox;
     TrialWidget     *trialWidget;
     TrialEditor     *trialEditor;
+    ModelSettingsDisplay *modelSettingsDisplay;
+
+
     QPushButton     * trialButton;
     QPushButton     * modelButton;
     QToolButton * addonButton;
@@ -327,6 +334,7 @@ public:
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
+    int             modelSettingsTabIdx;
     int             dfTabIdx;
     int             explorerTabIdx;
     int             testsTabIdx;
