@@ -125,7 +125,10 @@ SOURCES +=  \
     historywidget.cpp \
     historytreemodel.cpp \
     trialruninfo.cpp \
-    xmlmodel.cpp
+    xmlmodel.cpp \
+    settingsxml.cpp \
+    xmldisplay.cpp \
+    modelsettingsdisplay.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -222,7 +225,10 @@ HEADERS  += \
     historywidget.h \
     historytreemodel.h \
     trialruninfo.h \
-    xmlmodel.h
+    xmlmodel.h \
+    settingsxml.h \
+    xmldisplay.h \
+    modelsettingsdisplay.h
 
 
 RESOURCES   =	diagramscene.qrc \
