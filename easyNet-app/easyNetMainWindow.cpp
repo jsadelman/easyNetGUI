@@ -62,6 +62,7 @@
 #include "ui_datacomboviewer.h"
 #include "settingsform.h"
 #include "settingsformdialog.h"
+#include "modelsettingsdisplay.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -240,6 +241,8 @@ void MainWindow::constructForms()
 
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
+    modelSettingsDisplay = new ModelSettingsDisplay(this);
+    modelSettingsDisplay->setCommand("list_settings");
 
     infoWindow = new HelpWindow;
     assistant = new Assistant(easyNetDataHome + "/documentation/easyNetDemo.qhc");
@@ -255,6 +258,7 @@ void MainWindow::constructForms()
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
+    modelSettingsTabIdx = methodsPanel->addTab(modelSettingsDisplay, tr("Model"));
     paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
     plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
 
@@ -680,11 +684,13 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 
 void MainWindow::afterModelConfig()
 {
+    modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
     runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
     modelScene->wakeUp();
+
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
 }

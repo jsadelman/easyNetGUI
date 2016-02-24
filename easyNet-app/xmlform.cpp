@@ -32,6 +32,8 @@ void XMLForm::build()
         buildCommand();
     else if (domElem.tagName() == "parameter")
         buildParameter();
+    else if (domElem.tagName() == "eNelements")
+        buildENelements();
     else
         return;
 }
@@ -216,6 +218,11 @@ void XMLForm::buildNodeParameter()
     }
 }
 
+void XMLForm::buildNodeENelements()
+{
+    buildFrameLabel();
+}
+
 void XMLForm::buildChildrenString()
 {
     indentChildren();
@@ -257,5 +264,10 @@ void XMLForm::buildChildrenCommand()
 void XMLForm::buildChildrenParameter()
 {
     indentChildren();
+}
+
+void XMLForm::buildChildrenENelements()
+{
+    frameChildren();
 }
 

@@ -43,6 +43,7 @@ class TextEdit;
 class HelpWindow;
 class TrialWidget;
 class TrialEditor;
+class ModelSettingsDisplay;
 class Console;
 class DebugLog;
 class DiagramSceneTabWidget;
@@ -306,6 +307,9 @@ public:
     QComboBox       *trialComboBox;
     TrialWidget     *trialWidget;
     TrialEditor     *trialEditor;
+    ModelSettingsDisplay *modelSettingsDisplay;
+
+
     QPushButton     * trialButton;
     QPushButton     * modelButton;
     QToolButton * addonButton;
@@ -330,6 +334,7 @@ public:
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;
+    int             modelSettingsTabIdx;
     int             dfTabIdx;
     int             explorerTabIdx;
     int             testsTabIdx;

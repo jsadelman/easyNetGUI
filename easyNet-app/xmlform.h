@@ -34,7 +34,7 @@ class XMLForm: public QFrame
 
 public:
     XMLForm(const QDomElement& domElem, QWidget *parent = 0);
-    ~XMLForm();
+    virtual ~XMLForm();
     void build();
 
 
@@ -47,6 +47,7 @@ protected:
     buildMethods(Object)
     buildMethods(Command)
     buildMethods(Parameter)
+    buildMethods(ENelements)
 
     //----- auxiliary methods -------//
 
