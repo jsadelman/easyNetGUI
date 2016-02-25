@@ -130,8 +130,7 @@ void DebugLog::createActions()
 
 QString DebugLog::defaultLogFileName()
 {
-    QSettings settings("QtEasyNet", "nmConsole");
-    QString logDir = QString("%1/Output_files").arg(settings.value("easyNetHome","../..").toString());
+    QString logDir = SessionManager::instance()->defaultLocation("outputDir");
     QString timeStamp = QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
     return QString("%1/debug_log.%2.log").arg(logDir).arg(timeStamp);
 }

@@ -67,11 +67,9 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     plotButton->setPopupMode(QToolButton::InstantPopup);
     QMenu *plotMenu = new QMenu(plotButton);
     // temporary: show all available R scripts
-    QSettings settings("QtEasyNet", "nmConsole");
-    QString easyNetHome = settings.value("easyNetHome","../..").toString();
-    QDir plotsDir(QString("%1/bin/R-library/plots").arg(easyNetHome));
-    plotsDir.setNameFilters(QStringList({"*.R"}));
-    foreach(QString plotType, plotsDir.entryList())
+    QDir rPlotsDir(SessionManager::instance()->defaultLocation("rPlotsDir"));
+    rPlotsDir.setNameFilters(QStringList({"*.R"}));
+    foreach(QString plotType, rPlotsDir.entryList())
     {
         QAction *plotAct = new QAction(plotType, this);
         connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
@@ -108,7 +106,7 @@ void DataframeViewer::open()
         QString dfName = SessionManager::instance()->makeValidObjectName(fi.completeBaseName());
         lastOpenDir = fi.path();
 
-        fileName = QDir(MainWindow::instance()->easyNetDataHome).relativeFilePath(fileName);
+        fileName = QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName);
         QString loadCmd = fi.suffix() == "csv" ? "load_csv" : "load";
         QString dataframeType = stimulusSet() ? "stimulus_set" : "dataframe";
         LazyNutJob *job = new LazyNutJob;
@@ -187,9 +185,7 @@ void DataframeViewer::dataframeMerge()
 {
     // load XML
     QDomDocument* domDoc = new QDomDocument;
-    QSettings settings("QtEasyNet", "nmConsole");
-    QString easyNetHome = settings.value("easyNetHome","../..").toString();
-    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(easyNetHome));
+    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(SessionManager::instance()->easyNetHome()));
     if (!file.open(QIODevice::ReadOnly) || !domDoc->setContent(&file))
     {
         delete domDoc;

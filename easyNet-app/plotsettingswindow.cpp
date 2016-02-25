@@ -66,7 +66,7 @@ int PlotSettingsWindow::getValueFromByteArray(QByteArray ba, QString key)
 
 void PlotSettingsWindow::openPlotSettings()
 {
-    QSettings settings("QtEasyNet", "nmConsole");
+    QSettings settings("easyNet", "GUI");
     QString fileName = QFileDialog::getOpenFileName(this,tr("Open plot settings file"),
                                                     settings.value("plotSettingsDir").toString(), tr("Settings Files (*.xml)"));
     if (!fileName.isEmpty())
@@ -127,7 +127,7 @@ void PlotSettingsWindow::triggerRefresh()
 
 void PlotSettingsWindow::updateRecentRScriptsActs()
 {
-    QSettings settings("QtEasyNet", "nmConsole");
+    QSettings settings("easyNet", "GUI");
     QStringList rScripts = settings.value("recentRScripts","").toStringList();
     int numRecentRScripts = qMin(rScripts.size(), (int)MaxRecentRScripts);
     for (int i = 0; i < numRecentRScripts; ++i)
@@ -485,7 +485,7 @@ void PlotSettingsWindow::setCurrentPlotType(QString rScript)
     currentPlotType = rScript;
     if (!currentPlotType.isEmpty())
     {
-        QSettings settings("QtEasyNet", "nmConsole");
+        QSettings settings("easyNet", "GUI");
         QStringList rScripts = settings.value("recentRScripts","").toStringList();
         rScripts.removeAll(rScript);
         rScripts.prepend(rScript);
@@ -540,10 +540,10 @@ NewPlotPage::NewPlotPage(QWidget *parent)
 
 void NewPlotPage::selectRScript()
 {
-    QSettings settings("QtEasyNet", "nmConsole");
-    QString rScriptsHome = settings.value("easyNetHome","").toString().append("/bin/R-library/plots");
-    QString rScript = QFileDialog::getOpenFileName(this,tr("Please select an R script"),
-                                                   rScriptsHome,"*.R");
+    QString rScript = QFileDialog::getOpenFileName(this,
+                                                   tr("Please select an R script"),
+                                                   SessionManager::instance()->defaultLocation("rPlotsDir"),
+                                                   "*.R");
     if (!rScript.isEmpty())
         typeEdit->setText(QFileInfo(rScript).fileName());
 }

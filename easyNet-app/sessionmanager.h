@@ -35,16 +35,28 @@ class SessionManager: public QObject
     Q_PROPERTY(QString currentModel READ currentModel WRITE setCurrentModel NOTIFY currentModelChanged)
     Q_PROPERTY(QString currentTrial READ currentTrial WRITE setCurrentTrial)
     Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet)
+    Q_PROPERTY(QString easyNetHome READ easyNetHome WRITE setEasyNetHome NOTIFY easyNetHomeChanged)
+    Q_PROPERTY(QString easyNetDataHome READ easyNetDataHome WRITE setEasyNetDataHome NOTIFY easyNetDataHomeChanged)
+
 
 friend class LazyNutJob;
 friend class ObjectNameValidator;
 
 public:
     static SessionManager* instance(); // singleton
-    void startLazyNut(QString lazyNutBat);
+    void startLazyNut();
     QString currentModel() {return m_currentModel;}
     QString currentTrial() {return m_currentTrial;}
     QString currentSet() {return m_currentSet;}
+    QString easyNetHome() {return m_easyNetHome;}
+    QString easyNetDataHome() {return m_easyNetDataHome;}
+    QString easyNetDir(QString env);
+    QString defaultLocation(QString dir) {return m_defaultLocation.value(dir, QString());}
+
+    void setEasyNetHome(QString dir);
+    void setEasyNetDataHome(QString dir);
+    void setEasyNetDir(QString env, QString dir);
+
 
     void submitJobs(QList<LazyNutJob*> jobs);
     void submitJobs(LazyNutJob* job) {submitJobs(QList<LazyNutJob*>{job});}
@@ -106,7 +118,8 @@ signals:
     void currentModelChanged(QString);
 
     void lazyNutCrash();
-
+    void easyNetDataHomeChanged();
+    void easyNetHomeChanged();
 
 public slots:
 
@@ -127,7 +140,7 @@ public slots:
     void runCmd(QString cmd);
     void runCmd(QStringList cmd);
 
-    void restartLazyNut(QString lazyNutBat);
+    void restartLazyNut();
 
     void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
     void setCurrentTrial(QString s) {m_currentTrial = s;}
@@ -146,6 +159,7 @@ private slots:
     void getOOB(const QString &lazyNutOutput);
     void startCommandSequencer();
     void lazyNutProcessError(int error);
+    void setDefaultLocations();
 
 //    void macroStarted();
 //    void macroEnded();
@@ -162,6 +176,14 @@ private:
     SessionManager& operator=(SessionManager const&){}
     static SessionManager* sessionManager;
 
+    // locations
+    QString m_easyNetHome;
+    QString m_easyNetDataHome;
+    QMap<QString, QString> m_defaultLocation;
+
+    QString         lazyNutExt;
+    QString         binDir;
+    QString         lazyNutBasename;
 
     // state
     QString m_currentModel;

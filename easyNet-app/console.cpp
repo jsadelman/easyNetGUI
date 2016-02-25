@@ -77,8 +77,8 @@ void Console::showHistory(QString line)
 
 void Console::coreDump()
 {
-    QSettings settings("QtEasyNet", "nmConsole");
-    QString logDir = QString("%1/Output_files").arg(settings.value("easyNetHome","../..").toString());
+    QSettings settings("easyNet", "GUI");
+    QString logDir = SessionManager::instance()->defaultLocation("outputDir");
     QString timeStamp = QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
     QString fileName = QString("%1/core_dump.%2.log").arg(logDir).arg(timeStamp);
     QFile file(fileName);

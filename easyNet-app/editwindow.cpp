@@ -216,32 +216,7 @@ void EditWindow::createToolBars()
     if (!isReadOnly)
         editToolBar->addAction(pasteAct);
     editToolBar->addAction(findAct);
-
-
 }
-
-/*
-void editWindow::createStatusBar()
-{
-    statusBar()->showMessage(tr("Ready"));
-}
-
-void editWindow::readSettings()
-{
-    QSettings settings("QtProject", "Application Example");
-    QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
-    QSize size = settings.value("size", QSize(400, 400)).toSize();
-    resize(size);
-    move(pos);
-}
-
-void editWindow::writeSettings()
-{
-    QSettings settings("QtProject", "Application Example");
-    settings.setValue("pos", pos());
-    settings.setValue("size", size());
-}
-*/
 
 bool EditWindow::maybeSave()
 {
