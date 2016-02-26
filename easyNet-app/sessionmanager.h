@@ -51,7 +51,7 @@ public:
     QString easyNetHome() {return m_easyNetHome;}
     QString easyNetDataHome() {return m_easyNetDataHome;}
     QString easyNetDir(QString env);
-    QString defaultLocation(QString dir) {return m_defaultLocation.value(dir, QString());}
+    QString defaultLocation(QString env) {return m_defaultLocation.value(env, QString());}
 
     void setEasyNetHome(QString dir);
     void setEasyNetDataHome(QString dir);

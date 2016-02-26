@@ -75,6 +75,9 @@ QString ObjectNameValidator::makeValid(QString name)
 {
     // first eliminate brackets and spaces
     name = normalisedName(name);
+    QRegExp startsWithDigitRex("^\\d+");
+    if (startsWithDigitRex.indexIn(name) >= 0)
+        name.prepend("_");
     // then, if name is not valid appends .1 or .2 etc. until a valid name is found.
     if (isValid(name))
         return name;
