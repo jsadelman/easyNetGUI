@@ -73,12 +73,9 @@ MainWindow* MainWindow::instance()
     return mainWindow ? mainWindow : (mainWindow = new MainWindow);
 }
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+void MainWindow::build()
 {
     readSettings();
-
-
     setWindowTitle(tr("easyNet"));
 #ifdef __APPLE__
     setWindowIcon(QIcon(":/images/easyNet.hqx"));
@@ -115,6 +112,12 @@ MainWindow::MainWindow(QWidget *parent)
     #endif
 
     SessionManager::instance()->startLazyNut();
+}
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+{
+
 }
 
 
@@ -291,6 +294,13 @@ void MainWindow::connectSignalsAndSlots()
     connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
     connect(dataframeResultsViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
             plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
+    connect(stimSetViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
+    connect(paramViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
+    connect(dataframeViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
+            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
+
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),

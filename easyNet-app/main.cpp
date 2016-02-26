@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 
 
     MainWindow* mainWindow = MainWindow::instance();
+    mainWindow->build();
     mainWindow->showMaximized();
 
     int ret = app.exec();

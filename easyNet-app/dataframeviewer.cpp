@@ -73,6 +73,7 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     {
         QAction *plotAct = new QAction(plotType, this);
         connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
+        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showPlotSettings()));
         plotMenu->addAction(plotAct);
     }
     plotButton->setMenu(plotMenu);

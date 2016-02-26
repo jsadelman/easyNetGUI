@@ -79,6 +79,9 @@ public:
 
 //    SessionManager *sessionManager;
 
+public:
+    void build();
+
 public slots:
 //    void setRunAllMode(bool mode);
     void loadTrial();
