@@ -35,8 +35,27 @@ SessionManager *SessionManager::instance()
 }
 
 SessionManager::SessionManager()
-    : lazyNutHeaderBuffer(""), lazyNutOutput(""), OOBrex("OOB secret: (\\w+)(?=\\r?\\n)"),
-      m_plotFlags(), m_suspendingObservers(false)
+    : lazyNutHeaderBuffer(""),
+      lazyNutOutput(""),
+      OOBrex("OOB secret: (\\w+)(?=\\r?\\n)"),
+      m_plotFlags(),
+      m_suspendingObservers(false),
+      m_easyNetHome(""),
+      m_easyNetDataHome(""),
+      m_currentModel(""),
+      m_currentTrial(""),
+      m_currentSet(""),
+      #if defined(__linux__)
+      lazyNutExt("sh"),
+      binDir("bin-linux"),
+      #elif defined(__APPLE__)
+      lazyNutExt("sh"),
+      binDir("bin-mac"),
+      #elif defined(_WIN32)
+      lazyNutExt("bat"),
+      binDir("bin")
+      #endif
+
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
@@ -59,21 +78,26 @@ SessionManager::SessionManager()
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             dataframeCache,  SLOT(destroy(QStringList)));
 
+    connect(this, SIGNAL(easyNetHomeChanged()), this, SLOT(setDefaultLocations()));
+    connect(this, SIGNAL(easyNetDataHomeChanged()), this, SLOT(setDefaultLocations()));
+
     validator = new ObjectNameValidator(this);
+    m_defaultLocation.clear();
+    lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
 }
 
 
-void SessionManager::startLazyNut(QString lazyNutBat)
+void SessionManager::startLazyNut()
 {
-    QSettings settings("QtEasyNet", "nmConsole");
+    QSettings settings("easyNet", "GUI");
     QString easyNetHome = QDir::toNativeSeparators(settings.value("easyNetHome","../..").toString());
     QString easyNetDataHome = QDir::toNativeSeparators(settings.value("easyNetDataHome",easyNetHome).toString());
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment(); // lazyNut->processEnvironment();
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("EASYNET_HOME", easyNetHome);
     env.insert("EASYNET_DATA_HOME", easyNetDataHome);
     lazyNut->setProcessEnvironment(env);
-    lazyNut->setWorkingDirectory(QFileInfo(lazyNutBat).absolutePath());
-    lazyNut->setProgram(lazyNutBat);
+    lazyNut->setWorkingDirectory(QFileInfo(defaultLocation("lazyNutBat")).absolutePath());
+    lazyNut->setProgram(defaultLocation("lazyNutBat"));
     connect(lazyNut, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(sendLazyNutCrash(int,QProcess::ExitStatus)));
 
     lazyNut->start();
@@ -90,6 +114,40 @@ void SessionManager::startLazyNut(QString lazyNutBat)
     }
 }
 
+QString SessionManager::easyNetDir(QString env)
+{
+    if (env == "easyNetHome")
+        return easyNetHome();
+    else if (env == "easyNetDataHome")
+        return easyNetDataHome();
+    return QString();
+}
+
+void SessionManager::setEasyNetHome(QString dir)
+{
+    m_easyNetHome = dir;
+    QSettings settings("easyNet", "GUI");
+    settings.setValue("easyNetHome", dir);
+    emit easyNetHomeChanged();
+}
+
+void SessionManager::setEasyNetDataHome(QString dir)
+{
+    m_easyNetDataHome = dir;
+    QSettings settings("easyNet", "GUI");
+    settings.setValue("easyNetDataHome", dir);
+    emit easyNetDataHomeChanged();
+}
+
+void SessionManager::setEasyNetDir(QString env, QString dir)
+{
+    if (env == "easyNetHome")
+        setEasyNetHome(dir);
+    else if (env == "easyNetDataHome")
+        setEasyNetDataHome(dir);
+    return;
+}
+
 void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode != 0 || exitStatus !=QProcess::NormalExit)
@@ -100,12 +158,12 @@ void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitSta
 }
 
 
-void SessionManager::restartLazyNut(QString lazyNutBat)
+void SessionManager::restartLazyNut()
 {
     SessionManager::instance()->descriptionCache->clear();
     killLazyNut();
     lazyNut->waitForFinished();
-    startLazyNut(lazyNutBat);
+    startLazyNut();
 }
 
 void SessionManager::setPrettyName(QString name, QString prettyName)
@@ -355,6 +413,18 @@ void SessionManager::startCommandSequencer()
 void SessionManager::lazyNutProcessError(int error)
 {
     qDebug() << "lazyNut process cannot start. QProcess::ProcessError" << error;
+}
+
+void SessionManager::setDefaultLocations()
+{
+    m_defaultLocation["lazyNutBat"]   =   QString("%1/%2/nm_files/%3").arg(easyNetHome()).arg(binDir).arg(lazyNutBasename);
+    m_defaultLocation["scriptsDir"]   =   QString("%1/Models").arg(easyNetDataHome());
+    m_defaultLocation["testsDir"]     =   QString("%1/Tests").arg(easyNetDataHome());
+    m_defaultLocation["trialsDir"]    =   QString("%1/Trials").arg(easyNetDataHome());
+    m_defaultLocation["stimDir"]     =    QString("%1/Databases/Stimulus_files").arg(easyNetDataHome());
+    m_defaultLocation["dfDir"]        =   QString("%1/Databases").arg(easyNetDataHome());
+    m_defaultLocation["rPlotsDir"]    =   QString("%1/%2/R-library/plots").arg(easyNetHome()).arg(binDir);
+    m_defaultLocation["outputDir"]    =   QString("%1/Output_files").arg(easyNetHome());
 }
 
 

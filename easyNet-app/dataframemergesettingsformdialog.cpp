@@ -45,8 +45,8 @@ void DataframeMergeSettingsFormDialog::validateName()
     if (!SessionManager::instance()->isValidObjectName(nameLineEdit->text()))
     {
         QMessageBox::critical(this, "Illegal dataframe name",QString("The name you chose is not valid, since it conflicts with an existing name or command.\n"
-                                                                     "Please select another name."));
-        nameLineEdit->setText("");
+                                                                     "Please select another name or keep the suggested name"));
+        nameLineEdit->setText(SessionManager::instance()->makeValidObjectName(nameLineEdit->text()));
     }
 }
 

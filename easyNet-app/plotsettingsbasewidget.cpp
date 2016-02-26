@@ -720,11 +720,11 @@ void PlotSettingsFilenameWidget::createEditWidget()
 
 void PlotSettingsFilenameWidget::browseFilename()
 {
-    QFileInfo defaultFullPathInfo(QString("%1/%2").arg(MainWindow::instance()->easyNetDataHome).arg(defaultValue()));
+    QFileInfo defaultFullPathInfo(QString("%1/%2").arg(SessionManager::instance()->easyNetDataHome()).arg(defaultValue()));
     QString fileName = QFileDialog::getOpenFileName(this, name(),
                                                     defaultFullPathInfo.absoluteFilePath(),
                                                     QString("(*.%1)").arg(defaultFullPathInfo.suffix()));
-    setValue(QDir(MainWindow::instance()->easyNetDataHome).relativeFilePath(fileName));
+    setValue(QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName));
 
 }
 

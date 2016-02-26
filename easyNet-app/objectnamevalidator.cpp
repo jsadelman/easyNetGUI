@@ -7,6 +7,7 @@ ObjectNameValidator::ObjectNameValidator(QObject *parent)
     : QValidator(parent)
 {
     QStringList forbiddenNames = QStringList()
+                      << ""
                       << "\\s+.*"
                       << "[#(0-9].*"
                       << "query"
@@ -75,6 +76,9 @@ QString ObjectNameValidator::makeValid(QString name)
 {
     // first eliminate brackets and spaces
     name = normalisedName(name);
+    QRegExp startsWithForbiddenRex("^[#(0-9]+");
+    if (startsWithForbiddenRex.indexIn(name) >= 0)
+        name.prepend("_");
     // then, if name is not valid appends .1 or .2 etc. until a valid name is found.
     if (isValid(name))
         return name;
@@ -94,6 +98,8 @@ QString ObjectNameValidator::makeValid(QString name)
         name.replace(QRegExp(QString("\\.%1$").arg(QString::number(count))),
                      QString(".%1").arg(QString::number(count + 1)));
         ++count;
+        if (count > 10000)
+            break; // this may create problems or crash lazyNut, but it prevents an infinite loop
     }
     return name;
 }

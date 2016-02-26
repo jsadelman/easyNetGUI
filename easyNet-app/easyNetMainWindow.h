@@ -79,6 +79,9 @@ public:
 
 //    SessionManager *sessionManager;
 
+public:
+    void build();
+
 public slots:
 //    void setRunAllMode(bool mode);
     void loadTrial();
@@ -123,8 +126,9 @@ private slots:
 
     void runCmdAndUpdate(QStringList cmdList);
     void viewSettings();
-    void setEasyNetHome();
-    void setEasyNetDataHome();
+    void setNewEasyNetHome();
+    void setNewEasyNetDataHome();
+
 //    void showPauseState(bool isPaused);
     void getVersion();
 //    void showDocumentation();
@@ -164,8 +168,7 @@ private:
     MainWindow& operator=(MainWindow const&){}
     static MainWindow* mainWindow;
 
-
-    void checkLazyNut();
+    void setNewEasyNetDir(QString env);
     void constructForms();
     void checkScreens();
     void createDockWindows();
@@ -184,12 +187,11 @@ private:
 
     void setCurrentFile(EditWindow *window, const QString &fileName);
     void readSettings();
-    void setDefaultLocations();
     void writeSettings();
 //    void runLazyNutBat();
 
     void hideAllDocks();
-    bool proceedWithRestart();
+    bool proceedWithRestartOk();
     //void loadModel(QString fileName);
     //void loadModelUnconfigured(QString fileName);
     void loadModel(QString fileName,bool complete);
@@ -197,27 +199,8 @@ private:
 
 public:
 
-    QString         lazyNutBat= "";
-//    QString         curFile;
-#if defined(__linux__)
-    QString         lazyNutExt = "sh";
-    QString         binDir = "bin-linux";
-#elif defined(__APPLE__)
-    QString         lazyNutExt = "sh";
-    QString         binDir = "bin-mac";
-#elif defined(_WIN32)
-    QString         lazyNutExt = "bat";
-    QString         binDir = "bin";
-#endif
-    QString         lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
+
     QString         curFile;
-    QString         scriptsDir;
-    QString         testsDir;
-    QString         trialsDir;
-    QString         stimDir;
-    QString         dfDir;
-    QString         easyNetHome;
-    QString         easyNetDataHome;
     QString         paramDataFrame;
     QString         quietMode;
     QString         df_name_for_updating_combobox;
@@ -308,6 +291,7 @@ public:
     TrialWidget     *trialWidget;
     TrialEditor     *trialEditor;
     ModelSettingsDisplay *modelSettingsDisplay;
+    QDialog *settingsDialog;
 
 
     QPushButton     * trialButton;
@@ -387,8 +371,6 @@ public:
     QAction         *exitAct;
     QAction         *restartInterpreterAct;
     QAction         *viewSettingsAct;
-    QAction         *setEasyNetHomeAct;
-    QAction         *setEasyNetDataHomeAct;
     QActionGroup    *setFontActGrouop;
     QAction         *setSmallFontAct;
     QAction         *setMediumFontAct;
