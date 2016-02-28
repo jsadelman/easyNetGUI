@@ -658,6 +658,7 @@ void MainWindow::loadTrial()
                                                     tr("Script Files (*.eNs *.eNt)"));
     if (!fileName.isEmpty())
     {
+        QString easyNetDataHome=SessionManager::instance()->easyNetDataHome();
         int len=easyNetDataHome.length();
         QString fn;
         if(fileName.left(len)==easyNetDataHome)
@@ -709,6 +710,7 @@ void MainWindow::loadAddOn()
                                                     "Add-ons (" + currentModel + ".*.eNa)");
     if (!fileName.isEmpty())
     {
+        QString easyNetDataHome=SessionManager::instance()->easyNetDataHome();
         int len=easyNetDataHome.length();
         QString fn;
         if(fileName.left(len)==easyNetDataHome)
