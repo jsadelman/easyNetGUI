@@ -68,8 +68,6 @@ SOURCES +=  \
     proxymodelextrarows.cpp \
     objectupdater.cpp \
     objectcachefilter.cpp \
-    dataframewindow.cpp \
-    tableeditor.cpp \
     inputcmdline.cpp \
     cmdoutput.cpp \
     lazynutconsole.cpp \
@@ -167,8 +165,6 @@ HEADERS  += \
     proxymodelextrarows.h \
     objectupdater.h \
     objectcachefilter.h \
-    dataframewindow.h \
-    tableeditor.h \
     inputcmdline.h \
     cmdoutput.h \
     lazynutconsole.h \
