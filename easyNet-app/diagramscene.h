@@ -155,7 +155,7 @@ private slots:
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
 
-
+    void setAnalyzedLocations(QDomDocument*);
 
     void syncToObjCatalogue();
 //    void enableObserverClicked();

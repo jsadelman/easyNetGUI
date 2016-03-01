@@ -45,7 +45,7 @@
 #include "objectupdater.h"
 #include "sessionmanager.h"
 #include "objectcache.h"
-
+#include "lazynutjob.h"
 #include "box.h"
 #include "arrow.h"
 #include "libdunnartcanvas/canvasitem.h"
@@ -283,32 +283,39 @@ void DiagramScene::initShapePlacement()
     // The distance between CCs is computed based on the CC that contains the largest
     // number of nodes.
 
-    QList<QSet<ShapeObj *> > cc = connectedComponents();
-    int maxCCsize = cc.length() == 0 ? 0 :
-            (*std::max_element(cc.begin(), cc.end(),
-                                      [=](QSet<ShapeObj *> s1, QSet<ShapeObj *> s2){
-        return s1.size() < s2.size();
-    })).size();
-    int ccGridSize = qCeil(qSqrt(maxCCsize));
-    int sceneGridSize = qCeil(qSqrt(cc.length()));
-    qreal length = property("idealEdgeLengthModifier").toDouble() * idealConnectorLength();
-    qreal ccGridLength = ccGridSize * length;
 
-    QList<QPointF> gridPoints;
-    for (int i = 0; i < sceneGridSize; ++i)
-        for (int j = 0; j < sceneGridSize; ++j)
-            gridPoints.append(QPointF(j * ccGridLength, i * ccGridLength));
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("xml %1 analyze").arg(SessionManager::instance()->currentModel());
+    job->setAnswerReceiver(this, SLOT(setAnalyzedLocations(QDomDocument*)), AnswerFormatterType::XML);
+    SessionManager::instance()->submitJobs(job);
 
-    foreach(QSet<ShapeObj *> c, cc)
+    return;
+}
+
+void DiagramScene::setAnalyzedLocations(QDomDocument *domDoc)
+{
+
+    foreach(Box*box, boxes())
     {
-        QPointF point = gridPoints.takeFirst();
-        foreach (ShapeObj * box, c)
-            box->setCentrePos(point +
-                              QPointF((double)(qrand() % 10 - 5)*jitter, (double)(qrand() % 10 - 5)*jitter));
+        QString n=box->name();
+
+        XMLelement xm=XMLelement(*domDoc)["layers"].firstChild();
+        do
+        {
+            qDebug()<<xm.label()<<" "<<xm.value();
+            if(xm.value()==n)
+            {
+                double x =250*xm["breadth"].value().toDouble();
+                double y= -250*xm["depth"].value().toDouble();
+                box->setCentrePos(QPointF(x,y));
+            }
+            xm=xm.nextSibling();
+        }while(!xm.isNull());
     }
+
     layout()->initialise();
     updateConnectorsForLayout();
-
+    emit animationFinished();
 }
 
 void DiagramScene::wakeUp()
