@@ -269,8 +269,8 @@ void MainWindow::connectSignalsAndSlots()
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole2,SLOT(addText(QString)));
-    connect(lazyNutConsole2,SIGNAL(historyKey(int)),
-            this,SLOT(processHistoryKey(int)));
+    connect(lazyNutConsole2,SIGNAL(historyKey(int, QString)),
+            this,SLOT(processHistoryKey(int, QString)));
     connect(this,SIGNAL(showHistory(QString)),
             lazyNutConsole2,SLOT(showHistory(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
@@ -658,6 +658,7 @@ void MainWindow::loadTrial()
                                                     tr("Script Files (*.eNs *.eNt)"));
     if (!fileName.isEmpty())
     {
+        QString easyNetDataHome=SessionManager::instance()->easyNetDataHome();
         int len=easyNetDataHome.length();
         QString fn;
         if(fileName.left(len)==easyNetDataHome)
@@ -709,6 +710,7 @@ void MainWindow::loadAddOn()
                                                     "Add-ons (" + currentModel + ".*.eNa)");
     if (!fileName.isEmpty())
     {
+        QString easyNetDataHome=SessionManager::instance()->easyNetDataHome();
         int len=easyNetDataHome.length();
         QString fn;
         if(fileName.left(len)==easyNetDataHome)
@@ -1436,10 +1438,8 @@ void MainWindow::addOneToLazyNutProgressBar()
     lazyNutProgressBar->setValue(lazyNutProgressBar->value()+1);
 }
 
-void MainWindow::processHistoryKey(int dir)
+void MainWindow::processHistoryKey(int dir, QString text)
 {
-//    qDebug() << "processHistoryKey" << dir;
-    QString line = commandLog->getHistory(dir);
-//    qDebug() << "processHistoryKey string = " << line;
+    QString line = commandLog->getHistory(dir, text);
     emit showHistory(line);
 }

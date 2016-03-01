@@ -15,8 +15,8 @@ LazyNutConsole::LazyNutConsole(QWidget  *parent)
     inputCmdLine = new InputCmdLine(this);
     connect(inputCmdLine,SIGNAL(commandReady(QString)),
             SessionManager::instance(),SLOT(runCmd(QString)));
-    connect(inputCmdLine,SIGNAL(historyKey(int)),
-            this,SIGNAL(historyKey(int)));
+    connect(inputCmdLine,SIGNAL(historyKey(int, QString)),
+            this,SIGNAL(historyKey(int, QString)));
 
 
     QVBoxLayout *interpreterLayout = new QVBoxLayout;

@@ -24,27 +24,42 @@ void InputCmdLine::sendCommand()
 
 bool InputCmdLine::eventFilter(QObject* obj, QEvent *event)
 {
+    static bool tabFlag;
+
 //    if (obj == this)
     {
         if (event->type() == QEvent::KeyPress)
         {
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+            if(keyEvent->key() != Qt::Key_Tab)
+                tabFlag = false;
+
             if (keyEvent->key() == Qt::Key_Up)
             {
 //                 qDebug() << "lineEdit -> Qt::Key_Up";
-                 emit historyKey(-1);
+                 emit historyKey(-1, text());
                  return true;
             }
             else if(keyEvent->key() == Qt::Key_Down)
             {
 //                qDebug() << "lineEdit -> Qt::Key_Down";
-                emit historyKey(1);
+                emit historyKey(1, text());
                 return true;
             }
             else if(keyEvent->key() == Qt::Key_Escape)
             {
 //                qDebug() << "lineEdit -> Qt::Key_Escape";
-                emit historyKey(0);
+                emit historyKey(0, text());
+                return true;
+            }
+            else if(keyEvent->key() == Qt::Key_Tab)
+            {
+                if (tabFlag)
+                    emit historyKey(200, text());
+                else
+                    emit historyKey(100, text());
+                tabFlag = true;
                 return true;
             }
         }

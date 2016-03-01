@@ -16,7 +16,7 @@ public:
 public slots:
     void setConsoleFontSize(int size);
 signals:
-    void historyKey(int dir);
+    void historyKey(int dir, QString text);
 
 private slots:
     void showHistory(QString line);

@@ -30,6 +30,7 @@ public slots:
     void removeSubtype(QString txt);
 
     void wakeup() {rowCount();}
+    QStringList getNameList();
 
 signals:
     void objectCreated(QString, QString, QString, QDomDocument*);

@@ -62,6 +62,12 @@ void ObjectCacheFilter::setNameList(QStringList list)
     wakeup();
 }
 
+QStringList ObjectCacheFilter::getNameList()
+{
+    return (nameList);
+}
+
+
 void ObjectCacheFilter::addName(QString txt)
 {
     if (!nameList.contains(txt))

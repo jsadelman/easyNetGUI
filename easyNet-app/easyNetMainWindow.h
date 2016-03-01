@@ -148,7 +148,7 @@ private slots:
     void afterModelConfig();
     void diagramSceneTabChanged(int index);
     void runScript();
-    void processHistoryKey(int dir);
+    void processHistoryKey(int dir, QString text);
     void setQuietMode();
     void showExplorer();
     void restart();

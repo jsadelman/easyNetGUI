@@ -27,7 +27,8 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
-    dataframeUpdater->setCommand("get");
+//    dataframeUpdater->setCommand("get");
+    dataframeUpdater->setCommand("get 1-80 1-20"); // restricted get to save time/memory
     dataframeUpdater->setProxyModel(dataframeFilter);
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));

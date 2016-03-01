@@ -16,7 +16,7 @@ public slots:
 
 signals:
     void commandReady(const QString & command);
-    void historyKey(int dir);
+    void historyKey(int dir, QString text);
 
 protected:
 //    void changeEvent(QEvent *e);

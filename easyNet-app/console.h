@@ -24,7 +24,7 @@ public slots:
     void setConsoleFontSize(int size);
     void addText(QString txt);
 signals:
-    void historyKey(int dir);
+    void historyKey(int dir, QString text);
 private slots:
     void showHistory(QString line);
     void coreDump();
