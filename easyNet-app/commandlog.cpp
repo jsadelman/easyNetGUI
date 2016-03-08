@@ -26,15 +26,15 @@ CommandLog::CommandLog(QWidget *parent)
     lastWordCopy="";
     remainderCopy="";
 
-
+    cmdList = QStringList() << "list" << "of"
+                            << "commands" << "here";
     objectListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    objectListFilter->setNoFilter();
-    objectListFilter->setTypeList(QStringList() << "layer" << "connection"
-                                  << "dataframe" << "representation"
-                                  << "pattern" << "conversion" << "observer" << "nobserver"
-                                  << "grouping" << "steps" << "xfile"
-                                  );
-//    objectListFilter->setType("<all objects>");
+    objectListFilter->setAllPassFilter();
+//    objectListFilter->setTypeList(QStringList() << "layer" << "connection"
+//                                  << "dataframe" << "representation"
+//                                  << "pattern" << "conversion" << "observer" << "nobserver"
+//                                  << "grouping" << "steps" << "xfile"
+//                                  );
 
 }
 
@@ -54,80 +54,18 @@ void CommandLog::addText(QString txt)
 }
 
 
-//QString CommandLog::getHistory(int shift)
-//{
-//    QTextCursor *cursor = new QTextCursor(textEdit->document());
-//    qDebug() << "Entered getHistory: line = " << currentLine << "pos = " << cursor->position();
-//    QString line = "";
-//    cursor->movePosition(QTextCursor::Down,QTextCursor::MoveAnchor,currentLine-1);
-//    cursor->movePosition(QTextCursor::StartOfLine);
-//    qDebug() << "attempted move to start of current line: line = " << currentLine << "pos = " << cursor->position();
-//    if (shift<0)
-//    {
-//        qDebug() << "Subtracting 1 from currentLine";
-//        currentLine--;
-//        if (currentLine==0)
-//        {
-//            qDebug() << "looping and returning to last line: line = " << currentLine;
-//            currentLine = 1+textEdit->document()->blockCount();
-//            return("");
-//        }
-//        else if (currentLine==textEdit->document()->blockCount())
-//        {
-//            qDebug() << "on last line; end, then up: line = " << currentLine << "pos = " << cursor->position();
-//            cursor->movePosition(QTextCursor::EndOfLine);
-//            cursor->movePosition(QTextCursor::Up, QTextCursor::KeepAnchor, abs(shift));
-//        }
-//        else
-//        {
-//            qDebug() << "attempting move up one line: line = " << currentLine << "pos = " << cursor->position();
-//            cursor->movePosition(QTextCursor::Up, QTextCursor::KeepAnchor, abs(shift));
-//            cursor->movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor, abs(shift));
-//        }
-//        line=cursor->selectedText();
-//        cursor->movePosition(QTextCursor::StartOfLine,QTextCursor::MoveAnchor);
-//        qDebug() << "attempted move to start of line: line = " << currentLine << "pos = " << cursor->position();
-//    }
-//    if (shift>0) // cursor down
-//    {
-//        if (currentLine>0)
-//            currentLine++;
-//        if (currentLine==(1+textEdit->document()->blockCount()))
-//        {
-////            qDebug() << "on last line, just capturing the end: line = " << currentLine;
-////            cursor->movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor, abs(shift));
-//            qDebug() << "on last line, return blank: line = " << currentLine;
-//            return("");
-
-//        }
-//        else if (currentLine>(textEdit->document()->blockCount()))
-//        {
-//            qDebug() << "looping round, grab first line: line = " << currentLine;
-//            currentLine=1;
-//            cursor->movePosition(QTextCursor::Start);
-//            cursor->movePosition(QTextCursor::Down, QTextCursor::KeepAnchor, abs(shift));
-//        }
-//        else
-//        {
-//            if (currentLine>0)
-//                cursor->movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, 1);
-//            cursor->movePosition(QTextCursor::StartOfLine);
-//            cursor->movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-//        }
-//        qDebug() << "attempted move down one line: line = " << currentLine;
-//        line=cursor->selectedText();
-//    }
-//    return(line.trimmed());
-//}
-
 QString CommandLog::getHistory(int shift, QString text)
 {
     QString lastWord, remainder, newremainder;
     QStringList words;
+    int pos=0;
+    static int oldPos=0;
+    // remove leading spaces
+    bool finalspace=false;
+    if (text.right(1)==" ") finalspace=true;
+    text = text.trimmed();
+    if (finalspace) text.append(" ");
 
-    qDebug() << "Entered getHistory, tabIdx is " << tabIdx;
-    qDebug() << "text is " << text;
-    qDebug() << "shift is " << shift;
     if  (shift!=200) // not repeated TAB
         tabIdx=0;
 
@@ -155,10 +93,19 @@ QString CommandLog::getHistory(int shift, QString text)
     {
         words = text.split(" ");
         qDebug() << "word list is " << words;
-
-        qDebug() << "tabIdx is " << tabIdx;
-        qDebug() << "text is " << text;
-        qDebug() << "remainderCopy is " << remainderCopy;
+        int numSpaces = text.count(QLatin1Char(' '));
+        qDebug() << "numSpaces is " << numSpaces;
+        qDebug() << "words.size() is " << words.size();
+        if (numSpaces==0)
+            pos=1;
+        else if ((numSpaces>=1) && (words.size()>=1) && (words.size()<3))
+            pos=2;
+        if (shift==200)
+            pos=oldPos; // tabbing can't change pos -- this is to sidestep pos change caused by tab completion introducing spaces
+        oldPos=pos;
+//        qDebug() << "tabIdx is " << tabIdx;
+//        qDebug() << "text is " << text;
+//        qDebug() << "remainderCopy is " << remainderCopy;
         if (tabIdx==0) // this is the first time user has pressed tab in this cycle
         {
             lastWord = words.back();
@@ -173,16 +120,42 @@ QString CommandLog::getHistory(int shift, QString text)
             lastWord = lastWordCopy;
             remainder = remainderCopy;
         }
-        qDebug() << "last word is " << lastWord;
-        qDebug() << "remainder is " << remainder;
-        if (lastWord.size() == 0) return(text);
-        QModelIndexList idxList = objectListFilter->match(objectListFilter->index(0, 0), Qt::DisplayRole, QVariant::fromValue(lastWord), -1, Qt::MatchStartsWith);
-        qDebug() << "idxList is " << idxList;
-        if (tabIdx >= idxList.size()) tabIdx = 0; // idxList.size() - 1;
-        if (idxList.size())
-            qDebug() << "name:" << objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString();
-        if (idxList.size())
-            text = remainder.append(objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString());
+//        qDebug() << "last word is " << lastWord;
+//        qDebug() << "remainder is " << remainder;
+//        qDebug() << "pos is " << pos;
+//        if (lastWord.size() == 0) return(text);
+        QStringList keywordList;
+        if (pos!=2)
+        {
+            QModelIndexList idxList = objectListFilter->match(objectListFilter->index(0, 0), Qt::DisplayRole, QVariant::fromValue(lastWord), -1, Qt::MatchStartsWith);
+            QString searchTerm=QString("^.*$");
+            if (lastWord.size()) searchTerm = QString("^") + lastWord + QString(".+");
+
+            if (pos==1) // only print from keywordList when in pos 1
+                keywordList = SessionManager::instance()->lazyNutkeywords.filter(QRegExp(searchTerm));
+            else
+                keywordList = QStringList();
+//            qDebug() << "idxList is " << idxList;
+//            qDebug() << "searchTerm is " << searchTerm;
+            if (tabIdx >= idxList.size() + keywordList.size()) tabIdx = 0; // idxList.size() - 1;
+            if (tabIdx < idxList.size())
+            {
+//                qDebug() << "object name:" << objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString();
+                text = remainder.append(objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString());
+            }
+            else
+            {
+//                qDebug() << "idxList.size()" << idxList.size();
+//                qDebug() << "keywordList" << keywordList;
+//                qDebug() << "command name:" << keywordList.at(tabIdx-idxList.size());
+                text = remainder.append(keywordList.at(tabIdx-idxList.size()));
+             }
+        }
+        else
+        {
+            if (tabIdx >= cmdList.size()) tabIdx = 0;
+            text=remainder.append(cmdList.at(tabIdx));
+        }
         tabIdx++;
         return(text);
 

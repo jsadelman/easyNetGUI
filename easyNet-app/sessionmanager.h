@@ -77,6 +77,7 @@ public:
     QMap<QString, QString> plotSourceDataframeSettings(QString plotName);
     QStringList plotsOfSourceDf(QString df) {return m_plotsOfSourceDf.values(df);}
     QStringList plotSourceDataframes(QString plotName) {return plotSourceDataframeSettings(plotName).values();}
+    QStringList lazyNutkeywords;
     QString makeValidObjectName(QString name);
     bool isValidObjectName(QString name);
     void addToExtraNamedItems(QString name);

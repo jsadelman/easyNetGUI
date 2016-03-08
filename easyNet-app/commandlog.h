@@ -36,6 +36,7 @@ private:
     QString lastWordCopy;
     QString remainderCopy;
     ObjectCacheFilter *objectListFilter;
+    QStringList cmdList;
 
 };
 
