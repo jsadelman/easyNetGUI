@@ -260,7 +260,7 @@ QStringList SessionManager::affectedPlots(QString resultsDf)
     if (!suspendingObservers() && !enabledObservers().isEmpty())
     {
         QStringList observerDfs = enabledObservers();
-        observerDfs.replaceInStrings(QRegExp("^(.*)$"), "(\\1 default_dataframe)");
+        observerDfs.replaceInStrings(QRegExp("^(.*)$"), "\\1");
         dfList.append(observerDfs);
     }
     foreach (QString df, dfList)

@@ -41,7 +41,7 @@ TrialWidget::TrialWidget(QWidget *parent)
     // cosmetics used in tabs names in TableWindow
     connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
     {
-        QString df = QString("((%1 default_observer) default_dataframe)").arg(name);
+        QString df = QString("(%1 default_observer)").arg(name);
         SessionManager::instance()->setPrettyName(df, name);
     });
 
@@ -271,7 +271,7 @@ void TrialWidget::runTrial()
     if (!SessionManager::instance()->suspendingObservers())
     {
         foreach(QString observer, SessionManager::instance()->enabledObservers())
-            job->cmdList << QString("(%1 default_dataframe) clear").arg(observer);
+            job->cmdList << QString("%1 clear").arg(observer);
     }
     if (trialRunMode == TrialRunMode_List)
         runTrialList(job);
@@ -298,7 +298,7 @@ void TrialWidget::runTrial()
 
 QString TrialWidget::defaultDataframe()
 {
-    return QString("((%1 default_observer) default_dataframe)")
+    return QString("(%1 default_observer)")
             .arg(SessionManager::instance()->currentTrial());
 }
 
@@ -327,7 +327,7 @@ QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
     rootElem.appendChild(modeElem);
     QDomElement dataframeElem = trialRunInfo->createElement("object");
     dataframeElem.setAttribute("label", "Results");
-    dataframeElem.setAttribute("value", QString("((%1 default_observer) default_dataframe)")
+    dataframeElem.setAttribute("value", QString("(%1 default_observer)")
                                .arg(SessionManager::instance()->currentTrial()
                                ));
     rootElem.appendChild(dataframeElem);
