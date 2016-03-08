@@ -31,7 +31,7 @@ public:
     void removeView(QString name);
 
 public slots:
-    virtual void addItem(QString name="", bool setCurrent=false, bool isBackup=false, QList<QSharedPointer<QDomDocument> > info=QList<QSharedPointer<QDomDocument> >());
+    void addItem(QString name="", bool setCurrent=false, bool isBackup=false, QList<QSharedPointer<QDomDocument> > info=QList<QSharedPointer<QDomDocument> >());
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
     void setDispatchModeOverride(int mode);
@@ -48,7 +48,7 @@ protected slots:
     void initiateDestroyItem(QString name);
     virtual void destroyItem(QString name);
     virtual void destroyItem_impl(QString name)=0;
-    virtual void updateCurrentItem(QString name);
+    virtual void setCurrentItem(QString name);
     virtual void enableActions(bool enable);
     void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
     void setTrialRunMode(int mode);
@@ -58,6 +58,9 @@ signals:
     void lazyChanged(bool);
     void sendTrialRunInfo(QString, QSharedPointer<QDomDocument>);
     void itemRemoved(QString);
+    void showSettings();
+    void currentItemChanged(QString); // old setPlotSettings
+
 
 protected:
     virtual void addItem_impl(QString name) {Q_UNUSED(name)}

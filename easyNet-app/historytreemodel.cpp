@@ -80,6 +80,7 @@ bool HistoryTreeModel::setData(const QModelIndex &index, const QVariant &value, 
     }
     if (success)
         emit dataChanged(index, index, QVector<int>({role}));
+
     return success;
 }
 

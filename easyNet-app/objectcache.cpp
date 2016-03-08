@@ -1,5 +1,5 @@
 #include "objectcache.h"
-
+#include "enumclasses.h"
 #include "lazynutobjectcacheelem.h"
 #include "lazynutobject.h"
 #include <QMetaObject>
@@ -222,7 +222,7 @@ QDomDocument *ObjectCache::getDomDoc(const QString &name)
         return v.value<QDomDocument *>();
     else
     {
-        qDebug() << "ERROR: ObjectCache::getDomDoc cannot get QDomDocument for" << name;
+        eNerror << "cannot get QDomDocument for" << name;
         return nullptr;
     }
 }

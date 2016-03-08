@@ -29,7 +29,7 @@ public:
     QAction *saveAct;
     QAction *copyAct;
     QAction *destroyAct;
-
+    QAction *settingsAct;
 
 //    QAction *infoAct;
 

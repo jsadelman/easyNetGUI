@@ -54,6 +54,7 @@ class DataframeViewer;
 class DataframeViewerDispatcher;
 class Ui_DataTabsViewer;
 class Ui_DataComboViewer;
+class SettingsWidget;
 
 QT_END_NAMESPACE
 
@@ -154,10 +155,10 @@ private slots:
     void restart();
     void showMostRecentError();
     void showPlotSettings();
+    void showDataframeSettings();
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
-
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -260,6 +261,7 @@ public:
     DiagramScene    *modelScene;
     DiagramScene    *conversionScene;
     PlotSettingsWindow      *plotSettingsWindow;
+    SettingsWidget      *dataframeSettingsWidget;
 //    PlotViewer_old      *plotViewer;
     Ui_DataTabsViewer *ui_plotViewer;
     PlotViewerDispatcher *plotViewerDispatcher;
@@ -313,6 +315,7 @@ public:
     int             paramTabIdx;
     int             plotTabIdx;
     int             plotSettingsTabIdx;
+    int             dataframeSettingsTabIdx;
     int             modelTabIdx;
     int             conversionTabIdx;
     int             scriptTabIdx;

@@ -11,6 +11,7 @@
 #include "objectcachefilter.h"
 #include "easyNetMainWindow.h"
 #include "objectnamevalidator.h"
+#include "xmlelement.h"
 
 
 
@@ -211,6 +212,9 @@ void SessionManager::addDataframeMerge(QString df, QString dfm)
 
 void SessionManager::replacePlotSource(QString plot, QString settingsLabel, QString oldSourceDf, QString newSourceDf)
 {
+    QDomDocument *domDoc = descriptionCache->getDomDoc(plot);
+    if (!domDoc || !(XMLelement(*domDoc)["subtype"]() == "rplot"))
+        return;
     m_plotsOfSourceDf.remove(oldSourceDf, plot);
     m_plotsOfSourceDf.insert(newSourceDf, plot);
     QMap<QString, QString> settings = m_plotSourceDataframeSettings.value(plot);
@@ -425,6 +429,7 @@ void SessionManager::setDefaultLocations()
     m_defaultLocation["dfDir"]        =   QString("%1/Databases").arg(easyNetDataHome());
     m_defaultLocation["rPlotsDir"]    =   QString("%1/%2/R-library/plots").arg(easyNetHome()).arg(binDir);
     m_defaultLocation["outputDir"]    =   QString("%1/Output_files").arg(easyNetHome());
+    m_defaultLocation["rDataframeViewsDir"]    =   QString("%1/%2/R-library/dataframe_views").arg(easyNetHome()).arg(binDir);
 }
 
 

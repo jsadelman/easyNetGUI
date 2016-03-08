@@ -62,7 +62,7 @@ void SettingsForm::build()
     QMap<QString, QString>::const_iterator i = m_defaultSettings.constBegin();
     while (i != m_defaultSettings.constEnd())
     {
-        setDefaultModelSetting(i.key(), i.value());
+        setSetting(i.key(), i.value());
         ++i;
     }
 }
@@ -204,8 +204,11 @@ void SettingsForm::triggerUpdateDependees()
 
 QString SettingsForm::getSettingCmdLine(QString setting)
 {
-    // base implementation returns "setting value"
-    return QString("%1 %2")
+    QDomElement settingsElement = XMLAccessor::childElement(rootElement, setting);
+    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    return QString("%1 %2 %3 %4")
+            .arg(m_name)
+            .arg(XMLAccessor::value(typeElement) == "dataframe" ? "setting_object" : "setting")
             .arg(setting)
             .arg(widgetMap[setting]->value());
 }
@@ -235,7 +238,7 @@ void SettingsForm::substituteDependentValues(QDomElement &settingsElement)
     }
 }
 
-void SettingsForm::setDefaultModelSetting(QString setting, QString value)
+void SettingsForm::setSetting(QString setting, QString value)
 {
     bool forceEmitValueChanged = widgetMap[setting]->value() == value && !value.isEmpty() && value != "NULL";
     widgetMap[setting]->setValue(value);

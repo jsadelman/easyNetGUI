@@ -81,9 +81,10 @@ void Ui_DataTabsViewer::createViewer()
     connect(tabWidget, &QTabWidget::currentChanged, [=](int index)
     {
         if (!quiet_tab_change)
+        {
             emit currentItemChanged(viewMap.key(tabWidget->widget(index)));
+        }
     });
-
 }
 
 void Ui_DataTabsViewer::displayPrettyName(QString name)

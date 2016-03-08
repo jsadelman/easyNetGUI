@@ -92,6 +92,7 @@ void ObjectUpdater::requestObjects(QModelIndex parent, int first, int last)
 
 void ObjectUpdater::errorHandler(QString cmd, QStringList errorList)
 {
+    eNerror << cmd << errorList;
     QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
     if (errorList.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
     {

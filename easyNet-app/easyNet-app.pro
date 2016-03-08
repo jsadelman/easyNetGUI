@@ -126,7 +126,8 @@ SOURCES +=  \
     xmlmodel.cpp \
     settingsxml.cpp \
     xmldisplay.cpp \
-    modelsettingsdisplay.cpp
+    modelsettingsdisplay.cpp \
+    settingswidget.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -224,7 +225,8 @@ HEADERS  += \
     xmlmodel.h \
     settingsxml.h \
     xmldisplay.h \
-    modelsettingsdisplay.h
+    modelsettingsdisplay.h \
+    settingswidget.h
 
 
 RESOURCES   =	diagramscene.qrc \

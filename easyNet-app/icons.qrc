@@ -166,5 +166,6 @@
         <file>images/clear_selection.png</file>
         <file>images/History.png</file>
         <file>images/auto_icon.png</file>
+        <file>images/formula.png</file>
     </qresource>
 </RCC>

@@ -49,14 +49,13 @@ protected slots:
     void setupFullScreen();
     void addSourceDataframes(QStringList newDataframes=QStringList());
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
-    virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
+    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
     void updatePlot(QString name, QByteArray byteArray);
 
 
 signals:
      void resized(QSize);
      void sendDrawCmd(QString);
-     void showPlotSettings();
      void createNewRPlot(QString, QString, QMap<QString, QString>, int, QList<QSharedPointer<QDomDocument> >);
      void setPlotSettings(QString);
      void removePlotSettings(QString);
@@ -85,7 +84,7 @@ protected:
     QMap <QString, QByteArray> plotByteArray;
 
 
-    QAction *       settingsAct;
+//    QAction *       settingsAct;
     QAction *       fullScreenAct;
     bool            fullScreen;
     QSize           fullScreenSize;

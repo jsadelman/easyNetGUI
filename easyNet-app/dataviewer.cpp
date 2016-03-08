@@ -215,8 +215,9 @@ void DataViewer::dispatch()
         dispatcher->dispatch(info);
 }
 
-void DataViewer::updateCurrentItem(QString name)
+void DataViewer::setCurrentItem(QString name)
 {
+
     if (name.isEmpty() || name == "<select an item>")
         enableActions(false);
     else
@@ -225,6 +226,7 @@ void DataViewer::updateCurrentItem(QString name)
         if (isLazy())
             setNameInFilter(name);
     }
+    emit currentItemChanged(name);
 }
 
 void DataViewer::enableActions(bool enable)
@@ -234,6 +236,7 @@ void DataViewer::enableActions(bool enable)
     ui->saveAct->setEnabled(enable);
     ui->copyAct->setEnabled(enable);
     ui->destroyAct->setEnabled(enable);
+    ui->settingsAct->setEnabled(enable);
 
 }
 

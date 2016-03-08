@@ -243,8 +243,7 @@ void PlotViewer::enableActions(bool enable)
     DataViewer::enableActions(enable);
 //    if (!ui)
 //        return;
-    bool active = plotIsActive.value(ui->currentItemName(), false);
-    settingsAct->setEnabled(enable && active);
+//    bool active = plotIsActive.value(ui->currentItemName(), false);
     fullScreenAct->setEnabled(enable);
 //    ui->saveAct->setEnabled(enable);
 //    ui->copyAct->setEnabled(enable);
@@ -253,9 +252,9 @@ void PlotViewer::enableActions(bool enable)
 
 }
 
-void PlotViewer::updateCurrentItem(QString name)
+void PlotViewer::setCurrentItem(QString name)
 {
-    DataViewer::updateCurrentItem(name);
+    DataViewer::setCurrentItem(name);
     emit setPlotSettings(name);
     updateActivePlots();
 //    if (infoVisible)
@@ -277,7 +276,7 @@ void PlotViewer::updatePlot(QString name, QByteArray byteArray)
             if (name != ui->currentItemName())
             {
                 ui->setCurrentItem(name);
-                updateCurrentItem(name);
+                setCurrentItem(name);
             }
         }
     }
@@ -347,12 +346,12 @@ QSvgWidget *PlotViewer::currentSvgWidget()
 
 void PlotViewer::addExtraActions()
 {
-    settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
-    settingsAct->setShortcut(QKeySequence::Refresh);
-    settingsAct->setStatusTip(tr("Plot settings"));
-    connect(settingsAct, SIGNAL(triggered()), this, SIGNAL(showPlotSettings()));
-    settingsAct->setEnabled(false);
-    ui->editToolBar->addAction(settingsAct);
+//    settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
+////    settingsAct->setShortcut(QKeySequence::Refresh);
+//    settingsAct->setStatusTip(tr("Plot settings"));
+//    connect(settingsAct, SIGNAL(triggered()), this, SIGNAL(showPlotSettings()));
+//    settingsAct->setEnabled(false);
+//    ui->editToolBar->addAction(settingsAct);
 
     fullScreenAct = new QAction(QIcon(":/images/Full_screen_view.png"), "Full Screen", this);
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));

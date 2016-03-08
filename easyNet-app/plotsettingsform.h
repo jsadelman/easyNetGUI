@@ -18,8 +18,8 @@ class PlotSettingsForm : public SettingsForm
     Q_PROPERTY(QString plotName READ plotName WRITE setPlotName)
 public:
     explicit PlotSettingsForm(QDomDocument *domDoc, QWidget *parent = 0);
-    QString plotName() {return m_plotName;}
-    void setPlotName(QString plotName) {m_plotName = plotName;}
+    QString plotName() {return m_name;}
+    void setPlotName(QString plotName) {m_plotName = plotName; m_name = plotName;}
 
 
 private slots:
@@ -27,7 +27,7 @@ private slots:
 
 protected:
     virtual void triggerUpdateDependees();
-    virtual QString getSettingCmdLine(QString setting);
+//    virtual QString getSettingCmdLine(QString setting);
     virtual void substituteDependentValues(QDomElement& settingsElement);
 
     QString m_plotName;

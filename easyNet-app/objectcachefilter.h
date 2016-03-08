@@ -12,6 +12,9 @@ class ObjectCacheFilter : public QSortFilterProxyModel
 public:
     ObjectCacheFilter(ObjectCache *objectCache, QObject * parent = 0);
     bool isAllValid();
+    QDomDocument *getDomDoc(const QString& name);
+    QString type(const QString& name);
+
 
 public slots:
     void setNoFilter();

@@ -55,6 +55,7 @@
 
  TreeItem *TreeModel::getItem(const QModelIndex &index) const
   {
+//     qDebug() << Q_FUNC_INFO;
       if (index.isValid()) {
           TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
           if (item) return item;
@@ -127,7 +128,6 @@
  int TreeModel::rowCount(const QModelIndex &parent) const
  {
      TreeItem *parentItem = getItem(parent);
-
      return parentItem->childCount();
      /*TreeItem *parentItem;
      if (parent.column() > 0)

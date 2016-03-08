@@ -7,12 +7,10 @@
 #include <QInputDialog>
 
 #include "plotsettingswindow.h"
-#include "codeeditor.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
 #include "plotsettingsform.h"
 #include "xmlelement.h"
-#include "plotviewer_old.h"
 #include "objectcachefilter.h"
 #include "xmlaccessor.h"
 
@@ -21,14 +19,11 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 PlotSettingsWindow::PlotSettingsWindow(QWidget *parent)
-    : createNewPlotText("Create new plot"),
-      openPlotSettingsText("Open plot settings"),
-      savePlotSettingsText("Save plot settings"),
-      savePlotSettingsAsText("Save plot setings as..."),
-//      plotSettingsForm(nullptr),
-      QMainWindow(parent),
+    : QMainWindow(parent),
       plotAspr_(1.),
-      quietly(false)
+      quietly(false),
+      currentPlotName(""),
+      currentPlotType("")
 {
     setUnifiedTitleAndToolBarOnMac(true);
     createActions();
@@ -417,21 +412,21 @@ void PlotSettingsWindow::buildWindow()
     refreshButton->setDefaultAction(refreshAct);
     refreshButton->setIcon(QIcon(":/images/refresh.png"));
     refreshButton->setIconSize(QSize(40, 40));
-    refreshButton->show();
+//    refreshButton->show();
 
     QToolButton* newButton = new QToolButton(this);
     newButton->setAutoRaise(true);
     newButton->setDefaultAction(newPlotAct);
     newButton->setIcon(QIcon(":/images/add-icon.png"));
     newButton->setIconSize(QSize(40, 40));
-    newButton->show();
+//    newButton->show();
 
     QToolButton* plotButton = new QToolButton(this);
     plotButton->setAutoRaise(true);
     plotButton->setDefaultAction(plotAct);
     plotButton->setIcon(QIcon(":/images/barchart2.png"));
     plotButton->setIconSize(QSize(40, 40));
-    plotButton->show();
+//    plotButton->show();
 
     gridLayout = new QGridLayout();
     gridLayout->addWidget(pnbLabel,0,0,1,1);
@@ -548,11 +543,11 @@ void NewPlotPage::selectRScript()
         typeEdit->setText(QFileInfo(rScript).fileName());
 }
 
-void PlotSettingsWindow::setDefaultModelSetting(QString setting, QString value)
+void PlotSettingsWindow::setSetting(QString setting, QString value)
 {
     PlotSettingsForm * form = qobject_cast<PlotSettingsForm*>(plotControlPanelScrollArea->widget());
     if (form)
-        form->setDefaultModelSetting(setting, value);
+        form->setSetting(setting, value);
 }
 
 QMap<QString, QString> PlotSettingsWindow::getSettings(QString plotName)

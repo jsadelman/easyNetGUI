@@ -57,11 +57,12 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
     connect(copyAct, SIGNAL(triggered()), dataViewer, SLOT(copy()));
     connect(destroyAct, SIGNAL(triggered()), dataViewer, SLOT(destroySelectedItems()));
+    connect(settingsAct, SIGNAL(triggered()), dataViewer, SIGNAL(showSettings()));
 //    connect(findAct, SIGNAL(triggered()), dataViewer, SLOT(showFindDialog()));
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             dataViewer, SLOT(setDispatchModeAuto(bool)));
     connect(this, SIGNAL(deleteItemRequested(QString)), dataViewer, SLOT(initiateDestroyItem(QString)));
-    connect(this, SIGNAL(currentItemChanged(QString)), dataViewer, SLOT(updateCurrentItem(QString)));
+    connect(this, SIGNAL(currentItemChanged(QString)), dataViewer, SLOT(setCurrentItem(QString)));
 
 //    dataViewer->setDispatchModeAuto(true);
     setDispatchModeAutoAct->setChecked(true);
@@ -112,6 +113,9 @@ void Ui_DataViewer::createActions()
     destroyAct = new QAction(QIcon(":/images/icon_trash.png"), "delete", this);
     destroyAct->setToolTip("delete current item");
 
+    settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
+    settingsAct->setStatusTip(tr("Show settings"));
+
 }
 
 void Ui_DataViewer::createToolBars()
@@ -123,6 +127,7 @@ void Ui_DataViewer::createToolBars()
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(copyAct);
     editToolBar->addAction(destroyAct);
+    editToolBar->addAction(settingsAct);
 
     dispatchToolBar = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar->addActions(setDispatchModeOverrideActs);

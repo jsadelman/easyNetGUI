@@ -7,6 +7,7 @@
 DataFrameModel::DataFrameModel(QDomDocument *domDoc, QObject *parent)
     :domDoc(domDoc), m_name(), QAbstractTableModel(parent)
 {
+//    qDebug() << domDoc->toString();
 }
 
 int DataFrameModel::rowCount(const QModelIndex &parent) const

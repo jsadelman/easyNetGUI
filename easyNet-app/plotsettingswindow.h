@@ -7,19 +7,12 @@
 #include <QSharedPointer>
 
 
-class CodeEditor;
 class QDomDocument;
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QDoubleSpinBox;
-class QSpinBox;
-class QVBoxLayout;
-class QListView;
 class QScrollArea;
 class PlotSettingsForm;
-class LazyNutListMenu;
-class QComboBox;
 class QGridLayout;
 
 class NewPlotWizard: public QWizard
@@ -62,7 +55,7 @@ public:
     PlotSettingsWindow(QWidget *parent = 0);
     int getValueFromByteArray(QByteArray ba, QString key);
 
-    void setDefaultModelSetting(QString setting, QString value);
+    void setSetting(QString setting, QString value);
     QMap<QString, QString> getSettings(QString plotName);
 signals:
         void plot(QString, QByteArray);
@@ -127,10 +120,6 @@ private:
     QString currentOutput;
     QString currentPlotName;
     QDomDocument * currentSettings;
-    QString createNewPlotText;
-    QString openPlotSettingsText;
-    QString savePlotSettingsText;
-    QString savePlotSettingsAsText;
     QGridLayout *gridLayout;
 
     QString curFile;
