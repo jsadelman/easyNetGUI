@@ -48,8 +48,8 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Overwrite), Dispatch_New);
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Append), Dispatch_Append);
 
-    createHistory();
-    createInfo();
+    createHistoryWidget();
+    createInfoWidget();
 }
 
 DataViewerDispatcher::~DataViewerDispatcher()
@@ -57,78 +57,75 @@ DataViewerDispatcher::~DataViewerDispatcher()
 }
 
 
-void DataViewerDispatcher::setTrialRunInfo(QString item, QList<QSharedPointer<QDomDocument> > info)
-{
-    trialRunInfoMap[item] = info;
-}
+//void DataViewerDispatcher::setTrialRunInfo(QString item, QList<QSharedPointer<QDomDocument> > info)
+//{
+//    trialRunInfoMap[item] = info;
+//}
 
-void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-{
-    setTrialRunInfo(item, QList<QSharedPointer<QDomDocument> >({info}));
-}
+//void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+//{
+//    setTrialRunInfo(item, QList<QSharedPointer<QDomDocument> >({info}));
+//}
 
-void DataViewerDispatcher::appendTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-{
-    trialRunInfoMap[item].append(info);
-}
+//void DataViewerDispatcher::appendTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+//{
+//    trialRunInfoMap[item].append(info);
+//}
 
-void DataViewerDispatcher::copyTrialRunInfo(QString fromItem, QString toItem)
-{
-    if (trialRunInfoMap.contains(fromItem))
-        trialRunInfoMap[toItem] = trialRunInfoMap.value(fromItem);
-//        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
-}
+//void DataViewerDispatcher::copyTrialRunInfo(QString fromItem, QString toItem)
+//{
+//    if (trialRunInfoMap.contains(fromItem))
+//        trialRunInfoMap[toItem] = trialRunInfoMap.value(fromItem);
+////        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
+//}
 
 QString DataViewerDispatcher::trial(QString name)
 {
-    if (trialRunInfoMap.contains(name))
-        return !trialRunInfoMap.value(name).isEmpty() && trialRunInfoMap.value(name).last() ? TrialRunInfo(trialRunInfoMap.value(name).last()).trial : no_trial;
-    return QString();
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).trial : no_trial;
 }
 
 QString DataViewerDispatcher::runMode(QString name)
 {
-    if (trialRunInfoMap.contains(name))
-        return !trialRunInfoMap.value(name).isEmpty() ? TrialRunInfo(trialRunInfoMap.value(name).last()).runMode : QString();
-    return QString();
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).runMode : QString();
 }
 
 QString DataViewerDispatcher::results(QString name)
 {
-    if (trialRunInfoMap.contains(name))
-        return !trialRunInfoMap.value(name).isEmpty() &&  trialRunInfoMap.value(name).last() ? TrialRunInfo(trialRunInfoMap.value(name).last()).results : QString();
-    return QString();
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).results : QString();
 }
 
-QList<QVariant> DataViewerDispatcher::infoVariantList(QString name)
-{
-    QList<QVariant> vList;
-    foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(name))
-        vList.append(QVariant::fromValue(info));
-    return vList;
-}
+//QList<QVariant> DataViewerDispatcher::infoVariantList(QString name)
+//{
+//    QList<QVariant> vList;
+//    foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(name))
+//        vList.append(QVariant::fromValue(info));
+//    return vList;
+//}
 
-void DataViewerDispatcher::addToHistory(QString name, bool inView, QList<QSharedPointer<QDomDocument> > info)
+void DataViewerDispatcher::addToHistory(QString name, bool inView)
 {
-    if (trialRunInfoMap.contains(name))
+    if (inHistory(name))
     {
         eNwarning << QString("attempt to add item %1 to History, the item is in History already").arg(name);
         return;
     }
-    setTrialRunInfo(name, info);
+
     historyModel->appendView(name, trial(name), inView);
 }
 
 void DataViewerDispatcher::removeFromHistory(QString name)
 {
     historyModel->removeView(name, trial(name));
-    trialRunInfoMap.remove(name);
+    SessionManager::instance()->removeTrialRunInfo(name);
 }
 
 
 bool DataViewerDispatcher::inHistory(QString name)
 {
-    return historyModel->containsView(name, trial(name));
+    return historyModel->containsView(name);
 }
 
 void DataViewerDispatcher::setInView(QString name, bool inView)
@@ -150,7 +147,7 @@ void DataViewerDispatcher::restoreOverrideDefaultValue()
     dispatchModeOverride = mode;
 }
 
-void DataViewerDispatcher::createHistory()
+void DataViewerDispatcher::createHistoryWidget()
 {
     historyModel = new HistoryTreeModel(this);
     historyWidget = new HistoryWidget(hostDataViewer->ui);
@@ -177,7 +174,7 @@ void DataViewerDispatcher::createHistory()
 }
 
 
-void DataViewerDispatcher::createInfo()
+void DataViewerDispatcher::createInfoWidget()
 {
     infoDock = new QDockWidget(hostDataViewer->ui);
     infoDock->setWindowTitle("Trial run info");
@@ -249,10 +246,10 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
 
 void DataViewerDispatcher::updateHistory(QString item, QSharedPointer<QDomDocument> info)
 {
-    if (trial(item) == TrialRunInfo(info).trial) // old trial == new trial
+    if (historyModel->trial(item) == TrialRunInfo(info).trial) // old trial == new trial
         return;
 
-    bool inView = historyModel->isInView(item, trial(item));
+    bool inView = historyModel->containsView(item, trial(item));
 //    update_view_disabled = true;
     disconnect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
@@ -289,7 +286,7 @@ void DataViewerDispatcher::showInfo(bool show)
         infoLayout->setSizeConstraint(QLayout::SetFixedSize);
         infoWidget->setLayout(infoLayout);
 
-        foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(hostDataViewer->ui->currentItemName()))
+        foreach(QSharedPointer<QDomDocument> info, SessionManager::instance()->trialRunInfo(hostDataViewer->ui->currentItemName()))
         if (info)
         {
             XMLModel *infoModel = new XMLModel(info, this);

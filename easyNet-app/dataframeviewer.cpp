@@ -33,12 +33,10 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
 
-    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    dataframeDescriptionUpdater = new ObjectUpdater(this);
-    dataframeDescriptionUpdater->setCommand("description");
-    dataframeDescriptionUpdater->setProxyModel(dataframeDescriptionFilter);
-
-    destroyedObjectsFilter->setType("dataframe");
+//    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+//    dataframeDescriptionUpdater = new ObjectUpdater(this);
+//    dataframeDescriptionUpdater->setCommand("description");
+//    dataframeDescriptionUpdater->setProxyModel(dataframeDescriptionFilter);
     findDialog = new FindDialog(this);
     findDialog->hideExtendedOptions();
     connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
@@ -86,7 +84,6 @@ void DataframeViewer::open()
                 << SessionManager::instance()->recentlyModifiedJob();
         QMap<QString, QVariant> jobData;
         jobData.insert("name", dfName);
-        jobData.insert("setCurrent", true);
         jobData.insert("isBackup", false);
 
         jobs.last()->data = jobData;
@@ -132,11 +129,12 @@ void DataframeViewer::copyDataframe()
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 copy %2").arg(originalDf).arg(copyDf);
     QMap<QString, QVariant> jobData;
-    jobData.insert("dfName", copyDf);
-    jobData.insert("setCurrent", true);
+    jobData.insert("name", copyDf);
+    jobData.insert("isBackup", true);
     if (dispatcher)
     {
-        jobData.insert("trialRunInfo", dispatcher->infoVariantList(originalDf));
+//        jobData.insert("trialRunInfo", dispatcher->infoVariantList(originalDf));
+        SessionManager::instance()->copyTrialRunInfo(originalDf, copyDf);
         setPrettyHeadersForTrial(dispatcher->trial(originalDf), copyDf);
     }
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
@@ -148,67 +146,67 @@ void DataframeViewer::copyDataframe()
 
 }
 
-void DataframeViewer::dataframeMerge()
-{
-    // load XML
-    QDomDocument* domDoc = new QDomDocument;
-    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(SessionManager::instance()->easyNetHome()));
-    if (!file.open(QIODevice::ReadOnly) || !domDoc->setContent(&file))
-    {
-        delete domDoc;
-        file.close();
-        return;
-    }
-    file.close();
-    // setup form
-    SettingsForm *form = new SettingsForm(domDoc, this);
-    form->setUseRFormat(false);
-    QMap<QString, QString> preFilledSettings;
-    preFilledSettings["x"] = ui->currentItemName();
-    preFilledSettings["y"] = SessionManager::instance()->currentSet();
-    form->setDefaultSettings(preFilledSettings);
-    // setup dialog
-    QString info("Select two dataframes you want to merge into one. Their key columns should match.");
-    DataframeMergeSettingsFormDialog dialog(domDoc, form, info, this);
-    dialog.build();
+//void DataframeViewer::dataframeMerge()
+//{
+//    // load XML
+//    QDomDocument* domDoc = new QDomDocument;
+//    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(SessionManager::instance()->easyNetHome()));
+//    if (!file.open(QIODevice::ReadOnly) || !domDoc->setContent(&file))
+//    {
+//        delete domDoc;
+//        file.close();
+//        return;
+//    }
+//    file.close();
+//    // setup form
+//    SettingsForm *form = new SettingsForm(domDoc, this);
+//    form->setUseRFormat(false);
+//    QMap<QString, QString> preFilledSettings;
+//    preFilledSettings["x"] = ui->currentItemName();
+//    preFilledSettings["y"] = SessionManager::instance()->currentSet();
+//    form->setDefaultSettings(preFilledSettings);
+//    // setup dialog
+//    QString info("Select two dataframes you want to merge into one. Their key columns should match.");
+//    DataframeMergeSettingsFormDialog dialog(domDoc, form, info, this);
+//    dialog.build();
 
 
-    connect(&dialog, &DataframeMergeSettingsFormDialog::dataframeMergeSettingsReady,
-            [=](QStringList cmdList, QString dfName, QString x, QString y)
-    {
-        LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
+//    connect(&dialog, &DataframeMergeSettingsFormDialog::dataframeMergeSettingsReady,
+//            [=](QStringList cmdList, QString dfName, QString x, QString y)
+//    {
+//        LazyNutJob *job = new LazyNutJob;
+//        job->logMode |= ECHO_INTERPRETER;
 
-        job->cmdList = cmdList;
-        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                << job
-                << SessionManager::instance()->recentlyCreatedJob();
-        QMap<QString, QVariant> jobData;
-        jobData.insert("name", dfName);
-        jobData.insert("setCurrent", false);
-        jobData.insert("isBackup", true);
-        if (dispatcher)
-        {
-            QVariant infoV = !dispatcher->info(x).isEmpty() ?
-                        dispatcher->infoVariantList(x) : dispatcher->infoVariantList(y);
-//            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
-            jobData.insert("trialRunInfo", infoV);
-        }
-        jobs.last()->data = jobData;
-        jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
-        jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
-        SessionManager::instance()->submitJobs(jobs);
+//        job->cmdList = cmdList;
+//        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+//                << job
+//                << SessionManager::instance()->recentlyCreatedJob();
+//        QMap<QString, QVariant> jobData;
+//        jobData.insert("name", dfName);
+//        jobData.insert("setCurrent", false);
+//        jobData.insert("isBackup", true);
+//        if (dispatcher)
+//        {
+//            QVariant infoV = !dispatcher->info(x).isEmpty() ?
+//                        dispatcher->infoVariantList(x) : dispatcher->infoVariantList(y);
+////            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
+//            jobData.insert("trialRunInfo", infoV);
+//        }
+//        jobs.last()->data = jobData;
+//        jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
+//        jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
+//        SessionManager::instance()->submitJobs(jobs);
 
-        SessionManager::instance()->addDataframeMerge(x, dfName);
-        SessionManager::instance()->addDataframeMerge(y, dfName);
-    });
-    dialog.exec();
-}
+//        SessionManager::instance()->addDataframeMerge(x, dfName);
+//        SessionManager::instance()->addDataframeMerge(y, dfName);
+//    });
+//    dialog.exec();
+//}
 
 void DataframeViewer::addRProcessedDataframe(QString name, bool setCurrent, bool isBackup, QList<QSharedPointer<QDomDocument> > info)
 {
     if (requestedDataframeViews.contains(name))
-        addItem(name, setCurrent, isBackup, info);
+        addItem(name, isBackup);
     requestedDataframeViews.removeAll(name);
 }
 
@@ -226,13 +224,12 @@ void DataframeViewer::enableActions(bool enable)
     DataViewer::enableActions(enable);
     findAct->setEnabled(enable);
     copyDFAct->setEnabled(enable);
-    dataframeMergeAct->setEnabled(enable);
     plotButton->setEnabled(enable);
     dataframeViewButton->setEnabled(enable);
-    QString subtype;
-    QDomDocument *domDoc = dataframeDescriptionFilter->getDomDoc(ui->currentItemName());
-    if (domDoc)
-        subtype = XMLelement(*domDoc)["subtype"]();
+//    QString subtype;
+//    QDomDocument *domDoc = dataframeDescriptionFilter->getDomDoc(ui->currentItemName());
+//    if (domDoc)
+//        subtype = XMLelement(*domDoc)["subtype"]();
 //    ui->settingsAct->setEnabled(enabled && (subtype == "dataframe_view"));
 }
 
@@ -242,7 +239,7 @@ void DataframeViewer::setCurrentItem(QString name)
     if (isLazy())
     {
         dataframeFilter->setName(name);
-        dataframeDescriptionFilter->setName(name);
+//        dataframeDescriptionFilter->setName(name);
     }
     emit currentItemChanged(name);
 }
@@ -386,7 +383,7 @@ void DataframeViewer::sendNewPlotRequest()
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
         QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.plot").arg(ui->currentItemName()));
-        QList<QSharedPointer<QDomDocument> > info = dispatcher ? dispatcher->info(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
+        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         emit newPlotRequested(plotName, plotType, settings, 0, info);
     }
 }
@@ -402,7 +399,7 @@ void DataframeViewer::sendNewDataframeViewRequest()
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
         QString dataframeViewName = SessionManager::instance()->makeValidObjectName(QString("%1.dfView").arg(ui->currentItemName()));
-        QList<QSharedPointer<QDomDocument> > info = dispatcher ? dispatcher->info(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
+        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         requestedDataframeViews.append(dataframeViewName);
         emit newDataframeViewRequested(dataframeViewName, dataframeViewScript, settings, 0, info);
     }
@@ -424,20 +421,17 @@ void DataframeViewer::addNameToFilter(QString name)
     if (SessionManager::instance()->exists(name))
     {
         dataframeFilter->addName(name);
-        dataframeDescriptionFilter->addName(name);
     }
 }
 
 void DataframeViewer::removeNameFromFilter(QString name)
 {
     dataframeFilter->removeName(name);
-    dataframeDescriptionFilter->removeName(name);
 }
 
 void DataframeViewer::setNameInFilter(QString name)
 {
     dataframeFilter->setName(name);
-    dataframeDescriptionFilter->setName(name);
 }
 
 void DataframeViewer::addExtraActions()
@@ -457,12 +451,12 @@ void DataframeViewer::addExtraActions()
     ui->editToolBar->addAction(copyDFAct);
     connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
 
-    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
-    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
-    dataframeMergeAct->setVisible(true);
-    dataframeMergeAct->setEnabled(false);
-    ui->editToolBar->addAction(dataframeMergeAct);
-    connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
+//    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
+//    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
+//    dataframeMergeAct->setVisible(true);
+//    dataframeMergeAct->setEnabled(false);
+//    ui->editToolBar->addAction(dataframeMergeAct);
+//    connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
 
 
 

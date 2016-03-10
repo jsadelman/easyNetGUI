@@ -3,11 +3,12 @@
 
 #include <QString>
 #include <QObject>
-#include <QStateMachine>
+#include <QSharedPointer>
 #include "qprocess.h"
 #include "enumclasses.h"
 
 class QDomDocument;
+
 class LazyNutJob;
 class LazyNutJobParam;
 template <class Job>
@@ -68,6 +69,19 @@ public:
     QList<LazyNutJob*> updateObjectCatalogueJobs();
 
     bool exists(QString name);
+    QSet<QString> dependencies(QString name);
+    QSet<QString> dataframeDependencies(QString name);
+
+    QList<QSharedPointer<QDomDocument> > trialRunInfo(QString name);
+    void setTrialRunInfo(QString df, QList<QSharedPointer<QDomDocument> > info);
+    void setTrialRunInfo(QString df, QSharedPointer<QDomDocument> info);
+    void appendTrialRunInfo(QString df, QList<QSharedPointer<QDomDocument> > info);
+    void appendTrialRunInfo(QString df, QSharedPointer<QDomDocument> info);
+    void clearTrialRunInfo(QString df);
+    void removeTrialRunInfo(QString df);
+    void copyTrialRunInfo(QString fromObj, QString toObj);
+
+
     QStringList sourceDataframes(QString df);
     QStringList affectedPlots(QString resultsDf);
     QStringList enabledObservers() {return m_enabledObservers;}
@@ -198,6 +212,8 @@ private:
     QString lazyNutHeaderBuffer;
     QRegExp OOBrex;
     QString OOBsecret;
+
+    QMap <QString, QList<QSharedPointer<QDomDocument> > > trialRunInfoMap;
 
     QMap <QString, int> m_plotFlags;
     QMultiMap <QString, QString> m_plotsOfSourceDf; // <dataframe, rplots>

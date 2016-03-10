@@ -39,7 +39,7 @@ public slots:
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
     void copyDataframe();
-    void dataframeMerge();
+//    void dataframeMerge();
     void addRProcessedDataframe(QString name, bool setCurrent=true, bool isBackup=false, QList<QSharedPointer<QDomDocument> > info=QList<QSharedPointer<QDomDocument> >());
 
 protected slots:
@@ -75,8 +75,8 @@ protected:
     QMap<QString, PrettyHeadersModel*> prettyHeadersModelMap;
     ObjectCacheFilter *dataframeFilter;
     ObjectUpdater *dataframeUpdater;
-    ObjectCacheFilter *dataframeDescriptionFilter;
-    ObjectUpdater *dataframeDescriptionUpdater;
+//    ObjectCacheFilter *dataframeDescriptionFilter;
+//    ObjectUpdater *dataframeDescriptionUpdater;
     QStringList requestedDataframeViews;
     bool m_dragDropColumns;
     bool m_stimulusSet;
@@ -84,7 +84,7 @@ protected:
     FindDialog*     findDialog;
     QAction *findAct;
     QAction *copyDFAct;
-    QAction *dataframeMergeAct;
+//    QAction *dataframeMergeAct;
     QToolButton *plotButton;
     QToolButton *dataframeViewButton;
 

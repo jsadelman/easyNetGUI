@@ -178,7 +178,7 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         QList<QAction*> actionList;
         foreach (QString observer, defaultObservers.keys())
         {
-            QString dataframe = QString("(%1 default_dataframe)").arg(observer);
+            QString dataframe = observer;
             QString portPrettyName, rplotName;
             if (observer.contains("default_observer"))
             {

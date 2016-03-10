@@ -38,7 +38,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     foreach (QString rplot, SessionManager::instance()->affectedPlots(trialRunInfo.results))
     {
 //        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->ui->view(rplot));
-        currentDispatchAction;
+//        currentDispatchAction;
         if (!host->plotByteArray.contains(rplot))
         {
             currentDispatchAction = Dispatch_Overwrite;
@@ -73,7 +73,7 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
     foreach(QString plot, SessionManager::instance()->affectedPlots(TrialRunInfo(info).results))
     {
         updateHistory(plot, info);
-        setTrialRunInfo(plot, info);
+//        setTrialRunInfo(plot, info);
     }
     QMutableMapIterator<QString, bool> plotSourceModified_it(host->plotSourceModified);
     while (plotSourceModified_it.hasNext())

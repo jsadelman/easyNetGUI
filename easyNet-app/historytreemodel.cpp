@@ -94,6 +94,11 @@ bool HistoryTreeModel::containsView(QString view, QString trial)
     return viewIndex(view, trial).isValid();
 }
 
+bool HistoryTreeModel::containsView(QString view)
+{
+    return viewIndex(view).isValid();
+}
+
 bool HistoryTreeModel::appendTrial(QString trial)
 {
     if (!insertRows(rowCount(), 1))
@@ -167,11 +172,6 @@ bool HistoryTreeModel::setInView(QString view, QString trial, bool inView)
     return setData(viewIndex(view, trial), inView ? QVariant(Qt::Checked) : QVariant(Qt::Unchecked), Qt::CheckStateRole);
 }
 
-bool HistoryTreeModel::isInView(QString view, QString trial)
-{
-    QModelIndex index = viewIndex(view, trial);
-    return index.isValid() ? data(index, Qt::CheckStateRole).toInt() ==  Qt::Checked: false;
-}
 
 QModelIndex HistoryTreeModel::trialIndex(QString trial)
 {
@@ -198,5 +198,13 @@ QModelIndex HistoryTreeModel::viewIndex(QString view)
             return viewIdx;
     }
     return viewIdx;
+}
+
+QString HistoryTreeModel::trial(QString view)
+{
+    QModelIndex viewIdx = viewIndex(view);
+    if (viewIdx.isValid())
+        return data(viewIdx.parent(),  Qt::DisplayRole).toString();
+    return QString();
 }
 

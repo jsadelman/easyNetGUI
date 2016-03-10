@@ -4,6 +4,8 @@
 #include "enumclasses.h"
 #include "dataviewerdispatcher.h"
 #include "objectcachefilter.h"
+#include "objectupdater.h"
+
 
 #include <QAction>
 #include <QDomDocument>
@@ -17,9 +19,13 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
       lastOpenDir(""), defaultOpenDir(""), lastSaveDir(""), defaultSaveDir("")
 {
     setUi();
-    destroyedObjectsFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    destroyedObjectsFilter->setAllPassFilter(); // may be specialised by derived classes
-    connect(destroyedObjectsFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(destroyItem(QString)));
+    descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+//    descriptionFilter->setAllPassFilter(); // may be specialised by derived classes
+    connect(descriptionFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(destroyItem(QString)));
+    descriptionUpdater = new ObjectUpdater(this);
+    descriptionUpdater->setCommand("description");
+    descriptionUpdater->setProxyModel(descriptionFilter);
+    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(execAddItem(QDomDocument*,QString)));
 }
 
 DataViewer::~DataViewer()
@@ -40,6 +46,33 @@ void DataViewer::setUi()
     layout->addWidget(ui);
     setLayout(layout);
     enableActions(false);
+}
+
+void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
+{
+    Q_UNUSED(domDoc)
+    if (name.isEmpty())
+    {
+        eNerror << "name is empty";
+    }
+    else if (contains(name))
+    {
+        return;
+    }
+    else
+    {
+        addItem_impl(name);
+        if (dispatcher)
+        {
+            dispatcher->addToHistory(name, !isBackup.value(name, false));
+            isBackup.remove(name);
+        }
+        else
+        {
+            addView(name);
+            ui->setCurrentItem(name);
+        }
+    }
 }
 
 void DataViewer::initiateDestroyItem(QString name)
@@ -73,7 +106,7 @@ void DataViewer::destroyItem(QString name)
 {
     if (!contains(name))
     {
-//        eNwarning << QString("attempt to delete non-existing item %1").arg(name) << sender()->metaObject()->className();
+        eNwarning << QString("attempt to delete non-existing item %1").arg(name) << sender()->metaObject()->className();
         return;
     }
     if (dispatcher)
@@ -127,9 +160,10 @@ void DataViewer::removeView(QString name)
     if (!isLazy())
         removeNameFromFilter(name);
     delete ui->takeView(name);
+//    descriptionFilter->removeName(name);
 }
 
-void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QList<QSharedPointer<QDomDocument> > info)
+void DataViewer::addItem(QString name, bool _isBackup)
 {
     if (name.isEmpty())
     {
@@ -140,51 +174,17 @@ void DataViewer::addItem(QString name, bool setCurrent, bool isBackup, QList<QSh
             return;
         }
         name = v.value<QString>();
-        v = SessionManager::instance()->getDataFromJob(sender(), "setCurrent");
-        if (v.canConvert<bool>())
-            setCurrent = v.value<bool>();
         v = SessionManager::instance()->getDataFromJob(sender(), "isBackup");
         if (v.canConvert<bool>())
-            isBackup = v.value<bool>();
-        v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
-        if (v.canConvert<QList<QVariant> >())
-        {
-            foreach(QVariant vi, v.toList())
-            {
-                if (vi.canConvert<QSharedPointer<QDomDocument> >())
-                    info.append(vi.value<QSharedPointer<QDomDocument> >());
-            }
-        }
-//        if (v.canConvert<QSharedPointer<QDomDocument> >())
-//            info = v.value<QSharedPointer<QDomDocument> >();
+            _isBackup = v.value<bool>();
     }
     if (name.isEmpty())
     {
         eNerror << "name is empty";
+        return;
     }
-//    else if (!SessionManager::instance()->exists(name))
-//    {
-//        eNerror << QString("attempt to add a non-existing object %1").arg(name);
-//    }
-    else if (ui->contains(name))
-    {
-        if (setCurrent)
-            ui->setCurrentItem(name);
-    }
-    else
-    {
-        addItem_impl(name);
-        if (dispatcher)
-        {
-            dispatcher->addToHistory(name, !isBackup, info);
-        }
-        else
-        {
-            addView(name);
-            if (setCurrent)
-                ui->setCurrentItem(name);
-        }
-    }
+    descriptionFilter->addName(name);
+    isBackup[name] = _isBackup;
 }
 
 void DataViewer::preDispatch(QSharedPointer<QDomDocument> info)
@@ -240,17 +240,17 @@ void DataViewer::enableActions(bool enable)
 
 }
 
-void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-{
-    if (dispatcher)
-    {
-        dispatcher->setTrialRunInfo(item, info);
-    }
-    else
-    {
-        eNerror << "no dispatcher set for this viewer";
-    }
-}
+//void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+//{
+//    if (dispatcher)
+//    {
+//        dispatcher->setTrialRunInfo(item, info);
+//    }
+//    else
+//    {
+//        eNerror << "no dispatcher set for this viewer";
+//    }
+//}
 
 void DataViewer::setTrialRunMode(int mode)
 {

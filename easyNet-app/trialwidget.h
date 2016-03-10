@@ -43,13 +43,9 @@ signals:
     void trialRunModeChanged(int);
 
 private slots:
-
     void runTrial();
-
-
     void update(QString trialName);
     void buildComboBoxes(QDomDocument* domDoc);
-
     void buildComboBoxesTest(QStringList args);
     void setRunButtonIcon();
     void hideSetComboBox();
@@ -60,8 +56,8 @@ private slots:
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
     void updateModelStochasticity(QDomDocument* modelDescription);
-private:
 
+private:
     QSharedPointer<QDomDocument> createTrialRunInfo();
     void clearLayout(QLayout *layout);
     void runSingleTrial(LazyNutJob *job);
@@ -90,7 +86,6 @@ private:
     QToolButton*    runButton;
     QAction*        hideSetComboBoxAction;
     QString         argChanged;
-    QSet<QString>   enabledObservers;
     QMessageBox *disableObserversMsg;
     QCheckBox *dontAskAgainDisableObserverCheckBox;
     bool        askDisableObserver;

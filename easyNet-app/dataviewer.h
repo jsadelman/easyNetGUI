@@ -8,6 +8,8 @@
 class Ui_DataViewer;
 class DataViewerDispatcher;
 class ObjectCacheFilter;
+class ObjectUpdater;
+
 
 class QDomDocument;
 
@@ -31,7 +33,7 @@ public:
     void removeView(QString name);
 
 public slots:
-    void addItem(QString name="", bool setCurrent=false, bool isBackup=false, QList<QSharedPointer<QDomDocument> > info=QList<QSharedPointer<QDomDocument> >());
+    void addItem(QString name="", bool _isBackup=false);
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
     void setDispatchModeOverride(int mode);
@@ -44,13 +46,13 @@ public slots:
 
 protected slots:
     void setUi();
-
+    void execAddItem(QDomDocument *domDoc, QString name);
     void initiateDestroyItem(QString name);
     virtual void destroyItem(QString name);
     virtual void destroyItem_impl(QString name)=0;
     virtual void setCurrentItem(QString name);
     virtual void enableActions(bool enable);
-    void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
+//    void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
     void setTrialRunMode(int mode);
 
 
@@ -72,12 +74,15 @@ protected:
 //    QMap<QString, QWidget*> viewMap;
     Ui_DataViewer *ui;
     DataViewerDispatcher *dispatcher;
-    ObjectCacheFilter *destroyedObjectsFilter;
+    ObjectCacheFilter *descriptionFilter;
+    ObjectUpdater *descriptionUpdater;
+
     QString lastOpenDir;
     QString defaultOpenDir;
     QString lastSaveDir;
     QString defaultSaveDir;
     bool m_lazy;
+    QMap<QString, bool> isBackup;
 };
 
 #endif // DATAVIEWER_H

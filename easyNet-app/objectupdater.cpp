@@ -6,11 +6,13 @@
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "enumclasses.h"
+#include "xmlelement.h"
+
 #include <QSortFilterProxyModel>
 #include <QDebug>
 
 ObjectUpdater::ObjectUpdater(QObject *parent)
-    : m_command(""), QObject(parent)
+    : m_command(""), m_dependencies(false), QObject(parent)
 {
 
 }
@@ -43,40 +45,18 @@ void ObjectUpdater::setFilter(ObjectCacheFilter *filter)
 
 void ObjectUpdater::wakeUpUpdate()
 {
-//    ObjectCacheFilter *filter = qobject_cast<ObjectCacheFilter *>(proxyModel);
-//    if (filter)
-//    {
-//        connect(filter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-//                this, SLOT(requestObject(QString)));
-//        connect(filter, SIGNAL(objectModified(QString)),
-//                this, SLOT(requestObject(QString)));
-//    }
-//    else
-//    {
         connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,const QVector<int> &)),
                 this, SLOT(requestObjects(QModelIndex,QModelIndex)));
         connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(requestObjects(QModelIndex,int,int)));
-//    }
 }
 
 void ObjectUpdater::goToSleep()
 {
-//    ObjectCacheFilter *filter = qobject_cast<ObjectCacheFilter *>(proxyModel);
-//    if (filter)
-//    {
-//        disconnect(filter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-//                this, SLOT(requestObject(QString)));
-//        disconnect(filter, SIGNAL(objectModified(QString)),
-//                this, SLOT(requestObject(QString)));
-//    }
-//    else
-//    {
         disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(requestObjects(QModelIndex,QModelIndex)));
         disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(requestObjects(QModelIndex,int,int)));
-//    }
 }
 
 void ObjectUpdater::requestObjects(QModelIndex top, QModelIndex bottom)
@@ -148,6 +128,10 @@ void ObjectUpdater::requestObject(QString name)
     }
     else if (!objectCache->isInvalid(name) && !objectCache->isPending(name))
     {
-        emit objectUpdated(objectCache->getDomDoc(name), name);
+        QDomDocument *domDoc = objectCache->getDomDoc(name);
+        emit objectUpdated(domDoc, name);
+        if (m_dependencies && domDoc)
+            foreach (QString dep, XMLelement(*domDoc)["Dependencies"].listValues())
+                requestObject(dep);
     }
 }

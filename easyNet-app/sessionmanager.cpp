@@ -28,6 +28,10 @@
 #include <QDir>
 #include <QProcessEnvironment>
 
+
+Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
+
+
 SessionManager* SessionManager::sessionManager = nullptr;
 
 SessionManager *SessionManager::instance()
@@ -234,7 +238,7 @@ void SessionManager::observerEnabled(QString observer, bool enabled)
         observer = getDataFromJob(sender(), "observer").toString();
         if (observer.isEmpty())
         {
-            qDebug() << "ERROR: SessionManager::observerEnabled observer tag is empty";
+            eNerror << "observer tag is empty";
             return;
         }
         enabled  = getDataFromJob(sender(), "enabled").toBool();
@@ -263,9 +267,10 @@ QStringList SessionManager::affectedPlots(QString resultsDf)
     QStringList dfList({resultsDf});
     if (!suspendingObservers() && !enabledObservers().isEmpty())
     {
-        QStringList observerDfs = enabledObservers();
-        observerDfs.replaceInStrings(QRegExp("^(.*)$"), "(\\1 default_dataframe)");
-        dfList.append(observerDfs);
+        dfList.append(enabledObservers());
+//        QStringList observerDfs = enabledObservers();
+//        observerDfs.replaceInStrings(QRegExp("^(.*)$"), "(\\1 default_dataframe)");
+//        dfList.append(observerDfs);
     }
     foreach (QString df, dfList)
         foreach(QString sourceDf, sourceDataframes(df))
@@ -375,13 +380,92 @@ bool SessionManager::exists(QString name)
     return descriptionCache->exists(name);
 }
 
+QSet<QString> SessionManager::dependencies(QString name)
+{
+    QSet<QString> deps({name});
+    QDomDocument *domDoc = descriptionCache->getDomDoc(name);
+    if (domDoc)
+    {
+        foreach(QString dep, XMLelement(*domDoc)["Dependencies"].listValues())
+        {
+            deps.unite(dependencies(dep));
+        }
+    }
+    return deps;
+}
+
+QSet<QString> SessionManager::dataframeDependencies(QString name)
+{
+    QSet<QString> deps;
+    QDomDocument *domDoc = descriptionCache->getDomDoc(name);
+    if (domDoc)
+    {
+        if (XMLelement(*domDoc)["type"]() == "dataframe" &&
+            XMLelement(*domDoc)["subtype"]() != "dataframe_view")
+        {
+            deps << name;
+        }
+        foreach(QString dep, XMLelement(*domDoc)["Dependencies"].listValues())
+        {
+            deps.unite(dataframeDependencies(dep));
+        }
+    }
+    return deps;
+}
+
+QList<QSharedPointer<QDomDocument> > SessionManager::trialRunInfo(QString name)
+{
+    QList<QSharedPointer<QDomDocument> > info;
+    foreach (QString df, dataframeDependencies(name))
+    {
+        if (trialRunInfoMap.value(df).count() > 0)
+        info.append(trialRunInfoMap.value(df));
+    }
+    return info;
+}
+
+void SessionManager::setTrialRunInfo(QString df, QList<QSharedPointer<QDomDocument> > info)
+{
+    trialRunInfoMap[df] = info;
+}
+
+void SessionManager::setTrialRunInfo(QString df, QSharedPointer<QDomDocument> info)
+{
+    setTrialRunInfo(df, QList<QSharedPointer<QDomDocument> >({info}));
+}
+
+void SessionManager::appendTrialRunInfo(QString df, QList<QSharedPointer<QDomDocument> > info)
+{
+    trialRunInfoMap[df].append(info);
+}
+
+void SessionManager::appendTrialRunInfo(QString df, QSharedPointer<QDomDocument> info)
+{
+    appendTrialRunInfo(df, QList<QSharedPointer<QDomDocument> >({info}));
+}
+
+void SessionManager::clearTrialRunInfo(QString df)
+{
+    if (trialRunInfoMap.contains(df))
+        trialRunInfoMap[df].clear();
+}
+
+void SessionManager::removeTrialRunInfo(QString df)
+{
+    trialRunInfoMap.remove(df);
+}
+
+void SessionManager::copyTrialRunInfo(QString fromObj, QString toObj)
+{
+    trialRunInfoMap[toObj] = trialRunInfo(fromObj);
+}
+
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {
     lazyNutHeaderBuffer.append(lazyNutOutput);
     if (lazyNutHeaderBuffer.contains(OOBrex))
     {
         OOBsecret = OOBrex.cap(1);
-        qDebug() << OOBsecret;
         lazyNutHeaderBuffer.clear();
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
         emit lazyNutStarted();

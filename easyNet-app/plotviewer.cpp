@@ -66,7 +66,7 @@ PlotViewer::PlotViewer(Ui_DataViewer *ui, QWidget *parent)
     plotDescriptionUpdater->setProxyModel(plotDescriptionFilter);
     connect(plotDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString, QDomDocument*)),
             this, SLOT(generatePrettyName(QString,QString,QString, QDomDocument*)));
-    destroyedObjectsFilter->setType("xfile");
+    descriptionFilter->setType("xfile");
     addExtraActions();
     fullScreenSvgDialog = new FullScreenSvgDialog(this);
     auto temp=QApplication::desktop()->availableGeometry();
@@ -401,7 +401,7 @@ QString PlotViewer::cloneRPlot(QString name, QString newName)
         settings[sourceDataframeSettings_it.key()] = sourceDataframeSettings_it.value();
     }
     int flags = SessionManager::instance()->plotFlags(name) | Plot_Backup;
-    emit createNewRPlot(newName, plotType(name), settings, flags, dispatcher ? dispatcher->info(name) : QList<QSharedPointer<QDomDocument> >());
+    emit createNewRPlot(newName, plotType(name), settings, flags, dispatcher ? SessionManager::instance()->trialRunInfo(name) : QList<QSharedPointer<QDomDocument> >());
     return newName;
 }
 
