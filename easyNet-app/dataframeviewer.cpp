@@ -398,7 +398,7 @@ void DataframeViewer::sendNewDataframeViewRequest()
         QString dataframeViewScript = dataframeViewAct->text();
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
-        QString dataframeViewName = SessionManager::instance()->makeValidObjectName(QString("%1.dfView").arg(ui->currentItemName()));
+        QString dataframeViewName = SessionManager::instance()->makeValidObjectName(ui->currentItemName());
         QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         requestedDataframeViews.append(dataframeViewName);
         emit newDataframeViewRequested(dataframeViewName, dataframeViewScript, settings, 0, info);

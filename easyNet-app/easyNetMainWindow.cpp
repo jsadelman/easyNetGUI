@@ -312,6 +312,10 @@ void MainWindow::connectSignalsAndSlots()
             plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
     connect(dataframeViewer, SIGNAL(newPlotRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
             plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
+    connect(dataframeResultsViewer, SIGNAL(itemRemoved(QString)), dataframeSettingsWidget, SLOT(removeForm(QString)));
+    connect(stimSetViewer, SIGNAL(itemRemoved(QString)), dataframeSettingsWidget, SLOT(removeForm(QString)));
+    connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataframeSettingsWidget, SLOT(removeForm(QString)));
+
 
     connect(dataframeResultsViewer, SIGNAL(newDataframeViewRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
             dataframeSettingsWidget, SLOT(newForm(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));

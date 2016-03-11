@@ -217,6 +217,11 @@ bool ObjectCache::invalidateCache(const QString &name)
 
 QDomDocument *ObjectCache::getDomDoc(const QString &name)
 {
+    if (name.isEmpty() || !exists(name))
+    {
+        eNwarning << QString("object %1 does not exist").arg(name);
+        return nullptr;
+    }
     QVariant v = data(index(rowFromName(name), DomDocCol));
     if (v.canConvert<QDomDocument *>())
         return v.value<QDomDocument *>();

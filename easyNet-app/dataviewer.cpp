@@ -54,9 +54,16 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
     if (name.isEmpty())
     {
         eNerror << "name is empty";
+        return;
     }
-    else if (contains(name))
+
+    if (contains(name))
     {
+        if (dispatcher)
+        {
+            dispatcher->updateInfo(name);
+            dispatcher->updateHistory(name);
+        }
         return;
     }
     else
@@ -70,7 +77,7 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         else
         {
             addView(name);
-            ui->setCurrentItem(name);
+//            ui->setCurrentItem(name);
         }
     }
 }
@@ -128,6 +135,11 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
     {
         ui->setDispatchModeAutoAct->setVisible(true);
         setDispatchModeAuto(true);
+//        connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), dispatcher, SLOT(updateInfo(QDomDocument*,QString)));
+//        connect(descriptionUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*,QString name)
+//        {
+//            dispatcher->updateHistory(name);
+//        });
 //        ui->setDispatchModeAutoAct->setEnabled(enable);
 //        dispatcher->historyAct->setEnabled(enable);
     }

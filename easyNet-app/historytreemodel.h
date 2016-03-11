@@ -23,12 +23,14 @@ public:
     bool containsTrial(QString trial);
     bool containsView(QString view, QString trial);
     bool containsView(QString view);
+    bool isInView(QString view);
 
     bool appendTrial(QString trial);
     bool removeTrial(QString trial);
     bool appendView(QString view, QString trial, bool inView=false);
     bool removeView(QString view, QString trial);
     bool setInView(QString view, QString trial, bool inView);
+
     QModelIndex trialIndex(QString trial);
     QModelIndex viewIndex(QString view, QString trial);
     QModelIndex viewIndex(QString view);

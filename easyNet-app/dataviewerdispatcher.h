@@ -54,11 +54,10 @@ public:
 
 public slots:
     void destroySelectedItems();
-
-protected slots:
     void updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles);
-    void updateHistory(QString item, QSharedPointer<QDomDocument> info);
+    void updateHistory(QString name);
     void showInfo(bool show);
+    void updateInfo(QString name);
 
 protected:
     void createHistoryWidget();

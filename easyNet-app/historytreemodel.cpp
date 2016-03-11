@@ -99,6 +99,11 @@ bool HistoryTreeModel::containsView(QString view)
     return viewIndex(view).isValid();
 }
 
+bool HistoryTreeModel::isInView(QString view)
+{
+    return data(viewIndex(view), Qt::CheckStateRole).toInt() == Qt::Checked;
+}
+
 bool HistoryTreeModel::appendTrial(QString trial)
 {
     if (!insertRows(rowCount(), 1))

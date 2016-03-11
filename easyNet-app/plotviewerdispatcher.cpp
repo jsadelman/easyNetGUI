@@ -72,7 +72,7 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
     foreach(QString plot, SessionManager::instance()->affectedPlots(TrialRunInfo(info).results))
     {
-        updateHistory(plot, info);
+        updateHistory(plot);
 //        setTrialRunInfo(plot, info);
     }
     QMutableMapIterator<QString, bool> plotSourceModified_it(host->plotSourceModified);

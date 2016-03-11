@@ -181,7 +181,7 @@ void DataViewerDispatcher::createInfoWidget()
     infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     infoScroll = new QScrollArea(hostDataViewer->ui);
     infoDock->setWidget(infoScroll);
-    infoScroll->setWidgetResizable(true);
+//    infoScroll->setWidgetResizable(true);
     hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, infoDock);
     connect(hostDataViewer->ui, &Ui_DataViewer::currentItemChanged, [=]()
     {
@@ -244,21 +244,22 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
     return;
 }
 
-void DataViewerDispatcher::updateHistory(QString item, QSharedPointer<QDomDocument> info)
+void DataViewerDispatcher::updateHistory(QString name)
 {
-    if (historyModel->trial(item) == TrialRunInfo(info).trial) // old trial == new trial
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    QString newTrial = info.isEmpty() ? no_trial : TrialRunInfo(info.last()).trial;
+    if (historyModel->trial(name) == newTrial) // old trial == new trial
         return;
 
-    bool inView = historyModel->containsView(item, trial(item));
-//    update_view_disabled = true;
+    bool isInView = historyModel->isInView(name);
     disconnect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
-    historyModel->removeView(item, trial(item));
-    historyModel->appendView(item, TrialRunInfo(info).trial, inView);
+    historyModel->removeView(name, historyModel->trial(name));
+    historyModel->appendView(name, newTrial, isInView);
     connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
-    //    update_view_disabled = false;
 }
+
 
 void DataViewerDispatcher::showInfo(bool show)
 {
@@ -306,6 +307,7 @@ void DataViewerDispatcher::showInfo(bool show)
             infoLayout->addWidget(infoView);
         }
         infoScroll->setWidget(infoWidget);
+        infoScroll->adjustSize();
         infoDock->setVisible(true);
     }
     else
@@ -313,6 +315,12 @@ void DataViewerDispatcher::showInfo(bool show)
         infoDock->setVisible(false);
     }
     infoIsVisible = show;
+}
+
+void DataViewerDispatcher::updateInfo(QString name)
+{
+    if (infoIsVisible && SessionManager::instance()->dependencies(name).contains(hostDataViewer->ui->currentItemName()))
+        showInfo(true);
 }
 
 
