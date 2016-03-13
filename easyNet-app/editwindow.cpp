@@ -20,7 +20,6 @@ EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
     textEdit->setReadOnly(isReadOnly);
     setCentralWidget(textEdit);
     textEdit->setReadOnly(isReadOnly);
-    setCurrentFile("Untitled");
     startDir="";
 
 //    newAct = p_newAct;
@@ -38,7 +37,7 @@ EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
 
-    setCurrentFile("");
+    setCurrentFile("Untitled");
     setUnifiedTitleAndToolBarOnMac(true);
 
     findDialog = new FindDialog;
@@ -126,7 +125,7 @@ void EditWindow::createActions()
 //    saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-    saveAsAct = new QAction(tr("Save &As..."), this);
+    saveAsAct = new QAction(QIcon(":/images/save_as_download_disk.png"), tr("Save &As..."), this);
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
 //    saveAsAct->setStatusTip(tr("Save the document under a new name"));
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
@@ -203,11 +202,15 @@ void editWindow::createMenus()
 void EditWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
+    filenameLabel = new QLabel("Untitled");
+    fileToolBar->addWidget(filenameLabel);
     if (newAct)
         fileToolBar->addAction(newAct);
     if (openAct)
         fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
+    fileToolBar->addAction(saveAsAct);
+
 
     editToolBar = addToolBar(tr("Edit"));
     if (!isReadOnly)
@@ -294,6 +297,7 @@ void EditWindow::setCurrentFile(const QString &fileName)
         shownName = "untitled.txt";
     setWindowFilePath(shownName);
     setWindowTitle(strippedName(shownName));
+    setFilenameLabel(strippedName(shownName));
 
 }
 
@@ -349,4 +353,10 @@ void EditWindow::findBackward(const QString &str, QFlags<QTextDocument::FindFlag
             findDialog->hide();
         }
     }
+}
+
+void EditWindow::setFilenameLabel(QString filename)
+{
+    QString name = QString("<P><b>") + filename + QString("<\b>");
+    filenameLabel->setText(name);
 }

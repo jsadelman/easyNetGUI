@@ -260,7 +260,7 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
 void ObjExplorer::queryTypes()
 {
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
+//    job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList({"xml list type"});
     job->setAnswerReceiver(this, SLOT(initTypes(QStringList)), AnswerFormatterType::ListOfValues);
     SessionManager::instance()->submitJobs(job);

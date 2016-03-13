@@ -202,7 +202,7 @@ void MainWindow::constructForms()
     ui_testViewer = new Ui_DataTabsViewer;
     testViewer = new DataframeViewer(ui_testViewer, this);
     testFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    testFilter->setFilterRegExp(QRegExp("^.*\\.test_results$"));
+    testFilter->setName("test_results");
     testFilter->setFilterKeyColumn(ObjectCache::NameCol);
     connect(testFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             testViewer, SLOT(addItem(QString)));

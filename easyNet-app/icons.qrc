@@ -166,5 +166,6 @@
         <file>images/clear_selection.png</file>
         <file>images/History.png</file>
         <file>images/auto_icon.png</file>
+        <file>images/save_as_download_disk.png</file>
     </qresource>
 </RCC>
