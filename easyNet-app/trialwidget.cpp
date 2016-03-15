@@ -80,7 +80,7 @@ TrialWidget::TrialWidget(QWidget *parent)
                 "You are about to run a list of trials while layer activity is being recorded and displayed in plots. "
                 "This may slow down the simulation.\n"
                 "Do you want to suspend activity recording while running a list of trials?",
-                QMessageBox::Yes | QMessageBox::No,
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
                 this);
     dontAskAgainDisableObserverCheckBox = new QCheckBox("don't show this message again");
     disableObserversMsg->setCheckBox(dontAskAgainDisableObserverCheckBox);
@@ -260,6 +260,8 @@ void TrialWidget::runTrial()
     if (trialRunMode == TrialRunMode_List && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
     {
         int answer = disableObserversMsg->exec();
+        if (answer == QMessageBox::Cancel)
+            return;
         SessionManager::instance()->suspendObservers(answer == QMessageBox::Yes);
         askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
     }
