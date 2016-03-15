@@ -553,6 +553,8 @@ void MainWindow::loadModel(QString fileName,bool complete)
 //    conversionScene->goToSleep();
 
     // load and run script
+    qDebug() << "Starting clock ...";
+    loadModelTimer.start();
     loadFile(fileName);
 
     // the /path/basename is used by DiagramScene objects to load JSON files
@@ -639,15 +641,27 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 void MainWindow::afterModelConfig()
 {
     modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
+    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
     runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
     modelScene->wakeUp();
+    qDebug() << "Time taken to config model:" << QString::number(loadModelTimer.elapsed()) << "ms";
+    commandLog->addText(QString("## Time taken to config model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
 
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
 }
+
+void MainWindow::afterModelStaged()
+{
+    qDebug() << "Time taken to load and stage model:" << QString::number(loadModelTimer.elapsed()) << "ms";
+    commandLog->addText(QString("## Time taken to load and stage model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
+
+}
+
 
 
 void MainWindow::loadTrial()

@@ -54,6 +54,7 @@ class DataframeViewer;
 class DataframeViewerDispatcher;
 class Ui_DataTabsViewer;
 class Ui_DataComboViewer;
+class QTime;
 
 QT_END_NAMESPACE
 
@@ -146,6 +147,7 @@ private slots:
     void modelConfigNeeded();
     void createModelSettingsDialog(QDomDocument* domDoc);
     void afterModelConfig();
+    void afterModelStaged();
     void diagramSceneTabChanged(int index);
     void runScript();
     void processHistoryKey(int dir, QString text);
@@ -387,6 +389,8 @@ public:
     QAction *quitAct;
 
     bool trialComboEventSwitch = false;
+    QTime loadModelTimer;
+
 
 //    enum runMode {RunSingle, RunAll};
 
