@@ -67,7 +67,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         emit commandSent(cmd);
         if (logMode &= ECHO_INTERPRETER)
             emit logCommand(cmd);
-        qDebug() << cmd;
+//        qDebug() << cmd;
         lazyNut->sendCommand(cmd);
     }
 }
@@ -98,7 +98,9 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(beginContent)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
+        {
             return;
+        }
         timeString = endRex.cap(1);
 
         // extract ERROR lines

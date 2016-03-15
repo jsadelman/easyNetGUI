@@ -296,12 +296,12 @@ void MainWindow::connectSignalsAndSlots()
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
      connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
              plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
-//     connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
-//             dataframeViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
+     connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
+             dataframeViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
      connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
              dataframeResultsViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
-//     connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
-//             stimSetViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
+     connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
+             stimSetViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
 
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));

@@ -29,9 +29,11 @@ void PlotSettingsForm::recordValueChange(QString oldValue, QString newValue)
 
 void PlotSettingsForm::triggerUpdateDependees()
 {
+
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = getSettingsCmdList();
     job->cmdList.append(QString("xml %1 list_settings").arg(m_name));
+//    qDebug() << Q_FUNC_INFO << m_name <<  job->cmdList << job;
     job->setAnswerReceiver(this, SLOT(updateDependees(QDomDocument*)), AnswerFormatterType::XML);
     SessionManager::instance()->submitJobs(job);
 }

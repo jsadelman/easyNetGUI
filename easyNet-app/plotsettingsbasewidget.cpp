@@ -140,7 +140,9 @@ void PlotSettingsBaseWidget::createLevelsListModel()
 
     QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
     if (levelsElement.isNull())
+    {
         return;
+    }
     else if (levelsElement.tagName() == "parameter")
     {
         levelsListModel = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -253,7 +255,9 @@ void PlotSettingsBaseWidget::updateWidget(QDomElement &xml)
     settingsElement = xml;
     QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
     if (!levelsListModel || levelsElement.isNull())
+    {
         createLevelsListModel();
+    }
 }
 
 
@@ -312,7 +316,9 @@ void PlotSettingsBaseWidget::setRawEditModeOn()
     rawEdit->setText(widget2rawValue(getWidgetValue()));
     rawEdit->show();
     if (editDisplayWidget)
+    {
         editDisplayWidget->hide();
+    }
     editMode = RawEditMode;
 }
 
@@ -463,6 +469,8 @@ void PlotSettingsSingleChoiceWidget::createEditWidget()
     }
     else
     {
+        delete editDisplayWidget;
+        editDisplayWidget = nullptr;
         rawEditModeButton->setEnabled(false);
         rawEditModeButton->setChecked(true);
         setRawEditModeOn();
@@ -562,7 +570,6 @@ void PlotSettingsMultipleChoiceWidget::updateWidget(QDomElement& xml)
 void PlotSettingsMultipleChoiceWidget::createEditWidget()
 {
     QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
-
     if (levelsElement.tagName() == "parameter")
         buildEditWidget();
     else if (levelsElement.tagName() == "list")
@@ -571,6 +578,10 @@ void PlotSettingsMultipleChoiceWidget::createEditWidget()
         getLevels();
     else
     {
+        delete editDisplayWidget;
+        editDisplayWidget = nullptr;
+        delete editExtraWidget;
+        editExtraWidget = nullptr;
         rawEditModeButton->setEnabled(false);
         rawEditModeButton->setChecked(true);
         setRawEditModeOn();
