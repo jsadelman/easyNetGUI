@@ -23,22 +23,18 @@ class SettingsWidget : public QWidget
 {
     Q_OBJECT
 public:
-    SettingsWidget(QString dataViewType, QWidget *parent = 0);
+    SettingsWidget(QWidget *parent = 0);
     ~SettingsWidget();
     void setSetting(QString setting, QString value);
     QMap<QString, QString> getSettings(QString name);
 
 public slots:
     void sendSettings(QString name = QString());
-    void newForm(QString name,
-                 QString rScript,
-                 QMap <QString,QString> defaultSettings,
-                 int flags,
-                 QList<QSharedPointer<QDomDocument> > infoList); // old newRPlot
+    void newForm(QString name, QString dataViewType, QString rScript, QMap <QString,QString> defaultSettings, bool isBackup = false); // old newRPlot
     void setForm(QString name); // old setPlotSettings
 
 signals:
-    void dataViewCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >); // old newRPlotCreated
+    void dataViewCreated(QString, bool); // old newRPlotCreated
 
 
 protected slots:
@@ -58,7 +54,6 @@ protected:
     QString type(QString name);
 
 
-    QString dataViewType; // dataframe_view or rplot
     QString currentName;
     QMap<QString, PlotSettingsForm*> formMap;
     QMap<QString, QString> typeMap;

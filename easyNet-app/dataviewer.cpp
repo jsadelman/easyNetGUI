@@ -71,8 +71,8 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         addItem_impl(name);
         if (dispatcher)
         {
-            dispatcher->addToHistory(name, !isBackup.value(name, false));
-            isBackup.remove(name);
+            dispatcher->addToHistory(name, !isBackupMap.value(name, false));
+            isBackupMap.remove(name);
         }
         else
         {
@@ -175,7 +175,7 @@ void DataViewer::removeView(QString name)
 //    descriptionFilter->removeName(name);
 }
 
-void DataViewer::addItem(QString name, bool _isBackup)
+void DataViewer::addItem(QString name, bool isBackup)
 {
     if (name.isEmpty())
     {
@@ -188,16 +188,30 @@ void DataViewer::addItem(QString name, bool _isBackup)
         name = v.value<QString>();
         v = SessionManager::instance()->getDataFromJob(sender(), "isBackup");
         if (v.canConvert<bool>())
-            _isBackup = v.value<bool>();
+            isBackup = v.value<bool>();
     }
     if (name.isEmpty())
     {
         eNerror << "name is empty";
         return;
     }
-    descriptionFilter->addName(name);
-    isBackup[name] = _isBackup;
+
+    if (SessionManager::instance()->exists(name))
+    {
+        descriptionFilter->addName(name);
+        isBackupMap[name] = isBackup;
+    }
+    else if (SessionManager::instance()->extraNamedItems().contains(name))
+    {
+        execAddItem(nullptr, name);
+    }
+    else
+    {
+        eNerror << QString("name %1 is not recognised as valid").arg(name);
+        return;
+    }
 }
+
 
 void DataViewer::preDispatch(QSharedPointer<QDomDocument> info)
 {

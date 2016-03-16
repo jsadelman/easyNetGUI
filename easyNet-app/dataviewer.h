@@ -33,7 +33,8 @@ public:
     void removeView(QString name);
 
 public slots:
-    void addItem(QString name="", bool _isBackup=false);
+    void addItem(QString name="", bool isBackup=false);
+    virtual void addRequestedItem(QString name="", bool isBackup=false) =0;
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
     void setDispatchModeOverride(int mode);
@@ -42,6 +43,7 @@ public slots:
     virtual void save()=0;
     virtual void copy()=0;
     virtual void destroySelectedItems();
+    virtual void snapshot(QString name="")=0;
 
 
 protected slots:
@@ -60,7 +62,7 @@ signals:
     void lazyChanged(bool);
     void sendTrialRunInfo(QString, QSharedPointer<QDomDocument>);
     void itemRemoved(QString);
-    void showSettings();
+    void showSettingsRequested();
     void currentItemChanged(QString); // old setPlotSettings
 
 
@@ -82,7 +84,7 @@ protected:
     QString lastSaveDir;
     QString defaultSaveDir;
     bool m_lazy;
-    QMap<QString, bool> isBackup;
+    QMap<QString, bool> isBackupMap;
 };
 
 #endif // DATAVIEWER_H

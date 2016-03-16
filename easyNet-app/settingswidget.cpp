@@ -20,16 +20,10 @@
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
-SettingsWidget::SettingsWidget(QString dataViewType, QWidget *parent)
+SettingsWidget::SettingsWidget(QWidget *parent)
     : QWidget(parent),
-      dataViewType(dataViewType),
       currentName("")
 {
-    if (!(dataViewType == "dataframe_view" || dataViewType == "rplot"))
-    {
-        eNerror << "invalid dataViewType:" << dataViewType;
-        return;
-    }
     createActions();
     buildWidget();
     descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -79,8 +73,13 @@ void SettingsWidget::sendSettings(QString name)
     }
 }
 
-void SettingsWidget::newForm(QString name, QString rScript, QMap<QString, QString> defaultSettings, int flags, QList<QSharedPointer<QDomDocument> > infoList)
+void SettingsWidget::newForm(QString name, QString dataViewType, QString rScript, QMap<QString, QString> defaultSettings, bool isBackup)
 {
+    if (!(dataViewType == "dataframe_view" || dataViewType == "rplot"))
+    {
+        eNerror << "invalid dataViewType:" << dataViewType;
+        return;
+    }
     LazyNutJob *job = new LazyNutJob;
     job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({
@@ -92,13 +91,8 @@ void SettingsWidget::newForm(QString name, QString rScript, QMap<QString, QStrin
     jobData.insert("name", name);
     if (!defaultSettings.isEmpty())
         jobData.insert("defaultSettings", QVariant::fromValue(defaultSettings));
-    jobData.insert("flags", flags);
-    QList<QVariant> vList;
-    foreach(QSharedPointer<QDomDocument> info, infoList)
-        vList.append(QVariant::fromValue(info));
-    jobData.insert("trialRunInfo", vList);
+    jobData.insert("isBackup", isBackup);
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
-
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
             << SessionManager::instance()->recentlyCreatedJob();
@@ -168,21 +162,24 @@ void SettingsWidget::buildSettingsForm()
     QMap<QString, QString> defaultSettings;
     if (jobData.contains("defaultSettings"))
         defaultSettings = jobData.value("defaultSettings").value<QMap<QString, QString>>();
-    int flags = 0;
-    if (jobData.contains("flags"))
-        flags = jobData.value("flags").toInt();
+    bool isBackup(false);
+    if (jobData.contains("isBackup"))
+        isBackup = jobData.value("isBackup").toBool();
+//    int flags = 0;
+//    if (jobData.contains("flags"))
+//        flags = jobData.value("flags").toInt();
 //    SessionManager::instance()->setPlotFlags(name, flags);
 
-    QList<QSharedPointer<QDomDocument> > info;
-    QVariant v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
-    if (v.canConvert<QList<QVariant> >())
-    {
-        foreach(QVariant vi, v.toList())
-        {
-            if (vi.canConvert<QSharedPointer<QDomDocument> >())
-                info.append(vi.value<QSharedPointer<QDomDocument> >());
-        }
-    }
+//    QList<QSharedPointer<QDomDocument> > info;
+//    QVariant v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
+//    if (v.canConvert<QList<QVariant> >())
+//    {
+//        foreach(QVariant vi, v.toList())
+//        {
+//            if (vi.canConvert<QSharedPointer<QDomDocument> >())
+//                info.append(vi.value<QSharedPointer<QDomDocument> >());
+//        }
+//    }
     // add values != NULL or "" to defaultSettings
     QMap<QString, QString> completeDefaultSettings;
     QDomElement domElement = currentSettings->documentElement().firstChildElement();
@@ -199,8 +196,8 @@ void SettingsWidget::buildSettingsForm()
 
 
     buildSettingsForm(name, currentSettings, completeDefaultSettings);
-    descriptionFilter->setName(name);
-    emit dataViewCreated(name, true, false, info);
+    descriptionFilter->addName(name);
+    emit dataViewCreated(name, isBackup);
 }
 
 void SettingsWidget::rebuildForm()
@@ -242,6 +239,7 @@ void SettingsWidget::removeForm(QString name)
     delete formMap.value(name, nullptr);
     formMap.remove(name);
     typeMap.remove(name);
+    descriptionFilter->removeName(name);
 }
 
 void SettingsWidget::createActions()

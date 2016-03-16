@@ -40,7 +40,8 @@ public slots:
     virtual void copy() Q_DECL_OVERRIDE;
     void copyDataframe();
 //    void dataframeMerge();
-    void addRProcessedDataframe(QString name, bool setCurrent=true, bool isBackup=false, QList<QSharedPointer<QDomDocument> > info=QList<QSharedPointer<QDomDocument> >());
+    virtual void addRequestedItem(QString name="", bool isBackup=false);
+    virtual void snapshot(QString name="") Q_DECL_OVERRIDE {Q_UNUSED(name)}
 
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
@@ -57,10 +58,8 @@ signals:
     void dragDropColumnsChanged(bool);
     void stimulusSetChanged(bool);
     void parametersTableChanged(bool);
-    void newPlotRequested(QString name, QString type, QMap<QString, QString> defaultSettings,
-                       int flags, QList<QSharedPointer<QDomDocument> > info);
-    void newDataframeViewRequested(QString name, QString type, QMap<QString, QString> defaultSettings,
-                       int flags, QList<QSharedPointer<QDomDocument> > info);
+    void createDataViewRequested(QString name, QString dataViewType, QString rScript, QMap<QString, QString> defaultSettings, bool isBackup = false);
+//    void newDataframeViewRequested(QString name, QString type, QMap<QString, QString> defaultSettings, bool isBackup = false);
 
 protected:
     virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
@@ -69,6 +68,7 @@ protected:
     virtual void removeNameFromFilter(QString name);
     virtual void setNameInFilter(QString name);
     void addExtraActions();
+
 
 
     QMap<QString, DataFrameModel*> modelMap;

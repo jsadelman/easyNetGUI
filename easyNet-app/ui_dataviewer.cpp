@@ -57,7 +57,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
     connect(copyAct, SIGNAL(triggered()), dataViewer, SLOT(copy()));
     connect(destroyAct, SIGNAL(triggered()), dataViewer, SLOT(destroySelectedItems()));
-    connect(settingsAct, SIGNAL(triggered()), dataViewer, SIGNAL(showSettings()));
+    connect(settingsAct, SIGNAL(triggered()), dataViewer, SIGNAL(showSettingsRequested()));
 //    connect(findAct, SIGNAL(triggered()), dataViewer, SLOT(showFindDialog()));
     connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
             dataViewer, SLOT(setDispatchModeAuto(bool)));

@@ -95,6 +95,7 @@ public:
     bool isValidObjectName(QString name);
     void addToExtraNamedItems(QString name);
     void removeFromExtraNamedItems(QString name);
+    QStringList extraNamedItems();
 
 
     ObjectCache *descriptionCache;
@@ -223,7 +224,7 @@ private:
     bool        m_suspendingObservers;
 
     ObjectNameValidator *validator;
-    QStringList extraNamedItems;
+    QStringList m_extraNamedItems;
 
 
 };

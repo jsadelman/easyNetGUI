@@ -32,31 +32,38 @@ class PlotViewer: public DataViewer
 public:
     PlotViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     ~PlotViewer();
-    QString plotType(QString name);
+//    QString plotType(QString name);
+    void sendPlotCmd(QString name);
 
 public slots:
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
     void updateAllActivePlots();
+    virtual void addRequestedItem(QString name="", bool isBackup=false);
+    virtual void snapshot(QString name="") Q_DECL_OVERRIDE;
+
 
 
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
-    void dfSourceModified(QString df);
-    void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
+//    void dfSourceModified(QString df);
+//    void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
     void setupFullScreen();
-    void addSourceDataframes(QStringList newDataframes=QStringList());
+//    void addSourceDataframes(QStringList newDataframes=QStringList());
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
-    void updatePlot(QString name, QByteArray byteArray);
+//    void updatePlot(QString name, QByteArray byteArray);
+    void updateDependencies(QDomDocument* domDoc, QString name);
+    void checkDependencies(QString name);
+    void sendPlotCmd();
+    void displaySVG(QByteArray byteArray, QString cmd);
+    void setPlotByteArray(QByteArray byteArray, QString cmd);
 
 
 signals:
      void resized(QSize);
-     void sendDrawCmd(QString);
-     void createNewRPlot(QString, QString, QMap<QString, QString>, int, QList<QSharedPointer<QDomDocument> >);
      void setPlotSettings(QString);
      void removePlotSettings(QString);
 
@@ -69,18 +76,21 @@ protected:
      void updateActivePlots();
      QSvgWidget *currentSvgWidget();
      void addExtraActions();
-     QString cloneRPlot(QString name, QString newName=QString());
+//     QString cloneRPlot(QString name, QString newName=QString());
      void paintEvent(QPaintEvent * event);
      void resizeEvent(QResizeEvent*);
 
     bool            pend;
+    int             plotAspectRatio;
     QTimer*         resizeTimer;
-    ObjectCacheFilter *sourceDataframeFilter;
-    ObjectCacheFilter *plotDescriptionFilter;
-    ObjectUpdater     *plotDescriptionUpdater;
+    ObjectCacheFilter *dependenciesFilter;
+    ObjectUpdater     *dependenciesUpdater;
+
+//    ObjectCacheFilter *plotDescriptionFilter;
     QMap <QString, bool> plotIsActive;
     QMap <QString, bool> plotIsUpToDate;
-    QMap <QString, bool> plotSourceModified;
+    QMultiMap <QString, QString> plotDependencies;
+//    QMap <QString, bool> plotSourceModified;
     QMap <QString, QByteArray> plotByteArray;
 
 

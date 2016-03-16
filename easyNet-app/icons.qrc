@@ -167,5 +167,6 @@
         <file>images/History.png</file>
         <file>images/auto_icon.png</file>
         <file>images/formula.png</file>
+        <file>images/setting.png</file>
     </qresource>
 </RCC>

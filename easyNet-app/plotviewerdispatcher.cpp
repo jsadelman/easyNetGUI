@@ -22,7 +22,6 @@ PlotViewerDispatcher::PlotViewerDispatcher(PlotViewer *host)
 
 PlotViewerDispatcher::~PlotViewerDispatcher()
 {
-
 }
 
 void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
@@ -35,11 +34,9 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
                    .arg(trialRunInfo.runMode);
         return;
     }
-    foreach (QString rplot, SessionManager::instance()->affectedPlots(trialRunInfo.results))
+    foreach (QString plot, affectedPlots(trialRunInfo.results))
     {
-//        QSvgWidget* svg = qobject_cast<QSvgWidget*>(host->ui->view(rplot));
-//        currentDispatchAction;
-        if (!host->plotByteArray.contains(rplot))
+        if (!host->plotByteArray.contains(plot))
         {
             currentDispatchAction = Dispatch_Overwrite;
         }
@@ -47,7 +44,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         {
             currentDispatchAction = dispatchModeOverride;
         }
-        else if (SessionManager::instance()->isAnyTrialPlot(rplot))
+        else if (!host->plotDependencies.values(plot).toSet().intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty())
         {
             currentDispatchAction = Dispatch_Overwrite;
         }
@@ -61,7 +58,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         }
         if (currentDispatchAction == Dispatch_New)
         {
-            /*QString newPlotName =*/ host->cloneRPlot(rplot);
+            /*QString newPlotName =*/ host->snapshot(plot);
 //            copyTrialRunInfo(rplot, newPlotName);
         }
     }
@@ -70,26 +67,40 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 
 void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
-    foreach(QString plot, SessionManager::instance()->affectedPlots(TrialRunInfo(info).results))
+    foreach(QString plot, affectedPlots(TrialRunInfo(info).results))
     {
+        SessionManager::instance()->setTrialRunInfo(plot, info);
         updateHistory(plot);
-//        setTrialRunInfo(plot, info);
+//        host->plotIsUpToDate[plot] = false;
     }
-    QMutableMapIterator<QString, bool> plotSourceModified_it(host->plotSourceModified);
-    while (plotSourceModified_it.hasNext())
-    {
-        plotSourceModified_it.next();
-        if (plotSourceModified_it.value())
-        {
-            plotSourceModified_it.setValue(false);
-            QString plot = plotSourceModified_it.key();
-            host->plotIsUpToDate[plot] = false;
-//            host->svgTrialRunInfo[svg] = info;
-        }
-    }
-    host->updateActivePlots();
+//    QMutableMapIterator<QString, bool> plotSourceModified_it(host->plotSourceModified);
+//    while (plotSourceModified_it.hasNext())
+//    {
+//        plotSourceModified_it.next();
+//        if (plotSourceModified_it.value())
+//        {
+//            plotSourceModified_it.setValue(false);
+//            QString plot = plotSourceModified_it.key();
+//            host->plotIsUpToDate[plot] = false;
+////            host->svgTrialRunInfo[svg] = info;
+//        }
+//    }
+//    host->updateActivePlots();
     if (infoIsVisible)
         showInfo(true);
-//    host->refreshInfo();
+}
+
+QStringList PlotViewerDispatcher::affectedPlots(QString results)
+{
+    QStringList plots;
+    foreach (QString plot, host->plotDependencies.keys())
+    {
+        // if either results or any enabled (and not suspended) observer are in the dependency list of this plot
+        if (   host->plotDependencies.values(plot).contains(results) ||
+              (!SessionManager::instance()->suspendingObservers()) &&
+              (!host->plotDependencies.values(plot).toSet().intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty()) )
+            plots.append(plot);
+    }
+    return plots;
 }
 

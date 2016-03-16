@@ -68,6 +68,7 @@ SessionManager::SessionManager()
     jobQueue = new LazyNutJobQueue;
 
     descriptionCache = new ObjectCache(this);
+    qDebug () << "descriptionCache" << descriptionCache;
     connect(this, SIGNAL(recentlyCreated(QDomDocument*)),
             descriptionCache, SLOT(create(QDomDocument*)));
     connect(this,  SIGNAL(recentlyModified(QStringList)),
@@ -303,13 +304,18 @@ bool SessionManager::isValidObjectName(QString name)
 
 void SessionManager::addToExtraNamedItems(QString name)
 {
-    if (!extraNamedItems.contains(name))
-        extraNamedItems.append(name);
+    if (!m_extraNamedItems.contains(name))
+        m_extraNamedItems.append(name);
 }
 
 void SessionManager::removeFromExtraNamedItems(QString name)
 {
-    extraNamedItems.removeAll(name);
+    m_extraNamedItems.removeAll(name);
+}
+
+QStringList SessionManager::extraNamedItems()
+{
+    return m_extraNamedItems;
 }
 
 
@@ -415,6 +421,9 @@ QSet<QString> SessionManager::dataframeDependencies(QString name)
 
 QList<QSharedPointer<QDomDocument> > SessionManager::trialRunInfo(QString name)
 {
+    if (trialRunInfoMap.contains(name))
+        return trialRunInfoMap.value(name);
+
     QList<QSharedPointer<QDomDocument> > info;
     foreach (QString df, dataframeDependencies(name))
     {

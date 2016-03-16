@@ -17,6 +17,8 @@ public:
     virtual void dispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
 
 private:
+    QStringList affectedPlots(QString results);
+
     PlotViewer *host;
 };
 

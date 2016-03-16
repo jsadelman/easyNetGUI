@@ -29,7 +29,7 @@
 #include "sessionmanager.h"
 #include "highlighter.h"
 #include "editwindow.h"
-#include "plotsettingswindow.h"
+//#include "plotsettingswindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "objectcache.h"
@@ -47,7 +47,6 @@
 #include "scripteditor.h"
 #include "console.h"
 #include "debuglog.h"
-#include "plotviewer_old.h"
 #include "plotviewer.h"
 #include "plotviewerdispatcher.h"
 #include "diagramscenetabwidget.h"
@@ -137,8 +136,8 @@ void MainWindow::constructForms()
 
     lazyNutConsole2 = new Console(this);
 
-    plotSettingsWindow = new PlotSettingsWindow(this);
-    dataframeSettingsWidget = new SettingsWidget("dataframe_view", this);
+//    plotSettingsWindow = new PlotSettingsWindow(this);
+    dataViewSettingsWidget = new SettingsWidget(this);
     objExplorer = new ObjExplorer(SessionManager::instance()->descriptionCache,this);
     scriptEdit = new ScriptEditor(SessionManager::instance()->defaultLocation("scriptsDir"), this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
@@ -225,8 +224,8 @@ void MainWindow::constructForms()
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
     modelSettingsTabIdx = methodsPanel->addTab(modelSettingsDisplay, tr("Model"));
     paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
-    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
-    dataframeSettingsTabIdx = methodsPanel->addTab(dataframeSettingsWidget, tr("Dataframe settings"));
+//    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
+    dataViewSettingsTabIdx = methodsPanel->addTab(dataViewSettingsWidget, tr("Dataframe/plot settings"));
 
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
@@ -256,22 +255,23 @@ void MainWindow::connectSignalsAndSlots()
     connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentModel(QString)));
-    connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
-            plotViewer,SLOT(updatePlot(QString,QByteArray)));
-    connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
-    connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
-    connect(plotViewer,SIGNAL(showSettings()),this,SLOT(showPlotSettings()));
-    connect(dataframeResultsViewer, SIGNAL(showSettings()), this,SLOT(showDataframeSettings()));
-    connect(dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), dataframeSettingsWidget, SLOT(setForm(QString)));
-    connect(dataframeViewer, SIGNAL(showSettings()), this,SLOT(showDataframeSettings()));
-//    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), dataframeSettingsWidget, SLOT(setForm(QString)));
-    connect(stimSetViewer, SIGNAL(showSettings()), this,SLOT(showDataframeSettings()));
-//    connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), dataframeSettingsWidget, SLOT(setForm(QString)));
-    connect(plotViewer,SIGNAL(setPlotSettings(QString)), plotSettingsWindow, SLOT(setPlotSettings(QString)));
+//    connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
+//            plotViewer,SLOT(updatePlot(QString,QByteArray)));
+//    connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
+//    connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
+    connect(plotViewer,SIGNAL(showSettingsRequested()),this,SLOT(showDataViewSettings()));
+    connect(plotViewer,SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
+    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+    connect(dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
+    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
+    connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+    connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
+//    connect(plotViewer,SIGNAL(setPlotSettings(QString)), plotSettingsWindow, SLOT(setPlotSettings(QString)));
 
 
 
-    connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
+//    connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
@@ -286,43 +286,40 @@ void MainWindow::connectSignalsAndSlots()
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
-    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
+    connect(modelScene,SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>, bool)),
+            dataViewSettingsWidget,SLOT(newForm(QString,QString,QString,QMap<QString,QString>, bool)));
+//    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, bool)),
+//            dataViewSettingsWidget,SLOT(newForm(QString,QString,QMap<QString,QString>, bool)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
-     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
-             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
-     connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
-             dataframeViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
-     connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
-             dataframeResultsViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
-     connect(dataframeSettingsWidget, SIGNAL(dataViewCreated(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)),
-             stimSetViewer, SLOT(addRProcessedDataframe(QString,bool,bool,QList<QSharedPointer<QDomDocument> >)));
+//     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
+//             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             dataframeViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             dataframeResultsViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             stimSetViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             plotViewer, SLOT(addRequestedItem(QString,bool)));
 
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
-    connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
-    connect(dataframeResultsViewer, SIGNAL(newPlotRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(stimSetViewer, SIGNAL(newPlotRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(dataframeViewer, SIGNAL(newPlotRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(dataframeResultsViewer, SIGNAL(itemRemoved(QString)), dataframeSettingsWidget, SLOT(removeForm(QString)));
-    connect(stimSetViewer, SIGNAL(itemRemoved(QString)), dataframeSettingsWidget, SLOT(removeForm(QString)));
-    connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataframeSettingsWidget, SLOT(removeForm(QString)));
+
+    connect(dataframeResultsViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+    connect(stimSetViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+    connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+    connect(plotViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
 
 
-    connect(dataframeResultsViewer, SIGNAL(newDataframeViewRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            dataframeSettingsWidget, SLOT(newForm(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(stimSetViewer, SIGNAL(newDataframeViewRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            dataframeSettingsWidget, SLOT(newForm(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(dataframeViewer, SIGNAL(newDataframeViewRequested(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            dataframeSettingsWidget, SLOT(newForm(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
+    connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+    connect(stimSetViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+    connect(dataframeViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
 
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
@@ -349,16 +346,16 @@ void MainWindow::showExplorer()
     explorerPanel->setCurrentIndex(explorerTabIdx);
 }
 
-void MainWindow::showPlotSettings()
-{
-    methodsDock->raise();
-    methodsPanel->setCurrentIndex(plotSettingsTabIdx);
-}
+//void MainWindow::showPlotSettings()
+//{
+//    methodsDock->raise();
+//    methodsPanel->setCurrentIndex(plotSettingsTabIdx);
+//}
 
-void MainWindow::showDataframeSettings()
+void MainWindow::showDataViewSettings()
 {
     methodsDock->raise();
-    methodsPanel->setCurrentIndex(dataframeSettingsTabIdx);
+    methodsPanel->setCurrentIndex(dataViewSettingsTabIdx);
 }
 
 void MainWindow::showPlotViewer()

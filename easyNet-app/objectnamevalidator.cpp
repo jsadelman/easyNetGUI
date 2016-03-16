@@ -58,7 +58,7 @@ QValidator::State ObjectNameValidator::validate(QString &input, int &pos) const
 {
     Q_UNUSED(pos)
     if (forbiddenRex.exactMatch(input) || SessionManager::instance()->exists(input) ||
-            SessionManager::instance()->extraNamedItems.contains(input))
+            SessionManager::instance()->m_extraNamedItems.contains(input))
         return Invalid;
 
     else

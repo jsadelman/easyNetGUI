@@ -85,7 +85,6 @@ void DataframeViewer::open()
         QMap<QString, QVariant> jobData;
         jobData.insert("name", dfName);
         jobData.insert("isBackup", false);
-
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
         SessionManager::instance()->submitJobs(jobs);
@@ -146,64 +145,7 @@ void DataframeViewer::copyDataframe()
 
 }
 
-//void DataframeViewer::dataframeMerge()
-//{
-//    // load XML
-//    QDomDocument* domDoc = new QDomDocument;
-//    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(SessionManager::instance()->easyNetHome()));
-//    if (!file.open(QIODevice::ReadOnly) || !domDoc->setContent(&file))
-//    {
-//        delete domDoc;
-//        file.close();
-//        return;
-//    }
-//    file.close();
-//    // setup form
-//    SettingsForm *form = new SettingsForm(domDoc, this);
-//    form->setUseRFormat(false);
-//    QMap<QString, QString> preFilledSettings;
-//    preFilledSettings["x"] = ui->currentItemName();
-//    preFilledSettings["y"] = SessionManager::instance()->currentSet();
-//    form->setDefaultSettings(preFilledSettings);
-//    // setup dialog
-//    QString info("Select two dataframes you want to merge into one. Their key columns should match.");
-//    DataframeMergeSettingsFormDialog dialog(domDoc, form, info, this);
-//    dialog.build();
-
-
-//    connect(&dialog, &DataframeMergeSettingsFormDialog::dataframeMergeSettingsReady,
-//            [=](QStringList cmdList, QString dfName, QString x, QString y)
-//    {
-//        LazyNutJob *job = new LazyNutJob;
-//        job->logMode |= ECHO_INTERPRETER;
-
-//        job->cmdList = cmdList;
-//        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-//                << job
-//                << SessionManager::instance()->recentlyCreatedJob();
-//        QMap<QString, QVariant> jobData;
-//        jobData.insert("name", dfName);
-//        jobData.insert("setCurrent", false);
-//        jobData.insert("isBackup", true);
-//        if (dispatcher)
-//        {
-//            QVariant infoV = !dispatcher->info(x).isEmpty() ?
-//                        dispatcher->infoVariantList(x) : dispatcher->infoVariantList(y);
-////            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
-//            jobData.insert("trialRunInfo", infoV);
-//        }
-//        jobs.last()->data = jobData;
-//        jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
-//        jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
-//        SessionManager::instance()->submitJobs(jobs);
-
-//        SessionManager::instance()->addDataframeMerge(x, dfName);
-//        SessionManager::instance()->addDataframeMerge(y, dfName);
-//    });
-//    dialog.exec();
-//}
-
-void DataframeViewer::addRProcessedDataframe(QString name, bool setCurrent, bool isBackup, QList<QSharedPointer<QDomDocument> > info)
+void DataframeViewer::addRequestedItem(QString name, bool isBackup)
 {
     if (requestedDataframeViews.contains(name))
         addItem(name, isBackup);
@@ -241,7 +183,6 @@ void DataframeViewer::setCurrentItem(QString name)
         dataframeFilter->setName(name);
 //        dataframeDescriptionFilter->setName(name);
     }
-    emit currentItemChanged(name);
 }
 
 
@@ -382,9 +323,9 @@ void DataframeViewer::sendNewPlotRequest()
         QString plotType = plotAct->text();
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
-        QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.plot").arg(ui->currentItemName()));
-        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
-        emit newPlotRequested(plotName, plotType, settings, 0, info);
+        QString plotName = SessionManager::instance()->makeValidObjectName(ui->currentItemName());
+//        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
+        emit createDataViewRequested(plotName, "rplot", plotType, settings);
     }
 }
 
@@ -399,9 +340,10 @@ void DataframeViewer::sendNewDataframeViewRequest()
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
         QString dataframeViewName = SessionManager::instance()->makeValidObjectName(ui->currentItemName());
-        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
+//        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         requestedDataframeViews.append(dataframeViewName);
-        emit newDataframeViewRequested(dataframeViewName, dataframeViewScript, settings, 0, info);
+//        emit newDataframeViewRequested(dataframeViewName, dataframeViewScript, settings);
+        emit createDataViewRequested(dataframeViewName, "dataframe_view", dataframeViewScript, settings);
     }
 }
 
@@ -473,7 +415,7 @@ void DataframeViewer::addExtraActions()
     {
         QAction *plotAct = new QAction(plotType, this);
         connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
-        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showPlotSettings()));
+        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
         plotMenu->addAction(plotAct);
     }
     plotButton->setMenu(plotMenu);
@@ -491,7 +433,7 @@ void DataframeViewer::addExtraActions()
     {
         QAction *dataframeViewAct = new QAction(dataframeViewScript, this);
         connect(dataframeViewAct, SIGNAL(triggered()), this, SLOT(sendNewDataframeViewRequest()));
-        connect(dataframeViewAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataframeSettings()));
+        connect(dataframeViewAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
         dataframeViewMenu->addAction(dataframeViewAct);
     }
     dataframeViewButton->setMenu(dataframeViewMenu);

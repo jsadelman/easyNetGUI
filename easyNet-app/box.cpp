@@ -228,9 +228,11 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 {
                     QMap<QString,QString> settings;
                     settings["df"] = plotData.value("dataframe").toString();
-                    emit createNewRPlot(plotData.value("rplotName").toString(),
-                                        plotData.value("plotType").toString().append(".R"),
-                                        settings, Plot_AnyTrial);
+                    emit createDataViewRequested(   plotData.value("rplotName").toString(),
+                                                    "rplot",
+                                                    plotData.value("plotType").toString().append(".R"),
+                                                    settings,
+                                                    false);
                 }
             }
             else

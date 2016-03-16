@@ -44,7 +44,7 @@ SOURCES +=  \
     highlighter.cpp \
     codeeditor.cpp \
     editwindow.cpp \
-    plotsettingswindow.cpp \
+#    plotsettingswindow.cpp \
     lazynut.cpp \
     sessionmanager.cpp \
     commandsequencer.cpp \
@@ -86,7 +86,7 @@ SOURCES +=  \
     console.cpp \
     finddialog.cpp \
     debuglog.cpp \
-    plotviewer_old.cpp \
+#    plotviewer_old.cpp \
     diagramscenetabwidget.cpp \
     diagramwindow.cpp \
     diagramview.cpp \
@@ -142,7 +142,7 @@ HEADERS  += \
     highlighter.h \
     codeeditor.h \
     editwindow.h \
-    plotsettingswindow.h \
+#    plotsettingswindow.h \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
@@ -184,7 +184,7 @@ HEADERS  += \
     console.h \
     finddialog.h \
     debuglog.h \
-    plotviewer_old.h \
+#    plotviewer_old.h \
     diagramscenetabwidget.h \
     diagramwindow.h \
     diagramview.h \

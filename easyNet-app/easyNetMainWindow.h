@@ -16,7 +16,6 @@ class QStackedWidget;
 class QProgressBar;
 class QDomDocument;
 
-class PlotViewer_old;
 class PlotViewer;
 class PlotViewerDispatcher;
 class ObjExplorer;
@@ -30,7 +29,7 @@ class EditWindow;
 class CommandLog;
 class ScriptEditor;
 class Highlighter;
-class PlotSettingsWindow;
+//class PlotSettingsWindow;
 class ObjectCacheFilter;
 //class LazyNutListComboBox;
 //class LazyNutScriptEditor;
@@ -154,8 +153,8 @@ private slots:
     void showExplorer();
     void restart();
     void showMostRecentError();
-    void showPlotSettings();
-    void showDataframeSettings();
+//    void showPlotSettings();
+    void showDataViewSettings();
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
@@ -260,8 +259,8 @@ public:
     DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
     DiagramScene    *conversionScene;
-    PlotSettingsWindow      *plotSettingsWindow;
-    SettingsWidget      *dataframeSettingsWidget;
+//    PlotSettingsWindow      *plotSettingsWindow;
+    SettingsWidget      *dataViewSettingsWidget;
 //    PlotViewer_old      *plotViewer;
     Ui_DataTabsViewer *ui_plotViewer;
     PlotViewerDispatcher *plotViewerDispatcher;
@@ -315,7 +314,7 @@ public:
     int             paramTabIdx;
     int             plotTabIdx;
     int             plotSettingsTabIdx;
-    int             dataframeSettingsTabIdx;
+    int             dataViewSettingsTabIdx;
     int             modelTabIdx;
     int             conversionTabIdx;
     int             scriptTabIdx;
