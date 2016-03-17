@@ -44,7 +44,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         {
             currentDispatchAction = dispatchModeOverride;
         }
-        else if (!host->plotDependencies.values(plot).toSet().intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty())
+        else if (!SessionManager::instance()->dataframeDependencies(plot).intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty())
         {
             currentDispatchAction = Dispatch_Overwrite;
         }
@@ -93,14 +93,26 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 QStringList PlotViewerDispatcher::affectedPlots(QString results)
 {
     QStringList plots;
-    foreach (QString plot, host->plotDependencies.keys())
+    foreach (QString plot, host->items())
     {
-        // if either results or any enabled (and not suspended) observer are in the dependency list of this plot
-        if (   host->plotDependencies.values(plot).contains(results) ||
-              (!SessionManager::instance()->suspendingObservers()) &&
-              (!host->plotDependencies.values(plot).toSet().intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty()) )
-            plots.append(plot);
+        QSet<QString> dependencies = SessionManager::instance()->dataframeDependencies(plot);
+        if (    dependencies.contains(results) ||
+                (!SessionManager::instance()->suspendingObservers()) &&
+                (!dependencies.intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty())
+           )
+                plots.append(plot);
     }
     return plots;
+
+
+//    foreach (QString plot, host->plotDependencies.keys())
+//    {
+//        // if either results or any enabled (and not suspended) observer are in the dependency list of this plot
+//        if (   host->plotDependencies.values(plot).contains(results) ||
+//              (!SessionManager::instance()->suspendingObservers()) &&
+//              (!host->plotDependencies.values(plot).toSet().intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty()) )
+//            plots.append(plot);
+//    }
+//    return plots;
 }
 

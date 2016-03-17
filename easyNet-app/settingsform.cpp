@@ -92,11 +92,11 @@ void SettingsForm::initDependersSet()
 
 
 
-QStringList SettingsForm::getSettingsCmdList()
+QStringList SettingsForm::getSettingsCmdList(bool force)
 {
     QStringList cmdList;
     foreach (QString setting, XMLAccessor::listLabels(rootElement))
-        if (hasChanged[setting])
+        if (hasChanged[setting] || force)
         {
             cmdList.append(getSettingCmdLine(setting));
             hasChanged[setting] = false;
@@ -240,6 +240,8 @@ void SettingsForm::substituteDependentValues(QDomElement &settingsElement)
 
 void SettingsForm::setSetting(QString setting, QString value)
 {
+    if (!widgetMap.value(setting))
+        return;
     bool forceEmitValueChanged = widgetMap[setting]->value() == value && !value.isEmpty() && value != "NULL";
     widgetMap[setting]->setValue(value);
     widgetMap[setting]->setValueSetTrue();

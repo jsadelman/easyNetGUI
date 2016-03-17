@@ -109,7 +109,6 @@ PlotViewer::~PlotViewer()
 
 void PlotViewer::sendPlotCmd(QString name)
 {
-    qDebug() << Q_FUNC_INFO << name;
     if (name.isEmpty() || !SessionManager::instance()->exists(name))
     {
         eNerror << "name is empty or does not exist:" << name;
@@ -350,9 +349,9 @@ void PlotViewer::setCurrentItem(QString name)
 
 void PlotViewer::checkDependencies(QString name)
 {
-    foreach(QString plot, plotDependencies.keys())
+    foreach(QString plot, items())
     {
-        if (plotDependencies.values(plot).contains(name))
+        if (SessionManager::instance()->dataframeDependencies(plot).contains(name))
         {
             plotIsUpToDate[plot] = false;
             updateActivePlots();

@@ -29,7 +29,7 @@ public:
     QMap<QString, QString> getSettings(QString name);
 
 public slots:
-    void sendSettings(QString name = QString());
+    void sendSettings(QString name = QString(), bool force = false);
     void newForm(QString name, QString dataViewType, QString rScript, QMap <QString,QString> defaultSettings, bool isBackup = false); // old newRPlot
     void setForm(QString name); // old setPlotSettings
 

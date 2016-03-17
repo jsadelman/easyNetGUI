@@ -32,6 +32,7 @@ public:
     void addView(QString name);
     void removeView(QString name);
     QString currentItemName();
+    QStringList items() {return m_items;}
 
 public slots:
     void addItem(QString name="", bool isBackup=false);
@@ -86,6 +87,7 @@ protected:
     QString defaultSaveDir;
     bool m_lazy;
     QMap<QString, bool> isBackupMap;
+    QStringList m_items;
 };
 
 #endif // DATAVIEWER_H

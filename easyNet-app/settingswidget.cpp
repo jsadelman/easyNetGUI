@@ -59,13 +59,13 @@ QMap<QString, QString> SettingsWidget::getSettings(QString name)
     return formMap.value(name)->getSettings();
 }
 
-void SettingsWidget::sendSettings(QString name)
+void SettingsWidget::sendSettings(QString name, bool force)
 {
     PlotSettingsForm *form = formMap.value(name.isEmpty() ? currentName : name, nullptr);
     if (form)
     {
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList = form->getSettingsCmdList();
+        job->cmdList = form->getSettingsCmdList(force);
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
                 << SessionManager::instance()->recentlyModifiedJob();
@@ -137,6 +137,7 @@ void SettingsWidget::buildSettingsForm(QString name, QDomDocument *domDoc, QMap<
     settingsForm->build();
     formMap[name] = settingsForm;
     setForm(name);
+    sendSettings(name, true);
 }
 
 void SettingsWidget::buildSettingsForm()

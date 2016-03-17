@@ -297,7 +297,7 @@ void Box::setupDefaultObserverFilter()
             {
                 observerOfPlot.remove(name);
                 if (!observerOfPlot.values().contains(observer))
-                    enableObserver(observerOfPlot.value(name), false);
+                    enableObserver(observer, false);
             }
 //            updateObservedState();
         });

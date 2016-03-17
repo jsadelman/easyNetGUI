@@ -25,7 +25,7 @@ public:
     virtual ~SettingsForm();
     void build();
     QMap<QString, QString> getSettings();
-    QStringList getSettingsCmdList();
+    QStringList getSettingsCmdList(bool force = false);
     QString value(QString label);
     QStringList listLabels() {return XMLAccessor::listLabels(rootElement);}
     void setSetting(QString setting, QString value);

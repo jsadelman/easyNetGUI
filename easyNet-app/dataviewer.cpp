@@ -26,6 +26,7 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     descriptionUpdater->setCommand("description");
     descriptionUpdater->setProxyModel(descriptionFilter);
     connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(execAddItem(QDomDocument*,QString)));
+    m_items.clear();
 }
 
 DataViewer::~DataViewer()
@@ -79,6 +80,7 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
             addView(name);
 //            ui->setCurrentItem(name);
         }
+        m_items.append(name);
     }
 }
 
@@ -120,6 +122,7 @@ void DataViewer::destroyItem(QString name)
         dispatcher->removeFromHistory(name);
     destroyItem_impl(name);
     removeView(name);
+    m_items.removeAll(name);
 }
 
 
