@@ -111,6 +111,9 @@ void MainWindow::build()
     #endif
 
     SessionManager::instance()->startLazyNut();
+
+
+
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -249,29 +252,32 @@ void MainWindow::constructForms()
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs
 }
 
+
 void MainWindow::connectSignalsAndSlots()
 {
-    // refresh params when user clicks on param tab or changes model in combobox
-    connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
-    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
-            SessionManager::instance(), SLOT(setCurrentModel(QString)));
-//    connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
-//            plotViewer,SLOT(updatePlot(QString,QByteArray)));
-//    connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
-//    connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
+    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)), SessionManager::instance(), SLOT(setCurrentModel(QString)));
+
+    // synch between DataViewers and dataViewSettingsWidget
     connect(plotViewer,SIGNAL(showSettingsRequested()),this,SLOT(showDataViewSettings()));
-    connect(plotViewer,SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
     connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
-    connect(dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
     connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
-    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
     connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
-    connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), dataViewSettingsWidget, SLOT(setForm(QString)));
-//    connect(plotViewer,SIGNAL(setPlotSettings(QString)), plotSettingsWindow, SLOT(setPlotSettings(QString)));
+
+    connect(plotViewer,SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+
+    connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+    connect(explorerPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+    connect(methodsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+
+    connect(resultsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
+    connect(explorerDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
+    connect(methodsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
 
 
-
-//    connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
+    //
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
@@ -383,15 +389,6 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
     SessionManager::instance()->runCmd({cmd1,cmd2});
 }
 
-void MainWindow::explorerTabChanged(int idx)
-{
-//    qDebug() << "Entered explorerTabChanged():" << idx;
-    if (modelComboBox->currentText().isEmpty())
-        return;
-    if (idx == paramTabIdx)
-            emit (paramTabEntered(modelComboBox->currentText()));
-
-}
 
  void MainWindow::createDockWindows()
 {
@@ -1004,6 +1001,42 @@ void MainWindow::afterTestsCompleted()
     qDebug() << "trying to change display";
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
 
+}
+
+void MainWindow::setFormInSettingsWidget(QString name)
+{
+    QWidget *view = qobject_cast<QWidget *>(sender());
+    if (view && !view->visibleRegion().isEmpty())
+    {
+        dataViewSettingsWidget->setForm(name);
+    }
+}
+
+
+void MainWindow::switchFormInSettingsWidget(bool visible)
+{
+    if (visible)
+    {
+        QDockWidget *dock = qobject_cast<QDockWidget *>(sender());
+        if (dock)
+        {
+            QTabWidget *panel = qobject_cast<QTabWidget *>(dock->widget());
+            if (panel)
+                switchFormInSettingsWidget(panel);
+        }
+    }
+}
+
+void MainWindow::switchFormInSettingsWidget(QTabWidget *panel)
+{
+    if (!panel)
+        panel = qobject_cast<QTabWidget *>(sender());
+    if (panel)
+    {
+        DataViewer *viewer = qobject_cast<DataViewer *>(panel->currentWidget());
+        if (viewer)
+            dataViewSettingsWidget->setForm(viewer->currentItemName());
+    }
 }
 
 //! [runCmdAndUpdate]

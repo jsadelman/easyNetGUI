@@ -138,7 +138,6 @@ private slots:
     void displayVersion(QString version);
 
     void showDocumentation();
-    void explorerTabChanged(int idx);
     void setParam(QString paramDataFrame, QString newParamValue);
 
 
@@ -158,6 +157,9 @@ private slots:
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
+    void setFormInSettingsWidget(QString name);
+    void switchFormInSettingsWidget(bool visible);
+    void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -255,8 +257,8 @@ public:
     Highlighter     *highlighter2;
     Highlighter     *highlighter3;
 //    LazyNutScriptEditor  *scriptEditor;
-    DesignWindow    *designWindow;
-    DesignWindow    *conversionWindow;
+//    DesignWindow    *designWindow;
+//    DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
     DiagramScene    *conversionScene;
 //    PlotSettingsWindow      *plotSettingsWindow;
@@ -391,6 +393,7 @@ public:
     bool trialComboEventSwitch = false;
 
 //    enum runMode {RunSingle, RunAll};
+
 
 
 };

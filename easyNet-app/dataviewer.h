@@ -31,6 +31,7 @@ public:
     void setDefaultDir(QString dir);
     void addView(QString name);
     void removeView(QString name);
+    QString currentItemName();
 
 public slots:
     void addItem(QString name="", bool isBackup=false);

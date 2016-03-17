@@ -172,7 +172,12 @@ void DataViewer::removeView(QString name)
     if (!isLazy())
         removeNameFromFilter(name);
     delete ui->takeView(name);
-//    descriptionFilter->removeName(name);
+    //    descriptionFilter->removeName(name);
+}
+
+QString DataViewer::currentItemName()
+{
+    return ui->currentItemName();
 }
 
 void DataViewer::addItem(QString name, bool isBackup)
