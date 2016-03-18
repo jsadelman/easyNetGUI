@@ -112,12 +112,13 @@ void DataViewerDispatcher::addToHistory(QString name, bool inView)
         eNwarning << QString("attempt to add item %1 to History, the item is in History already").arg(name);
         return;
     }
-
+    qDebug() << Q_FUNC_INFO << name << trial(name) << inView;
     historyModel->appendView(name, trial(name), inView);
 }
 
 void DataViewerDispatcher::removeFromHistory(QString name)
 {
+    qDebug() << Q_FUNC_INFO << name << trial(name);
     historyModel->removeView(name, trial(name));
     SessionManager::instance()->removeTrialRunInfo(name);
 }
@@ -237,6 +238,7 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
             }
             else
             {
+                qDebug() << Q_FUNC_INFO << name;
                 hostDataViewer->removeView(name);
             }
         }

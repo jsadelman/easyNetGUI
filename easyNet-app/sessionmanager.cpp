@@ -68,7 +68,6 @@ SessionManager::SessionManager()
     jobQueue = new LazyNutJobQueue;
 
     descriptionCache = new ObjectCache(this);
-    qDebug () << "descriptionCache" << descriptionCache;
     connect(this, SIGNAL(recentlyCreated(QDomDocument*)),
             descriptionCache, SLOT(create(QDomDocument*)));
     connect(this,  SIGNAL(recentlyModified(QStringList)),
@@ -90,6 +89,18 @@ SessionManager::SessionManager()
     validator = new ObjectNameValidator(this);
     m_defaultLocation.clear();
     lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
+    m_extraNamedItems.clear();
+    m_requestedNames.clear();
+
+    objectListFilter = new ObjectCacheFilter(descriptionCache, this);
+    objectListFilter->setAllPassFilter();
+    connect(objectListFilter, &ObjectCacheFilter::objectCreated, [=](QString name)
+    {
+        qDebug() << Q_FUNC_INFO << name;
+        m_requestedNames.removeAll(name);
+    });
+
+
 }
 
 
@@ -294,7 +305,9 @@ QMap<QString, QString> SessionManager::plotSourceDataframeSettings(QString plotN
 
 QString SessionManager::makeValidObjectName(QString name)
 {
-    return validator->makeValid(name);
+    QString validName = validator->makeValid(name);
+    m_requestedNames.append(validName);
+    return validName;
 }
 
 bool SessionManager::isValidObjectName(QString name)

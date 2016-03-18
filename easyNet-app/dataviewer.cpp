@@ -51,6 +51,7 @@ void DataViewer::setUi()
 
 void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
 {
+
     Q_UNUSED(domDoc)
     if (name.isEmpty())
     {
@@ -72,6 +73,7 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         addItem_impl(name);
         if (dispatcher)
         {
+            qDebug() << Q_FUNC_INFO << name << sender();
             dispatcher->addToHistory(name, !isBackupMap.value(name, false));
             isBackupMap.remove(name);
         }
@@ -105,6 +107,7 @@ void DataViewer::initiateDestroyItem(QString name)
         }
         else
         {
+            qDebug() << Q_FUNC_INFO << name;
             SessionManager::instance()->removeFromExtraNamedItems(name);
             destroyItem(name);
         }
@@ -172,6 +175,7 @@ void DataViewer::addView(QString name)
 
 void DataViewer::removeView(QString name)
 {
+    qDebug() << Q_FUNC_INFO << name;
     if (!isLazy())
         removeNameFromFilter(name);
     delete ui->takeView(name);
@@ -206,11 +210,12 @@ void DataViewer::addItem(QString name, bool isBackup)
 
     if (SessionManager::instance()->exists(name))
     {
-        descriptionFilter->addName(name);
         isBackupMap[name] = isBackup;
+        descriptionFilter->addName(name);
     }
     else if (SessionManager::instance()->extraNamedItems().contains(name))
     {
+        isBackupMap[name] = isBackup;
         execAddItem(nullptr, name);
     }
     else

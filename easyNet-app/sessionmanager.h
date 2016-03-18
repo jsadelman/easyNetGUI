@@ -225,6 +225,8 @@ private:
 
     ObjectNameValidator *validator;
     QStringList m_extraNamedItems;
+    QStringList m_requestedNames;
+    ObjectCacheFilter *objectListFilter;
 
 
 };

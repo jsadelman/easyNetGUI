@@ -67,7 +67,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         emit commandSent(cmd);
         if (logMode &= ECHO_INTERPRETER)
             emit logCommand(cmd);
-//        qDebug() << cmd;
+        qDebug() << cmd;
         lazyNut->sendCommand(cmd);
     }
 }
