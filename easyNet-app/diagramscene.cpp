@@ -473,10 +473,12 @@ void DiagramScene::render()
             Box *endItem = qgraphicsitem_cast<Box *>
                     (itemHash.value(AsLazyNutObject(*domDoc)["Target"]()));
             Arrow *arrow;
+            bool isNew=false;
             if (itemHash.contains(name))
                 arrow = qgraphicsitem_cast<Arrow*>(itemHash.value(name));
             else
             {
+                isNew=true;
                 arrow = new Arrow();
                 arrow->setName(name);
                 arrow->setLazyNutType(m_arrowType);
@@ -501,8 +503,17 @@ void DiagramScene::render()
                 arrow->setNewEndpoint(dunnart::DSTPT, startItem->centrePos() - QPointF(0,startItem->height()/2 + 50), nullptr);
             }
             else
-                arrow->initWithConnection(startItem, endItem);
-
+            {
+                if(isNew)
+                {
+                    arrow->initWithConnection(startItem, endItem);
+                }
+                else
+                {
+                    arrow->setNewEndpoint(dunnart::SRCPT, startItem->centrePos(), startItem, dunnart::CENTRE_CONNECTION_PIN);
+                    arrow->setNewEndpoint(dunnart::DSTPT, endItem->centrePos(), endItem, dunnart::CENTRE_CONNECTION_PIN);
+                }
+            }
             arrow->setDirected(true);
 
             if (!itemHash.contains(name))
