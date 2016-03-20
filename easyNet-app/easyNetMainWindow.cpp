@@ -185,7 +185,7 @@ void MainWindow::constructForms()
     paramViewer = new DataframeViewer(ui_paramViewer, this);
     paramViewer->setParametersTable(true);
     paramDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    paramDescriptionFilter->setFilterRegExp(QRegExp("\\(.* parameters\\)"));
+    paramDescriptionFilter->setFilterRegExp(QRegExp("^\\(.* parameters\\)$"));
     paramDescriptionFilter->setFilterKeyColumn(ObjectCache::NameCol);
     connect(paramDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             paramViewer, SLOT(addItem(QString)));
