@@ -25,6 +25,13 @@ SettingsFormDialog::~SettingsFormDialog()
 
 void SettingsFormDialog::accept()
 {
+    settings = form->getSettings();
+//    QMapIterator<QString, QString> settings_it(settings);
+//    while (settings_it.hasNext())
+//    {
+//        settings_it.next();
+//        form->setSetting(settings_it.key(), settings_it.value());
+//    }
     QDialog::accept();
 }
 

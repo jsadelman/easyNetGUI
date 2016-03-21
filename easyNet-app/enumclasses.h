@@ -41,8 +41,8 @@ enum class MouseState {Normal, Hovered, Pressed};
 enum {TrialRunMode_Single=0, TrialRunMode_List};
 static QMap<int, QString> trialRunModeName
 {
-    {TrialRunMode_Single, "single"},
-    {TrialRunMode_List, "list"}
+    {TrialRunMode_Single, "single trial"},
+    {TrialRunMode_List, "list trial"}
 };
 
 

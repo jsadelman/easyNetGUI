@@ -73,7 +73,6 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         addItem_impl(name);
         if (dispatcher)
         {
-            qDebug() << Q_FUNC_INFO << name << sender();
             dispatcher->addToHistory(name, !isBackupMap.value(name, false));
             isBackupMap.remove(name);
         }
@@ -107,7 +106,6 @@ void DataViewer::initiateDestroyItem(QString name)
         }
         else
         {
-            qDebug() << Q_FUNC_INFO << name;
             SessionManager::instance()->removeFromExtraNamedItems(name);
             destroyItem(name);
         }
@@ -139,8 +137,8 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
     }
     if (ui)
     {
-        ui->setDispatchModeAutoAct->setVisible(true);
-        setDispatchModeAuto(true);
+//        ui->setDispatchModeAutoAct->setVisible(true);
+//        setDispatchModeAuto(true);
 //        connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), dispatcher, SLOT(updateInfo(QDomDocument*,QString)));
 //        connect(descriptionUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*,QString name)
 //        {
@@ -175,7 +173,6 @@ void DataViewer::addView(QString name)
 
 void DataViewer::removeView(QString name)
 {
-    qDebug() << Q_FUNC_INFO << name;
     if (!isLazy())
         removeNameFromFilter(name);
     delete ui->takeView(name);
@@ -297,26 +294,26 @@ void DataViewer::setTrialRunMode(int mode)
         dispatcher->setTrialRunMode(mode);
 }
 
-void DataViewer::setDispatchModeOverride(int mode)
-{
-    if (dispatcher)
-    {
-        dispatcher->dispatchModeOverride = mode;
-    }
-}
+//void DataViewer::setDispatchModeOverride(int mode)
+//{
+//    if (dispatcher)
+//    {
+//        dispatcher->dispatchModeOverride = mode;
+//    }
+//}
 
-void DataViewer::setDispatchModeAuto(bool isAuto)
-{
-    if (dispatcher)
-    {
-        dispatcher->dispatchModeAuto = isAuto;
-        ui->setDispatchModeOverrideActGroup->setVisible(!isAuto);
-        if (isAuto)
-            dispatcher->dispatchModeOverride = -1;
-        else
-            dispatcher->restoreOverrideDefaultValue();
-    }
-}
+//void DataViewer::setDispatchModeAuto(bool isAuto)
+//{
+//    if (dispatcher)
+//    {
+//        dispatcher->dispatchModeAuto = isAuto;
+//        ui->setDispatchModeOverrideActGroup->setVisible(!isAuto);
+//        if (isAuto)
+//            dispatcher->dispatchModeOverride = -1;
+//        else
+//            dispatcher->restoreOverrideDefaultValue();
+//    }
+//}
 
 void DataViewer::destroySelectedItems()
 {

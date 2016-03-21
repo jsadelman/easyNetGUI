@@ -9,6 +9,8 @@
 #include "xmlform.h"
 #include "xmlmodel.h"
 #include "lazynutobjectmodel.h"
+#include "settingsform.h"
+#include "settingsformdialog.h"
 
 #include <QAction>
 #include <QToolBar>
@@ -17,16 +19,20 @@
 #include <QScrollArea>
 #include <QHeaderView>
 #include <QVBoxLayout>
+#include <QDialog>
 
 
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
-    : QObject(host), hostDataViewer(host), dispatchModeOverride(-1),
-      dispatchModeAuto(true), previousDispatchMode(-1), currentDispatchAction(-1), previousItem(""),
-      infoIsVisible(false), trialRunMode(TrialRunMode_Single),
-      previousDispatchOverrideMode(-1)
+    : QObject(host),
+      hostDataViewer(host),
+      previousDispatchMode(-1),
+      currentDispatchAction(-1),
+      previousItem(""),
+      infoIsVisible(false),
+      trialRunMode(TrialRunMode_Single)
 {
     if (!host)
     {
@@ -48,8 +54,17 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Overwrite), Dispatch_New);
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Append), Dispatch_Append);
 
+    dispatchModeText.insert(Dispatch_New, "new");
+    dispatchModeText.insert(Dispatch_Append, "append");
+    dispatchModeText.insert(Dispatch_Overwrite, "overwrite");
+
     createHistoryWidget();
     createInfoWidget();
+
+    preferencesAct = new QAction(QIcon(":/images/setting.png"), "Preferences", this);
+    preferencesAct->setToolTip("Show preferences for this viewer");
+    connect(preferencesAct, SIGNAL(triggered()), this, SLOT(showPreferences()));
+    hostDataViewer->ui->dispatchToolBar->addAction(preferencesAct);
 }
 
 DataViewerDispatcher::~DataViewerDispatcher()
@@ -112,13 +127,11 @@ void DataViewerDispatcher::addToHistory(QString name, bool inView)
         eNwarning << QString("attempt to add item %1 to History, the item is in History already").arg(name);
         return;
     }
-    qDebug() << Q_FUNC_INFO << name << trial(name) << inView;
     historyModel->appendView(name, trial(name), inView);
 }
 
 void DataViewerDispatcher::removeFromHistory(QString name)
 {
-    qDebug() << Q_FUNC_INFO << name << trial(name);
     historyModel->removeView(name, trial(name));
     SessionManager::instance()->removeTrialRunInfo(name);
 }
@@ -137,16 +150,16 @@ void DataViewerDispatcher::setInView(QString name, bool inView)
 void DataViewerDispatcher::setTrialRunMode(int mode)
 {
     trialRunMode = mode;
-    if (!dispatchModeAuto)
-        restoreOverrideDefaultValue();
+//    if (!dispatchModeAuto)
+//        restoreOverrideDefaultValue();
 }
 
-void DataViewerDispatcher::restoreOverrideDefaultValue()
-{
-    int mode = dispatchDefaultMode.value(trialRunModeName.value(trialRunMode));
-    hostDataViewer->ui->setDispatchModeOverrideActs.at(mode)->setChecked(true);
-    dispatchModeOverride = mode;
-}
+//void DataViewerDispatcher::restoreOverrideDefaultValue()
+//{
+//    int mode = dispatchDefaultMode.value(trialRunModeName.value(trialRunMode));
+//    hostDataViewer->ui->setDispatchModeOverrideActs.at(mode)->setChecked(true);
+//    dispatchModeOverride = mode;
+//}
 
 void DataViewerDispatcher::createHistoryWidget()
 {
@@ -238,7 +251,6 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
             }
             else
             {
-                qDebug() << Q_FUNC_INFO << name;
                 hostDataViewer->removeView(name);
             }
         }
@@ -323,6 +335,24 @@ void DataViewerDispatcher::updateInfo(QString name)
 {
     if (infoIsVisible && SessionManager::instance()->dependencies(name).contains(hostDataViewer->ui->currentItemName()))
         showInfo(true);
+}
+
+void DataViewerDispatcher::showPreferences()
+{
+    QDomDocument *preferencesDomDoc = makePreferencesDomDoc();
+    SettingsForm *form = new SettingsForm(preferencesDomDoc);
+    SettingsFormDialog dialog(preferencesDomDoc, form, "Viewer Preferences");
+    dialog.build();
+    int result = dialog.exec();
+    if (result == QDialog::Accepted)
+    {
+        QMapIterator<QString, QString> settings_it(dialog.settings);
+        while (settings_it.hasNext())
+        {
+            settings_it.next();
+            dispatchDefaultMode[settings_it.key()] = dispatchModeText.key(settings_it.value());
+        }
+    }
 }
 
 

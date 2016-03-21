@@ -21,10 +21,10 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QWidget *parent)
 
 void PlotSettingsForm::recordValueChange(QString oldValue, QString newValue)
 {
+    Q_UNUSED(oldValue)
+    Q_UNUSED(newValue)
     PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
     hasChanged[widget->name()] = true;
-    if (widget->isDataframe())
-        SessionManager::instance()->replacePlotSource(plotName(), widget->name(), oldValue, newValue);
 }
 
 void PlotSettingsForm::triggerUpdateDependees()

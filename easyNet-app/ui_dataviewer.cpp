@@ -48,10 +48,10 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     createActions();
     createToolBars();
 
-    connect(setDispatchModeOverrideMapper, SIGNAL(mapped(int)),
-            dataViewer, SLOT(setDispatchModeOverride(int)));
-    connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
-            dataViewer, SLOT(setDispatchModeAuto(bool)));
+//    connect(setDispatchModeOverrideMapper, SIGNAL(mapped(int)),
+//            dataViewer, SLOT(setDispatchModeOverride(int)));
+//    connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
+//            dataViewer, SLOT(setDispatchModeAuto(bool)));
 
     connect(openAct, SIGNAL(triggered()), dataViewer, SLOT(open()));
     connect(saveAct, SIGNAL(triggered()), dataViewer, SLOT(save()));
@@ -59,46 +59,46 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     connect(destroyAct, SIGNAL(triggered()), dataViewer, SLOT(destroySelectedItems()));
     connect(settingsAct, SIGNAL(triggered()), dataViewer, SIGNAL(showSettingsRequested()));
 //    connect(findAct, SIGNAL(triggered()), dataViewer, SLOT(showFindDialog()));
-    connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
-            dataViewer, SLOT(setDispatchModeAuto(bool)));
+//    connect(setDispatchModeAutoAct, SIGNAL(triggered(bool)),
+//            dataViewer, SLOT(setDispatchModeAuto(bool)));
     connect(this, SIGNAL(deleteItemRequested(QString)), dataViewer, SLOT(initiateDestroyItem(QString)));
     connect(this, SIGNAL(currentItemChanged(QString)), dataViewer, SLOT(setCurrentItem(QString)));
 
 //    dataViewer->setDispatchModeAuto(true);
-    setDispatchModeAutoAct->setChecked(true);
-    setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
-    setDispatchModeOverrideActGroup->setVisible(false);
+//    setDispatchModeAutoAct->setChecked(true);
+//    setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
+//    setDispatchModeOverrideActGroup->setVisible(false);
 }
 
 
 void Ui_DataViewer::createActions()
 {
-    dispatchModeName.insert(Dispatch_New, "New Page");
-    dispatchModeName.insert(Dispatch_Overwrite, "Overwrite");
-    dispatchModeName.insert(Dispatch_Append, "Append");
+//    dispatchModeName.insert(Dispatch_New, "New Page");
+//    dispatchModeName.insert(Dispatch_Overwrite, "Overwrite");
+//    dispatchModeName.insert(Dispatch_Append, "Append");
 
-    dispatchModeIconName.insert(Dispatch_New, ":/images/tab_new.png");
-    dispatchModeIconName.insert(Dispatch_Overwrite, ":/images/overwrite.png");
-    dispatchModeIconName.insert(Dispatch_Append, ":/images/append.png");
+//    dispatchModeIconName.insert(Dispatch_New, ":/images/tab_new.png");
+//    dispatchModeIconName.insert(Dispatch_Overwrite, ":/images/overwrite.png");
+//    dispatchModeIconName.insert(Dispatch_Append, ":/images/append.png");
 
-    setDispatchModeOverrideMapper = new QSignalMapper(this);
-    setDispatchModeOverrideActGroup = new QActionGroup(this);
-    for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
-    {
-        setDispatchModeOverrideActs.insert(mode, new QAction(
-                                               QIcon(dispatchModeIconName.value(mode)),
-                                               dispatchModeName.value(mode),
-                                               this));
-        setDispatchModeOverrideActs.at(mode)->setCheckable(true);
-        setDispatchModeOverrideMapper->setMapping(setDispatchModeOverrideActs.at(mode), mode);
-        connect(setDispatchModeOverrideActs.at(mode), SIGNAL(triggered()),
-                setDispatchModeOverrideMapper, SLOT(map()));
-        setDispatchModeOverrideActGroup->addAction(setDispatchModeOverrideActs.at(mode));
-    }
+//    setDispatchModeOverrideMapper = new QSignalMapper(this);
+//    setDispatchModeOverrideActGroup = new QActionGroup(this);
+//    for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
+//    {
+//        setDispatchModeOverrideActs.insert(mode, new QAction(
+//                                               QIcon(dispatchModeIconName.value(mode)),
+//                                               dispatchModeName.value(mode),
+//                                               this));
+//        setDispatchModeOverrideActs.at(mode)->setCheckable(true);
+//        setDispatchModeOverrideMapper->setMapping(setDispatchModeOverrideActs.at(mode), mode);
+//        connect(setDispatchModeOverrideActs.at(mode), SIGNAL(triggered()),
+//                setDispatchModeOverrideMapper, SLOT(map()));
+//        setDispatchModeOverrideActGroup->addAction(setDispatchModeOverrideActs.at(mode));
+//    }
 
-    setDispatchModeAutoAct = new QAction(QIcon(":/images/auto_icon.png"), "Auto", this);
-    setDispatchModeAutoAct->setToolTip("Override default page behaviour");
-    setDispatchModeAutoAct->setCheckable(true);
+//    setDispatchModeAutoAct = new QAction(QIcon(":/images/auto_icon.png"), "Auto", this);
+//    setDispatchModeAutoAct->setToolTip("Override default page behaviour");
+//    setDispatchModeAutoAct->setCheckable(true);
 
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
@@ -130,8 +130,8 @@ void Ui_DataViewer::createToolBars()
     editToolBar->addAction(settingsAct);
 
     dispatchToolBar = addToolBar(tr("Dispatch Mode"));
-    dispatchToolBar->addActions(setDispatchModeOverrideActs);
-    dispatchToolBar->addAction(setDispatchModeAutoAct);
+//    dispatchToolBar->addActions(setDispatchModeOverrideActs);
+//    dispatchToolBar->addAction(setDispatchModeAutoAct);
 
 }
 

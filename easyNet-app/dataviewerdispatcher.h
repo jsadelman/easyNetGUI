@@ -41,15 +41,16 @@ public:
     bool inHistory(QString name);
     void setInView(QString name, bool inView);
     void setTrialRunMode(int mode);
-    void restoreOverrideDefaultValue();
+//    void restoreOverrideDefaultValue();
 
     QAction *historyAct;
     QAction *infoAct;
-    int dispatchModeOverride;
-    bool dispatchModeAuto;
+    QAction *preferencesAct;
+//    int dispatchModeOverride;
+//    bool dispatchModeAuto;
     QMap<QString, int> dispatchDefaultMode;
+    QMap<int, QString> dispatchModeText;
     QMap<QPair<int, int>, int> dispatchModeFST; // <previous mode, current mode> -> action
-    int previousDispatchOverrideMode;
 
 
 public slots:
@@ -59,9 +60,13 @@ public slots:
     void showInfo(bool show);
     void updateInfo(QString name);
 
+protected slots:
+    void showPreferences();
+
 protected:
     void createHistoryWidget();
     void createInfoWidget();
+    virtual QDomDocument *makePreferencesDomDoc() = 0;
 
     struct TrialRunInfo
     {

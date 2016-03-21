@@ -39,8 +39,8 @@ public slots:
     virtual void addRequestedItem(QString name="", bool isBackup=false) =0;
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
-    void setDispatchModeOverride(int mode);
-    void setDispatchModeAuto(bool isAuto);
+//    void setDispatchModeOverride(int mode);
+//    void setDispatchModeAuto(bool isAuto);
     virtual void open()=0;
     virtual void save()=0;
     virtual void copy()=0;

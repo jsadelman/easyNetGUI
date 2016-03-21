@@ -33,14 +33,14 @@ public:
 
 //    QAction *infoAct;
 
-    QList<QAction *> setDispatchModeOverrideActs;
-    QSignalMapper *setDispatchModeOverrideMapper;
-    QActionGroup *setDispatchModeOverrideActGroup;
-    QAction *setDispatchModeAutoAct;
+//    QList<QAction *> setDispatchModeOverrideActs;
+//    QSignalMapper *setDispatchModeOverrideMapper;
+//    QActionGroup *setDispatchModeOverrideActGroup;
+//    QAction *setDispatchModeAutoAct;
 
 
-    QMap<int, QString> dispatchModeName;
-    QMap<int, QString> dispatchModeIconName;
+//    QMap<int, QString> dispatchModeName;
+//    QMap<int, QString> dispatchModeIconName;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

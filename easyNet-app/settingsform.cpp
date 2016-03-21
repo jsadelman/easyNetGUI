@@ -12,7 +12,7 @@
 #include <QComboBox>
 
 SettingsForm::SettingsForm(QDomDocument *domDoc, QWidget *parent)
-   : domDoc(domDoc), QTabWidget(parent)
+   : domDoc(domDoc), m_useRFormat(false), QTabWidget(parent)
 {
     rootElement = domDoc->documentElement();
 }

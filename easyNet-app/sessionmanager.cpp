@@ -96,7 +96,6 @@ SessionManager::SessionManager()
     objectListFilter->setAllPassFilter();
     connect(objectListFilter, &ObjectCacheFilter::objectCreated, [=](QString name)
     {
-        qDebug() << Q_FUNC_INFO << name;
         m_requestedNames.removeAll(name);
     });
 
@@ -203,16 +202,6 @@ void SessionManager::destroyObject(QString name)
         LazyNutJob *job = new LazyNutJob;
         job->logMode |= ECHO_INTERPRETER;
         job->cmdList << QString("destroy %1").arg(name);
-        if (descriptionCache->type(name) == "xfile" && (plotFlags(name)& Plot_Backup))
-        {
-            foreach(QString df, plotSourceDataframes(name))
-            {
-                job->cmdList << QString("destroy %1").arg(df);
-                // partial cleanup of df-plot data structures, needs proper solution
-                m_plotsOfSourceDf.remove(df, name);
-            }
-            m_plotSourceDataframeSettings.remove(name);
-        }
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
                 << recentlyDestroyedJob();
@@ -220,23 +209,7 @@ void SessionManager::destroyObject(QString name)
     }
 }
 
-void SessionManager::addDataframeMerge(QString df, QString dfm)
-{
-    if (!dataframeMergeOfSource.contains(df, dfm))
-        dataframeMergeOfSource.insert(df, dfm);
-}
 
-void SessionManager::replacePlotSource(QString plot, QString settingsLabel, QString oldSourceDf, QString newSourceDf)
-{
-    QDomDocument *domDoc = descriptionCache->getDomDoc(plot);
-    if (!domDoc || !(XMLelement(*domDoc)["subtype"]() == "rplot"))
-        return;
-    m_plotsOfSourceDf.remove(oldSourceDf, plot);
-    m_plotsOfSourceDf.insert(newSourceDf, plot);
-    QMap<QString, QString> settings = m_plotSourceDataframeSettings.value(plot);
-    settings.insert(settingsLabel, newSourceDf);
-    m_plotSourceDataframeSettings.insert(plot, settings);
-}
 
 void SessionManager::setPlotFlags(QString name, int flags)
 {
@@ -264,32 +237,11 @@ void SessionManager::observerEnabled(QString observer, bool enabled)
         m_enabledObservers.removeAll(observer);
 }
 
-QStringList SessionManager::sourceDataframes(QString df)
+void SessionManager::clearRequestedCopy(QString original)
 {
-    if (!exists(df))
-        return QStringList();
-
-    QSet<QString> sourceDfs({df});
-    return sourceDfs.unite(matchListFromMap(dataframeMergeOfSource, df)).toList();
+    m_requestedCopies.removeAll(original);
 }
 
-QStringList SessionManager::affectedPlots(QString resultsDf)
-{
-    QSet<QString> plots;
-    QStringList dfList({resultsDf});
-    if (!suspendingObservers() && !enabledObservers().isEmpty())
-    {
-        dfList.append(enabledObservers());
-//        QStringList observerDfs = enabledObservers();
-//        observerDfs.replaceInStrings(QRegExp("^(.*)$"), "(\\1 default_dataframe)");
-//        dfList.append(observerDfs);
-    }
-    foreach (QString df, dfList)
-        foreach(QString sourceDf, sourceDataframes(df))
-            foreach (QString plot, m_plotsOfSourceDf.values(sourceDf))
-                plots.insert(plot);
-    return plots.toList();
-}
 
 bool SessionManager::isAnyTrialPlot(QString name)
 {
@@ -298,10 +250,6 @@ bool SessionManager::isAnyTrialPlot(QString name)
     return false;
 }
 
-QMap<QString, QString> SessionManager::plotSourceDataframeSettings(QString plotName)
-{
-    return m_plotSourceDataframeSettings.value(plotName);
-}
 
 QString SessionManager::makeValidObjectName(QString name)
 {
@@ -329,6 +277,11 @@ void SessionManager::removeFromExtraNamedItems(QString name)
 QStringList SessionManager::extraNamedItems()
 {
     return m_extraNamedItems;
+}
+
+bool SessionManager::isCopyRequested(QString original)
+{
+    return m_requestedCopies.contains(original);
 }
 
 

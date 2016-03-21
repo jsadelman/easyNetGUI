@@ -2,6 +2,7 @@
 #define SETTINGSFORMDIALOG_H
 
 #include <QDialog>
+#include <QMap>
 
 class QDomDocument;
 class SettingsForm;
@@ -18,6 +19,7 @@ public:
     SettingsFormDialog(QDomDocument* domDoc, SettingsForm* form, QString info, QWidget* parent=0);
     ~SettingsFormDialog();
     void build();
+    QMap<QString, QString> settings;
 
 public slots:
     virtual void accept() Q_DECL_OVERRIDE;

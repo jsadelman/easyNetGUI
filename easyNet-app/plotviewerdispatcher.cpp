@@ -7,6 +7,7 @@
 #include <QAction>
 #include <QToolBar>
 #include <QSvgWidget>
+#include <QDomDocument>
 
 PlotViewerDispatcher::PlotViewerDispatcher(PlotViewer *host)
     :DataViewerDispatcher(host), host(host)
@@ -17,7 +18,7 @@ PlotViewerDispatcher::PlotViewerDispatcher(PlotViewer *host)
     }
     setSingleTrialMode(Dispatch_New);
     setTrialListMode(Dispatch_New);
-    host->ui->dispatchToolBar->removeAction(host->ui->setDispatchModeOverrideActs.at(Dispatch_Append));
+//    host->ui->dispatchToolBar->removeAction(host->ui->setDispatchModeOverrideActs.at(Dispatch_Append));
 }
 
 PlotViewerDispatcher::~PlotViewerDispatcher()
@@ -40,10 +41,10 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         {
             currentDispatchAction = Dispatch_Overwrite;
         }
-        else if (!dispatchModeAuto && dispatchModeOverride > -1)
-        {
-            currentDispatchAction = dispatchModeOverride;
-        }
+//        else if (!dispatchModeAuto && dispatchModeOverride > -1)
+//        {
+//            currentDispatchAction = dispatchModeOverride;
+//        }
         else if (!SessionManager::instance()->dataframeDependencies(plot).intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty())
         {
             currentDispatchAction = Dispatch_Overwrite;
@@ -89,6 +90,7 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
     if (infoIsVisible)
         showInfo(true);
 }
+
 
 QStringList PlotViewerDispatcher::affectedPlots(QString results)
 {

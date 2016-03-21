@@ -16,6 +16,9 @@ public:
     virtual void preDispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
     virtual void dispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
 
+protected:
+    virtual QDomDocument *makePreferencesDomDoc() Q_DECL_OVERRIDE {return nullptr;}
+
 private:
     QStringList affectedPlots(QString results);
 
