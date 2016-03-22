@@ -66,28 +66,16 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     {
     case Dispatch_New:
     {
-//        host->dataframeDescriptionFilter->rowCount();
-
-//        QDomDocument* description = SessionManager::instance()->descriptionCache->getDomDoc(trialRunInfo.results);
-//        QDomElement rootElement = description->documentElement();
-//        QDomElement prettyNameElement = XMLAccessor::childElement(rootElement, "pretty name");
-//        QString prettyName = XMLAccessor::value(prettyNameElement);
-        QString backupDf = SessionManager::instance()->makeValidObjectName(trialRunInfo.results);
+        QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.copy.1").arg(trialRunInfo.results));
         job->cmdList << QString("%1 copy %2").arg(trialRunInfo.results).arg(backupDf);
         job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
         QMap<QString, QVariant> jobData;
         jobData.insert("name", backupDf);
-        jobData.insert("setCurrent", false);
         jobData.insert("isBackup", true);
-        jobData.insert("trial", trial(trialRunInfo.results)); // the current trial, not the future one, even though for df they are probably the same
-//        QVariant infoVariant = infoVariantList(trialRunInfo.results);
-//        infoVariant.setValue(trialRunInfoMap.value(trialRunInfo.results));
-//        jobData.insert("trialRunInfo", infoVariant);
         jobs << SessionManager::instance()->recentlyCreatedJob();
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
         SessionManager::instance()->copyTrialRunInfo(trialRunInfo.results, backupDf);
-//        copyTrialRunInfo(trialRunInfo.results, backupDf);
         host->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
         break;
     }

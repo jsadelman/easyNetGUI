@@ -237,8 +237,29 @@ void SessionManager::observerEnabled(QString observer, bool enabled)
         m_enabledObservers.removeAll(observer);
 }
 
-void SessionManager::clearRequestedCopy(QString original)
+void SessionManager::setCopyRequested(QString original)
 {
+    if (!isCopyRequested(original))
+        m_requestedCopies.append(original);
+}
+
+void SessionManager::clearCopyRequested(QString original)
+{
+    if (original.isEmpty())
+    {
+        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "original");
+        if (!v.canConvert<QString>())
+        {
+            eNerror << "cannot retrieve a valid string from original key in sender LazyNut job";
+            return;
+        }
+        original = v.value<QString>();
+    }
+    if (original.isEmpty())
+    {
+        eNerror << "original is empty";
+        return;
+    }
     m_requestedCopies.removeAll(original);
 }
 
@@ -432,6 +453,7 @@ void SessionManager::removeTrialRunInfo(QString df)
 
 void SessionManager::copyTrialRunInfo(QString fromObj, QString toObj)
 {
+    qDebug() << Q_FUNC_INFO << fromObj << toObj;
     trialRunInfoMap[toObj] = trialRunInfo(fromObj);
 }
 

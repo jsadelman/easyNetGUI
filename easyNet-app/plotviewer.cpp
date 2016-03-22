@@ -402,6 +402,29 @@ void PlotViewer::setPlotByteArray(QByteArray byteArray, QString cmd)
     plotByteArray[name] = byteArray;
 }
 
+void PlotViewer::requestAddDataframe(QString name, bool isBackup)
+{
+    if (name.isEmpty())
+    {
+        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "name");
+        if (!v.canConvert<QString>())
+        {
+            eNerror << "cannot retrieve a valid string from name key in sender LazyNut job";
+            return;
+        }
+        name = v.value<QString>();
+        v = SessionManager::instance()->getDataFromJob(sender(), "isBackup");
+        if (v.canConvert<bool>())
+            isBackup = v.value<bool>();
+    }
+    if (name.isEmpty())
+    {
+        eNerror << "name is empty";
+        return;
+    }
+    emit addDataframeRequested(name, isBackup);
+}
+
 void PlotViewer::updateDependencies(QDomDocument *domDoc, QString name)
 {
     plotDependencies.remove(name);

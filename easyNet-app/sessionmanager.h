@@ -148,7 +148,8 @@ public slots:
     void setPlotFlags(QString name, int flags);
     void observerEnabled(QString observer=QString(), bool enabled=false);
     void suspendObservers(bool suspending) {m_suspendingObservers = suspending;}
-    void clearRequestedCopy(QString original);
+    void setCopyRequested(QString original);
+    void clearCopyRequested(QString original = "");
 
 
 private slots:

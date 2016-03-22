@@ -60,12 +60,14 @@ protected slots:
     void sendPlotCmd();
     void displaySVG(QByteArray byteArray, QString cmd);
     void setPlotByteArray(QByteArray byteArray, QString cmd);
+    void requestAddDataframe(QString name="", bool isBackup=false);
 
 
 signals:
      void resized(QSize);
      void setPlotSettings(QString);
      void removePlotSettings(QString);
+     void addDataframeRequested(QString, bool);
 
 protected:
      virtual QWidget *makeView(QString name);

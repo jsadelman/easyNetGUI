@@ -269,7 +269,7 @@ public:
     PlotViewer      *plotViewer;
 //    TableEditor     *stimSetForm;
     DataframeViewer *stimSetViewer;
-    Ui_DataComboViewer *ui_stimSetViewer;
+    Ui_DataTabsViewer *ui_stimSetViewer;
 //    TableEditor     *dataframesWindow;
     DataframeViewer *dataframeViewer;
     Ui_DataComboViewer *ui_dataframeViewer;

@@ -154,7 +154,7 @@ void MainWindow::constructForms()
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
 //    stimSetForm = new TableEditor ("Stimuli",this);
-    ui_stimSetViewer = new Ui_DataComboViewer;
+    ui_stimSetViewer = new Ui_DataTabsViewer;
     stimSetViewer = new DataframeViewer(ui_stimSetViewer, this);
     stimSetViewer->setDragDropColumns(true);
     stimSetViewer->setStimulusSet(true);
@@ -311,6 +311,7 @@ void MainWindow::connectSignalsAndSlots()
              stimSetViewer, SLOT(addRequestedItem(QString,bool)));
      connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
              plotViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(plotViewer, SIGNAL(addDataframeRequested(QString,bool)), dataframeResultsViewer, SLOT(addItem(QString,bool)));
 
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));

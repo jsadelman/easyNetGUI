@@ -32,7 +32,9 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
       currentDispatchAction(-1),
       previousItem(""),
       infoIsVisible(false),
-      trialRunMode(TrialRunMode_Single)
+      trialRunMode(TrialRunMode_Single),
+      m_snapshotActive(true),
+      m_copyDfActive(false)
 {
     if (!host)
     {
@@ -65,6 +67,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     preferencesAct->setToolTip("Show preferences for this viewer");
     connect(preferencesAct, SIGNAL(triggered()), this, SLOT(showPreferences()));
     hostDataViewer->ui->dispatchToolBar->addAction(preferencesAct);
+
 }
 
 DataViewerDispatcher::~DataViewerDispatcher()
@@ -350,7 +353,12 @@ void DataViewerDispatcher::showPreferences()
         while (settings_it.hasNext())
         {
             settings_it.next();
-            dispatchDefaultMode[settings_it.key()] = dispatchModeText.key(settings_it.value());
+            if (dispatchDefaultMode.contains(settings_it.key()))
+                dispatchDefaultMode[settings_it.key()] = dispatchModeText.key(settings_it.value());
+            else if (settings_it.key().contains("snapshot", Qt::CaseInsensitive))
+                setSnapshotActive(settings_it.value() == "yes");
+            else if (settings_it.key().contains("Copy source dataframes", Qt::CaseInsensitive))
+                setCopyDfActive(settings_it.value() == "yes");
         }
     }
 }

@@ -20,6 +20,9 @@ class QScrollArea;
 class DataViewerDispatcher: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool snapshotActive READ snapshotActive WRITE setSnapshotActive)
+    Q_PROPERTY(bool copyDfActive READ copyDfActive WRITE setCopyDfActive)
+
 public:
     DataViewerDispatcher(DataViewer *host);
     virtual ~DataViewerDispatcher();
@@ -41,7 +44,10 @@ public:
     bool inHistory(QString name);
     void setInView(QString name, bool inView);
     void setTrialRunMode(int mode);
-//    void restoreOverrideDefaultValue();
+    bool snapshotActive() {return m_snapshotActive;}
+    void setSnapshotActive(bool active) {m_snapshotActive = active;}
+    bool copyDfActive() {return m_copyDfActive;}
+    void setCopyDfActive(bool active) {m_copyDfActive = active;}
 
     QAction *historyAct;
     QAction *infoAct;
@@ -88,6 +94,8 @@ protected:
     int trialRunMode;
     QDockWidget  *infoDock;
     QScrollArea *infoScroll;
+    bool m_snapshotActive;
+    bool m_copyDfActive;
 
 };
 
