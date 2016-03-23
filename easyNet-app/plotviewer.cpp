@@ -353,7 +353,7 @@ void PlotViewer::checkDependencies(QString name)
 {
     foreach(QString plot, items())
     {
-        if (SessionManager::instance()->dataframeDependencies(plot).contains(name))
+        if (SessionManager::instance()->dependencies(plot).contains(name))
         {
             plotIsUpToDate[plot] = false;
             updateActivePlots();
