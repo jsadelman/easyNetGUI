@@ -55,16 +55,17 @@ protected slots:
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
 //    void updatePlot(QString name, QByteArray byteArray);
-    void updateDependencies(QDomDocument* domDoc, QString name);
+//    void updateDependencies(QDomDocument* domDoc, QString name);
     void checkDependencies(QString name);
     void sendPlotCmd();
     void displaySVG(QByteArray byteArray, QString cmd);
     void setPlotByteArray(QByteArray byteArray, QString cmd);
     void requestAddDataframe(QString name="", bool isBackup=false);
+    void restartTimer();
 
 
 signals:
-     void resized(QSize);
+//     void resized(QSize);
      void setPlotSettings(QString);
      void removePlotSettings(QString);
      void addDataframeRequested(QString, bool);
@@ -83,7 +84,7 @@ protected:
      void resizeEvent(QResizeEvent*);
 
     bool            pend;
-    int             plotAspectRatio;
+    double          plotAspectRatio;
     QTimer*         resizeTimer;
     ObjectCacheFilter *dependenciesFilter;
     ObjectUpdater     *dependenciesUpdater;
@@ -91,7 +92,7 @@ protected:
 //    ObjectCacheFilter *plotDescriptionFilter;
     QMap <QString, bool> plotIsActive;
     QMap <QString, bool> plotIsUpToDate;
-    QMultiMap <QString, QString> plotDependencies;
+//    QMultiMap <QString, QString> plotDependencies;
 //    QMap <QString, bool> plotSourceModified;
     QMap <QString, QByteArray> plotByteArray;
 
@@ -100,6 +101,7 @@ protected:
     QAction *       fullScreenAct;
     bool            fullScreen;
     QSize           fullScreenSize;
+    double          fullScreenAspectRatio;
 
     FullScreenSvgDialog *fullScreenSvgDialog;
 

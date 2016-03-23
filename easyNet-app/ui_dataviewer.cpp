@@ -12,10 +12,15 @@
 #include <QSignalMapper>
 #include <QDebug>
 #include <QToolBar>
+#include <QVBoxLayout>
 
 Ui_DataViewer::Ui_DataViewer()
     : QMainWindow(), m_usePrettyNames(false)
 {
+    mainWidget = new WidgetFwdResizeEvent;
+    mainLayout = new QVBoxLayout;
+    mainWidget->setLayout(mainLayout);
+    setCentralWidget(mainWidget);
 }
 
 Ui_DataViewer::~Ui_DataViewer()

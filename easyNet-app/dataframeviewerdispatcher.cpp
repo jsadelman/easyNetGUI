@@ -61,22 +61,27 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList();
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
-    qDebug () << Q_FUNC_INFO << dispatchModeText.value(currentDispatchAction);
+//    qDebug () << Q_FUNC_INFO << dispatchModeText.value(currentDispatchAction);
     switch(currentDispatchAction)
     {
     case Dispatch_New:
     {
-        QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.copy.1").arg(trialRunInfo.results));
-        job->cmdList << QString("%1 copy %2").arg(trialRunInfo.results).arg(backupDf);
-        job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
-        QMap<QString, QVariant> jobData;
-        jobData.insert("name", backupDf);
-        jobData.insert("isBackup", true);
-        jobs << SessionManager::instance()->recentlyCreatedJob();
-        jobs.last()->data = jobData;
-        jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
-        SessionManager::instance()->copyTrialRunInfo(trialRunInfo.results, backupDf);
-        host->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
+        if (!SessionManager::instance()->isCopyRequested(trialRunInfo.results))
+        {
+            SessionManager::instance()->setCopyRequested(trialRunInfo.results);
+            QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(trialRunInfo.results));
+            job->cmdList << QString("%1 copy %2").arg(trialRunInfo.results).arg(backupDf);
+            job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
+            QMap<QString, QVariant> jobData;
+            jobData.insert("name", backupDf);
+            jobData.insert("isBackup", true);
+            jobs << SessionManager::instance()->recentlyCreatedJob();
+            jobs.last()->data = jobData;
+            jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
+            jobs.last()->appendEndOfJobReceiver(SessionManager::instance(), SLOT(clearCopyRequested()));
+            SessionManager::instance()->copyTrialRunInfo(trialRunInfo.results, backupDf);
+            host->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
+        }
         break;
     }
     case Dispatch_Overwrite:

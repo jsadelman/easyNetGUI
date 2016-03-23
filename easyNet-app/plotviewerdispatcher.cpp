@@ -72,7 +72,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
                     if (!SessionManager::instance()->isCopyRequested(df))
                     {
                         SessionManager::instance()->setCopyRequested(df);
-                        QString copyDf = SessionManager::instance()->makeValidObjectName(QString("%1.copy.1").arg(df));
+                        QString copyDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(df));
                         LazyNutJob *job = new LazyNutJob;
                         job->logMode |= ECHO_INTERPRETER;
                         job->cmdList = QStringList();
@@ -98,9 +98,13 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 
 void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
+    if (!SessionManager::instance()->suspendingObservers())
+        foreach (QString observer, SessionManager::instance()->enabledObservers())
+            SessionManager::instance()->setTrialRunInfo(observer, info);
+
     foreach(QString plot, affectedPlots(TrialRunInfo(info).results))
     {
-        SessionManager::instance()->setTrialRunInfo(plot, info);
+//        SessionManager::instance()->setTrialRunInfo(plot, info);
         updateHistory(plot);
 //        host->plotIsUpToDate[plot] = false;
     }

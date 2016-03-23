@@ -415,7 +415,7 @@ QList<QSharedPointer<QDomDocument> > SessionManager::trialRunInfo(QString name)
     foreach (QString df, dataframeDependencies(name))
     {
         if (trialRunInfoMap.value(df).count() > 0)
-        info.append(trialRunInfoMap.value(df));
+            info.append(trialRunInfoMap.value(df));
     }
     return info;
 }
@@ -453,7 +453,6 @@ void SessionManager::removeTrialRunInfo(QString df)
 
 void SessionManager::copyTrialRunInfo(QString fromObj, QString toObj)
 {
-    qDebug() << Q_FUNC_INFO << fromObj << toObj;
     trialRunInfoMap[toObj] = trialRunInfo(fromObj);
 }
 

@@ -180,6 +180,10 @@ void DataViewerDispatcher::createHistoryWidget()
     {
         historyWidget->view->setCurrentIndex(historyModel->viewIndex(name));
     });
+    connect(historyWidget, &HistoryWidget::clicked, [=](QString name)
+    {
+        showInfo(true, name);
+    });
 
     historyAct = historyWidget->toggleViewAction();
     historyAct->setIcon(QIcon(":/images/History.png"));
@@ -278,8 +282,9 @@ void DataViewerDispatcher::updateHistory(QString name)
 }
 
 
-void DataViewerDispatcher::showInfo(bool show)
+void DataViewerDispatcher::showInfo(bool show, QString name)
 {
+//    qDebug() << Q_FUNC_INFO << show << name;
     QVBoxLayout *infoLayout;
     QWidget *infoWidget = infoScroll->takeWidget();
     if (infoWidget)
@@ -304,25 +309,25 @@ void DataViewerDispatcher::showInfo(bool show)
         infoLayout->setSizeConstraint(QLayout::SetFixedSize);
         infoWidget->setLayout(infoLayout);
 
-        foreach(QSharedPointer<QDomDocument> info, SessionManager::instance()->trialRunInfo(hostDataViewer->ui->currentItemName()))
-        if (info)
-        {
-            XMLModel *infoModel = new XMLModel(info, this);
-            QTreeView *infoView = new QTreeView();
-            infoView->setModel(infoModel);
-            infoView->header()->setStretchLastSection(true);
-            infoView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-            infoView->setSelectionMode(QAbstractItemView::NoSelection);
-            infoView->expandAll();
-            infoView->resizeColumnToContents(0);
-            infoView->resizeColumnToContents(1);
-            infoView->setMinimumWidth(infoView->width());
-            infoView->setHeaderHidden(true);
-            infoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//            infoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//            infoView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            infoLayout->addWidget(infoView);
-        }
+        foreach(QSharedPointer<QDomDocument> info, SessionManager::instance()->trialRunInfo(name.isEmpty() ? hostDataViewer->ui->currentItemName() : name))
+            if (info)
+            {
+                XMLModel *infoModel = new XMLModel(info, this);
+                QTreeView *infoView = new QTreeView();
+                infoView->setModel(infoModel);
+                infoView->header()->setStretchLastSection(true);
+                infoView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+                infoView->setSelectionMode(QAbstractItemView::NoSelection);
+                infoView->expandAll();
+                infoView->resizeColumnToContents(0);
+                infoView->resizeColumnToContents(1);
+                infoView->setMinimumWidth(infoView->width());
+                infoView->setHeaderHidden(true);
+                infoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                //            infoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                //            infoView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                infoLayout->addWidget(infoView);
+            }
         infoScroll->setWidget(infoWidget);
         infoScroll->adjustSize();
         infoDock->setVisible(true);

@@ -63,7 +63,7 @@ public slots:
     void destroySelectedItems();
     void updateView(QModelIndex topLeft, QModelIndex bottomRight, QVector<int> roles);
     void updateHistory(QString name);
-    void showInfo(bool show);
+    void showInfo(bool show, QString name="");
     void updateInfo(QString name);
 
 protected slots:

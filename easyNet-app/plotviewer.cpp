@@ -56,14 +56,14 @@ void FullScreenSvgDialog::clearSvg()
 PlotViewer::PlotViewer(Ui_DataViewer *ui, QWidget *parent)
     : DataViewer(ui, parent), pend(false), fullScreen(false), plotAspectRatio(1)
 {
-//    qDebug() << Q_FUNC_INFO << "descriptionFilter "<< descriptionFilter;
     connect(descriptionUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*, QString name)
     {
-//        qDebug() << Q_FUNC_INFO << name;
        plotIsUpToDate[name] = false;
        updateActivePlots();
+       if (dispatcher)
+           dispatcher->updateInfo(name);
     });
-    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(updateDependencies(QDomDocument*,QString)));
+//    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(updateDependencies(QDomDocument*,QString)));
 
     resizeTimer = new QTimer(this);
     connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
@@ -75,7 +75,6 @@ PlotViewer::PlotViewer(Ui_DataViewer *ui, QWidget *parent)
     dependenciesUpdater->setProxyModel(dependenciesFilter);
     connect(dependenciesUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*, QString name)
     {
-//        qDebug() << Q_FUNC_INFO << name;
         checkDependencies(name);
     });
     dependenciesFilter->setType("dataframe");
@@ -92,7 +91,10 @@ PlotViewer::PlotViewer(Ui_DataViewer *ui, QWidget *parent)
     fullScreenSvgDialog = new FullScreenSvgDialog(this);
     auto temp=QApplication::desktop()->availableGeometry();
     fullScreenSize = QSize(temp.width(),temp.height());
+    fullScreenAspectRatio = double(temp.width())/temp.height();
     fullScreenSvgDialog->resize(fullScreenSize);
+
+    connect(ui->mainWidget, SIGNAL(resizeEventOccured(QResizeEvent*)), this, SLOT(restartTimer()));
 }
 
 PlotViewer::~PlotViewer()
@@ -115,7 +117,7 @@ void PlotViewer::sendPlotCmd(QString name)
         return;
     }
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("%1 get %2").arg(name).arg(plotAspectRatio)});
+    job->cmdList = QStringList({QString("%1 get %2").arg(name).arg(fullScreen ? fullScreenAspectRatio : plotAspectRatio)});
     job->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)), AnswerFormatterType::SVG);
     SessionManager::instance()->submitJobs(job);
 }
@@ -149,7 +151,7 @@ void PlotViewer::snapshot(QString name)
         eNwarning << "nothing to snapshot";
         return;
     }
-    QString snapshotName = SessionManager::instance()->makeValidObjectName(name);
+    QString snapshotName = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(name));
     SessionManager::instance()->addToExtraNamedItems(snapshotName);
     SessionManager::instance()->setTrialRunInfo(snapshotName, SessionManager::instance()->trialRunInfo(name));
     addItem(snapshotName, true);
@@ -174,7 +176,7 @@ void PlotViewer::destroyItem_impl(QString name)
     plotByteArray.remove(name);
     plotIsUpToDate.remove(name);
 //    plotSourceModified.remove(name);
-    plotDependencies.remove(name);
+//    plotDependencies.remove(name);
 }
 
 void PlotViewer::open()
@@ -227,7 +229,7 @@ void PlotViewer::copy()
 void PlotViewer::resizeTimeout()
 {
     resizeTimer->stop();
-    QSize size = ui->size();
+    QSize size = ui->centralWidget()->size();
     plotAspectRatio = double(size.width())/size.height();
     updateAllActivePlots();
 }
@@ -261,7 +263,7 @@ void PlotViewer::setupFullScreen()
     fullScreenSvgDialog->clearSvg();
     if (plotIsActive.value(ui->currentItemName()))
     {
-        emit resized(fullScreenSize);
+//        emit resized(fullScreenSize);
         sendPlotCmd();
     }
     else
@@ -425,14 +427,20 @@ void PlotViewer::requestAddDataframe(QString name, bool isBackup)
     emit addDataframeRequested(name, isBackup);
 }
 
-void PlotViewer::updateDependencies(QDomDocument *domDoc, QString name)
+void PlotViewer::restartTimer()
 {
-    plotDependencies.remove(name);
-    if (!domDoc)
-        return;
-    foreach (QString df, XMLelement(*domDoc)["Dependencies"].listValues())
-        plotDependencies.insert(name, df);
+    resizeTimer->stop();
+    resizeTimer->start(250);
 }
+
+//void PlotViewer::updateDependencies(QDomDocument *domDoc, QString name)
+//{
+//    plotDependencies.remove(name);
+//    if (!domDoc)
+//        return;
+//    foreach (QString df, XMLelement(*domDoc)["Dependencies"].listValues())
+//        plotDependencies.insert(name, df);
+//}
 
 
 QWidget *PlotViewer::makeView(QString name)
@@ -440,8 +448,8 @@ QWidget *PlotViewer::makeView(QString name)
     plotIsActive[name] = SessionManager::instance()->exists(name);
     plotIsUpToDate[name] = !plotIsActive[name];
 //    plotSourceModified[name] = false;
-    if (plotIsActive[name])
-        updateDependencies(descriptionFilter->getDomDoc(name), name);
+//    if (plotIsActive[name])
+//        updateDependencies(descriptionFilter->getDomDoc(name), name);
 
     return new QSvgWidget(this);
 }

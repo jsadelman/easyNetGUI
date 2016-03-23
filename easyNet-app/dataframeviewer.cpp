@@ -32,6 +32,11 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     dataframeUpdater->setProxyModel(dataframeFilter);
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
+    connect(dataframeUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*,QString name)
+    {
+        if (dispatcher)
+            dispatcher->updateInfo(name);
+    });
 
 //    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
 //    dataframeDescriptionUpdater = new ObjectUpdater(this);
@@ -321,9 +326,11 @@ void DataframeViewer::sendNewPlotRequest()
     else
     {
         QString plotType = plotAct->text();
+        QString suffix = plotType;
+        suffix.remove(QRegExp("\\.R$"));
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
-        QString plotName = SessionManager::instance()->makeValidObjectName(ui->currentItemName());
+        QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
 //        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         emit createDataViewRequested(plotName, "rplot", plotType, settings);
     }
@@ -337,9 +344,11 @@ void DataframeViewer::sendNewDataframeViewRequest()
     else
     {
         QString dataframeViewScript = dataframeViewAct->text();
+        QString suffix = dataframeViewScript;
+        suffix.remove(QRegExp("\\.R$"));
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
-        QString dataframeViewName = SessionManager::instance()->makeValidObjectName(ui->currentItemName());
+        QString dataframeViewName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
 //        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         requestedDataframeViews.append(dataframeViewName);
 //        emit newDataframeViewRequested(dataframeViewName, dataframeViewScript, settings);
