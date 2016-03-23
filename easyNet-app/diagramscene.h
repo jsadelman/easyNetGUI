@@ -138,7 +138,7 @@ signals:
 //    void layoutSaveAttempted();
 
     void animationFinished();
-    void createNewRPlot(QString, QString, QMap<QString, QString>, int, QList<QSharedPointer<QDomDocument> > info = QList<QSharedPointer<QDomDocument> >());
+    void createDataViewRequested(QString,QString,QString, QMap<QString, QString>, bool);
     void plotDestroyed(QString name);
 
 

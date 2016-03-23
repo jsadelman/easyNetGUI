@@ -12,10 +12,13 @@ class QDomDocument;
 class ObjectUpdater : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool dependencies READ dependencies WRITE setDependencies)
 public:
     explicit ObjectUpdater(QObject *parent = 0);
     void setProxyModel(QSortFilterProxyModel *proxy);
     void setFilter(ObjectCacheFilter *filter);
+    bool dependencies() {return m_dependencies;}
+    void setDependencies(bool dependencies) {m_dependencies = dependencies;}
 
 
 signals:
@@ -38,6 +41,7 @@ private:
     QSortFilterProxyModel *proxyModel;
     ObjectCache *objectCache;
     QString m_command;
+    bool m_dependencies;
 };
 
 #endif // DESCRIPTIONUPDATER_H

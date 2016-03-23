@@ -88,7 +88,8 @@ void Ui_DataComboViewer::createViewer()
     stackedWidget = new QStackedWidget(this);
     layout->addWidget(comboBox);
     layout->addWidget(stackedWidget);
-    setCentralWidget(widget);
+//    setCentralWidget(widget);
+    mainLayout->addWidget(widget);
     connect(comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
         [=](int index)
     {

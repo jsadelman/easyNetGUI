@@ -72,7 +72,8 @@ void Ui_DataTabsViewer::createViewer()
 {
     tabWidget = new QTabWidget;
     tabWidget->setTabsClosable(true);
-    setCentralWidget(tabWidget);
+//    setCentralWidget(tabWidget);
+    mainLayout->addWidget(tabWidget);
     connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)
     {
         QString name = viewMap.key(tabWidget->widget(index));
@@ -81,9 +82,10 @@ void Ui_DataTabsViewer::createViewer()
     connect(tabWidget, &QTabWidget::currentChanged, [=](int index)
     {
         if (!quiet_tab_change)
+        {
             emit currentItemChanged(viewMap.key(tabWidget->widget(index)));
+        }
     });
-
 }
 
 void Ui_DataTabsViewer::displayPrettyName(QString name)

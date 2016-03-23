@@ -178,7 +178,7 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         QList<QAction*> actionList;
         foreach (QString observer, defaultObservers.keys())
         {
-            QString dataframe = QString("%1").arg(observer);
+            QString dataframe = observer;
             QString portPrettyName, rplotName;
             if (observer.contains("input_channel"))
             {
@@ -230,9 +230,11 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 {
                     QMap<QString,QString> settings;
                     settings["df"] = plotData.value("dataframe").toString();
-                    emit createNewRPlot(plotData.value("rplotName").toString(),
-                                        plotData.value("plotType").toString().append(".R"),
-                                        settings, Plot_AnyTrial);
+                    emit createDataViewRequested(   plotData.value("rplotName").toString(),
+                                                    "rplot",
+                                                    plotData.value("plotType").toString().append(".R"),
+                                                    settings,
+                                                    false);
                 }
             }
             else
@@ -297,7 +299,7 @@ void Box::setupDefaultObserverFilter()
             {
                 observerOfPlot.remove(name);
                 if (!observerOfPlot.values().contains(observer))
-                    enableObserver(observerOfPlot.value(name), false);
+                    enableObserver(observer, false);
             }
 //            updateObservedState();
         });

@@ -30,8 +30,7 @@ public:
     bool stimulusSet() {return m_stimulusSet;}
     void setStimulusSet(bool isStimulusSet) {m_stimulusSet = isStimulusSet; emit stimulusSetChanged(isStimulusSet);}
     bool parametersTable() {return m_parametersTable;}
-    void setParametersTable(bool isParametersTable) {m_parametersTable = isParametersTable; emit parametersTableChanged(isParametersTable);}
-
+    void setParametersTable(bool isParametersTable);
 
 public slots:
     void setPrettyHeadersForTrial(QString trial, QString df);
@@ -40,24 +39,27 @@ public slots:
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
     void copyDataframe();
-    void dataframeMerge();
+//    void dataframeMerge();
+    virtual void addRequestedItem(QString name="", bool isBackup=false);
+    virtual void snapshot(QString name="") Q_DECL_OVERRIDE {Q_UNUSED(name)}
 
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
-    virtual void updateCurrentItem(QString name) Q_DECL_OVERRIDE;
+    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
     void updateDataframe(QDomDocument* domDoc, QString name);
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void setParameter(QString name, QString key_val);
     void sendNewPlotRequest();
+    void sendNewDataframeViewRequest();
 
 signals:
     void dragDropColumnsChanged(bool);
     void stimulusSetChanged(bool);
     void parametersTableChanged(bool);
-    void createNewPlot(QString name, QString type, QMap<QString, QString> defaultSettings,
-                       int flags, QList<QSharedPointer<QDomDocument> > info);
+    void createDataViewRequested(QString name, QString dataViewType, QString rScript, QMap<QString, QString> defaultSettings, bool isBackup = false);
+//    void newDataframeViewRequested(QString name, QString type, QMap<QString, QString> defaultSettings, bool isBackup = false);
 
 protected:
     virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
@@ -65,20 +67,26 @@ protected:
     virtual void addNameToFilter(QString name);
     virtual void removeNameFromFilter(QString name);
     virtual void setNameInFilter(QString name);
+    void addExtraActions();
+
 
 
     QMap<QString, DataFrameModel*> modelMap;
     QMap<QString, PrettyHeadersModel*> prettyHeadersModelMap;
     ObjectCacheFilter *dataframeFilter;
     ObjectUpdater *dataframeUpdater;
+//    ObjectCacheFilter *dataframeDescriptionFilter;
+//    ObjectUpdater *dataframeDescriptionUpdater;
+    QStringList requestedDataframeViews;
     bool m_dragDropColumns;
     bool m_stimulusSet;
     bool m_parametersTable;
     FindDialog*     findDialog;
     QAction *findAct;
     QAction *copyDFAct;
-    QAction *dataframeMergeAct;
+//    QAction *dataframeMergeAct;
     QToolButton *plotButton;
+    QToolButton *dataframeViewButton;
 
 };
 

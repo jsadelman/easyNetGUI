@@ -44,7 +44,7 @@ SOURCES +=  \
     highlighter.cpp \
     codeeditor.cpp \
     editwindow.cpp \
-    plotsettingswindow.cpp \
+#    plotsettingswindow.cpp \
     lazynut.cpp \
     sessionmanager.cpp \
     commandsequencer.cpp \
@@ -68,8 +68,6 @@ SOURCES +=  \
     proxymodelextrarows.cpp \
     objectupdater.cpp \
     objectcachefilter.cpp \
-    dataframewindow.cpp \
-    tableeditor.cpp \
     inputcmdline.cpp \
     cmdoutput.cpp \
     lazynutconsole.cpp \
@@ -88,7 +86,7 @@ SOURCES +=  \
     console.cpp \
     finddialog.cpp \
     debuglog.cpp \
-    plotviewer_old.cpp \
+#    plotviewer_old.cpp \
     diagramscenetabwidget.cpp \
     diagramwindow.cpp \
     diagramview.cpp \
@@ -128,7 +126,8 @@ SOURCES +=  \
     xmlmodel.cpp \
     settingsxml.cpp \
     xmldisplay.cpp \
-    modelsettingsdisplay.cpp
+    modelsettingsdisplay.cpp \
+    settingswidget.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -143,7 +142,7 @@ HEADERS  += \
     highlighter.h \
     codeeditor.h \
     editwindow.h \
-    plotsettingswindow.h \
+#    plotsettingswindow.h \
     lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
@@ -167,8 +166,6 @@ HEADERS  += \
     proxymodelextrarows.h \
     objectupdater.h \
     objectcachefilter.h \
-    dataframewindow.h \
-    tableeditor.h \
     inputcmdline.h \
     cmdoutput.h \
     lazynutconsole.h \
@@ -187,7 +184,7 @@ HEADERS  += \
     console.h \
     finddialog.h \
     debuglog.h \
-    plotviewer_old.h \
+#    plotviewer_old.h \
     diagramscenetabwidget.h \
     diagramwindow.h \
     diagramview.h \
@@ -228,7 +225,8 @@ HEADERS  += \
     xmlmodel.h \
     settingsxml.h \
     xmldisplay.h \
-    modelsettingsdisplay.h
+    modelsettingsdisplay.h \
+    settingswidget.h
 
 
 RESOURCES   =	diagramscene.qrc \

@@ -70,7 +70,7 @@ void DebugLog::on_copy_clicked()
                         list.append(abmodel->index(i,j));
     }
     qSort(list);
-    qDebug() << list;
+//    qDebug() << list;
 
     QString copy_table;
     QModelIndex last = list.last();

@@ -193,7 +193,6 @@ QList<Box *> DiagramScene::boxes()
 void DiagramScene::read(const QJsonObject &json)
 {
     qreal boxWidth = json["boxWidth"].toDouble();
-    qDebug() << "DiagramScene::read boxWidth" << boxWidth;
     QJsonArray itemArray = json["diagramItems"].toArray();
     for (int itemIndex = 0; itemIndex < itemArray.size(); ++itemIndex)
     {
@@ -302,7 +301,7 @@ void DiagramScene::setAnalyzedLocations(QDomDocument *domDoc)
         XMLelement xm=XMLelement(*domDoc)["layers"].firstChild();
         do
         {
-            qDebug()<<xm.label()<<" "<<xm.value();
+//            qDebug()<<xm.label()<<" "<<xm.value();
             if(xm.value()==n)
             {
                 double x =250*xm["breadth"].value().toDouble();
@@ -387,8 +386,8 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
       if (type == m_boxType)
     {
         Box *box = new Box();
-        connect(box, SIGNAL(createNewRPlot(QString,QString,QMap<QString, QString>,int,QList<QSharedPointer<QDomDocument> >)),
-                this, SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>,int,QList<QSharedPointer<QDomDocument> >)));
+        connect(box, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString, QString>,bool)),
+                this, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)));
 
         addItem(box);
         box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers

@@ -125,9 +125,9 @@ QString CommandLog::getHistory(int shift, QString text)
     QString lastWord, remainder, newremainder;
     QStringList words;
 
-    qDebug() << "Entered getHistory, tabIdx is " << tabIdx;
-    qDebug() << "text is " << text;
-    qDebug() << "shift is " << shift;
+//    qDebug() << "Entered getHistory, tabIdx is " << tabIdx;
+//    qDebug() << "text is " << text;
+//    qDebug() << "shift is " << shift;
     if  (shift!=200) // not repeated TAB
         tabIdx=0;
 
@@ -154,11 +154,11 @@ QString CommandLog::getHistory(int shift, QString text)
     else if (shift==100 || shift==200) //TAB
     {
         words = text.split(" ");
-        qDebug() << "word list is " << words;
+//        qDebug() << "word list is " << words;
 
-        qDebug() << "tabIdx is " << tabIdx;
-        qDebug() << "text is " << text;
-        qDebug() << "remainderCopy is " << remainderCopy;
+//        qDebug() << "tabIdx is " << tabIdx;
+//        qDebug() << "text is " << text;
+//        qDebug() << "remainderCopy is " << remainderCopy;
         if (tabIdx==0) // this is the first time user has pressed tab in this cycle
         {
             lastWord = words.back();
@@ -173,14 +173,14 @@ QString CommandLog::getHistory(int shift, QString text)
             lastWord = lastWordCopy;
             remainder = remainderCopy;
         }
-        qDebug() << "last word is " << lastWord;
-        qDebug() << "remainder is " << remainder;
+//        qDebug() << "last word is " << lastWord;
+//        qDebug() << "remainder is " << remainder;
         if (lastWord.size() == 0) return(text);
         QModelIndexList idxList = objectListFilter->match(objectListFilter->index(0, 0), Qt::DisplayRole, QVariant::fromValue(lastWord), -1, Qt::MatchStartsWith);
-        qDebug() << "idxList is " << idxList;
+//        qDebug() << "idxList is " << idxList;
         if (tabIdx >= idxList.size()) tabIdx = 0; // idxList.size() - 1;
         if (idxList.size())
-            qDebug() << "name:" << objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString();
+//            qDebug() << "name:" << objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString();
         if (idxList.size())
             text = remainder.append(objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString());
         tabIdx++;

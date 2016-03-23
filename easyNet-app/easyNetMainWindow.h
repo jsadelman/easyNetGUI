@@ -16,7 +16,6 @@ class QStackedWidget;
 class QProgressBar;
 class QDomDocument;
 
-class PlotViewer_old;
 class PlotViewer;
 class PlotViewerDispatcher;
 class ObjExplorer;
@@ -30,7 +29,7 @@ class EditWindow;
 class CommandLog;
 class ScriptEditor;
 class Highlighter;
-class PlotSettingsWindow;
+//class PlotSettingsWindow;
 class ObjectCacheFilter;
 //class LazyNutListComboBox;
 //class LazyNutScriptEditor;
@@ -55,6 +54,7 @@ class DataframeViewerDispatcher;
 class Ui_DataTabsViewer;
 class Ui_DataComboViewer;
 class QTime;
+class SettingsWidget;
 
 QT_END_NAMESPACE
 
@@ -139,7 +139,6 @@ private slots:
     void displayVersion(QString version);
 
     void showDocumentation();
-    void explorerTabChanged(int idx);
     void setParam(QString paramDataFrame, QString newParamValue);
 
 
@@ -155,11 +154,14 @@ private slots:
     void showExplorer();
     void restart();
     void showMostRecentError();
-    void showPlotSettings();
+//    void showPlotSettings();
+    void showDataViewSettings();
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
-
+    void setFormInSettingsWidget(QString name);
+    void switchFormInSettingsWidget(bool visible);
+    void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -257,18 +259,19 @@ public:
     Highlighter     *highlighter2;
     Highlighter     *highlighter3;
 //    LazyNutScriptEditor  *scriptEditor;
-    DesignWindow    *designWindow;
-    DesignWindow    *conversionWindow;
+//    DesignWindow    *designWindow;
+//    DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
     DiagramScene    *conversionScene;
-    PlotSettingsWindow      *plotSettingsWindow;
+//    PlotSettingsWindow      *plotSettingsWindow;
+    SettingsWidget      *dataViewSettingsWidget;
 //    PlotViewer_old      *plotViewer;
     Ui_DataTabsViewer *ui_plotViewer;
     PlotViewerDispatcher *plotViewerDispatcher;
     PlotViewer      *plotViewer;
 //    TableEditor     *stimSetForm;
     DataframeViewer *stimSetViewer;
-    Ui_DataComboViewer *ui_stimSetViewer;
+    Ui_DataTabsViewer *ui_stimSetViewer;
 //    TableEditor     *dataframesWindow;
     DataframeViewer *dataframeViewer;
     Ui_DataComboViewer *ui_dataframeViewer;
@@ -315,6 +318,7 @@ public:
     int             paramTabIdx;
     int             plotTabIdx;
     int             plotSettingsTabIdx;
+    int             dataViewSettingsTabIdx;
     int             modelTabIdx;
     int             conversionTabIdx;
     int             scriptTabIdx;
@@ -393,6 +397,7 @@ public:
 
 
 //    enum runMode {RunSingle, RunAll};
+
 
 
 };
