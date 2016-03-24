@@ -194,6 +194,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         return;
     }
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
+    dfModel->setName(name);
     if (parametersTable())
         connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
                 this, SLOT(setParameter(QString,QString)));
