@@ -6,6 +6,7 @@
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "xmlelement.h"
+#include "easyNetMainWindow.h"
 
 #include <QAction>
 #include <QToolButton>
@@ -24,7 +25,7 @@ SettingsWidget::SettingsWidget(QWidget *parent)
     : QWidget(parent),
       currentName("")
 {
-    createActions();
+//    createActions();
     buildWidget();
     descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     descriptionUpdater = new ObjectUpdater(this);
@@ -220,7 +221,7 @@ void SettingsWidget::rebuildForm()
 }
 
 
-void SettingsWidget::refreshForm()
+void SettingsWidget::reloadScript()
 {
     if (currentName.isEmpty())
         return;
@@ -243,40 +244,47 @@ void SettingsWidget::removeForm(QString name)
     descriptionFilter->removeName(name);
 }
 
-void SettingsWidget::createActions()
-{
-    refreshAct = new QAction(this);
-    refreshAct->setShortcuts(QKeySequence::Refresh);
-    refreshAct->setToolTip("reload current settings form from R script");
-    connect(refreshAct, SIGNAL(triggered()), this, SLOT(refreshForm()));
+//void SettingsWidget::createActions()
+//{
+//    reloadScriptAct = new QAction(this);
+//    reloadScriptAct->setShortcuts(QKeySequence::Refresh);
+//    reloadScriptAct->setToolTip("reload current settings form from R script");
+//    connect(reloadScriptAct, SIGNAL(triggered()), this, SLOT(reloadScript()));
 
-    applyAct = new QAction(this);
-    applyAct->setToolTip("apply current settings");
-    connect(applyAct, &QAction::triggered, this, [=]{
-        if (!currentName.isEmpty())
-        {
-            sendSettings();
-        }
-    });
-}
+//    applyAct = new QAction(this);
+//    applyAct->setToolTip("apply current settings");
+//    connect(applyAct, &QAction::triggered, this, [=]{
+//        if (!currentName.isEmpty())
+//        {
+//            sendSettings();
+//        }
+//    });
+//}
 
 void SettingsWidget::buildWidget()
 {
-    refreshButton = new QToolButton(this);
-    refreshButton->setAutoRaise(true);
-    refreshButton->setDefaultAction(refreshAct);
-    refreshButton->setIcon(QIcon(":/images/refresh.png"));
-    refreshButton->setIconSize(QSize(40, 40));
+    reloadScriptButton = new QPushButton("Reload script",this);
+//    reloadScriptButton->setAutoRaise(true);
+//    reloadScriptButton->setDefaultAction(reloadScriptAct);
+//    reloadScriptButton->setIcon(QIcon(":/images/refresh.png"));
+//    reloadScriptButton->setIconSize(QSize(40, 40));
+    connect(reloadScriptButton, SIGNAL(clicked()), this, SLOT(reloadScript()));
+    connect(MainWindow::instance(), SIGNAL(debugModeChanged(bool)), reloadScriptButton, SLOT(setVisible(bool)));
 
-    applyButton = new QToolButton(this);
-    applyButton->setAutoRaise(true);
-    applyButton->setDefaultAction(applyAct);
-    applyButton->setIcon(QIcon(":/images/media-play-8x.png"));
-    applyButton->setIconSize(QSize(40, 40));
+    applyButton = new QPushButton("Apply", this);
+//    applyButton->setAutoRaise(true);
+//    applyButton->setDefaultAction(applyAct);
+//    applyButton->setIcon(QIcon(":/images/media-play-8x.png"));
+//    applyButton->setIconSize(QSize(40, 40));
+    connect(applyButton, &QPushButton::clicked, [=]()
+    {
+        if (!currentName.isEmpty())
+            sendSettings();
+    });
 
-    QHBoxLayout *buttonsLayout = new QHBoxLayout;
+    QVBoxLayout *buttonsLayout = new QVBoxLayout;
     buttonsLayout->addWidget(applyButton);
-    buttonsLayout->addWidget(refreshButton);
+    buttonsLayout->addWidget(reloadScriptButton);
 
     nameEdit = new QLineEdit;
     nameEdit->setReadOnly(true);

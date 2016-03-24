@@ -61,7 +61,7 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
+    Q_PROPERTY(bool debugMode READ debugMode WRITE setDebugMode NOTIFY debugModeChanged)
 public:
     enum ViewMode
     {
@@ -82,14 +82,16 @@ public:
 
 public:
     void build();
+    bool debugMode() {return m_debugMode;}
 
 public slots:
-//    void setRunAllMode(bool mode);
     void loadTrial();
     void loadAddOn();
     void showPlotViewer();
     void importDataFrame();
-      void msgBox(QString msg);
+    void msgBox(QString msg);
+    void setDebugMode(bool isDebugMode);
+
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -98,6 +100,7 @@ signals:
     void newTableSelection(QString name);
     void showHistory(QString line);
     void runAllTrialEnded();
+    void debugModeChanged(bool);
 
 private slots:
 //    void about();
@@ -177,8 +180,6 @@ private:
     void checkScreens();
     void createDockWindows();
     void initialiseToolBar();
-    void initViewActions();
-    void createViewActions();
     void createActions();
     void createMenus();
     void createToolBars();
@@ -200,7 +201,7 @@ private:
     //void loadModelUnconfigured(QString fileName);
     void loadModel(QString fileName,bool complete);
 
-
+    bool m_debugMode;
 public:
 
 
@@ -263,6 +264,7 @@ public:
 //    DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
     DiagramScene    *conversionScene;
+    QWidget         *conversionPage;
 //    PlotSettingsWindow      *plotSettingsWindow;
     SettingsWidget      *dataViewSettingsWidget;
 //    PlotViewer_old      *plotViewer;
@@ -384,6 +386,7 @@ public:
     QAction         *versionAct;
     QAction         *assistantAct;
     QAction         *setQuietModeAct;
+    QAction         *debugModeAct;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

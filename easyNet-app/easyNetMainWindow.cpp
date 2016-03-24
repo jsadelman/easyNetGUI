@@ -104,6 +104,7 @@ void MainWindow::build()
     diagramSceneTabChanged(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
     setQuietMode();
+    setDebugMode(false);
 
     #ifdef WIN32
     if (qApp->arguments().count() > 1)
@@ -117,9 +118,8 @@ void MainWindow::build()
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), m_debugMode(false)
 {
-
 }
 
 
@@ -222,6 +222,7 @@ void MainWindow::constructForms()
     conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
     conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+    conversionPage = diagramPanel->widget(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
@@ -343,6 +344,9 @@ void MainWindow::connectSignalsAndSlots()
        foreach(QString fb, rList)
            rLog->addText(fb);
     });
+
+
+
 
 }
 
@@ -551,6 +555,17 @@ void MainWindow::msgBox(QString msg)
     reply = QMessageBox::question(this, "Debug", msg,
                                   QMessageBox::Yes|QMessageBox::No);
 
+}
+
+void MainWindow::setDebugMode(bool isDebugMode)
+{
+    m_debugMode = isDebugMode;
+    if (isDebugMode)
+        diagramPanel->insertTab(conversionTabIdx, conversionPage, "Conversions");
+    else
+        diagramPanel->removeTab(conversionTabIdx);
+
+    emit debugModeChanged(isDebugMode);
 }
 
 void MainWindow::runScript()
@@ -1193,7 +1208,6 @@ void MainWindow::displayVersion(QString version)
 
 void MainWindow::createActions()
 {
-//    createViewActions();
 
 //    runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
 //    runAction->setStatusTip(tr("Run"));
@@ -1328,6 +1342,10 @@ void MainWindow::createActions()
     setQuietModeAct->setCheckable(true);
     connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
     setQuietModeAct->setChecked(true);
+
+    debugModeAct = new QAction(tr("Debug mode"), this);
+    debugModeAct->setCheckable(true);
+    connect(debugModeAct, SIGNAL(triggered(bool)), this, SLOT(setDebugMode(bool)));
 }
 
 void MainWindow::restart()
@@ -1374,7 +1392,9 @@ void MainWindow::createMenus()
     settingsSubMenu->addAction(setMediumFontAct);
     settingsSubMenu->addAction(setLargeFontAct);
     settingsMenu->addSeparator();
+    settingsMenu->addAction(debugModeAct);
     settingsMenu->addAction(setQuietModeAct);
+
 
 //    settingsMenu->addAction(synchModeAct);
 

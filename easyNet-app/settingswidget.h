@@ -42,13 +42,13 @@ protected slots:
                            QMap<QString, QString> defaultSettings=QMap<QString, QString>());
     void buildSettingsForm();
     void rebuildForm();
-    void refreshForm();
+    void reloadScript();
     void setCurrentSettings(QDomDocument *settingsList) {currentSettings = settingsList;}
     void setCurrentPlotName(QString name) {currentName = name;}
     void removeForm(QString name);
 
 protected:
-    void createActions();
+//    void createActions();
     void buildWidget();
     void clearForm();
     QString type(QString name);
@@ -60,10 +60,10 @@ protected:
     QDomDocument *currentSettings;
     ObjectCacheFilter *descriptionFilter;
     ObjectUpdater *descriptionUpdater;
-    QAction *refreshAct;
-    QAction *applyAct;
-    QToolButton *refreshButton;
-    QToolButton *applyButton;
+//    QAction *reloadScriptAct;
+//    QAction *applyAct;
+    QPushButton *reloadScriptButton;
+    QPushButton *applyButton;
     QLineEdit *nameEdit;
     QLineEdit *typeEdit;
     QScrollArea *formScrollArea;
