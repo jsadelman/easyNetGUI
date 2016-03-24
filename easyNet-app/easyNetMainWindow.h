@@ -165,6 +165,7 @@ private slots:
     void setFormInSettingsWidget(QString name);
     void switchFormInSettingsWidget(bool visible);
     void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
+    void showResultsViewer(QString name);
 
 protected:
     void closeEvent(QCloseEvent *event);

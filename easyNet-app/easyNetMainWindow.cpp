@@ -329,6 +329,8 @@ void MainWindow::connectSignalsAndSlots()
     connect(dataframeViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
             dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
 
+    connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
+
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
@@ -1066,6 +1068,20 @@ void MainWindow::switchFormInSettingsWidget(QTabWidget *panel)
         DataViewer *viewer = qobject_cast<DataViewer *>(panel->currentWidget());
         if (viewer)
             dataViewSettingsWidget->setForm(viewer->currentItemName());
+    }
+}
+
+void MainWindow::showResultsViewer(QString name)
+{
+    QString type = SessionManager::instance()->descriptionCache->type(name);
+    resultsDock->raise();
+    if (type == "dataframe")
+    {
+        resultsPanel->setCurrentWidget(dataframeResultsViewer);
+    }
+    else if (type == "xfile")
+    {
+        resultsPanel->setCurrentWidget(plotViewer);
     }
 }
 

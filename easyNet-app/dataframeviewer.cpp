@@ -229,6 +229,8 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     view->verticalHeader()->hide();
     view->horizontalHeader()->show();
     view->resizeColumnsToContents();
+
+    ui->setCurrentItem(name);
 }
 
 void DataframeViewer::showFindDialog()

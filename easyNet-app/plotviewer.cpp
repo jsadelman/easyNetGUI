@@ -390,7 +390,7 @@ void PlotViewer::displaySVG(QByteArray byteArray, QString cmd)
             if (name != ui->currentItemName())
             {
                 ui->setCurrentItem(name);
-                setCurrentItem(name);
+//                setCurrentItem(name);
             }
         }
     }

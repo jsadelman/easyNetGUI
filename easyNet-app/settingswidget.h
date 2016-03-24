@@ -35,6 +35,7 @@ public slots:
 
 signals:
     void dataViewCreated(QString, bool); // old newRPlotCreated
+    void settingsApplied(QString);
 
 
 protected slots:
@@ -42,6 +43,7 @@ protected slots:
                            QMap<QString, QString> defaultSettings=QMap<QString, QString>());
     void buildSettingsForm();
     void rebuildForm();
+    void apply();
     void reloadScript();
     void setCurrentSettings(QDomDocument *settingsList) {currentSettings = settingsList;}
     void setCurrentPlotName(QString name) {currentName = name;}

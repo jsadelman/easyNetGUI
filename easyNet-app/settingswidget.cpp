@@ -220,6 +220,15 @@ void SettingsWidget::rebuildForm()
     setForm(currentName);
 }
 
+void SettingsWidget::apply()
+{
+    if (!currentName.isEmpty())
+    {
+        sendSettings();
+        emit settingsApplied(currentName);
+    }
+}
+
 
 void SettingsWidget::reloadScript()
 {
@@ -276,6 +285,7 @@ void SettingsWidget::buildWidget()
 //    applyButton->setDefaultAction(applyAct);
 //    applyButton->setIcon(QIcon(":/images/media-play-8x.png"));
 //    applyButton->setIconSize(QSize(40, 40));
+    connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
     connect(applyButton, &QPushButton::clicked, [=]()
     {
         if (!currentName.isEmpty())
