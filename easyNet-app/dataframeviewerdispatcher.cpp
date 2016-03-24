@@ -81,7 +81,6 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
             jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
             jobs.last()->appendEndOfJobReceiver(SessionManager::instance(), SLOT(clearCopyRequested()));
             SessionManager::instance()->copyTrialRunInfo(trialRunInfo.results, backupDf);
-            host->setPrettyHeadersForTrial(trialRunInfo.trial, backupDf);
         }
         break;
     }
@@ -92,7 +91,6 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         {
             SessionManager::instance()->setTrialRunInfo(trialRunInfo.results, info);
             host->addItem(trialRunInfo.results, false);
-            host->setPrettyHeadersForTrial(trialRunInfo.trial, trialRunInfo.results);
         }
         break;
     }

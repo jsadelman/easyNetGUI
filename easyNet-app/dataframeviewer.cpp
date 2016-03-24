@@ -3,7 +3,6 @@
 #include "lazynutjob.h"
 #include "enumclasses.h"
 #include "sessionmanager.h"
-#include "prettyheadersmodel.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "dataframemodel.h"
@@ -138,9 +137,7 @@ void DataframeViewer::copyDataframe()
     jobData.insert("isBackup", true);
     if (dispatcher)
     {
-//        jobData.insert("trialRunInfo", dispatcher->infoVariantList(originalDf));
         SessionManager::instance()->copyTrialRunInfo(originalDf, copyDf);
-        setPrettyHeadersForTrial(dispatcher->trial(originalDf), copyDf);
     }
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
@@ -163,8 +160,6 @@ void DataframeViewer::destroyItem_impl(QString name)
 {
         delete modelMap.value(name, nullptr);
         modelMap.remove(name);
-        if (prettyHeadersModelMap.contains(name))
-            delete prettyHeadersModelMap.value(name);
 }
 
 void DataframeViewer::enableActions(bool enable)
@@ -187,7 +182,6 @@ void DataframeViewer::setCurrentItem(QString name)
     if (isLazy())
     {
         dataframeFilter->setName(name);
-//        dataframeDescriptionFilter->setName(name);
     }
 }
 
@@ -204,19 +198,10 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
                 this, SLOT(setParameter(QString,QString)));
 
-    dfModel->setName(name); // needed?
-    PrettyHeadersModel *prettyHeadersModel = nullptr;
-    if (prettyHeadersModelMap.contains(name))
-    {
-        prettyHeadersModel = prettyHeadersModelMap.value(name);
-        prettyHeadersModel->setSourceModel(dfModel);
-    }
-    bool isNewModel = (modelMap.value(name) == nullptr);
     // needs to be changed for splitters
     QTableView *view = qobject_cast<QTableView*>(ui->view(name));
-    if (isNewModel)
+    if (!modelMap.value(name))
     {
-//        view = new QTableView(this);
         if (dragDropColumns())
         {
              DataFrameHeader* dragDropHeader = new DataFrameHeader(view);
@@ -231,8 +216,6 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
             view->setEditTriggers(QAbstractItemView::AllEditTriggers);
         else
             view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-//        viewMap.insert(name, view);
-//        ui->addItem(name, view);
     }
     else
     {
@@ -242,10 +225,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         delete m;
     }
     modelMap[name] = dfModel;
-    if (prettyHeadersModel)
-        view->setModel(prettyHeadersModel);
-    else
-        view->setModel(dfModel);
+    view->setModel(modelMap[name]);
     view->verticalHeader()->hide();
     view->horizontalHeader()->show();
     view->resizeColumnsToContents();
@@ -332,7 +312,6 @@ void DataframeViewer::sendNewPlotRequest()
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
         QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
-//        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         emit createDataViewRequested(plotName, "rplot", plotType, settings);
     }
 }
@@ -350,9 +329,7 @@ void DataframeViewer::sendNewDataframeViewRequest()
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
         QString dataframeViewName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
-//        QList<QSharedPointer<QDomDocument> > info = dispatcher ? SessionManager::instance()->trialRunInfo(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
         requestedDataframeViews.append(dataframeViewName);
-//        emit newDataframeViewRequested(dataframeViewName, dataframeViewScript, settings);
         emit createDataViewRequested(dataframeViewName, "dataframe_view", dataframeViewScript, settings);
     }
 }
@@ -403,15 +380,6 @@ void DataframeViewer::addExtraActions()
     ui->editToolBar->addAction(copyDFAct);
     connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
 
-//    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
-//    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
-//    dataframeMergeAct->setVisible(true);
-//    dataframeMergeAct->setEnabled(false);
-//    ui->editToolBar->addAction(dataframeMergeAct);
-//    connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
-
-
-
     plotButton = new QToolButton(this);
     plotButton->setIcon(QIcon(":/images/barchart2.png"));
     plotButton->setVisible(true);
@@ -451,16 +419,6 @@ void DataframeViewer::addExtraActions()
 
 }
 
-void DataframeViewer::setPrettyHeadersForTrial(QString trial, QString df)
-{
-    PrettyHeadersModel *prettyHeadersModel = new PrettyHeadersModel(this);
-/*    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
-    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
-    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
-    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
-    prettyHeadersModelMap.insert(df, prettyHeadersModel);
-*/
-}
 
 void DataframeViewer::dispatch()
 {

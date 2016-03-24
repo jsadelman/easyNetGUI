@@ -8,7 +8,6 @@
 #include <QTextDocument>
 
 class DataFrameModel;
-class PrettyHeadersModel;
 class QTableView;
 class ObjectCacheFilter;
 class ObjectUpdater;
@@ -33,13 +32,11 @@ public:
     void setParametersTable(bool isParametersTable);
 
 public slots:
-    void setPrettyHeadersForTrial(QString trial, QString df);
     virtual void dispatch() Q_DECL_OVERRIDE;
     virtual void open() Q_DECL_OVERRIDE;
     virtual void save() Q_DECL_OVERRIDE;
     virtual void copy() Q_DECL_OVERRIDE;
     void copyDataframe();
-//    void dataframeMerge();
     virtual void addRequestedItem(QString name="", bool isBackup=false);
     virtual void snapshot(QString name="") Q_DECL_OVERRIDE {Q_UNUSED(name)}
 
@@ -59,7 +56,6 @@ signals:
     void stimulusSetChanged(bool);
     void parametersTableChanged(bool);
     void createDataViewRequested(QString name, QString dataViewType, QString rScript, QMap<QString, QString> defaultSettings, bool isBackup = false);
-//    void newDataframeViewRequested(QString name, QString type, QMap<QString, QString> defaultSettings, bool isBackup = false);
 
 protected:
     virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
@@ -69,14 +65,9 @@ protected:
     virtual void setNameInFilter(QString name);
     void addExtraActions();
 
-
-
     QMap<QString, DataFrameModel*> modelMap;
-    QMap<QString, PrettyHeadersModel*> prettyHeadersModelMap;
     ObjectCacheFilter *dataframeFilter;
     ObjectUpdater *dataframeUpdater;
-//    ObjectCacheFilter *dataframeDescriptionFilter;
-//    ObjectUpdater *dataframeDescriptionUpdater;
     QStringList requestedDataframeViews;
     bool m_dragDropColumns;
     bool m_stimulusSet;
@@ -84,10 +75,8 @@ protected:
     FindDialog*     findDialog;
     QAction *findAct;
     QAction *copyDFAct;
-//    QAction *dataframeMergeAct;
     QToolButton *plotButton;
     QToolButton *dataframeViewButton;
-
 };
 
 #endif // DATAFRAMEVIEWER_H

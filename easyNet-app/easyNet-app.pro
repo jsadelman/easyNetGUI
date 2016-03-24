@@ -102,7 +102,7 @@ SOURCES +=  \
     xmlaccessor.cpp \
     objectnamevalidator.cpp \
     lazynutjob.cpp \
-    prettyheadersmodel.cpp \
+#    prettyheadersmodel.cpp \
  #   tablewindow.cpp \
  #   tablewidgetinterface.cpp \
  #   tabstablewidget.cpp \
@@ -201,7 +201,7 @@ HEADERS  += \
     objectnamevalidator.h \
     lazynutjob.h \
     jobqueue.h \
-    prettyheadersmodel.h \
+#    prettyheadersmodel.h \
 #    tablewindow.h \
 #    tablewidgetinterface.h \
 #    tabstablewidget.h \

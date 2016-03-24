@@ -52,7 +52,6 @@
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"
-#include "prettyheadersmodel.h"
 #include "enumclasses.h"
 #include "tablewindow.h"
 #include "dataframeviewer.h"
