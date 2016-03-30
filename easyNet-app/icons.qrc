@@ -169,5 +169,7 @@
         <file>images/save_as_download_disk.png</file>
         <file>images/formula.png</file>
         <file>images/setting.png</file>
+        <file>images/download.png</file>
+        <file>images/parameters.png</file>
     </qresource>
 </RCC>

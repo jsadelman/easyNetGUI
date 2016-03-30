@@ -109,7 +109,7 @@ QStringList ObjectUpdater::getObjectNames(int first, int last)
     return names;
 }
 
-void ObjectUpdater::requestObject(QString name)
+void ObjectUpdater::requestObject(QString name, QString command)
 {
     if (name.isEmpty())
     {
@@ -121,7 +121,7 @@ void ObjectUpdater::requestObject(QString name)
     {
         objectCache->setPending(name, false);
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList = QStringList({QString("xml %1 %2").arg(name).arg(m_command)});
+        job->cmdList = QStringList({QString("xml %1 %2").arg(name).arg(command.isEmpty() ? m_command : command)});
         job->setAnswerReceiver(objectCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
         job->appendErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
         SessionManager::instance()->submitJobs(job);

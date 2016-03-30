@@ -23,12 +23,13 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
-    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false)
+    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false),
+      maxRows(80), maxCols(20)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
 //    dataframeUpdater->setCommand("get");
-    dataframeUpdater->setCommand("get 1-80 1-20"); // restricted get to save time/memory
+    dataframeUpdater->setCommand(QString("get 1-%1 1-%2").arg(maxRows).arg(maxCols));
     dataframeUpdater->setProxyModel(dataframeFilter);
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
@@ -115,11 +116,14 @@ void DataframeViewer::save()
 void DataframeViewer::copy()
 {
     // this is an illegal approach -- get R to copy the df to the clipboard
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)")
-                                .arg(ui->currentItemName())});
-    SessionManager::instance()->submitJobs(job);
+//    LazyNutJob *job = new LazyNutJob;
+//    job->logMode |= ECHO_INTERPRETER;
+//    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)")
+//                                .arg(ui->currentItemName())});
+//    SessionManager::instance()->submitJobs(job);
+    DataFrameModel *model = modelMap.value(ui->currentItemName());
+    if (model)
+        qApp->clipboard()->setText(model->writeTable());
 }
 
 
@@ -165,6 +169,7 @@ void DataframeViewer::destroyItem_impl(QString name)
 void DataframeViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
+    getAllAct->setEnabled(enable && partiallyLoaded(ui->currentItemName()));
     findAct->setEnabled(enable);
     copyDFAct->setEnabled(enable);
     plotButton->setEnabled(enable);
@@ -232,6 +237,14 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     view->resizeColumnsToContents();
 
     ui->setCurrentItem(name);
+}
+
+void DataframeViewer::getEntireDataframe()
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({QString("xml %1 get").arg(ui->currentItemName())});
+    job->setAnswerReceiver(SessionManager::instance()->dataframeCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+    SessionManager::instance()->submitJobs(job);
 }
 
 void DataframeViewer::showFindDialog()
@@ -368,6 +381,13 @@ void DataframeViewer::setNameInFilter(QString name)
 
 void DataframeViewer::addExtraActions()
 {
+    getAllAct = new QAction(QIcon(":/images/download.png"), "get entire table", this);
+    getAllAct->setToolTip("Get the entire dataframe");
+    getAllAct->setVisible(true);
+    getAllAct->setEnabled(false);
+    ui->editToolBar->addAction(getAllAct);
+    connect(getAllAct, SIGNAL(triggered()), this, SLOT(getEntireDataframe()));
+
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
     findAct->setToolTip(tr("Find text in this table"));
@@ -420,6 +440,18 @@ void DataframeViewer::addExtraActions()
     dataframeViewButton->setMenu(dataframeViewMenu);
     ui->editToolBar->addWidget(dataframeViewButton);
 
+}
+
+bool DataframeViewer::partiallyLoaded(QString name)
+{
+    if (name.isEmpty())
+        name = ui->currentItemName();
+    if (name.isEmpty() || !SessionManager::instance()->exists(name))
+        return false;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return false;
+    return XMLelement(*description)["rows"]().toInt() > maxRows || XMLelement(*description)["columns"]().toInt() > maxCols;
 }
 
 

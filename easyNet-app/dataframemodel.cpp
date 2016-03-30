@@ -61,6 +61,20 @@ QStringList DataFrameModel::colNames()
     return cols;
 }
 
+QString DataFrameModel::writeTable()
+{
+    QString output = colNames().join("\t").append("\n");
+    QStringList rowList;
+    for (int row = 0; row < rowCount(); ++row)
+    {
+        rowList.clear();
+        for (int col = 0; col < columnCount(); ++col)
+            rowList.append(data(index(row, col), Qt::DisplayRole).toString());
+        output.append(rowList.join("\t").append("\n"));
+    }
+    return output;
+}
+
 bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
     if (index.column() == 0) // can't edit parameter names

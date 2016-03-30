@@ -57,7 +57,7 @@ public:
 //    QMimeData *mimeData(const QModelIndexList &indexes) const;
     QString name() {return m_name;}
 //    QTableView *view() {return m_view;}
-
+    QString writeTable();
 
     bool setData(const QModelIndex &index, const QVariant &value, int role) Q_DECL_OVERRIDE;
 

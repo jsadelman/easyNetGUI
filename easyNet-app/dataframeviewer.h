@@ -45,6 +45,7 @@ protected slots:
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
     void updateDataframe(QDomDocument* domDoc, QString name);
+    void getEntireDataframe();
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void setParameter(QString name, QString key_val);
@@ -64,6 +65,7 @@ protected:
     virtual void removeNameFromFilter(QString name);
     virtual void setNameInFilter(QString name);
     void addExtraActions();
+    bool partiallyLoaded(QString name = "");
 
     QMap<QString, DataFrameModel*> modelMap;
     ObjectCacheFilter *dataframeFilter;
@@ -73,10 +75,13 @@ protected:
     bool m_stimulusSet;
     bool m_parametersTable;
     FindDialog*     findDialog;
+    QAction *getAllAct;
     QAction *findAct;
     QAction *copyDFAct;
     QToolButton *plotButton;
     QToolButton *dataframeViewButton;
+    int maxRows;
+    int maxCols;
 };
 
 #endif // DATAFRAMEVIEWER_H
