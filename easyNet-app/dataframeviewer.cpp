@@ -24,7 +24,7 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false),
-      maxRows(80), maxCols(20), maxFirstDisplayCells(10000), maxDisplayCells(100000)
+      maxRows(80), maxCols(20), maxFirstDisplayCells(10000), maxDisplayCells(50000)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
@@ -520,8 +520,9 @@ void DataframeViewer::limitedGet(QString name, int maxCells)
         return;
     int rows = XMLelement(*description)["rows"]().toInt();
     int cols = XMLelement(*description)["columns"]().toInt();
+
     if ((rows > modelMap[name]->rowCount() || cols > modelMap[name]->columnCount())  &&
-            (modelMap[name]->rowCount() * modelMap[name]->columnCount() < maxCells - qMin(modelMap[name]->rowCount(),  modelMap[name]->columnCount())))
+            (modelMap[name]->rowCount() * modelMap[name]->columnCount() < maxCells - qMin(rows,  cols)))
     {
         QString restriction;
         if (rows * cols > maxCells)
