@@ -24,7 +24,7 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false),
-      maxRows(80), maxCols(20)
+      maxRows(80), maxCols(20), maxFirstDisplayCells(10000), maxDisplayCells(100000)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
@@ -198,6 +198,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         eNerror << QString("attempt to update non-existing dataframe %1").arg(name);
         return;
     }
+
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
     dfModel->setName(name);
     if (parametersTable())
@@ -237,6 +238,35 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     view->resizeColumnsToContents();
 
     ui->setCurrentItem(name);
+    enableActions(true);
+    limitedGet(name, maxFirstDisplayCells);
+}
+
+void DataframeViewer::askGetEntireDataframe()
+{
+    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
+        getEntireDataframe();
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("Large dataframe");
+        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                  "Do you want to load it anyway or rather load up to %1 cells?").arg(maxDisplayCells));
+        msgBox.setStandardButtons(QMessageBox::Cancel);
+        QPushButton *limitedLoadButton = msgBox.addButton(tr("Limited load"), QMessageBox::AcceptRole);
+        QPushButton *fullLoadButton = msgBox.addButton(tr("Full load"), QMessageBox::RejectRole);
+        msgBox.setDefaultButton(limitedLoadButton);
+        int ret = msgBox.exec();
+        if (ret == QMessageBox::Cancel)
+            return;
+        if (msgBox.clickedButton() == limitedLoadButton)
+            limitedGet(ui->currentItemName(), maxDisplayCells);
+        else if (msgBox.clickedButton() == fullLoadButton)
+            getEntireDataframe();
+        else
+            return;
+    }
 }
 
 void DataframeViewer::getEntireDataframe()
@@ -386,7 +416,7 @@ void DataframeViewer::addExtraActions()
     getAllAct->setVisible(true);
     getAllAct->setEnabled(false);
     ui->editToolBar->addAction(getAllAct);
-    connect(getAllAct, SIGNAL(triggered()), this, SLOT(getEntireDataframe()));
+    connect(getAllAct, SIGNAL(triggered()), this, SLOT(askGetEntireDataframe()));
 
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
@@ -446,12 +476,64 @@ bool DataframeViewer::partiallyLoaded(QString name)
 {
     if (name.isEmpty())
         name = ui->currentItemName();
-    if (name.isEmpty() || !SessionManager::instance()->exists(name))
+    if (name.isEmpty() || !SessionManager::instance()->exists(name) || !modelMap[name])
         return false;
     QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
     if (!description)
         return false;
-    return XMLelement(*description)["rows"]().toInt() > maxRows || XMLelement(*description)["columns"]().toInt() > maxCols;
+    return XMLelement(*description)["rows"]().toInt() > modelMap[name]->rowCount() ||
+            XMLelement(*description)["columns"]().toInt() > modelMap[name]->columnCount();
+}
+
+bool DataframeViewer::dataframeExceedsCellLimit(QString name, int maxCells)
+{
+    if (maxCells < 1)
+        return true;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return false;
+    int rows = XMLelement(*description)["rows"]().toInt();
+    int cols = XMLelement(*description)["columns"]().toInt();
+    return rows * cols > maxCells;
+}
+
+void DataframeViewer::limitedGet(QString name, int maxCells)
+{
+    if (maxCells < 1)
+        return;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return;
+    int rows = XMLelement(*description)["rows"]().toInt();
+    int cols = XMLelement(*description)["columns"]().toInt();
+    if ((rows > modelMap[name]->rowCount() || cols > modelMap[name]->columnCount())  &&
+            (modelMap[name]->rowCount() * modelMap[name]->columnCount() < maxCells - qMin(modelMap[name]->rowCount(),  modelMap[name]->columnCount())))
+    {
+        QString restriction;
+        if (rows * cols > maxCells)
+        {
+            if (rows <= cols)
+            {
+                int get_cols = (int)maxCells / rows;
+                if (get_cols > 0)
+                    restriction = QString("1-%1 1-%2").arg(rows).arg(get_cols);
+                else
+                    restriction = QString("1-%1 1-1").arg(maxCells);
+            }
+            else
+            {
+                int get_rows = (int)maxCells / cols;
+                if (get_rows > 0)
+                    restriction = QString("1-%1 1-%2").arg(get_rows).arg(cols);
+                else
+                    restriction = QString("1-1 1-%1").arg(maxCells);
+            }
+        }
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList = QStringList({QString("xml %1 get %2").arg(name).arg(restriction)});;
+        job->setAnswerReceiver(SessionManager::instance()->dataframeCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+        SessionManager::instance()->submitJobs(job);
+    }
 }
 
 

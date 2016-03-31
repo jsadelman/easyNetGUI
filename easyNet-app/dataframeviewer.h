@@ -45,6 +45,7 @@ protected slots:
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
     void updateDataframe(QDomDocument* domDoc, QString name);
+    void askGetEntireDataframe();
     void getEntireDataframe();
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
@@ -66,6 +67,9 @@ protected:
     virtual void setNameInFilter(QString name);
     void addExtraActions();
     bool partiallyLoaded(QString name = "");
+    bool dataframeExceedsCellLimit(QString name, int maxCells);
+    void limitedGet(QString name, int maxCells);
+
 
     QMap<QString, DataFrameModel*> modelMap;
     ObjectCacheFilter *dataframeFilter;
@@ -82,6 +86,8 @@ protected:
     QToolButton *dataframeViewButton;
     int maxRows;
     int maxCols;
+    int maxFirstDisplayCells;
+    int maxDisplayCells;
 };
 
 #endif // DATAFRAMEVIEWER_H
