@@ -69,6 +69,7 @@ protected:
     bool partiallyLoaded(QString name = "");
     bool dataframeExceedsCellLimit(QString name, int maxCells);
     void limitedGet(QString name, int maxCells);
+    void doCopy();
 
 
     QMap<QString, DataFrameModel*> modelMap;

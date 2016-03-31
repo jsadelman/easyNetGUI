@@ -99,6 +99,7 @@ void DataframeViewer::open()
 
 void DataframeViewer::save()
 {
+    // this is an illegal approach -- get R to copy the df to file
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Save as CSV file"),
                         lastSaveDir.isEmpty() ? defaultSaveDir : lastOpenDir,
@@ -115,15 +116,28 @@ void DataframeViewer::save()
 
 void DataframeViewer::copy()
 {
-    // this is an illegal approach -- get R to copy the df to the clipboard
-//    LazyNutJob *job = new LazyNutJob;
-//    job->logMode |= ECHO_INTERPRETER;
-//    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)")
-//                                .arg(ui->currentItemName())});
-//    SessionManager::instance()->submitJobs(job);
-    DataFrameModel *model = modelMap.value(ui->currentItemName());
-    if (model)
-        qApp->clipboard()->setText(model->writeTable());
+    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
+        doCopy();
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("Large dataframe");
+        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                  "Do you want to copy it to clipboard anyway or rather save it to file?").arg(maxDisplayCells));
+        msgBox.setStandardButtons( QMessageBox::Save | QMessageBox::Cancel);
+        QPushButton *fullCopyButton = msgBox.addButton(tr("Full copy"), QMessageBox::RejectRole);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+        if (ret == QMessageBox::Cancel)
+            return;
+        else if (ret == QMessageBox::Save)
+            save();
+        else if (msgBox.clickedButton() == fullCopyButton)
+            doCopy();
+        else
+            return;
+    }
 }
 
 
@@ -534,6 +548,22 @@ void DataframeViewer::limitedGet(QString name, int maxCells)
         job->setAnswerReceiver(SessionManager::instance()->dataframeCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
         SessionManager::instance()->submitJobs(job);
     }
+}
+
+void DataframeViewer::doCopy()
+{
+    // this is an illegal approach -- get R to copy the df to the clipboard
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard-100000\", sep=\"\\t\", row.names=FALSE)")
+                                .arg(ui->currentItemName())});
+    // clipboard-100000 sets the clipboard size to 100000K. Note that a larger number does not work. The default (on Windows) is 33K
+    SessionManager::instance()->submitJobs(job);
+    // the legal one is:
+
+    //    DataFrameModel *model = modelMap.value(ui->currentItemName());
+    //    if (model)
+    //        qApp->clipboard()->setText(model->writeTable());
 }
 
 
