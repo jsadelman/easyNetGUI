@@ -26,7 +26,7 @@ Box::Box()
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618),
       m_labelPointSize(9),
-      default_input_observer_Rex("default_input_observer (\\d+)"),
+      default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
       enabledObserverSet(),
       m_defaultPlotTypes(),
       m_layerTransfer()
@@ -178,18 +178,20 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         QList<QAction*> actionList;
         foreach (QString observer, defaultObservers.keys())
         {
-            QString dataframe = QString("(%1 default_dataframe)").arg(observer);
+            QString dataframe = observer;
             QString portPrettyName, rplotName;
-            if (observer.contains("default_observer"))
+            if (observer.contains("input_channel"))
+            {
+//                int i = default_input_observer_Rex.indexIn(observer);
+//                portPrettyName = m_ports.value(default_input_observer_Rex.cap(1));
+                int i = default_input_observer_Rex.indexIn(observer);
+                portPrettyName = default_input_observer_Rex.cap(1);
+                rplotName = QString("%1.%2").arg(m_name).arg(portPrettyName);
+            }
+            else if (observer.contains("default_observer"))
             {
                 portPrettyName = "state";
                 rplotName = QString("%1.state").arg(m_name);
-            }
-            else if (observer.contains("default_input_observer"))
-            {
-                int i = default_input_observer_Rex.indexIn(observer);
-                portPrettyName = m_ports.value(default_input_observer_Rex.cap(1));
-                rplotName = QString("%1.%2").arg(m_name).arg(portPrettyName);
             }
             QMenu *portMenu = plotMenu->addMenu(portPrettyName);
             foreach(QString plotType, defaultPlotTypes())
@@ -228,9 +230,11 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 {
                     QMap<QString,QString> settings;
                     settings["df"] = plotData.value("dataframe").toString();
-                    emit createNewRPlot(plotData.value("rplotName").toString(),
-                                        plotData.value("plotType").toString().append(".R"),
-                                        settings, Plot_AnyTrial);
+                    emit createDataViewRequested(   plotData.value("rplotName").toString(),
+                                                    "rplot",
+                                                    plotData.value("plotType").toString().append(".R"),
+                                                    settings,
+                                                    false);
                 }
             }
             else
@@ -264,7 +268,7 @@ void Box::setupDefaultObserverFilter()
     if (m_lazyNutType == "layer")
     {
         defaultObserverFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-        QRegExp rex(QString("^\\(%1 .*observer[^)]*\\)$").arg(m_name));
+        QRegExp rex(QString("^\\(+%1 .*default_observer\\)$").arg(m_name));
         defaultObserverFilter->setFilterRegExp(rex);
         defaultObserverFilter->setFilterKeyColumn(ObjectCache::NameCol);
         defaultObserverUpdater = new ObjectUpdater(this);
@@ -295,7 +299,7 @@ void Box::setupDefaultObserverFilter()
             {
                 observerOfPlot.remove(name);
                 if (!observerOfPlot.values().contains(observer))
-                    enableObserver(observerOfPlot.value(name), false);
+                    enableObserver(observer, false);
             }
 //            updateObservedState();
         });

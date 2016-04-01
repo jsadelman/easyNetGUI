@@ -3,12 +3,25 @@
 
 #include <QMainWindow>
 #include <QMap>
+#include <QDebug>
 
 class DataViewer;
 class QSignalMapper;
 class QActionGroup;
 class ObjectCacheFilter;
 class ObjectUpdater;
+class QVBoxLayout;
+
+class WidgetFwdResizeEvent : public QWidget
+{
+    Q_OBJECT
+public:
+    WidgetFwdResizeEvent(QWidget *parent =0): QWidget(parent) {}
+signals:
+    void resizeEventOccured(QResizeEvent * event);
+protected:
+    virtual void resizeEvent(QResizeEvent * event) Q_DECL_OVERRIDE {emit resizeEventOccured(event);}
+};
 
 class Ui_DataViewer: public QMainWindow
 {
@@ -29,22 +42,23 @@ public:
     QAction *saveAct;
     QAction *copyAct;
     QAction *destroyAct;
-
+    QAction *settingsAct;
 
 //    QAction *infoAct;
 
-    QList<QAction *> setDispatchModeOverrideActs;
-    QSignalMapper *setDispatchModeOverrideMapper;
-    QActionGroup *setDispatchModeOverrideActGroup;
-    QAction *setDispatchModeAutoAct;
+//    QList<QAction *> setDispatchModeOverrideActs;
+//    QSignalMapper *setDispatchModeOverrideMapper;
+//    QActionGroup *setDispatchModeOverrideActGroup;
+//    QAction *setDispatchModeAutoAct;
 
 
-    QMap<int, QString> dispatchModeName;
-    QMap<int, QString> dispatchModeIconName;
+//    QMap<int, QString> dispatchModeName;
+//    QMap<int, QString> dispatchModeIconName;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QToolBar *dispatchToolBar;
+    WidgetFwdResizeEvent *mainWidget;
 //    QToolBar *infoToolBar;
 
 
@@ -58,7 +72,10 @@ signals:
     void currentItemChanged(QString);
     void usePrettyNamesChanged(bool);
 
+
 protected:
+
+
     virtual void createActions();
     virtual void createToolBars();
     virtual void createViewer()=0;
@@ -68,6 +85,8 @@ protected:
     ObjectUpdater *itemDescriptionUpdater;
     bool m_usePrettyNames;
     QMap<QString, QString> prettyName;
+    QVBoxLayout *mainLayout;
+
 
 };
 

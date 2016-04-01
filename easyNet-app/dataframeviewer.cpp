@@ -3,7 +3,6 @@
 #include "lazynutjob.h"
 #include "enumclasses.h"
 #include "sessionmanager.h"
-#include "prettyheadersmodel.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "dataframemodel.h"
@@ -13,6 +12,7 @@
 #include "dataviewerdispatcher.h"
 #include "settingsform.h"
 #include "dataframemergesettingsformdialog.h"
+#include "xmlelement.h"
 
 
 #include <QSettings>
@@ -23,74 +23,42 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
-    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false)
+    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false),
+      maxRows(80), maxCols(20), maxFirstDisplayCells(10000), maxDisplayCells(50000)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
 //    dataframeUpdater->setCommand("get");
-    dataframeUpdater->setCommand("get 1-80 1-20"); // restricted get to save time/memory
+    dataframeUpdater->setCommand(QString("get 1-%1 1-%2").arg(maxRows).arg(maxCols));
     dataframeUpdater->setProxyModel(dataframeFilter);
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
-    destroyedObjectsFilter->setType("dataframe");
+    connect(dataframeUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*,QString name)
+    {
+        if (dispatcher)
+            dispatcher->updateInfo(name);
+    });
+
+//    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+//    dataframeDescriptionUpdater = new ObjectUpdater(this);
+//    dataframeDescriptionUpdater->setCommand("description");
+//    dataframeDescriptionUpdater->setProxyModel(dataframeDescriptionFilter);
     findDialog = new FindDialog(this);
     findDialog->hideExtendedOptions();
     connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
             this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
+    requestedDataframeViews.clear();
 
-    // because DataframeViewer::enableActions won't be called by te ctor, only DataViewer::enableActions
-    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
-    findAct->setShortcuts(QKeySequence::Find);
-    findAct->setToolTip(tr("Find text in this table"));
-    findAct->setVisible(true);
-    findAct->setEnabled(false);
-    ui->editToolBar->addAction(findAct);
-    connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+    addExtraActions();
+}
 
-    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
-    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
-    copyDFAct->setVisible(true);
-    copyDFAct->setEnabled(false);
-    ui->editToolBar->addAction(copyDFAct);
-    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
-
-    dataframeMergeAct = new QAction(QIcon(":/images/Merge_Icon.png"), tr("&Merge two dataframes"), this);
-    dataframeMergeAct->setStatusTip(tr("Merge two dataframes"));
-    dataframeMergeAct->setVisible(true);
-    dataframeMergeAct->setEnabled(false);
-    ui->editToolBar->addAction(dataframeMergeAct);
-    connect(dataframeMergeAct, SIGNAL(triggered()), this, SLOT(dataframeMerge()));
-
-    plotButton = new QToolButton(this);
-    plotButton->setIcon(QIcon(":/images/barchart2.png"));
-    plotButton->setVisible(true);
-    plotButton->setEnabled(false);
-    plotButton->setPopupMode(QToolButton::InstantPopup);
-    QMenu *plotMenu = new QMenu(plotButton);
-    // temporary: show all available R scripts
-    QDir rPlotsDir(SessionManager::instance()->defaultLocation("rPlotsDir"));
-    rPlotsDir.setNameFilters(QStringList({"*.R"}));
-    foreach(QString plotType, rPlotsDir.entryList())
-    {
-        QAction *plotAct = new QAction(plotType, this);
-        connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
-        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showPlotSettings()));
-        plotMenu->addAction(plotAct);
-    }
-    plotButton->setMenu(plotMenu);
-    ui->editToolBar->addWidget(plotButton);
-
-//    plotAct = new QAction(QIcon(":/images/barchart2.png"), tr("plot"), this);
-//    plotAct->setStatusTip(tr("Create a plot baesd on the current dataframe"));
-//    plotAct->setVisible(true);
-//    plotAct->setEnabled(false);
-//    ui->editToolBar->addAction(plotAct);
-//    QToolButton *plotButton = qobject_cast<QToolButton *>(ui->editToolBar->widgetForAction(plotAct));
-//    plotButton->setPopupMode(QToolButton::InstantPopup);
-//    plotButton->addAction(new QAction("a", this));
-
-
-//    connect(plotAct, SIGNAL(triggered()), this, SLOT(sendCreateNewPlot()));
+void DataframeViewer::setParametersTable(bool isParametersTable)
+{
+    m_parametersTable = isParametersTable;
+    ui->settingsAct->setVisible(!isParametersTable);
+    plotButton->setVisible(!isParametersTable);
+    dataframeViewButton->setVisible(!isParametersTable);
+    emit parametersTableChanged(isParametersTable);
 }
 
 
@@ -122,9 +90,7 @@ void DataframeViewer::open()
                 << SessionManager::instance()->recentlyModifiedJob();
         QMap<QString, QVariant> jobData;
         jobData.insert("name", dfName);
-        jobData.insert("setCurrent", true);
         jobData.insert("isBackup", false);
-
         jobs.last()->data = jobData;
         jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
         SessionManager::instance()->submitJobs(jobs);
@@ -133,6 +99,7 @@ void DataframeViewer::open()
 
 void DataframeViewer::save()
 {
+    // this is an illegal approach -- get R to copy the df to file
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Save as CSV file"),
                         lastSaveDir.isEmpty() ? defaultSaveDir : lastOpenDir,
@@ -149,13 +116,30 @@ void DataframeViewer::save()
 
 void DataframeViewer::copy()
 {
-    // this is an illegal approach -- get R to copy the df to the clipboard
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)")
-                                .arg(ui->currentItemName())});
-    SessionManager::instance()->submitJobs(job);
+    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
+        doCopy();
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("Large dataframe");
+        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                  "Do you want to copy it to clipboard anyway or rather save it to file?").arg(maxDisplayCells));
+        msgBox.setStandardButtons( QMessageBox::Save | QMessageBox::Cancel);
+        QPushButton *fullCopyButton = msgBox.addButton(tr("Full copy"), QMessageBox::RejectRole);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+        if (ret == QMessageBox::Cancel)
+            return;
+        else if (ret == QMessageBox::Save)
+            save();
+        else if (msgBox.clickedButton() == fullCopyButton)
+            doCopy();
+        else
+            return;
+    }
 }
+
 
 void DataframeViewer::copyDataframe()
 {
@@ -167,12 +151,11 @@ void DataframeViewer::copyDataframe()
     job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 copy %2").arg(originalDf).arg(copyDf);
     QMap<QString, QVariant> jobData;
-    jobData.insert("dfName", copyDf);
-    jobData.insert("setCurrent", true);
+    jobData.insert("name", copyDf);
+    jobData.insert("isBackup", true);
     if (dispatcher)
     {
-        jobData.insert("trialRunInfo", dispatcher->infoVariantList(originalDf));
-        setPrettyHeadersForTrial(dispatcher->trial(originalDf), copyDf);
+        SessionManager::instance()->copyTrialRunInfo(originalDf, copyDf);
     }
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
@@ -183,61 +166,11 @@ void DataframeViewer::copyDataframe()
 
 }
 
-void DataframeViewer::dataframeMerge()
+void DataframeViewer::addRequestedItem(QString name, bool isBackup)
 {
-    // load XML
-    QDomDocument* domDoc = new QDomDocument;
-    QFile file(QString("%1/XML_files/dataframe_merge.xml").arg(SessionManager::instance()->easyNetHome()));
-    if (!file.open(QIODevice::ReadOnly) || !domDoc->setContent(&file))
-    {
-        delete domDoc;
-        file.close();
-        return;
-    }
-    file.close();
-    // setup form
-    SettingsForm *form = new SettingsForm(domDoc, this);
-    form->setUseRFormat(false);
-    QMap<QString, QString> preFilledSettings;
-    preFilledSettings["x"] = ui->currentItemName();
-    preFilledSettings["y"] = SessionManager::instance()->currentSet();
-    form->setDefaultSettings(preFilledSettings);
-    // setup dialog
-    QString info("Select two dataframes you want to merge into one. Their key columns should match.");
-    DataframeMergeSettingsFormDialog dialog(domDoc, form, info, this);
-    dialog.build();
-
-
-    connect(&dialog, &DataframeMergeSettingsFormDialog::dataframeMergeSettingsReady,
-            [=](QStringList cmdList, QString dfName, QString x, QString y)
-    {
-        LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
-
-        job->cmdList = cmdList;
-        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                << job
-                << SessionManager::instance()->recentlyCreatedJob();
-        QMap<QString, QVariant> jobData;
-        jobData.insert("name", dfName);
-        jobData.insert("setCurrent", true);
-        jobData.insert("isBackup", false);
-        if (dispatcher)
-        {
-            QVariant infoV = !dispatcher->info(x).isEmpty() ?
-                        dispatcher->infoVariantList(x) : dispatcher->infoVariantList(y);
-//            infoV.setValue(dispatcher->info(x) ?  dispatcher->info(x) : dispatcher->info(y));
-            jobData.insert("trialRunInfo", infoV);
-        }
-        jobs.last()->data = jobData;
-        jobs.last()->appendEndOfJobReceiver(this, SLOT(addItem()));
-        jobs.last()->appendEndOfJobReceiver(this, SLOT(refreshInfo()));
-        SessionManager::instance()->submitJobs(jobs);
-
-        SessionManager::instance()->addDataframeMerge(x, dfName);
-        SessionManager::instance()->addDataframeMerge(y, dfName);
-    });
-    dialog.exec();
+    if (requestedDataframeViews.contains(name))
+        addItem(name, isBackup);
+    requestedDataframeViews.removeAll(name);
 }
 
 
@@ -245,69 +178,32 @@ void DataframeViewer::destroyItem_impl(QString name)
 {
         delete modelMap.value(name, nullptr);
         modelMap.remove(name);
-        if (prettyHeadersModelMap.contains(name))
-            delete prettyHeadersModelMap.value(name);
 }
 
 void DataframeViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
+    getAllAct->setEnabled(enable && partiallyLoaded(ui->currentItemName()));
     findAct->setEnabled(enable);
     copyDFAct->setEnabled(enable);
-    dataframeMergeAct->setEnabled(enable);
     plotButton->setEnabled(enable);
+    dataframeViewButton->setEnabled(enable);
+//    QString subtype;
+//    QDomDocument *domDoc = dataframeDescriptionFilter->getDomDoc(ui->currentItemName());
+//    if (domDoc)
+//        subtype = XMLelement(*domDoc)["subtype"]();
+//    ui->settingsAct->setEnabled(enabled && (subtype == "dataframe_view"));
 }
 
-void DataframeViewer::updateCurrentItem(QString name)
+void DataframeViewer::setCurrentItem(QString name)
 {
-    DataViewer::updateCurrentItem(name);
+    DataViewer::setCurrentItem(name);
     if (isLazy())
+    {
         dataframeFilter->setName(name);
+    }
 }
 
-
-
-//void DataframeViewer::addItem(QString name, bool setCurrent)
-//{
-//    if (name.isEmpty())
-//    {
-//        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "dfName");
-//        if (!v.canConvert<QString>())
-//        {
-//            eNerror << "cannot retrieve a valid string from dfName key in sender LazyNut job";
-//            return;
-//        }
-//        name = v.value<QString>();
-//        v = SessionManager::instance()->getDataFromJob(sender(), "setCurrent");
-//        if (v.canConvert<bool>())
-//            setCurrent = v.value<bool>();
-//    }
-//    if (name.isEmpty())
-//    {
-//        eNerror << "name is empty";
-//    }
-//    else if (!SessionManager::instance()->exists(name))
-//    {
-//        eNerror << QString("attempt to add a non-existing dataframe %1").arg(name);
-//    }
-//    else if (modelMap.contains(name))
-//    {
-////        eNerror << QString("attempt to create an already existing model for dataframe %1").arg(name);
-//        if (setCurrent)
-//            ui->setCurrentItem(name);
-//    }
-//    else
-//    {
-//        modelMap.insert(name, nullptr);
-//        QTableView *view = new QTableView(this);
-//        viewMap.insert(name, view);
-//        ui->addItem(name, view);
-//        if (setCurrent)
-//            ui->setCurrentItem(name);
-//        if (!isLazy())
-//            dataframeFilter->addName(name);
-//    }
-//}
 
 void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
 {
@@ -316,24 +212,17 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         eNerror << QString("attempt to update non-existing dataframe %1").arg(name);
         return;
     }
+
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
+    dfModel->setName(name);
     if (parametersTable())
         connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
                 this, SLOT(setParameter(QString,QString)));
 
-    dfModel->setName(name); // needed?
-    PrettyHeadersModel *prettyHeadersModel = nullptr;
-    if (prettyHeadersModelMap.contains(name))
-    {
-        prettyHeadersModel = prettyHeadersModelMap.value(name);
-        prettyHeadersModel->setSourceModel(dfModel);
-    }
-    bool isNewModel = (modelMap.value(name) == nullptr);
     // needs to be changed for splitters
     QTableView *view = qobject_cast<QTableView*>(ui->view(name));
-    if (isNewModel)
+    if (!modelMap.value(name))
     {
-//        view = new QTableView(this);
         if (dragDropColumns())
         {
              DataFrameHeader* dragDropHeader = new DataFrameHeader(view);
@@ -348,8 +237,6 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
             view->setEditTriggers(QAbstractItemView::AllEditTriggers);
         else
             view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-//        viewMap.insert(name, view);
-//        ui->addItem(name, view);
     }
     else
     {
@@ -359,13 +246,49 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         delete m;
     }
     modelMap[name] = dfModel;
-    if (prettyHeadersModel)
-        view->setModel(prettyHeadersModel);
-    else
-        view->setModel(dfModel);
+    view->setModel(modelMap[name]);
     view->verticalHeader()->hide();
     view->horizontalHeader()->show();
     view->resizeColumnsToContents();
+
+    ui->setCurrentItem(name);
+    enableActions(true);
+    limitedGet(name, maxFirstDisplayCells);
+}
+
+void DataframeViewer::askGetEntireDataframe()
+{
+    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
+        getEntireDataframe();
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("Large dataframe");
+        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                  "Do you want to load it anyway or rather load up to %1 cells?").arg(maxDisplayCells));
+        msgBox.setStandardButtons(QMessageBox::Cancel);
+        QPushButton *limitedLoadButton = msgBox.addButton(tr("Limited load"), QMessageBox::AcceptRole);
+        QPushButton *fullLoadButton = msgBox.addButton(tr("Full load"), QMessageBox::RejectRole);
+        msgBox.setDefaultButton(limitedLoadButton);
+        int ret = msgBox.exec();
+        if (ret == QMessageBox::Cancel)
+            return;
+        if (msgBox.clickedButton() == limitedLoadButton)
+            limitedGet(ui->currentItemName(), maxDisplayCells);
+        else if (msgBox.clickedButton() == fullLoadButton)
+            getEntireDataframe();
+        else
+            return;
+    }
+}
+
+void DataframeViewer::getEntireDataframe()
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({QString("xml %1 get").arg(ui->currentItemName())});
+    job->setAnswerReceiver(SessionManager::instance()->dataframeCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+    SessionManager::instance()->submitJobs(job);
 }
 
 void DataframeViewer::showFindDialog()
@@ -444,11 +367,30 @@ void DataframeViewer::sendNewPlotRequest()
     else
     {
         QString plotType = plotAct->text();
+        QString suffix = plotType;
+        suffix.remove(QRegExp("\\.R$"));
         QMap<QString,QString> settings;
         settings["df"] = ui->currentItemName();
-        QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.plot").arg(ui->currentItemName()));
-        QList<QSharedPointer<QDomDocument> > info = dispatcher ? dispatcher->info(ui->currentItemName()) : QList<QSharedPointer<QDomDocument> >();
-        emit createNewPlot(plotName, plotType, settings, 0, info);
+        QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
+        emit createDataViewRequested(plotName, "rplot", plotType, settings);
+    }
+}
+
+void DataframeViewer::sendNewDataframeViewRequest()
+{
+    QAction *dataframeViewAct = qobject_cast<QAction *>(sender());
+    if (!dataframeViewAct)
+        eNerror << "invalid sender action for this method";
+    else
+    {
+        QString dataframeViewScript = dataframeViewAct->text();
+        QString suffix = dataframeViewScript;
+        suffix.remove(QRegExp("\\.R$"));
+        QMap<QString,QString> settings;
+        settings["df"] = ui->currentItemName();
+        QString dataframeViewName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
+        requestedDataframeViews.append(dataframeViewName);
+        emit createDataViewRequested(dataframeViewName, "dataframe_view", dataframeViewScript, settings);
     }
 }
 
@@ -466,7 +408,9 @@ QWidget *DataframeViewer::makeView(QString name)
 void DataframeViewer::addNameToFilter(QString name)
 {
     if (SessionManager::instance()->exists(name))
+    {
         dataframeFilter->addName(name);
+    }
 }
 
 void DataframeViewer::removeNameFromFilter(QString name)
@@ -479,16 +423,150 @@ void DataframeViewer::setNameInFilter(QString name)
     dataframeFilter->setName(name);
 }
 
-void DataframeViewer::setPrettyHeadersForTrial(QString trial, QString df)
+void DataframeViewer::addExtraActions()
 {
-    PrettyHeadersModel *prettyHeadersModel = new PrettyHeadersModel(this);
-/*    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal, "event_pattern", "");
-    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\(", "");
-    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,"\\)", "");
-    prettyHeadersModel->addHeaderReplaceRules(Qt::Horizontal,trial, "");
-    prettyHeadersModelMap.insert(df, prettyHeadersModel);
-*/
+    getAllAct = new QAction(QIcon(":/images/download.png"), "get entire table", this);
+    getAllAct->setToolTip("Get the entire dataframe");
+    getAllAct->setVisible(true);
+    getAllAct->setEnabled(false);
+    ui->editToolBar->addAction(getAllAct);
+    connect(getAllAct, SIGNAL(triggered()), this, SLOT(askGetEntireDataframe()));
+
+    findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    findAct->setToolTip(tr("Find text in this table"));
+    findAct->setVisible(true);
+    findAct->setEnabled(false);
+    ui->editToolBar->addAction(findAct);
+    connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+
+    copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
+    copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
+    copyDFAct->setVisible(true);
+    copyDFAct->setEnabled(false);
+    ui->editToolBar->addAction(copyDFAct);
+    connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
+
+    plotButton = new QToolButton(this);
+    plotButton->setIcon(QIcon(":/images/barchart2.png"));
+    plotButton->setVisible(true);
+    plotButton->setEnabled(false);
+    plotButton->setPopupMode(QToolButton::InstantPopup);
+    QMenu *plotMenu = new QMenu(plotButton);
+    // temporary: show all available R scripts
+    QDir rPlotsDir(SessionManager::instance()->defaultLocation("rPlotsDir"));
+    rPlotsDir.setNameFilters(QStringList({"*.R"}));
+    foreach(QString plotType, rPlotsDir.entryList())
+    {
+        QAction *plotAct = new QAction(plotType, this);
+        connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
+        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
+        plotMenu->addAction(plotAct);
+    }
+    plotButton->setMenu(plotMenu);
+    ui->editToolBar->addWidget(plotButton);
+
+    dataframeViewButton = new QToolButton(this);
+    dataframeViewButton->setIcon(QIcon(":/images/formula.png"));
+    dataframeViewButton->setVisible(true);
+    dataframeViewButton->setEnabled(false);
+    dataframeViewButton->setPopupMode(QToolButton::InstantPopup);
+    QMenu *dataframeViewMenu = new QMenu(dataframeViewButton);
+    QDir rDataframeViewsDir(SessionManager::instance()->defaultLocation("rDataframeViewsDir"));
+    rDataframeViewsDir.setNameFilters(QStringList({"*.R"}));
+    foreach(QString dataframeViewScript, rDataframeViewsDir.entryList())
+    {
+        QAction *dataframeViewAct = new QAction(dataframeViewScript, this);
+        connect(dataframeViewAct, SIGNAL(triggered()), this, SLOT(sendNewDataframeViewRequest()));
+        connect(dataframeViewAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
+        dataframeViewMenu->addAction(dataframeViewAct);
+    }
+    dataframeViewButton->setMenu(dataframeViewMenu);
+    ui->editToolBar->addWidget(dataframeViewButton);
+
 }
+
+bool DataframeViewer::partiallyLoaded(QString name)
+{
+    if (name.isEmpty())
+        name = ui->currentItemName();
+    if (name.isEmpty() || !SessionManager::instance()->exists(name) || !modelMap[name])
+        return false;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return false;
+    return XMLelement(*description)["rows"]().toInt() > modelMap[name]->rowCount() ||
+            XMLelement(*description)["columns"]().toInt() > modelMap[name]->columnCount();
+}
+
+bool DataframeViewer::dataframeExceedsCellLimit(QString name, int maxCells)
+{
+    if (maxCells < 1)
+        return true;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return false;
+    int rows = XMLelement(*description)["rows"]().toInt();
+    int cols = XMLelement(*description)["columns"]().toInt();
+    return rows * cols > maxCells;
+}
+
+void DataframeViewer::limitedGet(QString name, int maxCells)
+{
+    if (maxCells < 1)
+        return;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return;
+    int rows = XMLelement(*description)["rows"]().toInt();
+    int cols = XMLelement(*description)["columns"]().toInt();
+
+    if ((rows > modelMap[name]->rowCount() || cols > modelMap[name]->columnCount())  &&
+            (modelMap[name]->rowCount() * modelMap[name]->columnCount() < maxCells - qMin(rows,  cols)))
+    {
+        QString restriction;
+        if (rows * cols > maxCells)
+        {
+            if (rows <= cols)
+            {
+                int get_cols = (int)maxCells / rows;
+                if (get_cols > 0)
+                    restriction = QString("1-%1 1-%2").arg(rows).arg(get_cols);
+                else
+                    restriction = QString("1-%1 1-1").arg(maxCells);
+            }
+            else
+            {
+                int get_rows = (int)maxCells / cols;
+                if (get_rows > 0)
+                    restriction = QString("1-%1 1-%2").arg(get_rows).arg(cols);
+                else
+                    restriction = QString("1-1 1-%1").arg(maxCells);
+            }
+        }
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList = QStringList({QString("xml %1 get %2").arg(name).arg(restriction)});;
+        job->setAnswerReceiver(SessionManager::instance()->dataframeCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+        SessionManager::instance()->submitJobs(job);
+    }
+}
+
+void DataframeViewer::doCopy()
+{
+    // this is an illegal approach -- get R to copy the df to the clipboard
+    LazyNutJob *job = new LazyNutJob;
+    job->logMode |= ECHO_INTERPRETER;
+    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard-100000\", sep=\"\\t\", row.names=FALSE)")
+                                .arg(ui->currentItemName())});
+    // clipboard-100000 sets the clipboard size to 100000K. Note that a larger number does not work. The default (on Windows) is 33K
+    SessionManager::instance()->submitJobs(job);
+    // the legal one is:
+
+    //    DataFrameModel *model = modelMap.value(ui->currentItemName());
+    //    if (model)
+    //        qApp->clipboard()->setText(model->writeTable());
+}
+
 
 void DataframeViewer::dispatch()
 {

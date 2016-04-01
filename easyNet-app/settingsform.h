@@ -19,19 +19,22 @@ class SettingsForm: public QTabWidget
 {
     Q_OBJECT
     Q_PROPERTY(bool useRFormat READ useRFormat WRITE setUseRFormat)
+    Q_PROPERTY(QString name READ name WRITE setName)
 public:
     explicit SettingsForm(QDomDocument *domDoc, QWidget *parent = 0);
     virtual ~SettingsForm();
     void build();
     QMap<QString, QString> getSettings();
-    QStringList getSettingsCmdList();
+    QStringList getSettingsCmdList(bool force = false);
     QString value(QString label);
     QStringList listLabels() {return XMLAccessor::listLabels(rootElement);}
-    void setDefaultModelSetting(QString setting, QString value);
+    void setSetting(QString setting, QString value);
 
     // setters and getters
     bool useRFormat() {return m_useRFormat;}
+    QString name() {return m_name;}
     void setUseRFormat(bool useRFormat) {m_useRFormat = useRFormat;}
+    void setName(QString name) {m_name = name;}
     QMap<QString, QString> defaultSettings() {return m_defaultSettings;}
     void setDefaultSettings(QMap<QString, QString> defaultSettings) {m_defaultSettings = defaultSettings;}
     bool allIsSet();
@@ -50,7 +53,7 @@ protected:
     void initDependersSet();
     PlotSettingsBaseWidget *createWidget(QDomElement &domElement);
 
-    virtual QString getSettingCmdLine(QString setting);
+    QString getSettingCmdLine(QString setting);
     virtual void substituteDependentValues(QDomElement& settingsElement);
 
     QStringList tabOrder;
@@ -64,6 +67,7 @@ protected:
     QSet<QString> dependersSet;
     QString dependerOnUpdate;
     bool m_useRFormat;
+    QString m_name;
 
     QMap<QString, QString> m_defaultSettings;
 };

@@ -20,6 +20,7 @@ void CommandSequencer::initProcessLazyNutOutput()
     rRex = QRegExp("\\bR: ([^\\r\\n]*)"); //(?=\\n)
 //    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
     answerRex = QRegExp("(ANSWER: [^\\n]*\\n)+");
+    dotsRex = QRegExp("ANSWER: (\\.+)");
 
     eNelementsRex = QRegExp("<eNelements>");
     xmlStartRex = QRegExp("<(\\w+)");
@@ -67,7 +68,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         emit commandSent(cmd);
         if (logMode &= ECHO_INTERPRETER)
             emit logCommand(cmd);
-//        qDebug() << "runCommands" << cmd;
+//        qDebug() << cmd;
         lazyNut->sendCommand(cmd);
     }
 }
@@ -90,7 +91,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     int beginOffset, endOffset;
     while (true)
     {
-
+        if (dotsRex.indexIn(lazyNutBuffer,baseOffset) > 0)
+            emit dotsCount(dotsRex.cap(1).length());
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         beginContent = beginRex.cap(1);
@@ -98,7 +100,9 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
         QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(beginContent)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
+        {
             return;
+        }
         timeString = endRex.cap(1);
 
         // extract ERROR lines

@@ -66,14 +66,21 @@ QString CommandLog::getHistory(int shift, QString text)
     text = text.trimmed();
     if (finalspace) text.append(" ");
 
+//    qDebug() << "Entered getHistory, tabIdx is " << tabIdx;
+//    qDebug() << "text is " << text;
+//    qDebug() << "shift is " << shift;
+
     if  (shift!=200) // not repeated TAB
         tabIdx=0;
 
     if (shift<0) // UP
     {
         if (history.count() && historyIndex)
+        {
             historyIndex--;
-        return(history[historyIndex]);
+            return(history[historyIndex]);
+        }
+        return("");
     }
     else if (shift==1) //DOWN
     {
@@ -157,8 +164,10 @@ QString CommandLog::getHistory(int shift, QString text)
             text=remainder.append(cmdList.at(tabIdx));
         }
         tabIdx++;
+
         return(text);
 
     }
+    return("");
 
 }

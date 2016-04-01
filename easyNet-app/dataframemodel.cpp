@@ -7,6 +7,7 @@
 DataFrameModel::DataFrameModel(QDomDocument *domDoc, QObject *parent)
     :domDoc(domDoc), m_name(), QAbstractTableModel(parent)
 {
+//    qDebug() << domDoc->toString();
 }
 
 int DataFrameModel::rowCount(const QModelIndex &parent) const
@@ -58,6 +59,20 @@ QStringList DataFrameModel::colNames()
     for (int i = 0; i < columnCount(); ++i)
         cols.append(headerData(i, Qt::Horizontal, Qt::DisplayRole).toString());
     return cols;
+}
+
+QString DataFrameModel::writeTable()
+{
+    QString output = colNames().join("\t").append("\n");
+    QStringList rowList;
+    for (int row = 0; row < rowCount(); ++row)
+    {
+        rowList.clear();
+        for (int col = 0; col < columnCount(); ++col)
+            rowList.append(data(index(row, col), Qt::DisplayRole).toString());
+        output.append(rowList.join("\t").append("\n"));
+    }
+    return output;
 }
 
 bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, int role)
@@ -184,15 +199,15 @@ void DataFrameHeader::performDrag()
 {
     QDrag *drag = new QDrag(this);
     QMimeData *mimeData = new QMimeData;
-    qDebug() << "performDrag, text = " << text;
+//    qDebug() << "performDrag, text = " << text;
     mimeData->setText(QString("$%1").arg(text));
 
     drag->setMimeData(mimeData);
-    qDebug() << "performDrag, mimeData = " << mimeData;
+//    qDebug() << "performDrag, mimeData = " << mimeData;
 
     if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
     {
-        qDebug() << "moved header";
+//        qDebug() << "moved header";
         emit columnDropped(tableName);
     }
     else // may need a condition here to check if there has been a drop already?

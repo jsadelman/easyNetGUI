@@ -29,6 +29,16 @@ bool ObjectCacheFilter::isAllValid()
     return !invalid;
 }
 
+QDomDocument *ObjectCacheFilter::getDomDoc(const QString &name)
+{
+    return static_cast<ObjectCache *>(sourceModel())->getDomDoc(name);
+}
+
+QString ObjectCacheFilter::type(const QString &name)
+{
+    return static_cast<ObjectCache *>(sourceModel())->type(name);
+}
+
 void ObjectCacheFilter::setNoFilter()
 {
     setFilterRegExp("^$");

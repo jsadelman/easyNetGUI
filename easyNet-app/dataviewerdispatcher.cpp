@@ -9,6 +9,8 @@
 #include "xmlform.h"
 #include "xmlmodel.h"
 #include "lazynutobjectmodel.h"
+#include "settingsform.h"
+#include "settingsformdialog.h"
 
 #include <QAction>
 #include <QToolBar>
@@ -17,16 +19,22 @@
 #include <QScrollArea>
 #include <QHeaderView>
 #include <QVBoxLayout>
+#include <QDialog>
 
 
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
-    : QObject(host), hostDataViewer(host), dispatchModeOverride(-1),
-      dispatchModeAuto(true), previousDispatchMode(-1), currentDispatchAction(-1), previousItem(""),
-      infoIsVisible(false), trialRunMode(TrialRunMode_Single),
-      previousDispatchOverrideMode(-1)
+    : QObject(host),
+      hostDataViewer(host),
+      previousDispatchMode(-1),
+      currentDispatchAction(-1),
+      previousItem(""),
+      infoIsVisible(false),
+      trialRunMode(TrialRunMode_Single),
+      m_snapshotActive(true),
+      m_copyDfActive(false)
 {
     if (!host)
     {
@@ -48,8 +56,18 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Overwrite), Dispatch_New);
     dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Append), Dispatch_Append);
 
-    createHistory();
-    createInfo();
+    dispatchModeText.insert(Dispatch_New, "new");
+    dispatchModeText.insert(Dispatch_Append, "append");
+    dispatchModeText.insert(Dispatch_Overwrite, "overwrite");
+
+    createHistoryWidget();
+    createInfoWidget();
+
+    preferencesAct = new QAction(QIcon(":/images/setting.png"), "Preferences", this);
+    preferencesAct->setToolTip("Show preferences for this viewer");
+    connect(preferencesAct, SIGNAL(triggered()), this, SLOT(showPreferences()));
+    hostDataViewer->ui->dispatchToolBar->addAction(preferencesAct);
+
 }
 
 DataViewerDispatcher::~DataViewerDispatcher()
@@ -57,78 +75,74 @@ DataViewerDispatcher::~DataViewerDispatcher()
 }
 
 
-void DataViewerDispatcher::setTrialRunInfo(QString item, QList<QSharedPointer<QDomDocument> > info)
-{
-    trialRunInfoMap[item] = info;
-}
+//void DataViewerDispatcher::setTrialRunInfo(QString item, QList<QSharedPointer<QDomDocument> > info)
+//{
+//    trialRunInfoMap[item] = info;
+//}
 
-void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-{
-    setTrialRunInfo(item, QList<QSharedPointer<QDomDocument> >({info}));
-}
+//void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+//{
+//    setTrialRunInfo(item, QList<QSharedPointer<QDomDocument> >({info}));
+//}
 
-void DataViewerDispatcher::appendTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-{
-    trialRunInfoMap[item].append(info);
-}
+//void DataViewerDispatcher::appendTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
+//{
+//    trialRunInfoMap[item].append(info);
+//}
 
-void DataViewerDispatcher::copyTrialRunInfo(QString fromItem, QString toItem)
-{
-    if (trialRunInfoMap.contains(fromItem))
-        trialRunInfoMap[toItem] = trialRunInfoMap.value(fromItem);
-//        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
-}
+//void DataViewerDispatcher::copyTrialRunInfo(QString fromItem, QString toItem)
+//{
+//    if (trialRunInfoMap.contains(fromItem))
+//        trialRunInfoMap[toItem] = trialRunInfoMap.value(fromItem);
+////        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
+//}
 
 QString DataViewerDispatcher::trial(QString name)
 {
-    if (trialRunInfoMap.contains(name))
-        return !trialRunInfoMap.value(name).isEmpty() && trialRunInfoMap.value(name).last() ? TrialRunInfo(trialRunInfoMap.value(name).last()).trial : no_trial;
-    return QString();
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).trial : no_trial;
 }
 
 QString DataViewerDispatcher::runMode(QString name)
 {
-    if (trialRunInfoMap.contains(name))
-        return !trialRunInfoMap.value(name).isEmpty() ? TrialRunInfo(trialRunInfoMap.value(name).last()).runMode : QString();
-    return QString();
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).runMode : QString();
 }
 
 QString DataViewerDispatcher::results(QString name)
 {
-    if (trialRunInfoMap.contains(name))
-        return !trialRunInfoMap.value(name).isEmpty() &&  trialRunInfoMap.value(name).last() ? TrialRunInfo(trialRunInfoMap.value(name).last()).results : QString();
-    return QString();
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).results : QString();
 }
 
-QList<QVariant> DataViewerDispatcher::infoVariantList(QString name)
-{
-    QList<QVariant> vList;
-    foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(name))
-        vList.append(QVariant::fromValue(info));
-    return vList;
-}
+//QList<QVariant> DataViewerDispatcher::infoVariantList(QString name)
+//{
+//    QList<QVariant> vList;
+//    foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(name))
+//        vList.append(QVariant::fromValue(info));
+//    return vList;
+//}
 
-void DataViewerDispatcher::addToHistory(QString name, bool inView, QList<QSharedPointer<QDomDocument> > info)
+void DataViewerDispatcher::addToHistory(QString name, bool inView)
 {
-    if (trialRunInfoMap.contains(name))
+    if (inHistory(name))
     {
         eNwarning << QString("attempt to add item %1 to History, the item is in History already").arg(name);
         return;
     }
-    setTrialRunInfo(name, info);
     historyModel->appendView(name, trial(name), inView);
 }
 
 void DataViewerDispatcher::removeFromHistory(QString name)
 {
     historyModel->removeView(name, trial(name));
-    trialRunInfoMap.remove(name);
+    SessionManager::instance()->removeTrialRunInfo(name);
 }
 
 
 bool DataViewerDispatcher::inHistory(QString name)
 {
-    return historyModel->containsView(name, trial(name));
+    return historyModel->containsView(name);
 }
 
 void DataViewerDispatcher::setInView(QString name, bool inView)
@@ -139,18 +153,18 @@ void DataViewerDispatcher::setInView(QString name, bool inView)
 void DataViewerDispatcher::setTrialRunMode(int mode)
 {
     trialRunMode = mode;
-    if (!dispatchModeAuto)
-        restoreOverrideDefaultValue();
+//    if (!dispatchModeAuto)
+//        restoreOverrideDefaultValue();
 }
 
-void DataViewerDispatcher::restoreOverrideDefaultValue()
-{
-    int mode = dispatchDefaultMode.value(trialRunModeName.value(trialRunMode));
-    hostDataViewer->ui->setDispatchModeOverrideActs.at(mode)->setChecked(true);
-    dispatchModeOverride = mode;
-}
+//void DataViewerDispatcher::restoreOverrideDefaultValue()
+//{
+//    int mode = dispatchDefaultMode.value(trialRunModeName.value(trialRunMode));
+//    hostDataViewer->ui->setDispatchModeOverrideActs.at(mode)->setChecked(true);
+//    dispatchModeOverride = mode;
+//}
 
-void DataViewerDispatcher::createHistory()
+void DataViewerDispatcher::createHistoryWidget()
 {
     historyModel = new HistoryTreeModel(this);
     historyWidget = new HistoryWidget(hostDataViewer->ui);
@@ -166,6 +180,10 @@ void DataViewerDispatcher::createHistory()
     {
         historyWidget->view->setCurrentIndex(historyModel->viewIndex(name));
     });
+    connect(historyWidget, &HistoryWidget::clicked, [=](QString name)
+    {
+        showInfo(true, name);
+    });
 
     historyAct = historyWidget->toggleViewAction();
     historyAct->setIcon(QIcon(":/images/History.png"));
@@ -177,14 +195,14 @@ void DataViewerDispatcher::createHistory()
 }
 
 
-void DataViewerDispatcher::createInfo()
+void DataViewerDispatcher::createInfoWidget()
 {
     infoDock = new QDockWidget(hostDataViewer->ui);
     infoDock->setWindowTitle("Trial run info");
     infoDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     infoScroll = new QScrollArea(hostDataViewer->ui);
     infoDock->setWidget(infoScroll);
-    infoScroll->setWidgetResizable(true);
+//    infoScroll->setWidgetResizable(true);
     hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, infoDock);
     connect(hostDataViewer->ui, &Ui_DataViewer::currentItemChanged, [=]()
     {
@@ -247,24 +265,26 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
     return;
 }
 
-void DataViewerDispatcher::updateHistory(QString item, QSharedPointer<QDomDocument> info)
+void DataViewerDispatcher::updateHistory(QString name)
 {
-    if (trial(item) == TrialRunInfo(info).trial) // old trial == new trial
+    QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
+    QString newTrial = info.isEmpty() ? no_trial : TrialRunInfo(info.last()).trial;
+    if (historyModel->trial(name) == newTrial) // old trial == new trial
         return;
 
-    bool inView = historyModel->isInView(item, trial(item));
-//    update_view_disabled = true;
+    bool isInView = historyModel->isInView(name);
     disconnect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
-    historyModel->removeView(item, trial(item));
-    historyModel->appendView(item, TrialRunInfo(info).trial, inView);
+    historyModel->removeView(name, historyModel->trial(name));
+    historyModel->appendView(name, newTrial, isInView);
     connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
-    //    update_view_disabled = false;
 }
 
-void DataViewerDispatcher::showInfo(bool show)
+
+void DataViewerDispatcher::showInfo(bool show, QString name)
 {
+//    qDebug() << Q_FUNC_INFO << show << name;
     QVBoxLayout *infoLayout;
     QWidget *infoWidget = infoScroll->takeWidget();
     if (infoWidget)
@@ -289,26 +309,27 @@ void DataViewerDispatcher::showInfo(bool show)
         infoLayout->setSizeConstraint(QLayout::SetFixedSize);
         infoWidget->setLayout(infoLayout);
 
-        foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(hostDataViewer->ui->currentItemName()))
-        if (info)
-        {
-            XMLModel *infoModel = new XMLModel(info, this);
-            QTreeView *infoView = new QTreeView();
-            infoView->setModel(infoModel);
-            infoView->header()->setStretchLastSection(true);
-            infoView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-            infoView->setSelectionMode(QAbstractItemView::NoSelection);
-            infoView->expandAll();
-            infoView->resizeColumnToContents(0);
-            infoView->resizeColumnToContents(1);
-            infoView->setMinimumWidth(infoView->width());
-            infoView->setHeaderHidden(true);
-            infoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//            infoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//            infoView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            infoLayout->addWidget(infoView);
-        }
+        foreach(QSharedPointer<QDomDocument> info, SessionManager::instance()->trialRunInfo(name.isEmpty() ? hostDataViewer->ui->currentItemName() : name))
+            if (info)
+            {
+                XMLModel *infoModel = new XMLModel(info, this);
+                QTreeView *infoView = new QTreeView();
+                infoView->setModel(infoModel);
+                infoView->header()->setStretchLastSection(true);
+                infoView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+                infoView->setSelectionMode(QAbstractItemView::NoSelection);
+                infoView->expandAll();
+                infoView->resizeColumnToContents(0);
+                infoView->resizeColumnToContents(1);
+                infoView->setMinimumWidth(infoView->width());
+                infoView->setHeaderHidden(true);
+                infoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                //            infoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                //            infoView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                infoLayout->addWidget(infoView);
+            }
         infoScroll->setWidget(infoWidget);
+        infoScroll->adjustSize();
         infoDock->setVisible(true);
     }
     else
@@ -316,6 +337,35 @@ void DataViewerDispatcher::showInfo(bool show)
         infoDock->setVisible(false);
     }
     infoIsVisible = show;
+}
+
+void DataViewerDispatcher::updateInfo(QString name)
+{
+    if (infoIsVisible && SessionManager::instance()->dependencies(name).contains(hostDataViewer->ui->currentItemName()))
+        showInfo(true);
+}
+
+void DataViewerDispatcher::showPreferences()
+{
+    QDomDocument *preferencesDomDoc = makePreferencesDomDoc();
+    SettingsForm *form = new SettingsForm(preferencesDomDoc);
+    SettingsFormDialog dialog(preferencesDomDoc, form, "Viewer Preferences");
+    dialog.build();
+    int result = dialog.exec();
+    if (result == QDialog::Accepted)
+    {
+        QMapIterator<QString, QString> settings_it(dialog.settings);
+        while (settings_it.hasNext())
+        {
+            settings_it.next();
+            if (dispatchDefaultMode.contains(settings_it.key()))
+                dispatchDefaultMode[settings_it.key()] = dispatchModeText.key(settings_it.value());
+            else if (settings_it.key().contains("snapshot", Qt::CaseInsensitive))
+                setSnapshotActive(settings_it.value() == "yes");
+            else if (settings_it.key().contains("Copy source dataframes", Qt::CaseInsensitive))
+                setCopyDfActive(settings_it.value() == "yes");
+        }
+    }
 }
 
 

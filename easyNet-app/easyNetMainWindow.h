@@ -16,7 +16,6 @@ class QStackedWidget;
 class QProgressBar;
 class QDomDocument;
 
-class PlotViewer_old;
 class PlotViewer;
 class PlotViewerDispatcher;
 class ObjExplorer;
@@ -30,7 +29,7 @@ class EditWindow;
 class CommandLog;
 class ScriptEditor;
 class Highlighter;
-class PlotSettingsWindow;
+//class PlotSettingsWindow;
 class ObjectCacheFilter;
 //class LazyNutListComboBox;
 //class LazyNutScriptEditor;
@@ -54,13 +53,16 @@ class DataframeViewer;
 class DataframeViewerDispatcher;
 class Ui_DataTabsViewer;
 class Ui_DataComboViewer;
+class QTime;
+class SettingsWidget;
 
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
+    Q_PROPERTY(bool debugMode READ debugMode WRITE setDebugMode NOTIFY debugModeChanged)
+    Q_PROPERTY(int trialListLength READ trialListLength WRITE setTrialListLength)
 public:
     enum ViewMode
     {
@@ -81,14 +83,19 @@ public:
 
 public:
     void build();
+    bool debugMode() {return m_debugMode;}
+    int trialListLength() {return m_trialListLength;}
+    void setTrialListLength(int length) {m_trialListLength = length;}
 
 public slots:
-//    void setRunAllMode(bool mode);
     void loadTrial();
     void loadAddOn();
     void showPlotViewer();
     void importDataFrame();
-      void msgBox(QString msg);
+    void msgBox(QString msg);
+    void setDebugMode(bool isDebugMode);
+    void updateTrialRunListCount(int count);
+
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -97,6 +104,7 @@ signals:
     void newTableSelection(QString name);
     void showHistory(QString line);
     void runAllTrialEnded();
+    void debugModeChanged(bool);
 
 private slots:
 //    void about();
@@ -124,6 +132,7 @@ private slots:
     void showCmdOnStatusBar(QString cmd);
     void addOneToLazyNutProgressBar();
 
+
     void runCmdAndUpdate(QStringList cmdList);
     void viewSettings();
     void setNewEasyNetHome();
@@ -138,7 +147,6 @@ private slots:
     void displayVersion(QString version);
 
     void showDocumentation();
-    void explorerTabChanged(int idx);
     void setParam(QString paramDataFrame, QString newParamValue);
 
 
@@ -146,6 +154,7 @@ private slots:
     void modelConfigNeeded();
     void createModelSettingsDialog(QDomDocument* domDoc);
     void afterModelConfig();
+    void afterModelStaged();
     void diagramSceneTabChanged(int index);
     void runScript();
     void processHistoryKey(int dir, QString text);
@@ -153,11 +162,15 @@ private slots:
     void showExplorer();
     void restart();
     void showMostRecentError();
-    void showPlotSettings();
+//    void showPlotSettings();
+    void showDataViewSettings();
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
-
+    void setFormInSettingsWidget(QString name);
+    void switchFormInSettingsWidget(bool visible);
+    void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
+    void showResultsViewer(QString name);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -173,8 +186,6 @@ private:
     void checkScreens();
     void createDockWindows();
     void initialiseToolBar();
-    void initViewActions();
-    void createViewActions();
     void createActions();
     void createMenus();
     void createToolBars();
@@ -196,7 +207,7 @@ private:
     //void loadModelUnconfigured(QString fileName);
     void loadModel(QString fileName,bool complete);
 
-
+    bool m_debugMode;
 public:
 
 
@@ -255,18 +266,20 @@ public:
     Highlighter     *highlighter2;
     Highlighter     *highlighter3;
 //    LazyNutScriptEditor  *scriptEditor;
-    DesignWindow    *designWindow;
-    DesignWindow    *conversionWindow;
+//    DesignWindow    *designWindow;
+//    DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
     DiagramScene    *conversionScene;
-    PlotSettingsWindow      *plotSettingsWindow;
+    QWidget         *conversionPage;
+//    PlotSettingsWindow      *plotSettingsWindow;
+    SettingsWidget      *dataViewSettingsWidget;
 //    PlotViewer_old      *plotViewer;
     Ui_DataTabsViewer *ui_plotViewer;
     PlotViewerDispatcher *plotViewerDispatcher;
     PlotViewer      *plotViewer;
 //    TableEditor     *stimSetForm;
     DataframeViewer *stimSetViewer;
-    Ui_DataComboViewer *ui_stimSetViewer;
+    Ui_DataTabsViewer *ui_stimSetViewer;
 //    TableEditor     *dataframesWindow;
     DataframeViewer *dataframeViewer;
     Ui_DataComboViewer *ui_dataframeViewer;
@@ -303,7 +316,9 @@ public:
     ObjectCacheFilter *dataframeDescriptionFilter;
     ObjectCacheFilter *paramDescriptionFilter;
     ObjectCacheFilter *testFilter;
-    QAction         * runAllTrialMsgAct;
+    QAction         *runAllTrialMsgAct;
+    int              m_trialListLength;
+    int              trialListCount;
 
     Assistant       *assistant;
 //    TextEdit        *textViewer;
@@ -313,6 +328,7 @@ public:
     int             paramTabIdx;
     int             plotTabIdx;
     int             plotSettingsTabIdx;
+    int             dataViewSettingsTabIdx;
     int             modelTabIdx;
     int             conversionTabIdx;
     int             scriptTabIdx;
@@ -344,7 +360,7 @@ public:
     QLabel          *lazyNutCmdLabel;
     QLabel          *lazyNutErrorLabel;
     QComboBox       *lazyNutErrorBox;
-
+    QLabel          *runAllTrialLabel;
 
 
 //    QToolBar        *fileToolBar;
@@ -378,6 +394,7 @@ public:
     QAction         *versionAct;
     QAction         *assistantAct;
     QAction         *setQuietModeAct;
+    QAction         *debugModeAct;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
@@ -387,8 +404,11 @@ public:
     QAction *quitAct;
 
     bool trialComboEventSwitch = false;
+    QTime loadModelTimer;
+
 
 //    enum runMode {RunSingle, RunAll};
+
 
 
 };

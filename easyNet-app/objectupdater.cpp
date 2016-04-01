@@ -6,11 +6,13 @@
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "enumclasses.h"
+#include "xmlelement.h"
+
 #include <QSortFilterProxyModel>
 #include <QDebug>
 
 ObjectUpdater::ObjectUpdater(QObject *parent)
-    : m_command(""), QObject(parent)
+    : m_command(""), m_dependencies(false), QObject(parent)
 {
 
 }
@@ -43,40 +45,18 @@ void ObjectUpdater::setFilter(ObjectCacheFilter *filter)
 
 void ObjectUpdater::wakeUpUpdate()
 {
-//    ObjectCacheFilter *filter = qobject_cast<ObjectCacheFilter *>(proxyModel);
-//    if (filter)
-//    {
-//        connect(filter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-//                this, SLOT(requestObject(QString)));
-//        connect(filter, SIGNAL(objectModified(QString)),
-//                this, SLOT(requestObject(QString)));
-//    }
-//    else
-//    {
         connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,const QVector<int> &)),
                 this, SLOT(requestObjects(QModelIndex,QModelIndex)));
         connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(requestObjects(QModelIndex,int,int)));
-//    }
 }
 
 void ObjectUpdater::goToSleep()
 {
-//    ObjectCacheFilter *filter = qobject_cast<ObjectCacheFilter *>(proxyModel);
-//    if (filter)
-//    {
-//        disconnect(filter, SIGNAL(objectCreated(QString,QString,QDomDocument*)),
-//                this, SLOT(requestObject(QString)));
-//        disconnect(filter, SIGNAL(objectModified(QString)),
-//                this, SLOT(requestObject(QString)));
-//    }
-//    else
-//    {
         disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(requestObjects(QModelIndex,QModelIndex)));
         disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(requestObjects(QModelIndex,int,int)));
-//    }
 }
 
 void ObjectUpdater::requestObjects(QModelIndex top, QModelIndex bottom)
@@ -92,6 +72,7 @@ void ObjectUpdater::requestObjects(QModelIndex parent, int first, int last)
 
 void ObjectUpdater::errorHandler(QString cmd, QStringList errorList)
 {
+    eNerror << cmd << errorList;
     QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
     if (errorList.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
     {
@@ -128,7 +109,7 @@ QStringList ObjectUpdater::getObjectNames(int first, int last)
     return names;
 }
 
-void ObjectUpdater::requestObject(QString name)
+void ObjectUpdater::requestObject(QString name, QString command)
 {
     if (name.isEmpty())
     {
@@ -140,13 +121,17 @@ void ObjectUpdater::requestObject(QString name)
     {
         objectCache->setPending(name, false);
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList = QStringList({QString("xml %1 %2").arg(name).arg(m_command)});
+        job->cmdList = QStringList({QString("xml %1 %2").arg(name).arg(command.isEmpty() ? m_command : command)});
         job->setAnswerReceiver(objectCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
         job->appendErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
         SessionManager::instance()->submitJobs(job);
     }
     else if (!objectCache->isInvalid(name) && !objectCache->isPending(name))
     {
-        emit objectUpdated(objectCache->getDomDoc(name), name);
+        QDomDocument *domDoc = objectCache->getDomDoc(name);
+        emit objectUpdated(domDoc, name);
+        if (m_dependencies && domDoc)
+            foreach (QString dep, XMLelement(*domDoc)["Dependencies"].listValues())
+                requestObject(dep);
     }
 }

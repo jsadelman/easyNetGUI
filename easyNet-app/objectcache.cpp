@@ -1,5 +1,5 @@
 #include "objectcache.h"
-
+#include "enumclasses.h"
 #include "lazynutobjectcacheelem.h"
 #include "lazynutobject.h"
 #include <QMetaObject>
@@ -217,12 +217,17 @@ bool ObjectCache::invalidateCache(const QString &name)
 
 QDomDocument *ObjectCache::getDomDoc(const QString &name)
 {
+    if (name.isEmpty() || !exists(name))
+    {
+//        eNwarning << QString("object %1 does not exist").arg(name);
+        return nullptr;
+    }
     QVariant v = data(index(rowFromName(name), DomDocCol));
     if (v.canConvert<QDomDocument *>())
         return v.value<QDomDocument *>();
     else
     {
-        qDebug() << "ERROR: ObjectCache::getDomDoc cannot get QDomDocument for" << name;
+        eNerror << "cannot get QDomDocument for" << name;
         return nullptr;
     }
 }

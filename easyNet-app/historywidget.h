@@ -21,7 +21,6 @@ signals:
 
 private:
     void buildWidget();
-    void createWidgets();
     QTreeView *view;
     QAction *selectAllAct;
     QAction *clearSelectionAct;

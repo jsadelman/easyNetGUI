@@ -77,12 +77,12 @@ QStringList CodeEditor::getSelectedText()
 
 QStringList CodeEditor::getCurrentLine()
 {
-    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
+//    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
     textCursor().movePosition(QTextCursor::StartOfBlock);
-    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
+//    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
     textCursor().movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
-    qDebug() << "getCurrentLine -- selected:" << textCursor().selectedText();
+//    qDebug() << "getCurrentLine -- cursorPos" << textCursor().position();
+//    qDebug() << "getCurrentLine -- selected:" << textCursor().selectedText();
 
     return getSelectedText();
 }

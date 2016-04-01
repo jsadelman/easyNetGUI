@@ -41,7 +41,7 @@ TrialWidget::TrialWidget(QWidget *parent)
     // cosmetics used in tabs names in TableWindow
     connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
     {
-        QString df = QString("((%1 default_observer) default_dataframe)").arg(name);
+        QString df = QString("(%1 default_observer)").arg(name);
         SessionManager::instance()->setPrettyName(df, name);
     });
 
@@ -80,7 +80,7 @@ TrialWidget::TrialWidget(QWidget *parent)
                 "You are about to run a list of trials while layer activity is being recorded and displayed in plots. "
                 "This may slow down the simulation.\n"
                 "Do you want to suspend activity recording while running a list of trials?",
-                QMessageBox::Yes | QMessageBox::No,
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
                 this);
     dontAskAgainDisableObserverCheckBox = new QCheckBox("don't show this message again");
     disableObserversMsg->setCheckBox(dontAskAgainDisableObserverCheckBox);
@@ -260,6 +260,8 @@ void TrialWidget::runTrial()
     if (trialRunMode == TrialRunMode_List && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
     {
         int answer = disableObserversMsg->exec();
+        if (answer == QMessageBox::Cancel)
+            return;
         SessionManager::instance()->suspendObservers(answer == QMessageBox::Yes);
         askDisableObserver = dontAskAgainDisableObserverCheckBox->checkState() == Qt::Unchecked;
     }
@@ -271,7 +273,7 @@ void TrialWidget::runTrial()
     if (!SessionManager::instance()->suspendingObservers())
     {
         foreach(QString observer, SessionManager::instance()->enabledObservers())
-            job->cmdList << QString("(%1 default_dataframe) clear").arg(observer);
+            job->cmdList << QString("%1 clear").arg(observer);
     }
     if (trialRunMode == TrialRunMode_List)
         runTrialList(job);
@@ -298,7 +300,7 @@ void TrialWidget::runTrial()
 
 QString TrialWidget::defaultDataframe()
 {
-    return QString("((%1 default_observer) default_dataframe)")
+    return QString("(%1 default_observer)")
             .arg(SessionManager::instance()->currentTrial());
 }
 
@@ -327,7 +329,7 @@ QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
     rootElem.appendChild(modeElem);
     QDomElement dataframeElem = trialRunInfo->createElement("object");
     dataframeElem.setAttribute("label", "Results");
-    dataframeElem.setAttribute("value", QString("((%1 default_observer) default_dataframe)")
+    dataframeElem.setAttribute("value", QString("(%1 default_observer)")
                                .arg(SessionManager::instance()->currentTrial()
                                ));
     rootElem.appendChild(dataframeElem);
@@ -373,6 +375,13 @@ void TrialWidget::runTrialList(LazyNutJob *job)
     if (SessionManager::instance()->suspendingObservers())
         foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("%1 enable").arg(observer);
+
+    QDomDocument * stimulusSetDescription = SessionManager::instance()->descriptionCache->getDomDoc(SessionManager::instance()->currentSet());
+    int trialListLength = stimulusSetDescription ? XMLelement(*stimulusSetDescription)["rows"]().toInt() : 1;
+    if (isStochastic)
+        trialListLength *= repetitionsBox->currentText().isEmpty() ? 1 : repetitionsBox->currentText().toInt();
+    MainWindow::instance()->setTrialListLength(trialListLength);
+    MainWindow::instance()->updateTrialRunListCount(0);
 }
 
 bool TrialWidget::checkIfReadyToRun()

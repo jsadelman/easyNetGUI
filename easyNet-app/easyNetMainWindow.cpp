@@ -29,7 +29,7 @@
 #include "sessionmanager.h"
 #include "highlighter.h"
 #include "editwindow.h"
-#include "plotsettingswindow.h"
+//#include "plotsettingswindow.h"
 #include "lazynutjobparam.h"
 #include "lazynutjob.h"
 #include "objectcache.h"
@@ -37,7 +37,6 @@
 #include "lazynutconsole.h"
 //#include "lazynutscripteditor.h"
 #include "maxminpanel.h"
-#include "tableeditor.h"
 #include "findfiledialog.h"
 #include "assistant.h"
 #include "textedit.h"
@@ -48,13 +47,11 @@
 #include "scripteditor.h"
 #include "console.h"
 #include "debuglog.h"
-#include "plotviewer_old.h"
 #include "plotviewer.h"
 #include "plotviewerdispatcher.h"
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"
-#include "prettyheadersmodel.h"
 #include "enumclasses.h"
 #include "tablewindow.h"
 #include "dataframeviewer.h"
@@ -64,6 +61,7 @@
 #include "settingsform.h"
 #include "settingsformdialog.h"
 #include "modelsettingsdisplay.h"
+#include "settingswidget.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -105,6 +103,7 @@ void MainWindow::build()
     diagramSceneTabChanged(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
     setQuietMode();
+    setDebugMode(false);
 
     #ifdef WIN32
     if (qApp->arguments().count() > 1)
@@ -112,12 +111,14 @@ void MainWindow::build()
     #endif
 
     SessionManager::instance()->startLazyNut();
+
+
+
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), m_debugMode(false), m_trialListLength(0)
 {
-
 }
 
 
@@ -137,7 +138,8 @@ void MainWindow::constructForms()
 
     lazyNutConsole2 = new Console(this);
 
-    plotSettingsWindow = new PlotSettingsWindow(this);
+//    plotSettingsWindow = new PlotSettingsWindow(this);
+    dataViewSettingsWidget = new SettingsWidget(this);
     objExplorer = new ObjExplorer(SessionManager::instance()->descriptionCache,this);
     scriptEdit = new ScriptEditor(SessionManager::instance()->defaultLocation("scriptsDir"), this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
@@ -151,7 +153,7 @@ void MainWindow::constructForms()
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
 //    stimSetForm = new TableEditor ("Stimuli",this);
-    ui_stimSetViewer = new Ui_DataComboViewer;
+    ui_stimSetViewer = new Ui_DataTabsViewer;
     stimSetViewer = new DataframeViewer(ui_stimSetViewer, this);
     stimSetViewer->setDragDropColumns(true);
     stimSetViewer->setStimulusSet(true);
@@ -185,24 +187,20 @@ void MainWindow::constructForms()
     paramViewer = new DataframeViewer(ui_paramViewer, this);
     paramViewer->setParametersTable(true);
     paramDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    paramDescriptionFilter->setFilterRegExp(QRegExp("\\(.* parameters\\)"));
+    paramDescriptionFilter->setFilterRegExp(QRegExp("^\\(.* parameters\\)$"));
     paramDescriptionFilter->setFilterKeyColumn(ObjectCache::NameCol);
     connect(paramDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             paramViewer, SLOT(addItem(QString)));
-
 
     ui_plotViewer = new Ui_DataTabsViewer;
     ui_plotViewer->setUsePrettyNames(true);
     plotViewer = new PlotViewer(ui_plotViewer, this);
     plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
 
-//    plotViewer = new PlotViewer_old(easyNetHome, this);
-
-
     ui_testViewer = new Ui_DataTabsViewer;
     testViewer = new DataframeViewer(ui_testViewer, this);
     testFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    testFilter->setFilterRegExp(QRegExp("^.*\\.test_results$"));
+    testFilter->setName("test_results");
     testFilter->setFilterKeyColumn(ObjectCache::NameCol);
     connect(testFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             testViewer, SLOT(addItem(QString)));
@@ -223,12 +221,14 @@ void MainWindow::constructForms()
     conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
     conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+    conversionPage = diagramPanel->widget(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
     modelSettingsTabIdx = methodsPanel->addTab(modelSettingsDisplay, tr("Model"));
     paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
-    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
+//    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
+    dataViewSettingsTabIdx = methodsPanel->addTab(dataViewSettingsWidget, tr("Dataframe/plot settings"));
 
     lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
@@ -252,19 +252,33 @@ void MainWindow::constructForms()
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs
 }
 
+
 void MainWindow::connectSignalsAndSlots()
 {
-    // refresh params when user clicks on param tab or changes model in combobox
-    connect(explorerPanel, SIGNAL(currentChanged(int)),this,SLOT(explorerTabChanged(int)));
-    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)),
-            SessionManager::instance(), SLOT(setCurrentModel(QString)));
-    connect(plotSettingsWindow, SIGNAL(plot(QString,QByteArray)),
-            plotViewer,SLOT(updatePlot(QString,QByteArray)));
-    connect(plotViewer,SIGNAL(sendDrawCmd(QString)),plotSettingsWindow,SLOT(sendDrawCmd(QString)));
-    connect(plotViewer,SIGNAL(resized(QSize)),plotSettingsWindow,SLOT(newAspectRatio(QSize)));
-    connect(plotViewer,SIGNAL(showPlotSettings()),this,SLOT(showPlotSettings()));
-    connect(plotViewer,SIGNAL(setPlotSettings(QString)), plotSettingsWindow, SLOT(setPlotSettings(QString)));
-    connect(plotSettingsWindow,SIGNAL(showPlotViewer()), this, SLOT(showPlotViewer()));
+    connect(modelComboBox, SIGNAL(currentIndexChanged(QString)), SessionManager::instance(), SLOT(setCurrentModel(QString)));
+
+    // synch between DataViewers and dataViewSettingsWidget
+    connect(plotViewer,SIGNAL(showSettingsRequested()),this,SLOT(showDataViewSettings()));
+    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+    connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+
+    connect(plotViewer,SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+
+    connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+    connect(explorerPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+//    connect(methodsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+
+    connect(resultsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
+    connect(explorerDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
+//    connect(methodsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
+    // cannot apply this to methodsPanel/Dock because methodsPanel sits in the same Dock as dataViewSettingsWidget
+
+
+    //
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
@@ -279,27 +293,43 @@ void MainWindow::connectSignalsAndSlots()
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-    connect(modelScene,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
-    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow,SLOT(newRPlot(QString,QString,QMap<QString,QString>, int, QList<QSharedPointer<QDomDocument> >)));
+    connect(modelScene,SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>, bool)),
+            dataViewSettingsWidget,SLOT(newForm(QString,QString,QString,QMap<QString,QString>, bool)));
+//    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, bool)),
+//            dataViewSettingsWidget,SLOT(newForm(QString,QString,QMap<QString,QString>, bool)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
-     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
-             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
+//     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
+//             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             dataframeViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             dataframeResultsViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             stimSetViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+             plotViewer, SLOT(addRequestedItem(QString,bool)));
+     connect(plotViewer, SIGNAL(addDataframeRequested(QString,bool)), dataframeResultsViewer, SLOT(addItem(QString,bool)));
+
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
-    connect(plotViewer, SIGNAL(itemRemoved(QString)), plotSettingsWindow, SLOT(removePlotSettings(QString)));
-    connect(dataframeResultsViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(stimSetViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(paramViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
-    connect(dataframeViewer, SIGNAL(createNewPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)),
-            plotSettingsWindow, SLOT(newRPlot(QString,QString,QMap<QString,QString>,int, QList<QSharedPointer<QDomDocument> >)));
+
+    connect(dataframeResultsViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+    connect(stimSetViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+    connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+    connect(plotViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+
+
+    connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+    connect(stimSetViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+    connect(dataframeViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+
+    connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
 
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
@@ -316,6 +346,8 @@ void MainWindow::connectSignalsAndSlots()
            rLog->addText(fb);
     });
 
+    connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
+
 }
 
 void MainWindow::showExplorer()
@@ -326,11 +358,16 @@ void MainWindow::showExplorer()
     explorerPanel->setCurrentIndex(explorerTabIdx);
 }
 
-void MainWindow::showPlotSettings()
+//void MainWindow::showPlotSettings()
+//{
+//    methodsDock->raise();
+//    methodsPanel->setCurrentIndex(plotSettingsTabIdx);
+//}
+
+void MainWindow::showDataViewSettings()
 {
     methodsDock->raise();
-    methodsPanel->setCurrentIndex(plotSettingsTabIdx);
-//    plotSettingsWindow->setPlot(plotName);
+    methodsPanel->setCurrentIndex(dataViewSettingsTabIdx);
 }
 
 void MainWindow::showPlotViewer()
@@ -358,15 +395,6 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
     SessionManager::instance()->runCmd({cmd1,cmd2});
 }
 
-void MainWindow::explorerTabChanged(int idx)
-{
-//    qDebug() << "Entered explorerTabChanged():" << idx;
-    if (modelComboBox->currentText().isEmpty())
-        return;
-    if (idx == paramTabIdx)
-            emit (paramTabEntered(modelComboBox->currentText()));
-
-}
 
  void MainWindow::createDockWindows()
 {
@@ -496,7 +524,7 @@ void MainWindow::initialiseToolBar()
     toolbar->addSeparator();
 
     // notifier of run all trial
-    QLabel *runAllTrialLabel = new QLabel("Processing a set of trials\nPlease wait...");
+    runAllTrialLabel = new QLabel;
     runAllTrialLabel->setStyleSheet("QLabel {"
                                 "color: red;"
                                  "border: 1px solid red;"
@@ -529,6 +557,17 @@ void MainWindow::msgBox(QString msg)
 
 }
 
+void MainWindow::setDebugMode(bool isDebugMode)
+{
+    m_debugMode = isDebugMode;
+    if (isDebugMode)
+        diagramPanel->insertTab(conversionTabIdx, conversionPage, "Conversions");
+    else
+        diagramPanel->removeTab(conversionTabIdx);
+
+    emit debugModeChanged(isDebugMode);
+}
+
 void MainWindow::runScript()
 {
     scriptEdit->runScript();
@@ -553,6 +592,8 @@ void MainWindow::loadModel(QString fileName,bool complete)
 //    conversionScene->goToSleep();
 
     // load and run script
+    qDebug() << "Starting clock ...";
+    loadModelTimer.start();
     loadFile(fileName);
 
     // the /path/basename is used by DiagramScene objects to load JSON files
@@ -622,6 +663,7 @@ void MainWindow::modelConfigNeeded()
 void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 {
     SettingsForm *form = new SettingsForm(domDoc, this);
+    form->setName(SessionManager::instance()->currentModel());
     form->setUseRFormat(false);
     SettingsFormDialog dialog(domDoc, form, QString("Configure model %1").arg(SessionManager::instance()->currentModel()), this);
     dialog.build();
@@ -629,8 +671,8 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
     if (result == QDialog::Accepted)
     {
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList << form->getSettingsCmdList().replaceInStrings(QRegExp("^"), QString("%1 setting ")
-                                                                    .arg(SessionManager::instance()->currentModel()));
+        job->cmdList << form->getSettingsCmdList(); //.replaceInStrings(QRegExp("^"), QString("%1 setting ")
+                                                     //               .arg(SessionManager::instance()->currentModel()));
         job->appendEndOfJobReceiver(this, SLOT(afterModelConfig()));
         SessionManager::instance()->submitJobs(job);
     }
@@ -639,15 +681,27 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 void MainWindow::afterModelConfig()
 {
     modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
+    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
     runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
     modelScene->wakeUp();
+    qDebug() << "Time taken to config model:" << QString::number(loadModelTimer.elapsed()) << "ms";
+    commandLog->addText(QString("## Time taken to config model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
 
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
 }
+
+void MainWindow::afterModelStaged()
+{
+    qDebug() << "Time taken to load and stage model:" << QString::number(loadModelTimer.elapsed()) << "ms";
+    commandLog->addText(QString("## Time taken to load and stage model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
+
+}
+
 
 
 void MainWindow::loadTrial()
@@ -876,7 +930,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
         writeSettings();
         SessionManager::instance()->killLazyNut();
-        qDebug() << "eNMainWindow emitting saveLayout";
+//        qDebug() << "eNMainWindow emitting saveLayout";
         emit saveLayout();
         event->accept();
 }
@@ -978,6 +1032,56 @@ void MainWindow::afterTestsCompleted()
     qDebug() << "trying to change display";
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
 
+}
+
+void MainWindow::setFormInSettingsWidget(QString name)
+{
+    QWidget *view = qobject_cast<QWidget *>(sender());
+    if (view && !view->visibleRegion().isEmpty())
+    {
+        dataViewSettingsWidget->setForm(name);
+    }
+}
+
+
+void MainWindow::switchFormInSettingsWidget(bool visible)
+{
+    if (visible)
+    {
+        QDockWidget *dock = qobject_cast<QDockWidget *>(sender());
+        if (dock)
+        {
+            QTabWidget *panel = qobject_cast<QTabWidget *>(dock->widget());
+            if (panel)
+                switchFormInSettingsWidget(panel);
+        }
+    }
+}
+
+void MainWindow::switchFormInSettingsWidget(QTabWidget *panel)
+{
+    if (!panel)
+        panel = qobject_cast<QTabWidget *>(sender());
+    if (panel)
+    {
+        DataViewer *viewer = qobject_cast<DataViewer *>(panel->currentWidget());
+        if (viewer)
+            dataViewSettingsWidget->setForm(viewer->currentItemName());
+    }
+}
+
+void MainWindow::showResultsViewer(QString name)
+{
+    QString type = SessionManager::instance()->descriptionCache->type(name);
+    resultsDock->raise();
+    if (type == "dataframe")
+    {
+        resultsPanel->setCurrentWidget(dataframeResultsViewer);
+    }
+    else if (type == "xfile")
+    {
+        resultsPanel->setCurrentWidget(plotViewer);
+    }
 }
 
 //! [runCmdAndUpdate]
@@ -1118,7 +1222,6 @@ void MainWindow::displayVersion(QString version)
 
 void MainWindow::createActions()
 {
-//    createViewActions();
 
 //    runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
 //    runAction->setStatusTip(tr("Run"));
@@ -1253,6 +1356,10 @@ void MainWindow::createActions()
     setQuietModeAct->setCheckable(true);
     connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
     setQuietModeAct->setChecked(true);
+
+    debugModeAct = new QAction(tr("Debug mode"), this);
+    debugModeAct->setCheckable(true);
+    connect(debugModeAct, SIGNAL(triggered(bool)), this, SLOT(setDebugMode(bool)));
 }
 
 void MainWindow::restart()
@@ -1299,7 +1406,9 @@ void MainWindow::createMenus()
     settingsSubMenu->addAction(setMediumFontAct);
     settingsSubMenu->addAction(setLargeFontAct);
     settingsMenu->addSeparator();
+    settingsMenu->addAction(debugModeAct);
     settingsMenu->addAction(setQuietModeAct);
+
 
 //    settingsMenu->addAction(synchModeAct);
 
@@ -1436,6 +1545,14 @@ void MainWindow::showCmdOnStatusBar(QString cmd)
 void MainWindow::addOneToLazyNutProgressBar()
 {
     lazyNutProgressBar->setValue(lazyNutProgressBar->value()+1);
+}
+
+void MainWindow::updateTrialRunListCount(int count)
+{
+    QString progressText = m_trialListLength > 0 ? QString("%1 of %2").arg(count).arg(m_trialListLength) : QString::number(count);
+    runAllTrialLabel->setText(QString("Processing a trial list\nProgress: %1").arg(progressText));
+    if (m_trialListLength == count)
+        m_trialListLength = 0;
 }
 
 void MainWindow::processHistoryKey(int dir, QString text)

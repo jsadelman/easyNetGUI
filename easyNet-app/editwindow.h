@@ -6,6 +6,7 @@
 
 QT_BEGIN_NAMESPACE
 class QAction;
+class QLabel;
 class QMenu;
 class QPlainTextEdit;
 class CodeEditor;
@@ -39,6 +40,7 @@ public:
     QAction *pauseAct;
     QString startDir;
 
+
     bool maybeSave();
     void setCurrentFile(const QString &fileName);
 
@@ -47,6 +49,7 @@ public slots:
 
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void findBackward(const QString &str, QFlags<QTextDocument::FindFlag> flags );
+    void setFilenameLabel(QString filename);
 signals:
     void runCmdAndUpdate(QStringList);
 
@@ -71,6 +74,7 @@ protected:
     void loadFile(const QString &fileName);
     bool saveFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
+    QLabel *filenameLabel;
 
 //    QPlainTextEdit *textEdit;
     QString curFile;
