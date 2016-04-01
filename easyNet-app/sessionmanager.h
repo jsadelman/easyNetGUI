@@ -112,6 +112,7 @@ signals:
     void commandSent(QString);
     void logCommand(QString);
     void commandsInJob(int);
+    void dotsCount(int);
     void lazyNutMacroStarted();
     void lazyNutMacroFinished();
 

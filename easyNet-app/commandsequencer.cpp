@@ -20,6 +20,7 @@ void CommandSequencer::initProcessLazyNutOutput()
     rRex = QRegExp("\\bR: ([^\\r\\n]*)"); //(?=\\n)
 //    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
     answerRex = QRegExp("(ANSWER: [^\\n]*\\n)+");
+    dotsRex = QRegExp("ANSWER: (\\.+)");
 
     eNelementsRex = QRegExp("<eNelements>");
     xmlStartRex = QRegExp("<(\\w+)");
@@ -90,7 +91,8 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     int beginOffset, endOffset;
     while (true)
     {
-
+        if (dotsRex.indexIn(lazyNutBuffer,baseOffset) > 0)
+            emit dotsCount(dotsRex.cap(1).length());
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         beginContent = beginRex.cap(1);

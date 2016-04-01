@@ -45,8 +45,9 @@ signals:
     void isReady(bool);
     // errors
     void cmdError(QString,QStringList);
-
     void cmdR(QString,QStringList);
+
+    void dotsCount(int);
 
 private:
 
@@ -64,6 +65,7 @@ private:
     QRegExp emptyLineRex;
     QRegExp errorRex,rRex;
     QRegExp answerRex;
+    QRegExp dotsRex;
     QRegExp eNelementsRex;
     QRegExp xmlStartRex;
     QRegExp svgRex;

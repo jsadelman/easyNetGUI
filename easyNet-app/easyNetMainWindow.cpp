@@ -117,7 +117,7 @@ void MainWindow::build()
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), m_debugMode(false)
+    : QMainWindow(parent), m_debugMode(false), m_trialListLength(0)
 {
 }
 
@@ -346,8 +346,7 @@ void MainWindow::connectSignalsAndSlots()
            rLog->addText(fb);
     });
 
-
-
+    connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
 
 }
 
@@ -525,7 +524,7 @@ void MainWindow::initialiseToolBar()
     toolbar->addSeparator();
 
     // notifier of run all trial
-    QLabel *runAllTrialLabel = new QLabel("Processing a set of trials\nPlease wait...");
+    runAllTrialLabel = new QLabel;
     runAllTrialLabel->setStyleSheet("QLabel {"
                                 "color: red;"
                                  "border: 1px solid red;"
@@ -1546,6 +1545,14 @@ void MainWindow::showCmdOnStatusBar(QString cmd)
 void MainWindow::addOneToLazyNutProgressBar()
 {
     lazyNutProgressBar->setValue(lazyNutProgressBar->value()+1);
+}
+
+void MainWindow::updateTrialRunListCount(int count)
+{
+    QString progressText = m_trialListLength > 0 ? QString("%1 of %2").arg(count).arg(m_trialListLength) : QString::number(count);
+    runAllTrialLabel->setText(QString("Processing a trial list\nProgress: %1").arg(progressText));
+    if (m_trialListLength == count)
+        m_trialListLength = 0;
 }
 
 void MainWindow::processHistoryKey(int dir, QString text)
