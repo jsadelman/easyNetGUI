@@ -513,64 +513,11 @@ QSvgWidget *PlotViewer::currentSvgWidget()
 
 void PlotViewer::addExtraActions()
 {
-//    settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
-////    settingsAct->setShortcut(QKeySequence::Refresh);
-//    settingsAct->setStatusTip(tr("Plot settings"));
-//    connect(settingsAct, SIGNAL(triggered()), this, SIGNAL(showPlotSettings()));
-//    settingsAct->setEnabled(false);
-//    ui->editToolBar->addAction(settingsAct);
-
     fullScreenAct = new QAction(QIcon(":/images/Full_screen_view.png"), "Full Screen", this);
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
     fullScreenAct->setEnabled(false);
     ui->editToolBar->addAction(fullScreenAct);
 }
-
-//QString PlotViewer::cloneRPlot(QString name, QString newName)
-//{
-//    newName =  SessionManager::instance()->makeValidObjectName(newName.isEmpty() ? name : newName);
-//    // set df-related settings to values that are names of copies of the original df's
-//    QMap<QString, QString> sourceDataframeSettings = SessionManager::instance()->plotSourceDataframeSettings(name);
-//    QMutableMapIterator<QString, QString>sourceDataframeSettings_it(sourceDataframeSettings);
-//    while(sourceDataframeSettings_it.hasNext())
-//    {
-//        sourceDataframeSettings_it.next();
-//        sourceDataframeSettings_it.setValue(SessionManager::instance()->makeValidObjectName(sourceDataframeSettings_it.value()));
-//    }
-//    // make the above mentioned df copies
-//    LazyNutJob *job = new LazyNutJob;
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
-//    sourceDataframeSettings_it.toFront();
-//    while(sourceDataframeSettings_it.hasNext())
-//    {
-//        sourceDataframeSettings_it.next();
-//        job->cmdList.append(QString("%1 copy %2")
-//                            .arg(SessionManager::instance()->plotSourceDataframeSettings(name).value(sourceDataframeSettings_it.key()))
-//                            .arg(sourceDataframeSettings_it.value()));
-//    }
-//    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-//            << job
-//            << SessionManager::instance()->recentlyCreatedJob();
-//    QMap<QString, QVariant> jobData;
-//    QStringList newDataframes = sourceDataframeSettings.values();
-//    jobData.insert("newDataframes",  newDataframes);
-//    jobs.last()->data = jobData;
-//    jobs.last()->appendEndOfJobReceiver(this, SLOT(addSourceDataframes()));
-//    SessionManager::instance()->submitJobs(jobs);
-//    // have a plot settings form created for the clone rplot
-//    // use the current settings from the original rplot, overwrite the df related ones and set them as defaults
-//    // for the new form
-//    QMap<QString, QString> settings = MainWindow::instance()->plotSettingsWindow->getSettings(name); // bad design but quicker than using signals/slots
-//    sourceDataframeSettings_it.toFront();
-//    while(sourceDataframeSettings_it.hasNext())
-//    {
-//        sourceDataframeSettings_it.next();
-//        settings[sourceDataframeSettings_it.key()] = sourceDataframeSettings_it.value();
-//    }
-//    int flags = SessionManager::instance()->plotFlags(name) | Plot_Backup;
-//    emit createNewRPlot(newName, plotType(name), settings, flags);
-//    return newName;
-//}
 
 
 void PlotViewer::paintEvent(QPaintEvent *event)

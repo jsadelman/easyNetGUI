@@ -80,7 +80,6 @@ void DataframeViewer::open()
         QString loadCmd = fi.suffix() == "csv" ? "load_csv" : "load";
         QString dataframeType = stimulusSet() ? "stimulus_set" : "dataframe";
         LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
         job->cmdList = QStringList({
                             QString("create %1 %2").arg(dataframeType).arg(dfName),
                             QString("%1 %2 %3").arg(dfName).arg(loadCmd).arg(fileName)});
@@ -107,7 +106,6 @@ void DataframeViewer::save()
     if (!fileName.isEmpty())
     {
         LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
         job->cmdList = QStringList({QString("%1 save_csv %2").arg(ui->currentItemName()).arg(fileName)});
         SessionManager::instance()->submitJobs(job);
         lastSaveDir = QFileInfo(fileName).path();
@@ -148,7 +146,6 @@ void DataframeViewer::copyDataframe()
         return;
     QString copyDf = SessionManager::instance()->makeValidObjectName(originalDf);
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 copy %2").arg(originalDf).arg(copyDf);
     QMap<QString, QVariant> jobData;
     jobData.insert("name", copyDf);
@@ -351,7 +348,6 @@ void DataframeViewer::findForward(const QString &str, QFlags<QTextDocument::Find
 void DataframeViewer::setParameter(QString name, QString key_val)
 {
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 set %2").arg(name).arg(key_val);
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
@@ -555,7 +551,6 @@ void DataframeViewer::doCopy()
 {
     // this is an illegal approach -- get R to copy the df to the clipboard
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard-100000\", sep=\"\\t\", row.names=FALSE)")
                                 .arg(ui->currentItemName())});
     // clipboard-100000 sets the clipboard size to 100000K. Note that a larger number does not work. The default (on Windows) is 33K

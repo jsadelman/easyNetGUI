@@ -34,7 +34,6 @@
 #include "lazynutjob.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
-#include "lazynutconsole.h"
 //#include "lazynutscripteditor.h"
 #include "maxminpanel.h"
 #include "findfiledialog.h"
@@ -280,7 +279,7 @@ void MainWindow::connectSignalsAndSlots()
 
     //
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
-    connect(scriptEdit,SIGNAL(runCmdAndUpdate(QStringList)),this,SLOT(runCmdAndUpdate(QStringList)));
+    connect(scriptEdit,SIGNAL(runCmdRequested(QStringList)),SessionManager::instance(),SLOT(runCmd(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole2,SLOT(addText(QString)));
     connect(lazyNutConsole2,SIGNAL(historyKey(int, QString)),
@@ -682,7 +681,7 @@ void MainWindow::afterModelConfig()
 {
     modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
     connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
-    runCmdAndUpdate({SessionManager::instance()->currentModel()+(" stage")});
+    SessionManager::instance()->runCmd(QString("%1 stage").arg(SessionManager::instance()->currentModel()));
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
@@ -723,7 +722,7 @@ void MainWindow::loadTrial()
         else fn=fileName;
         QString x="include ";
         x.append(fn);
-        runCmdAndUpdate({x});
+        SessionManager::instance()->runCmd(x);
     }
     return;
     if (!fileName.isEmpty())
@@ -775,7 +774,7 @@ void MainWindow::loadAddOn()
         else fn=fileName;
         QString x="include ";
         x.append(fn);
-        runCmdAndUpdate({x});
+        SessionManager::instance()->runCmd(x);
     }
     return;
     {
@@ -1084,19 +1083,6 @@ void MainWindow::showResultsViewer(QString name)
     }
 }
 
-//! [runCmdAndUpdate]
-void MainWindow::runCmdAndUpdate(QStringList cmdList)
-{
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    job->cmdList = cmdList;
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << SessionManager::instance()->updateObjectCatalogueJobs();
-
-    SessionManager::instance()->submitJobs(jobs);
-}
-//! [runCmdAndUpdate]
 
 //! [getVersion]
 void MainWindow::getVersion()

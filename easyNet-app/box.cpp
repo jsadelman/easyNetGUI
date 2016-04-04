@@ -310,7 +310,6 @@ void Box::enableObserver(QString observer, bool enable)
 
 {
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 %2").arg(observer).arg(enable? "enable" : "disable");
     QMap<QString, QVariant> jobData;
     jobData.insert("observer", observer);
@@ -327,7 +326,6 @@ void Box::enableObserver(QString observer, bool enable)
 void Box::lesionBox(bool lesion)
 {
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 %2").arg(m_name).arg(lesion ? "lesion" : "unlesion");
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << job

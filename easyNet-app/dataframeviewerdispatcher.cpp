@@ -58,7 +58,6 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     }
     previousDispatchMode = currentDispatchMode;
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList = QStringList();
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
 //    qDebug () << Q_FUNC_INFO << dispatchModeText.value(currentDispatchAction);

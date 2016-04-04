@@ -82,7 +82,6 @@ void SettingsWidget::newForm(QString name, QString dataViewType, QString rScript
         return;
     }
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({
                                 QString("create %1 %2").arg(dataViewType).arg(name),
                                 QString("%1 set_type %2").arg(name).arg(rScript),

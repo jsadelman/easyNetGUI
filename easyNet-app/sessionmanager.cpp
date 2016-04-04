@@ -187,7 +187,6 @@ void SessionManager::setPrettyName(QString name, QString prettyName)
     if (!descriptionCache->exists(name))
         return;
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 set_pretty_name %2").arg(name).arg(prettyName);
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << job
@@ -200,7 +199,6 @@ void SessionManager::destroyObject(QString name)
     if (descriptionCache->exists(name))
     {
         LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
         job->cmdList << QString("destroy %1").arg(name);
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
@@ -329,10 +327,10 @@ QVariant SessionManager::getDataFromJob(QObject *obj, QString key)
     return data.value(key);
 }
 
+
 LazyNutJob *SessionManager::recentlyCreatedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
     job->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)), AnswerFormatterType::XML);
     return job;
@@ -341,7 +339,6 @@ LazyNutJob *SessionManager::recentlyCreatedJob()
 LazyNutJob *SessionManager::recentlyModifiedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
     job->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)), AnswerFormatterType::ListOfValues);
     return job;
@@ -350,7 +347,6 @@ LazyNutJob *SessionManager::recentlyModifiedJob()
 LazyNutJob *SessionManager::recentlyDestroyedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
     job->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)), AnswerFormatterType::ListOfValues);
     return job;
@@ -533,18 +529,23 @@ bool SessionManager::isOn()
 }
 
 
-void SessionManager::runCmd(QString cmd)
+void SessionManager::runCmd(QString cmd, unsigned int logMode)
 {
-    runCmd(QStringList({cmd}));
+    runCmd(QStringList({cmd}), logMode);
 }
 
-void SessionManager::runCmd(QStringList cmd)
+void SessionManager::runCmd(QStringList cmd, unsigned int logMode)
 {
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = cmd;
-    job->logMode |= ECHO_INTERPRETER;
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << updateObjectCatalogueJobs();
-    submitJobs(jobs);
+    job->logMode = logMode;
+    submitJobs(job);
+
+    bool echo = false;
+    foreach (QString c, cmd)
+    {
+        echo |= commandSequencer->echoInterpreter(c);
+    }
+    if (echo)
+        submitJobs(updateObjectCatalogueJobs());
 }

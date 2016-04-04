@@ -268,8 +268,6 @@ void TrialWidget::runTrial()
     QSharedPointer<QDomDocument> trialRunInfo = createTrialRunInfo();
     emit aboutToRunTrial(trialRunInfo);
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-
     if (!SessionManager::instance()->suspendingObservers())
     {
         foreach(QString observer, SessionManager::instance()->enabledObservers())

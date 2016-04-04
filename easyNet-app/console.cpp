@@ -58,8 +58,13 @@ void Console::createStatusBar()
 
     QLabel* label = new QLabel("  >");
     inputCmdLine = new InputCmdLine(this);
-    connect(inputCmdLine,SIGNAL(commandReady(QString)),
-            SessionManager::instance(),SLOT(runCmd(QString)));
+//    connect(inputCmdLine,SIGNAL(commandReady(QString)),
+//            SessionManager::instance(),SLOT(runCmd(QString)));
+    connect(inputCmdLine, &InputCmdLine::commandReady, [=](QString cmd)
+    {
+        SessionManager::instance()->runCmd(cmd, ECHO_INTERPRETER);
+    });
+
     connect(inputCmdLine,SIGNAL(historyKey(int, QString)),
             this,SIGNAL(historyKey(int, QString)));
 

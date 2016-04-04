@@ -74,7 +74,6 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
                         SessionManager::instance()->setCopyRequested(df);
                         QString copyDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(df));
                         LazyNutJob *job = new LazyNutJob;
-                        job->logMode |= ECHO_INTERPRETER;
                         job->cmdList = QStringList();
                         QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
                         job->cmdList << QString("%1 copy %2").arg(df).arg(copyDf);

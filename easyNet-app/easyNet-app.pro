@@ -70,7 +70,7 @@ SOURCES +=  \
     objectcachefilter.cpp \
     inputcmdline.cpp \
     cmdoutput.cpp \
-    lazynutconsole.cpp \
+#    lazynutconsole.cpp \
     simplelistmodel.cpp \
     selectfromlistmodel.cpp \
     pairedlistwidget.cpp \
@@ -168,7 +168,7 @@ HEADERS  += \
     objectcachefilter.h \
     inputcmdline.h \
     cmdoutput.h \
-    lazynutconsole.h \
+#    lazynutconsole.h \
     simplelistmodel.h \
     selectfromlistmodel.h \
     pairedlistwidget.h \

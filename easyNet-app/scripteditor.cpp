@@ -39,7 +39,7 @@ ScriptEditor::~ScriptEditor()
 
 void ScriptEditor::runScript()
 {
-    emit runCmdAndUpdate(textEdit->getAllText());
+    emit runCmdRequested(textEdit->getAllText());
 }
 
 void ScriptEditor::runSelection()
@@ -54,10 +54,10 @@ void ScriptEditor::runSelection()
         cursor->movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
 //        qDebug() << "runSelection -- cursorPos" << cursor->position();
 //        qDebug() << "runSelection -- selected:" << textEdit->getCurrentLine();
-        emit runCmdAndUpdate(QStringList(textEdit->getCurrentLine()));
+        emit runCmdRequested(QStringList(textEdit->getCurrentLine()));
     }
     else
-        emit runCmdAndUpdate(textEdit->getSelectedText());
+        emit runCmdRequested(textEdit->getSelectedText());
 }
 
 

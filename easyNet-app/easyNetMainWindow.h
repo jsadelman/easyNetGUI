@@ -36,7 +36,6 @@ class ObjectCacheFilter;
 class MaxMinPanel;
 class TableEditor;
 class TableViewer;
-class LazyNutConsole;
 class Assistant;
 class TextEdit;
 class HelpWindow;
@@ -133,7 +132,6 @@ private slots:
     void addOneToLazyNutProgressBar();
 
 
-    void runCmdAndUpdate(QStringList cmdList);
     void viewSettings();
     void setNewEasyNetHome();
     void setNewEasyNetDataHome();
@@ -237,9 +235,6 @@ public:
     QListWidget* customerList;
     QListWidget* paragraphsList;
 
-//    TreeModel       *objTaxonomyModel;
-//    LazyNutObjCatalogue  *objCatalogue;
-//    LazyNutConsole *lazyNutConsole;
     Console        *lazyNutConsole2;
     ObjExplorer      *objExplorer;
 

@@ -94,6 +94,7 @@ public:
     bool isCopyRequested(QString original);
 
 
+
     ObjectCache *descriptionCache;
     ObjectCache *dataframeCache;
 
@@ -138,8 +139,8 @@ public slots:
     bool isReady();
     bool isOn();
     void killLazyNut();
-    void runCmd(QString cmd);
-    void runCmd(QStringList cmd);
+    void runCmd(QString cmd, unsigned int logMode = 0);
+    void runCmd(QStringList cmd, unsigned int logMode = 0);
     void restartLazyNut();
     void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
     void setCurrentTrial(QString s) {m_currentTrial = s;}
