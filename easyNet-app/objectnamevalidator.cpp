@@ -3,54 +3,13 @@
 #include "sessionmanager.h"
 #include "enumclasses.h"
 
-ObjectNameValidator::ObjectNameValidator(QObject *parent)
+ObjectNameValidator::ObjectNameValidator(QObject *parent, QStringList lazyNutkeywords)
     : QValidator(parent)
 {
-    QStringList forbiddenNames = QStringList()
+    QStringList forbiddenNames = lazyNutkeywords
                       << ""
                       << "\\s+.*"
-                      << "[#(0-9].*"
-                      << "query"
-                      << "xml"
-                      << "xmllint"
-                      << "quietly"
-                      << "loglevel"
-                      << "CRASH"
-                      << "recently_created"
-                      << "clear_recently_created"
-                      << "recently_destroyed"
-                      << "clear_recently_destroyed"
-                      << "recently_modified"
-                      << "clear_recently_modified"
-                      << "version"
-                      << "shush"
-                      << "unshush"
-                      << "include"
-                      << "create"
-                      << "destroy"
-                      << "load"
-                      << "until"
-                      << "if"
-                      << "list"
-                      << "facets"
-                      << "loop"
-                      << "less"
-                      << "or"
-                      << "and"
-                      << "default_model"
-                      << "set_default_model"
-                      << "named_loop"
-                      << "creators"
-                      << "aesthetic"
-                      << "stop"
-                      << "watchlist"
-                      << "limit_descriptions"
-                      << "unlimit_descriptions"
-                      << "set"
-                      << "get"
-                      << "unset"
-                      << "R"
-                         ;
+                      << "[#(0-9].*";
     forbiddenRex = QRegExp(QString("^(%1)$").arg(forbiddenNames.join("|")));
 }
 

@@ -86,20 +86,52 @@ SessionManager::SessionManager()
     connect(this, SIGNAL(easyNetHomeChanged()), this, SLOT(setDefaultLocations()));
     connect(this, SIGNAL(easyNetDataHomeChanged()), this, SLOT(setDefaultLocations()));
 
-    validator = new ObjectNameValidator(this);
     m_defaultLocation.clear();
     lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
-    m_extraNamedItems.clear();
-    m_requestedNames.clear();
 
-    objectListFilter = new ObjectCacheFilter(descriptionCache, this);
-    objectListFilter->setAllPassFilter();
-    connect(objectListFilter, &ObjectCacheFilter::objectCreated, [=](QString name)
-    {
-        m_requestedNames.removeAll(name);
-    });
-
-
+    lazyNutkeywords = QStringList()
+                      << "query"
+                      << "xml"
+                      << "xmllint"
+                      << "quietly"
+                      << "loglevel"
+                      << "CRASH"
+                      << "recently_created"
+                      << "clear_recently_created"
+                      << "recently_destroyed"
+                      << "clear_recently_destroyed"
+                      << "recently_modified"
+                      << "clear_recently_modified"
+                      << "version"
+                      << "shush"
+                      << "unshush"
+                      << "include"
+                      << "create"
+                      << "destroy"
+                      << "load"
+                      << "until"
+                      << "if"
+                      << "list"
+                      << "facets"
+                      << "loop"
+                      << "less"
+                      << "or"
+                      << "and"
+                      << "default_model"
+                      << "set_default_model"
+                      << "named_loop"
+                      << "creators"
+                      << "aesthetic"
+                      << "stop"
+                      << "watchlist"
+                      << "limit_descriptions"
+                      << "unlimit_descriptions"
+                      << "set"
+                      << "get"
+                      << "unset"
+                      << "R"
+                         ;
+    validator = new ObjectNameValidator(this, lazyNutkeywords);
 }
 
 

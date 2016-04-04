@@ -86,6 +86,7 @@ public:
     bool suspendingObservers() {return m_suspendingObservers;}
     bool isAnyTrialPlot(QString name);
     int plotFlags(QString name) {return m_plotFlags.value(name, 0);}
+    QStringList lazyNutkeywords;
     QString makeValidObjectName(QString name);
     bool isValidObjectName(QString name);
     void addToExtraNamedItems(QString name);
