@@ -595,7 +595,7 @@ void MainWindow::loadModel(QString fileName,bool complete)
     // load and run script
     qDebug() << "Starting clock ...";
     loadModelTimer.start();
-    loadFile(fileName);
+//    loadFile(fileName);
 
     // the /path/basename is used by DiagramScene objects to load JSON files
     QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
@@ -622,7 +622,10 @@ void MainWindow::loadModel(QString fileName,bool complete)
     else
       connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
 
-    runScript();
+//    runScript();
+
+    runCmdAndUpdate({QString("include ")+fileName});
+
     //        SessionManager::instance()->setCurrentModel(currentModel);
     // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
     // should then call getList() and choose the appropriate model
