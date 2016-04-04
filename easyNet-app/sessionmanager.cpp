@@ -458,6 +458,7 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
     if (lazyNutHeaderBuffer.contains(OOBrex))
     {
         OOBsecret = OOBrex.cap(1);
+        emit userLazyNutOutputReady(lazyNutHeaderBuffer.left(lazyNutHeaderBuffer.indexOf(OOBsecret) + OOBsecret.length()));
         lazyNutHeaderBuffer.clear();
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
         emit lazyNutStarted();

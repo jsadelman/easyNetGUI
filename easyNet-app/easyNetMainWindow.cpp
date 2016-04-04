@@ -135,7 +135,7 @@ void MainWindow::constructForms()
 
     /* CONSTRUCT ALL THE INDIVIDUAL FORMS */
 
-    lazyNutConsole2 = new Console(this);
+    lazyNutConsole = new Console(this);
 
 //    plotSettingsWindow = new PlotSettingsWindow(this);
     dataViewSettingsWidget = new SettingsWidget(this);
@@ -229,7 +229,7 @@ void MainWindow::constructForms()
 //    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
     dataViewSettingsTabIdx = methodsPanel->addTab(dataViewSettingsWidget, tr("Dataframe/plot settings"));
 
-    lazynutPanel->addTab(lazyNutConsole2, tr("Console"));
+    lazynutPanel->addTab(lazyNutConsole, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
     lazynutPanel->addTab(errorLog, tr("Errors"));
     lazynutPanel->addTab(rLog, tr("R"));
@@ -281,11 +281,11 @@ void MainWindow::connectSignalsAndSlots()
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(scriptEdit,SIGNAL(runCmdRequested(QStringList)),SessionManager::instance(),SLOT(runCmd(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
-            lazyNutConsole2,SLOT(addText(QString)));
-    connect(lazyNutConsole2,SIGNAL(historyKey(int, QString)),
+            lazyNutConsole,SLOT(addText(QString)));
+    connect(lazyNutConsole,SIGNAL(historyKey(int, QString)),
             this,SLOT(processHistoryKey(int, QString)));
     connect(this,SIGNAL(showHistory(QString)),
-            lazyNutConsole2,SLOT(showHistory(QString)));
+            lazyNutConsole,SLOT(showHistory(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
@@ -332,8 +332,10 @@ void MainWindow::connectSignalsAndSlots()
 
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
+    connect(SessionManager::instance(), SIGNAL(commandSent(QString)),
+            debugLog, SLOT(addRowToTable(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
-            debugLog, SLOT(addRowToTable(QString,QString)));
+            debugLog, SLOT(updateCmd(QString,QString)));
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
     {
        foreach(QString error, errorList)
@@ -1179,7 +1181,7 @@ void MainWindow::setFontSize(const QString & size)
         fontSize = EN_FONT_SMALL;
 
     QApplication::setFont(QFont(EN_FONT, fontSize));
-    lazyNutConsole2->setConsoleFontSize(fontSize);
+    lazyNutConsole->setConsoleFontSize(fontSize);
 
 }
 

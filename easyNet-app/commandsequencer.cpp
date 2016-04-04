@@ -71,7 +71,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
     foreach (QString cmd, commandList)
     {
         emit commandSent(cmd);
-        if (logMode & ECHO_INTERPRETER)
+        if (echoInterpreter(cmd) || logMode & ECHO_INTERPRETER)
             emit logCommand(cmd);
 //        qDebug() << cmd;
         lazyNut->sendCommand(cmd);
@@ -161,8 +161,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
 //                qDebug() << currentCmd;
 //                qDebug() << answer;
                 emit answerReady(answer, currentCmd);
-//                if (commandList.first().contains("25"))
-//                    qDebug() << answer;
+
             }
         }
         emit commandExecuted(commandList.first(),timeString);

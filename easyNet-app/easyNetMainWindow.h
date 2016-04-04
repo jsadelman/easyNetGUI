@@ -235,7 +235,7 @@ public:
     QListWidget* customerList;
     QListWidget* paragraphsList;
 
-    Console        *lazyNutConsole2;
+    Console        *lazyNutConsole;
     ObjExplorer      *objExplorer;
 
     QDockWidget     *dockWelcome;
