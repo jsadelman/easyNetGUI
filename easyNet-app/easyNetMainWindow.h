@@ -306,6 +306,7 @@ public:
     QPushButton     * modelButton;
     QToolButton * addonButton;
     QWidget         *spacer;
+    QAction         *stopAct;
     ObjectCacheFilter* modelListFilter;
     ObjectCacheFilter* trialListFilter;
     ObjectCacheFilter *dataframeDescriptionFilter;

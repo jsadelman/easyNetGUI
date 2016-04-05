@@ -56,7 +56,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         // or an empty job was sent
         // (on purpose, e.g. for terminating a macro from a slot designated as next job slot)
 //        qDebug() << "empty cmdList";
-        emit commandsExecuted();
+        emit jobExecuted();
         return;
     }
     ready = false;
@@ -174,7 +174,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
             ready = true;
             emit isReady(ready);
 //            qDebug() << " emit commandsExecuted();";
-            emit commandsExecuted();
+            emit jobExecuted();
             return;
         }
     }

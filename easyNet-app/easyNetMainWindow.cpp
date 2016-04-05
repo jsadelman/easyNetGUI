@@ -457,6 +457,8 @@ void MainWindow::initialiseToolBar()
 
     addonButton = new QToolButton(this);
     addonButton->setIcon(QIcon(":/images/add-on.png"));
+    addonButton->setToolTip("load add-on");
+
 //    QLabel* trialBoxLabel = new QLabel("Trial:");
     trialButton = new QPushButton("Trial:");
     trialButton->setFlat(true);
@@ -519,8 +521,14 @@ void MainWindow::initialiseToolBar()
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
 
     toolbar->addSeparator();
+    stopAct = toolbar->addAction(QIcon(":/images/sign_stop.png"), "Stop");
+    stopAct->setToolTip("stop simulation");
+    stopAct->setEnabled(false);
+    connect(stopAct, SIGNAL(triggered()), SessionManager::instance(), SLOT(stop()));
+    connect(SessionManager::instance(), &SessionManager::commandsInJob, [=](){stopAct->setEnabled(true);});
+    connect(SessionManager::instance(), &SessionManager::jobExecuted, [=](){stopAct->setEnabled(false);});
+    toolbar->addSeparator();
 
-    // toolBar is a pointer to an existing toolbar
     toolbar->addWidget(spacer);
     toolbar->addSeparator();
 

@@ -111,6 +111,7 @@ signals:
     void cmdError(QString,QStringList);
     void cmdR(QString,QStringList);
     void commandExecuted(QString, QString);
+    void jobExecuted();
     void commandSent(QString);
     void logCommand(QString);
     void commandsInJob(int);
@@ -140,6 +141,7 @@ public slots:
     bool isReady();
     bool isOn();
     void killLazyNut();
+    void stop();
     void runCmd(QString cmd, unsigned int logMode = 0);
     void runCmd(QStringList cmd, unsigned int logMode = 0);
     void restartLazyNut();
@@ -158,6 +160,7 @@ public slots:
 private slots:
 
     void getOOB(const QString &lazyNutOutput);
+    void startOOB(QString code="");
     void startCommandSequencer();
     void lazyNutProcessError(int error);
     void setDefaultLocations();
@@ -182,6 +185,7 @@ private:
     QString         lazyNutExt;
     QString         binDir;
     QString         lazyNutBasename;
+    QString         oobBaseName;
 
     // state
     QString m_currentModel;
@@ -191,6 +195,7 @@ private:
     LazyNutJobQueue *jobQueue;
     CommandSequencer *commandSequencer;
     LazyNut* lazyNut;
+    QProcess *oob;
     QString lazyNutOutput;
     QStringList commandList;
     QString lazyNutHeaderBuffer;

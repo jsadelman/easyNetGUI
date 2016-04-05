@@ -58,7 +58,10 @@ void DebugLog::addRowToTable(QString cmd)
 void DebugLog::updateCmd(QString cmd, QString time)
 {
     if (model->item(lastExecCmdRow + 1, 1)->text() == cmd)
+    {
         model->setItem(++lastExecCmdRow, 2, new QStandardItem(time));
+        view->resizeColumnsToContents();
+    }
     else
         eNerror << "receiving out of order cmd" << cmd;
 }

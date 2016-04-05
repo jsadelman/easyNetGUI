@@ -36,7 +36,7 @@ public slots:
 signals:
     // send output to editor
     void commandsInJob(int);
-    void commandsExecuted();
+    void jobExecuted();
     void commandExecuted(QString,QString);
     void logCommand(QString);
     void commandSent(QString);

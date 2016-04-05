@@ -53,12 +53,15 @@ SessionManager::SessionManager()
       #if defined(__linux__)
       lazyNutExt("sh"),
       binDir("bin-linux"),
+      oobBaseName(""),
       #elif defined(__APPLE__)
       lazyNutExt("sh"),
       binDir("bin-mac"),
+      oobBaseName("lazyNut_oob"),
       #elif defined(_WIN32)
       lazyNutExt("bat"),
-      binDir("bin")
+      binDir("bin"),
+      oobBaseName("lazyNut_oob.exe")
       #endif
 
 {
@@ -200,8 +203,8 @@ void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitSta
 {
     if (exitCode != 0 || exitStatus !=QProcess::NormalExit)
     {
-//        qDebug() << "exit status " << exitCode << exitStatus;
-     //   emit lazyNutCrash();
+        qDebug() << "exit status " << exitCode << exitStatus;
+//        emit lazyNutCrash();
     }
 }
 
@@ -494,7 +497,20 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
         lazyNutHeaderBuffer.clear();
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
         emit lazyNutStarted();
+        startOOB();
     }
+}
+
+void SessionManager::startOOB(QString code)
+{
+    if (code.isEmpty())
+        code = OOBsecret;
+    oob = new QProcess(this);
+    oob->setProgram(QString("%1/%2").arg(QFileInfo(defaultLocation("lazyNutBat")).absolutePath()).arg(oobBaseName));
+    oob->setArguments({code});
+    oob->start();
+    if (!oob->waitForStarted())
+        eNerror << "OOB did not start:";
 }
 
 void SessionManager::startCommandSequencer()
@@ -505,14 +521,16 @@ void SessionManager::startCommandSequencer()
             this,SIGNAL(userLazyNutOutputReady(QString)));
     connect(commandSequencer, SIGNAL(isReady(bool)),
             this, SIGNAL(isReady(bool)));
+    connect(commandSequencer, SIGNAL(commandsInJob(int)),
+            this, SIGNAL(commandsInJob(int)));
+    connect(commandSequencer, SIGNAL(jobExecuted()),
+            this, SIGNAL(jobExecuted()));
     connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
             this, SIGNAL(cmdError(QString,QStringList)));
     connect(commandSequencer, SIGNAL(cmdR(QString,QStringList)),
             this, SIGNAL(cmdR(QString,QStringList)));
     connect(commandSequencer, SIGNAL(commandExecuted(QString,QString)),
             this, SIGNAL(commandExecuted(QString,QString)));
-    connect(commandSequencer, SIGNAL(commandsInJob(int)),
-            this, SIGNAL(commandsInJob(int)));
     connect(commandSequencer, SIGNAL(commandSent(QString)),
             this, SIGNAL(commandSent(QString)));
     connect(commandSequencer, SIGNAL(logCommand(QString)),
@@ -547,6 +565,12 @@ void SessionManager::setDefaultLocations()
 void SessionManager::killLazyNut()
 {
     lazyNut->kill();
+}
+
+void SessionManager::stop()
+{
+    if (oob)
+        oob->write(qPrintable("stop\n"));
 }
 
 
