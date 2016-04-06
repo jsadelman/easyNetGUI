@@ -186,7 +186,6 @@ private:
     void initialiseToolBar();
     void createActions();
     void createMenus();
-    void createToolBars();
     void createStatusBar();
     void connectSignalsAndSlots();
 //    bool maybeSave();
@@ -306,6 +305,7 @@ public:
     QPushButton     * modelButton;
     QToolButton * addonButton;
     QWidget         *spacer;
+    QAction         *stopAct;
     ObjectCacheFilter* modelListFilter;
     ObjectCacheFilter* trialListFilter;
     ObjectCacheFilter *dataframeDescriptionFilter;

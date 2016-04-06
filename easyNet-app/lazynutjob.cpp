@@ -59,7 +59,7 @@ void LazyNutJob::run()
     }
 //    connect(this,SIGNAL(runCommands(QStringList,bool,unsigned int)),
 //            SessionManager::instance()->commandSequencer,SLOT(runCommands(QStringList,bool,unsigned int)));
-    connect(SessionManager::instance()->commandSequencer,SIGNAL(commandsExecuted()),
+    connect(SessionManager::instance()->commandSequencer,SIGNAL(jobExecuted()),
             this,SLOT(finish()));
     setActive(true);
 //    qDebug() << "run" << this << cmdList;

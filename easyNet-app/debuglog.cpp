@@ -10,7 +10,7 @@
 
 
 DebugLog::DebugLog(QWidget *parent)
-        : QMainWindow (parent), lastExecCmdRow(-1)
+        : QMainWindow (parent), lastExecCmdRow(-1), skippingRemainingCommands(false)
 {
     createActions();
     createToolBars();
@@ -43,14 +43,14 @@ DebugLog::~DebugLog()
 
 }
 
-void DebugLog::addRowToTable(QString cmd)
+void DebugLog::addRowToTable(QString cmd, QString time)
 {
     QList<QStandardItem *> rowData;
     int i = model->rowCount(); // + 1;
     QString number = QString("%1").arg(i, 4, 10, QChar('0'));
     rowData << new QStandardItem(number);
     rowData << new QStandardItem(cmd);
-    rowData << new QStandardItem("");
+    rowData << new QStandardItem(time);
     model->appendRow(rowData);
     view->resizeColumnsToContents();
 }
@@ -58,9 +58,20 @@ void DebugLog::addRowToTable(QString cmd)
 void DebugLog::updateCmd(QString cmd, QString time)
 {
     if (model->item(lastExecCmdRow + 1, 1)->text() == cmd)
+    {
         model->setItem(++lastExecCmdRow, 2, new QStandardItem(time));
+        view->resizeColumnsToContents();
+    }
     else
-        eNerror << "receiving out of order cmd" << cmd;
+    {
+        eNwarning << "receiving out of order cmd" << cmd;
+    }
+    if (skippingRemainingCommands)
+    {
+        lastExecCmdRow = model->rowCount() -1;
+        skippingRemainingCommands = false;
+    }
+
 }
 
 void DebugLog::on_copy_clicked()

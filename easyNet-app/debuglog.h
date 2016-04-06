@@ -25,13 +25,14 @@ public:
     ~DebugLog();
 
 private slots:
-    void addRowToTable(QString cmd);
+    void addRowToTable(QString cmd, QString time="");
     void updateCmd(QString cmd, QString time);
     void on_copy_clicked();
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void save();
     void autoSave() {saveLogToFile(defaultLogFileName());}
+    void skipRemainingCommands() {skippingRemainingCommands = true;}
 
 private:
     void createToolBars();
@@ -53,6 +54,7 @@ private:
     FindDialog*     findDialog;
 
     int     lastExecCmdRow;
+    bool    skippingRemainingCommands;
 };
 
 
