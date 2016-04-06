@@ -36,7 +36,6 @@ class ObjectCacheFilter;
 class MaxMinPanel;
 class TableEditor;
 class TableViewer;
-class LazyNutConsole;
 class Assistant;
 class TextEdit;
 class HelpWindow;
@@ -62,6 +61,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     Q_PROPERTY(bool debugMode READ debugMode WRITE setDebugMode NOTIFY debugModeChanged)
+    Q_PROPERTY(int trialListLength READ trialListLength WRITE setTrialListLength)
 public:
     enum ViewMode
     {
@@ -83,6 +83,8 @@ public:
 public:
     void build();
     bool debugMode() {return m_debugMode;}
+    int trialListLength() {return m_trialListLength;}
+    void setTrialListLength(int length) {m_trialListLength = length;}
 
 public slots:
     void loadTrial();
@@ -91,6 +93,7 @@ public slots:
     void importDataFrame();
     void msgBox(QString msg);
     void setDebugMode(bool isDebugMode);
+    void updateTrialRunListCount(int count);
 
 signals:
     void savedLayoutToBeLoaded(QString);
@@ -128,7 +131,7 @@ private slots:
     void showCmdOnStatusBar(QString cmd);
     void addOneToLazyNutProgressBar();
 
-    void runCmdAndUpdate(QStringList cmdList);
+
     void viewSettings();
     void setNewEasyNetHome();
     void setNewEasyNetDataHome();
@@ -232,10 +235,7 @@ public:
     QListWidget* customerList;
     QListWidget* paragraphsList;
 
-//    TreeModel       *objTaxonomyModel;
-//    LazyNutObjCatalogue  *objCatalogue;
-//    LazyNutConsole *lazyNutConsole;
-    Console        *lazyNutConsole2;
+    Console        *lazyNutConsole;
     ObjExplorer      *objExplorer;
 
     QDockWidget     *dockWelcome;
@@ -311,7 +311,9 @@ public:
     ObjectCacheFilter *dataframeDescriptionFilter;
     ObjectCacheFilter *paramDescriptionFilter;
     ObjectCacheFilter *testFilter;
-    QAction         * runAllTrialMsgAct;
+    QAction         *runAllTrialMsgAct;
+    int              m_trialListLength;
+    int              trialListCount;
 
     Assistant       *assistant;
 //    TextEdit        *textViewer;
@@ -353,7 +355,7 @@ public:
     QLabel          *lazyNutCmdLabel;
     QLabel          *lazyNutErrorLabel;
     QComboBox       *lazyNutErrorBox;
-
+    QLabel          *runAllTrialLabel;
 
 
 //    QToolBar        *fileToolBar;

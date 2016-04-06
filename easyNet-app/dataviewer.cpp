@@ -253,7 +253,6 @@ void DataViewer::dispatch()
 
 void DataViewer::setCurrentItem(QString name)
 {
-
     if (name.isEmpty() || name == "<select an item>")
         enableActions(false);
     else

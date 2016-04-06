@@ -86,12 +86,14 @@ public:
     bool suspendingObservers() {return m_suspendingObservers;}
     bool isAnyTrialPlot(QString name);
     int plotFlags(QString name) {return m_plotFlags.value(name, 0);}
+    QStringList lazyNutkeywords;
     QString makeValidObjectName(QString name);
     bool isValidObjectName(QString name);
     void addToExtraNamedItems(QString name);
     void removeFromExtraNamedItems(QString name);
     QStringList extraNamedItems();
     bool isCopyRequested(QString original);
+
 
 
     ObjectCache *descriptionCache;
@@ -112,6 +114,7 @@ signals:
     void commandSent(QString);
     void logCommand(QString);
     void commandsInJob(int);
+    void dotsCount(int);
     void lazyNutMacroStarted();
     void lazyNutMacroFinished();
 
@@ -137,8 +140,8 @@ public slots:
     bool isReady();
     bool isOn();
     void killLazyNut();
-    void runCmd(QString cmd);
-    void runCmd(QStringList cmd);
+    void runCmd(QString cmd, unsigned int logMode = 0);
+    void runCmd(QStringList cmd, unsigned int logMode = 0);
     void restartLazyNut();
     void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
     void setCurrentTrial(QString s) {m_currentTrial = s;}

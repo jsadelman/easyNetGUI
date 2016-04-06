@@ -23,12 +23,13 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
-    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false)
+    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false),
+      maxRows(80), maxCols(20), maxFirstDisplayCells(10000), maxDisplayCells(50000)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
 //    dataframeUpdater->setCommand("get");
-    dataframeUpdater->setCommand("get 1-80 1-20"); // restricted get to save time/memory
+    dataframeUpdater->setCommand(QString("get 1-%1 1-%2").arg(maxRows).arg(maxCols));
     dataframeUpdater->setProxyModel(dataframeFilter);
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateDataframe(QDomDocument*,QString)));
@@ -79,7 +80,6 @@ void DataframeViewer::open()
         QString loadCmd = fi.suffix() == "csv" ? "load_csv" : "load";
         QString dataframeType = stimulusSet() ? "stimulus_set" : "dataframe";
         LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
         job->cmdList = QStringList({
                             QString("create %1 %2").arg(dataframeType).arg(dfName),
                             QString("%1 %2 %3").arg(dfName).arg(loadCmd).arg(fileName)});
@@ -98,6 +98,7 @@ void DataframeViewer::open()
 
 void DataframeViewer::save()
 {
+    // this is an illegal approach -- get R to copy the df to file
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Save as CSV file"),
                         lastSaveDir.isEmpty() ? defaultSaveDir : lastOpenDir,
@@ -105,7 +106,6 @@ void DataframeViewer::save()
     if (!fileName.isEmpty())
     {
         LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
         job->cmdList = QStringList({QString("%1 save_csv %2").arg(ui->currentItemName()).arg(fileName)});
         SessionManager::instance()->submitJobs(job);
         lastSaveDir = QFileInfo(fileName).path();
@@ -114,12 +114,28 @@ void DataframeViewer::save()
 
 void DataframeViewer::copy()
 {
-    // this is an illegal approach -- get R to copy the df to the clipboard
-    LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard\", sep=\"\t\", row.names=FALSE)")
-                                .arg(ui->currentItemName())});
-    SessionManager::instance()->submitJobs(job);
+    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
+        doCopy();
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("Large dataframe");
+        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                  "Do you want to copy it to clipboard anyway or rather save it to file?").arg(maxDisplayCells));
+        msgBox.setStandardButtons( QMessageBox::Save | QMessageBox::Cancel);
+        QPushButton *fullCopyButton = msgBox.addButton(tr("Full copy"), QMessageBox::RejectRole);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+        if (ret == QMessageBox::Cancel)
+            return;
+        else if (ret == QMessageBox::Save)
+            save();
+        else if (msgBox.clickedButton() == fullCopyButton)
+            doCopy();
+        else
+            return;
+    }
 }
 
 
@@ -130,7 +146,6 @@ void DataframeViewer::copyDataframe()
         return;
     QString copyDf = SessionManager::instance()->makeValidObjectName(originalDf);
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 copy %2").arg(originalDf).arg(copyDf);
     QMap<QString, QVariant> jobData;
     jobData.insert("name", copyDf);
@@ -165,6 +180,7 @@ void DataframeViewer::destroyItem_impl(QString name)
 void DataframeViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
+    getAllAct->setEnabled(enable && partiallyLoaded(ui->currentItemName()));
     findAct->setEnabled(enable);
     copyDFAct->setEnabled(enable);
     plotButton->setEnabled(enable);
@@ -193,6 +209,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         eNerror << QString("attempt to update non-existing dataframe %1").arg(name);
         return;
     }
+
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
     dfModel->setName(name);
     if (parametersTable())
@@ -232,6 +249,43 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     view->resizeColumnsToContents();
 
     ui->setCurrentItem(name);
+    enableActions(true);
+    limitedGet(name, maxFirstDisplayCells);
+}
+
+void DataframeViewer::askGetEntireDataframe()
+{
+    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
+        getEntireDataframe();
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("Large dataframe");
+        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                  "Do you want to load it anyway or rather load up to %1 cells?").arg(maxDisplayCells));
+        msgBox.setStandardButtons(QMessageBox::Cancel);
+        QPushButton *limitedLoadButton = msgBox.addButton(tr("Limited load"), QMessageBox::AcceptRole);
+        QPushButton *fullLoadButton = msgBox.addButton(tr("Full load"), QMessageBox::RejectRole);
+        msgBox.setDefaultButton(limitedLoadButton);
+        int ret = msgBox.exec();
+        if (ret == QMessageBox::Cancel)
+            return;
+        if (msgBox.clickedButton() == limitedLoadButton)
+            limitedGet(ui->currentItemName(), maxDisplayCells);
+        else if (msgBox.clickedButton() == fullLoadButton)
+            getEntireDataframe();
+        else
+            return;
+    }
+}
+
+void DataframeViewer::getEntireDataframe()
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({QString("xml %1 get").arg(ui->currentItemName())});
+    job->setAnswerReceiver(SessionManager::instance()->dataframeCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+    SessionManager::instance()->submitJobs(job);
 }
 
 void DataframeViewer::showFindDialog()
@@ -294,7 +348,6 @@ void DataframeViewer::findForward(const QString &str, QFlags<QTextDocument::Find
 void DataframeViewer::setParameter(QString name, QString key_val)
 {
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 set %2").arg(name).arg(key_val);
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
@@ -368,6 +421,13 @@ void DataframeViewer::setNameInFilter(QString name)
 
 void DataframeViewer::addExtraActions()
 {
+    getAllAct = new QAction(QIcon(":/images/download.png"), "get entire table", this);
+    getAllAct->setToolTip("Get the entire dataframe");
+    getAllAct->setVisible(true);
+    getAllAct->setEnabled(false);
+    ui->editToolBar->addAction(getAllAct);
+    connect(getAllAct, SIGNAL(triggered()), this, SLOT(askGetEntireDataframe()));
+
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
     findAct->setToolTip(tr("Find text in this table"));
@@ -420,6 +480,86 @@ void DataframeViewer::addExtraActions()
     dataframeViewButton->setMenu(dataframeViewMenu);
     ui->editToolBar->addWidget(dataframeViewButton);
 
+}
+
+bool DataframeViewer::partiallyLoaded(QString name)
+{
+    if (name.isEmpty())
+        name = ui->currentItemName();
+    if (name.isEmpty() || !SessionManager::instance()->exists(name) || !modelMap[name])
+        return false;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return false;
+    return XMLelement(*description)["rows"]().toInt() > modelMap[name]->rowCount() ||
+            XMLelement(*description)["columns"]().toInt() > modelMap[name]->columnCount();
+}
+
+bool DataframeViewer::dataframeExceedsCellLimit(QString name, int maxCells)
+{
+    if (maxCells < 1)
+        return true;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return false;
+    int rows = XMLelement(*description)["rows"]().toInt();
+    int cols = XMLelement(*description)["columns"]().toInt();
+    return rows * cols > maxCells;
+}
+
+void DataframeViewer::limitedGet(QString name, int maxCells)
+{
+    if (maxCells < 1)
+        return;
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+        return;
+    int rows = XMLelement(*description)["rows"]().toInt();
+    int cols = XMLelement(*description)["columns"]().toInt();
+
+    if ((rows > modelMap[name]->rowCount() || cols > modelMap[name]->columnCount())  &&
+            (modelMap[name]->rowCount() * modelMap[name]->columnCount() < maxCells - qMin(rows,  cols)))
+    {
+        QString restriction;
+        if (rows * cols > maxCells)
+        {
+            if (rows <= cols)
+            {
+                int get_cols = (int)maxCells / rows;
+                if (get_cols > 0)
+                    restriction = QString("1-%1 1-%2").arg(rows).arg(get_cols);
+                else
+                    restriction = QString("1-%1 1-1").arg(maxCells);
+            }
+            else
+            {
+                int get_rows = (int)maxCells / cols;
+                if (get_rows > 0)
+                    restriction = QString("1-%1 1-%2").arg(get_rows).arg(cols);
+                else
+                    restriction = QString("1-1 1-%1").arg(maxCells);
+            }
+        }
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList = QStringList({QString("xml %1 get %2").arg(name).arg(restriction)});;
+        job->setAnswerReceiver(SessionManager::instance()->dataframeCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
+        SessionManager::instance()->submitJobs(job);
+    }
+}
+
+void DataframeViewer::doCopy()
+{
+    // this is an illegal approach -- get R to copy the df to the clipboard
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({QString("R << write.table(eN[\"%1\"], \"clipboard-100000\", sep=\"\\t\", row.names=FALSE)")
+                                .arg(ui->currentItemName())});
+    // clipboard-100000 sets the clipboard size to 100000K. Note that a larger number does not work. The default (on Windows) is 33K
+    SessionManager::instance()->submitJobs(job);
+    // the legal one is:
+
+    //    DataFrameModel *model = modelMap.value(ui->currentItemName());
+    //    if (model)
+    //        qApp->clipboard()->setText(model->writeTable());
 }
 
 

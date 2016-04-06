@@ -5,7 +5,7 @@
 
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
-    : lazyNut(lazyNut), ready(true), logMode(ECHO_INTERPRETER), QObject(parent)
+    : lazyNut(lazyNut), ready(true), logMode(0), QObject(parent)
 {
     initProcessLazyNutOutput();
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
@@ -20,6 +20,7 @@ void CommandSequencer::initProcessLazyNutOutput()
     rRex = QRegExp("\\bR: ([^\\r\\n]*)"); //(?=\\n)
 //    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
     answerRex = QRegExp("(ANSWER: [^\\n]*\\n)+");
+    dotsRex = QRegExp("ANSWER: (\\.+)");
 
     eNelementsRex = QRegExp("<eNelements>");
     xmlStartRex = QRegExp("<(\\w+)");
@@ -27,6 +28,11 @@ void CommandSequencer::initProcessLazyNutOutput()
     answerDoneRex = QRegExp("ANSWER: Done");
     lazyNutBuffer.clear();
     baseOffset = 0;
+}
+
+bool CommandSequencer::echoInterpreter(QString cmd)
+{
+    return !(cmd.simplified().startsWith("xml") || cmd.contains("recently_") || cmd.contains(" get") || cmd.contains(" description"));
 }
 
 
@@ -65,7 +71,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
     foreach (QString cmd, commandList)
     {
         emit commandSent(cmd);
-        if (logMode &= ECHO_INTERPRETER)
+        if (echoInterpreter(cmd) || logMode & ECHO_INTERPRETER)
             emit logCommand(cmd);
 //        qDebug() << cmd;
         lazyNut->sendCommand(cmd);
@@ -77,12 +83,8 @@ void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int
     runCommands(QStringList{command}, _getAnswer, mode);
 }
 
-void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
+void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
 {
-    if (logMode &= ECHO_INTERPRETER)
-        emit userLazyNutOutputReady(lazyNutOutput);
-    // else send it to some log file or other location
-//    qDebug() << lazyNutOutput;
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
         return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or synch error
@@ -90,18 +92,27 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
     int beginOffset, endOffset;
     while (true)
     {
-
+        if (dotsRex.indexIn(lazyNutBuffer,baseOffset) > 0)
+            emit dotsCount(dotsRex.cap(1).length());
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         beginContent = beginRex.cap(1);
 //        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
-        QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)").arg(QRegExp::escape(beginContent)));
+        QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)\\r?\\n").arg(QRegExp::escape(beginContent)));
         endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
         {
+            if (echoInterpreter(currentCmd) || (logMode & ECHO_INTERPRETER))
+                emit userLazyNutOutputReady(lazyNutOutput);
             return;
         }
         timeString = endRex.cap(1);
+        int outputOffset = lazyNutBuffer.indexOf(lazyNutOutput);
+        if (echoInterpreter(currentCmd) || (logMode & ECHO_INTERPRETER))
+        {
+            emit userLazyNutOutputReady(lazyNutOutput.left(endOffset + endRex.matchedLength() - outputOffset));
+        }
+        lazyNutOutput.remove(0, endOffset + endRex.matchedLength() - outputOffset);
 
         // extract ERROR lines
         int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
@@ -150,8 +161,7 @@ void CommandSequencer::processLazyNutOutput(const QString &lazyNutOutput)
 //                qDebug() << currentCmd;
 //                qDebug() << answer;
                 emit answerReady(answer, currentCmd);
-//                if (commandList.first().contains("25"))
-//                    qDebug() << answer;
+
             }
         }
         emit commandExecuted(commandList.first(),timeString);

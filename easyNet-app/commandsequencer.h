@@ -21,6 +21,7 @@ class CommandSequencer: public QObject
 
 public:
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
+    bool echoInterpreter(QString cmd);
 
 
 public slots:
@@ -30,7 +31,7 @@ public slots:
     bool getStatus();
     bool isOn();
 
-    void processLazyNutOutput(const QString &lazyNutOutput);
+    void processLazyNutOutput(QString lazyNutOutput);
 
 signals:
     // send output to editor
@@ -45,12 +46,14 @@ signals:
     void isReady(bool);
     // errors
     void cmdError(QString,QStringList);
-
     void cmdR(QString,QStringList);
+
+    void dotsCount(int);
 
 private:
 
     void initProcessLazyNutOutput();
+
 
     bool getAnswer;
     unsigned int logMode;
@@ -64,6 +67,7 @@ private:
     QRegExp emptyLineRex;
     QRegExp errorRex,rRex;
     QRegExp answerRex;
+    QRegExp dotsRex;
     QRegExp eNelementsRex;
     QRegExp xmlStartRex;
     QRegExp svgRex;

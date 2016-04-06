@@ -28,7 +28,7 @@ public slots:
     void goToSleep();
     void wakeUpUpdate();
     void setCommand(QString command) {m_command = command;}
-    void requestObject(QString name);
+    void requestObject(QString name, QString command="");
 private slots:
     void requestObjects(QModelIndex top, QModelIndex bottom);
     void requestObjects(QModelIndex parent, int first, int last);

@@ -86,20 +86,52 @@ SessionManager::SessionManager()
     connect(this, SIGNAL(easyNetHomeChanged()), this, SLOT(setDefaultLocations()));
     connect(this, SIGNAL(easyNetDataHomeChanged()), this, SLOT(setDefaultLocations()));
 
-    validator = new ObjectNameValidator(this);
     m_defaultLocation.clear();
     lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
-    m_extraNamedItems.clear();
-    m_requestedNames.clear();
 
-    objectListFilter = new ObjectCacheFilter(descriptionCache, this);
-    objectListFilter->setAllPassFilter();
-    connect(objectListFilter, &ObjectCacheFilter::objectCreated, [=](QString name)
-    {
-        m_requestedNames.removeAll(name);
-    });
-
-
+    lazyNutkeywords = QStringList()
+                      << "query"
+                      << "xml"
+                      << "xmllint"
+                      << "quietly"
+                      << "loglevel"
+                      << "CRASH"
+                      << "recently_created"
+                      << "clear_recently_created"
+                      << "recently_destroyed"
+                      << "clear_recently_destroyed"
+                      << "recently_modified"
+                      << "clear_recently_modified"
+                      << "version"
+                      << "shush"
+                      << "unshush"
+                      << "include"
+                      << "create"
+                      << "destroy"
+                      << "load"
+                      << "until"
+                      << "if"
+                      << "list"
+                      << "facets"
+                      << "loop"
+                      << "less"
+                      << "or"
+                      << "and"
+                      << "default_model"
+                      << "set_default_model"
+                      << "named_loop"
+                      << "creators"
+                      << "aesthetic"
+                      << "stop"
+                      << "watchlist"
+                      << "limit_descriptions"
+                      << "unlimit_descriptions"
+                      << "set"
+                      << "get"
+                      << "unset"
+                      << "R"
+                         ;
+    validator = new ObjectNameValidator(this, lazyNutkeywords);
 }
 
 
@@ -187,7 +219,6 @@ void SessionManager::setPrettyName(QString name, QString prettyName)
     if (!descriptionCache->exists(name))
         return;
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
     job->cmdList << QString("%1 set_pretty_name %2").arg(name).arg(prettyName);
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << job
@@ -200,7 +231,6 @@ void SessionManager::destroyObject(QString name)
     if (descriptionCache->exists(name))
     {
         LazyNutJob *job = new LazyNutJob;
-        job->logMode |= ECHO_INTERPRETER;
         job->cmdList << QString("destroy %1").arg(name);
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
@@ -329,10 +359,10 @@ QVariant SessionManager::getDataFromJob(QObject *obj, QString key)
     return data.value(key);
 }
 
+
 LazyNutJob *SessionManager::recentlyCreatedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_created", "clear_recently_created"});
     job->setAnswerReceiver(this, SIGNAL(recentlyCreated(QDomDocument*)), AnswerFormatterType::XML);
     return job;
@@ -341,7 +371,6 @@ LazyNutJob *SessionManager::recentlyCreatedJob()
 LazyNutJob *SessionManager::recentlyModifiedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
     job->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)), AnswerFormatterType::ListOfValues);
     return job;
@@ -350,7 +379,6 @@ LazyNutJob *SessionManager::recentlyModifiedJob()
 LazyNutJob *SessionManager::recentlyDestroyedJob()
 {
     LazyNutJob *job = new LazyNutJob();
-//    job->logMode |= ECHO_INTERPRETER; // debug purpose
     job->cmdList = QStringList({"xml recently_destroyed", "clear_recently_destroyed"});
     job->setAnswerReceiver(this, SIGNAL(recentlyDestroyed(QStringList)), AnswerFormatterType::ListOfValues);
     return job;
@@ -462,6 +490,7 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
     if (lazyNutHeaderBuffer.contains(OOBrex))
     {
         OOBsecret = OOBrex.cap(1);
+        emit userLazyNutOutputReady(lazyNutHeaderBuffer.left(lazyNutHeaderBuffer.indexOf(OOBsecret) + OOBsecret.length()));
         lazyNutHeaderBuffer.clear();
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
         emit lazyNutStarted();
@@ -488,6 +517,8 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(commandSent(QString)));
     connect(commandSequencer, SIGNAL(logCommand(QString)),
             this, SIGNAL(logCommand(QString)));
+    connect(commandSequencer, SIGNAL(dotsCount(int)),
+            this, SIGNAL(dotsCount(int)));
 
 
 
@@ -531,18 +562,23 @@ bool SessionManager::isOn()
 }
 
 
-void SessionManager::runCmd(QString cmd)
+void SessionManager::runCmd(QString cmd, unsigned int logMode)
 {
-    runCmd(QStringList({cmd}));
+    runCmd(QStringList({cmd}), logMode);
 }
 
-void SessionManager::runCmd(QStringList cmd)
+void SessionManager::runCmd(QStringList cmd, unsigned int logMode)
 {
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = cmd;
-    job->logMode |= ECHO_INTERPRETER;
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << updateObjectCatalogueJobs();
-    submitJobs(jobs);
+    job->logMode = logMode;
+    submitJobs(job);
+
+    bool echo = false;
+    foreach (QString c, cmd)
+    {
+        echo |= commandSequencer->echoInterpreter(c);
+    }
+    if (echo)
+        submitJobs(updateObjectCatalogueJobs());
 }

@@ -268,8 +268,6 @@ void TrialWidget::runTrial()
     QSharedPointer<QDomDocument> trialRunInfo = createTrialRunInfo();
     emit aboutToRunTrial(trialRunInfo);
     LazyNutJob *job = new LazyNutJob;
-    job->logMode |= ECHO_INTERPRETER;
-
     if (!SessionManager::instance()->suspendingObservers())
     {
         foreach(QString observer, SessionManager::instance()->enabledObservers())
@@ -375,6 +373,13 @@ void TrialWidget::runTrialList(LazyNutJob *job)
     if (SessionManager::instance()->suspendingObservers())
         foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("%1 enable").arg(observer);
+
+    QDomDocument * stimulusSetDescription = SessionManager::instance()->descriptionCache->getDomDoc(SessionManager::instance()->currentSet());
+    int trialListLength = stimulusSetDescription ? XMLelement(*stimulusSetDescription)["rows"]().toInt() : 1;
+    if (isStochastic)
+        trialListLength *= repetitionsBox->currentText().isEmpty() ? 1 : repetitionsBox->currentText().toInt();
+    MainWindow::instance()->setTrialListLength(trialListLength);
+    MainWindow::instance()->updateTrialRunListCount(0);
 }
 
 bool TrialWidget::checkIfReadyToRun()

@@ -51,7 +51,7 @@ public slots:
     void findBackward(const QString &str, QFlags<QTextDocument::FindFlag> flags );
     void setFilenameLabel(QString filename);
 signals:
-    void runCmdAndUpdate(QStringList);
+    void runCmdRequested(QStringList);
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
