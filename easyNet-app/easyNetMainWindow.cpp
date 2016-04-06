@@ -624,7 +624,7 @@ void MainWindow::loadModel(QString fileName,bool complete)
 
 //    runScript();
 
-    runCmdAndUpdate({QString("include ")+fileName});
+    SessionManager::instance()->runCmd(QString("include ")+fileName);
 
     //        SessionManager::instance()->setCurrentModel(currentModel);
     // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
@@ -730,29 +730,7 @@ void MainWindow::loadTrial()
         SessionManager::instance()->runCmd(x);
     }
     return;
-    if (!fileName.isEmpty())
-    {
-        // load and run script
-        loadFile(fileName);
 
-//        // load JSON file, if it exists
-//        QFileInfo fi(fileName);
-//        QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-
-//        // set up signal - slots so that loadLayout will be called
-//        // once all of the layers/connections have descriptions
-//        designWindow->prepareToLoadLayout(base);
-//        conversionWindow->prepareToLoadLayout(base);
-
-//        // show info page, if there is one
-//        QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-//        page.append(".html");
-//        qDebug() << "page = " << page;
-//        if (QFileInfo(page).exists())
-//            infoWindow->showInfo(page);
-
-        runScript();
-    }
 }
 
 
@@ -782,28 +760,6 @@ void MainWindow::loadAddOn()
         SessionManager::instance()->runCmd(x);
     }
     return;
-    {
-        // load and run script
-        loadFile(fileName);
-
-//        // load JSON file, if it exists
-//        QFileInfo fi(fileName);
-//        QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-
-//        // set up signal - slots so that loadLayout will be called
-//        // once all of the layers/connections have descriptions
-//        designWindow->prepareToLoadLayout(base);
-//        conversionWindow->prepareToLoadLayout(base);
-
-//        // show info page, if there is one
-//        QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-//        page.append(".html");
-//        qDebug() << "page = " << page;
-//        if (QFileInfo(page).exists())
-//            infoWindow->showInfo(page);
-
-        runScript();
-    }
 }
 
 void MainWindow::loadStimulusSet()
