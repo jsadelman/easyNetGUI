@@ -387,7 +387,7 @@ LazyNutJob *SessionManager::recentlyDestroyedJob()
     return job;
 }
 
-QList<LazyNutJob *> SessionManager::updateObjectCatalogueJobs()
+QList<LazyNutJob *> SessionManager::updateObjectCacheJobs()
 {
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << recentlyModifiedJob()
@@ -493,9 +493,11 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
     if (lazyNutHeaderBuffer.contains(OOBrex))
     {
         OOBsecret = OOBrex.cap(1);
-        emit userLazyNutOutputReady(lazyNutHeaderBuffer.left(lazyNutHeaderBuffer.indexOf(OOBsecret) + OOBsecret.length()));
+//        emit userLazyNutOutputReady(lazyNutHeaderBuffer.left(lazyNutHeaderBuffer.indexOf(OOBsecret) + OOBsecret.length()));
+        emit userLazyNutOutputReady(lazyNutHeaderBuffer);
         lazyNutHeaderBuffer.clear();
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
+        connect(lazyNut, SIGNAL(outputReady(QString)), commandSequencer, SLOT(processLazyNutOutput(QString)));
         emit lazyNutStarted();
         startOOB();
     }
@@ -525,6 +527,8 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(commandsInJob(int)));
     connect(commandSequencer, SIGNAL(jobExecuted()),
             this, SIGNAL(jobExecuted()));
+    connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
+            this, SLOT(clearJobQueue()));
     connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
             this, SIGNAL(cmdError(QString,QStringList)));
     connect(commandSequencer, SIGNAL(cmdR(QString,QStringList)),
@@ -567,13 +571,18 @@ void SessionManager::killLazyNut()
     lazyNut->kill();
 }
 
-void SessionManager::stop()
+void SessionManager::oobStop()
 {
     if (oob)
         oob->write(qPrintable("stop\n"));
+    clearJobQueue();
 }
 
-
+void SessionManager::clearJobQueue()
+{
+    jobQueue->clear();
+    submitJobs(updateObjectCacheJobs());
+}
 
 bool SessionManager::isReady()
 {
@@ -604,5 +613,5 @@ void SessionManager::runCmd(QStringList cmd, unsigned int logMode)
         echo |= commandSequencer->echoInterpreter(c);
     }
     if (echo)
-        submitJobs(updateObjectCatalogueJobs());
+        submitJobs(updateObjectCacheJobs());
 }

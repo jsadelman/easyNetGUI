@@ -27,6 +27,7 @@ public:
     void pause();
     void stop();
     bool isPaused() const {return paused;}
+    void clear() {queue.clear();}
     //bool isStopped() const {return stopped;}
 
 

@@ -336,6 +336,9 @@ void MainWindow::connectSignalsAndSlots()
             debugLog, SLOT(addRowToTable(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             debugLog, SLOT(updateCmd(QString,QString)));
+//    connect(stopAct, SIGNAL(triggered()), debugLog, SLOT(skipRemainingCommands()));
+//    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
+//             debugLog, SLOT(skipRemainingCommands()));
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
     {
        foreach(QString error, errorList)
@@ -524,7 +527,7 @@ void MainWindow::initialiseToolBar()
     stopAct = toolbar->addAction(QIcon(":/images/sign_stop.png"), "Stop");
     stopAct->setToolTip("stop simulation");
     stopAct->setEnabled(false);
-    connect(stopAct, SIGNAL(triggered()), SessionManager::instance(), SLOT(stop()));
+    connect(stopAct, SIGNAL(triggered()), SessionManager::instance(), SLOT(oobStop()));
     connect(SessionManager::instance(), &SessionManager::commandsInJob, [=](){stopAct->setEnabled(true);});
     connect(SessionManager::instance(), &SessionManager::jobExecuted, [=](){stopAct->setEnabled(false);});
     toolbar->addSeparator();

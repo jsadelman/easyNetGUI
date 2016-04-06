@@ -30,6 +30,7 @@ public slots:
     // status
     bool getStatus();
     bool isOn();
+    void clearCommandList();
 
     void processLazyNutOutput(QString lazyNutOutput);
 

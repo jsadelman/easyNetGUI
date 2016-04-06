@@ -280,7 +280,7 @@ void TrialWidget::runTrial()
 
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
             << job
-            << SessionManager::instance()->updateObjectCatalogueJobs();
+            << SessionManager::instance()->updateObjectCacheJobs();
 
     QMap<QString, QVariant> jobData;
     jobData.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
@@ -291,7 +291,7 @@ void TrialWidget::runTrial()
     if (trialRunMode == TrialRunMode_List)
     {
         MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
-        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
+        job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
     }
     SessionManager::instance()->submitJobs(jobs);
 }

@@ -66,7 +66,7 @@ public:
     LazyNutJob* recentlyCreatedJob();
     LazyNutJob* recentlyModifiedJob();
     LazyNutJob* recentlyDestroyedJob();
-    QList<LazyNutJob*> updateObjectCatalogueJobs();
+    QList<LazyNutJob*> updateObjectCacheJobs();
 
     bool exists(QString name);
     QSet<QString> dependencies(QString name);
@@ -141,7 +141,8 @@ public slots:
     bool isReady();
     bool isOn();
     void killLazyNut();
-    void stop();
+    void oobStop();
+    void clearJobQueue();
     void runCmd(QString cmd, unsigned int logMode = 0);
     void runCmd(QStringList cmd, unsigned int logMode = 0);
     void restartLazyNut();

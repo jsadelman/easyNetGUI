@@ -186,7 +186,6 @@ private:
     void initialiseToolBar();
     void createActions();
     void createMenus();
-    void createToolBars();
     void createStatusBar();
     void connectSignalsAndSlots();
 //    bool maybeSave();

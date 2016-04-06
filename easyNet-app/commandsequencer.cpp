@@ -8,7 +8,7 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
     : lazyNut(lazyNut), ready(true), logMode(0), QObject(parent)
 {
     initProcessLazyNutOutput();
-    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
+//    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
 }
 
 
@@ -87,7 +87,11 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
 {
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
-        return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or synch error
+    {
+         emit userLazyNutOutputReady(lazyNutOutput);
+//        lazyNutBuffer.clear();
+        return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or error
+    }
     QString currentCmd, beginContent, timeString;
     int beginOffset, endOffset;
     while (true)
@@ -123,7 +127,10 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
             errorOffset = errorRex.indexIn(lazyNutBuffer,errorOffset+1);
         }
         if (!errorList.isEmpty())
+        {
+//            clearCommandList();
             emit cmdError(currentCmd,errorList);
+        }
 
         // extract R lines
         int rOffset = rRex.indexIn(lazyNutBuffer,beginOffset);
@@ -148,20 +155,10 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
                     int svgEnd = lazyNutBuffer.indexOf("ANSWER: Done.");
                     answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
                 }
-#if 0
-                else if (xmlStartRex.indexIn(answer) > -1)
-                {
-                    QRegExp xmlEndRex(QString("</%1\\s*>").arg(QRegExp::escape(xmlStartRex.cap(1))));
-                    int xmlEnd = xmlEndRex.indexIn(lazyNutBuffer, answerOffset) + xmlEndRex.matchedLength();
-                    answer = lazyNutBuffer.mid(answerOffset, xmlEnd - answerOffset).remove("ANSWER:");
-                }
-#endif
-
                 answer = answer.remove("ANSWER: ");
 //                qDebug() << currentCmd;
 //                qDebug() << answer;
                 emit answerReady(answer, currentCmd);
-
             }
         }
         emit commandExecuted(commandList.first(),timeString);
@@ -191,5 +188,14 @@ bool CommandSequencer::getStatus()
 bool CommandSequencer::isOn()
 {
     return lazyNut->state() == QProcess::Running;
+}
+
+void CommandSequencer::clearCommandList()
+{
+    if (commandList.length() > 1)
+    {
+        QStringList firstCmdOnlyList({commandList.first()});
+        commandList.swap(firstCmdOnlyList);
+    }
 }
 
