@@ -624,7 +624,7 @@ void MainWindow::loadModel(QString fileName,bool complete)
 
 //    runScript();
 
-    SessionManager::instance()->runCmd(QString("include ")+fileName);
+    SessionManager::instance()->runCmd(quietMode+QString("include ")+fileName);
 
     //        SessionManager::instance()->setCurrentModel(currentModel);
     // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
@@ -686,7 +686,7 @@ void MainWindow::afterModelConfig()
 {
     modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
     connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
-    SessionManager::instance()->runCmd(QString("%1 stage").arg(SessionManager::instance()->currentModel()));
+    SessionManager::instance()->runCmd(QString("%1%2 stage").arg(quietMode).arg(SessionManager::instance()->currentModel()));
     modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
@@ -725,7 +725,7 @@ void MainWindow::loadTrial()
             fn=fileName.right(fileName.length()-len);
         }
         else fn=fileName;
-        QString x="include ";
+        QString x=quietMode+"include ";
         x.append(fn);
         SessionManager::instance()->runCmd(x);
     }
@@ -755,7 +755,7 @@ void MainWindow::loadAddOn()
             fn=fileName.right(fileName.length()-len);
         }
         else fn=fileName;
-        QString x="include ";
+        QString x=quietMode+"include ";
         x.append(fn);
         SessionManager::instance()->runCmd(x);
     }
