@@ -61,13 +61,17 @@ SessionManager::SessionManager()
       #elif defined(_WIN32)
       lazyNutExt("bat"),
       binDir("bin"),
-      oobBaseName("lazyNut_oob.exe")
+      oobBaseName("lazyNut_oob.exe"),
       #endif
+      commandSequencer(nullptr),
+      oob(nullptr)
 
 {
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
+    connect(lazyNut, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(sendLazyNutCrash(int,QProcess::ExitStatus)));
+
     jobQueue = new LazyNutJobQueue;
 
     descriptionCache = new ObjectCache(this);
@@ -149,7 +153,6 @@ void SessionManager::startLazyNut()
     lazyNut->setProcessEnvironment(env);
     lazyNut->setWorkingDirectory(QFileInfo(defaultLocation("lazyNutBat")).absolutePath());
     lazyNut->setProgram(defaultLocation("lazyNutBat"));
-    connect(lazyNut, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(sendLazyNutCrash(int,QProcess::ExitStatus)));
 
     lazyNut->start();
 
@@ -161,7 +164,7 @@ void SessionManager::startLazyNut()
             #endif
                     lazyNut->arguments() << lazyNut->error() << lazyNut->errorString();
         emit lazyNutNotRunning();
-        qDebug("lazyNut not running");
+        eNerror << "lazyNut not running";
     }
 }
 
@@ -211,9 +214,11 @@ void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitSta
 
 void SessionManager::restartLazyNut()
 {
-    SessionManager::instance()->descriptionCache->clear();
     killLazyNut();
-    lazyNut->waitForFinished();
+    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
+    oob->kill();
+    oob->waitForFinished();
+    reset();
     startLazyNut();
 }
 
@@ -342,7 +347,8 @@ bool SessionManager::isCopyRequested(QString original)
 
 void SessionManager::submitJobs(QList<LazyNutJob *> jobs)
 {
-    jobQueue->tryRun(jobs);
+    if (lazyNut->state() == QProcess::Running)
+        jobQueue->tryRun(jobs);
 }
 
 QVariant SessionManager::getDataFromJob(QObject *obj, QString key)
@@ -507,6 +513,7 @@ void SessionManager::startOOB(QString code)
 {
     if (code.isEmpty())
         code = OOBsecret;
+    delete oob;
     oob = new QProcess(this);
     oob->setProgram(QString("%1/%2").arg(QFileInfo(defaultLocation("lazyNutBat")).absolutePath()).arg(oobBaseName));
     oob->setArguments({code});
@@ -517,6 +524,7 @@ void SessionManager::startOOB(QString code)
 
 void SessionManager::startCommandSequencer()
 {
+    delete commandSequencer;
     commandSequencer = new CommandSequencer(lazyNut, this);
 
     connect(commandSequencer,SIGNAL(userLazyNutOutputReady(QString)),
@@ -527,8 +535,11 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(commandsInJob(int)));
     connect(commandSequencer, SIGNAL(jobExecuted()),
             this, SIGNAL(jobExecuted()));
-    connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
-            this, SLOT(clearJobQueue()));
+    connect(commandSequencer, &CommandSequencer::cmdError, [=]()
+    {
+        jobQueue->clear();
+        submitJobs(updateObjectCacheJobs());
+    });
     connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
             this, SIGNAL(cmdError(QString,QStringList)));
     connect(commandSequencer, SIGNAL(cmdR(QString,QStringList)),
@@ -569,20 +580,23 @@ void SessionManager::setDefaultLocations()
 void SessionManager::killLazyNut()
 {
     lazyNut->kill();
+    lazyNut->waitForFinished();
+}
+
+void SessionManager::reset()
+{
+    descriptionCache->clear();
+    jobQueue->clear(); // redundant I guess
 }
 
 void SessionManager::oobStop()
 {
     if (oob)
         oob->write(qPrintable("stop\n"));
-    clearJobQueue();
-}
-
-void SessionManager::clearJobQueue()
-{
     jobQueue->clear();
     submitJobs(updateObjectCacheJobs());
 }
+
 
 bool SessionManager::isReady()
 {

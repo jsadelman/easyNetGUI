@@ -209,6 +209,7 @@ void MainWindow::constructForms()
     modelSettingsDisplay = new ModelSettingsDisplay(this);
     modelSettingsDisplay->setCommand("list_settings");
 
+
     infoWindow = new HelpWindow;
     assistant = new Assistant(QString("%1/documentation/easyNetDemo.qhc").arg(SessionManager::instance()->easyNetDataHome()));
     infoWindow->show();
@@ -286,8 +287,8 @@ void MainWindow::connectSignalsAndSlots()
             this,SLOT(processHistoryKey(int, QString)));
     connect(this,SIGNAL(showHistory(QString)),
             lazyNutConsole,SLOT(showHistory(QString)));
-    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
-            trialEditor,SLOT(setTrialName(QString)));
+//    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
+//            trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
     connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
@@ -486,7 +487,8 @@ void MainWindow::initialiseToolBar()
       modelComboBox->setModelColumn(0);
 //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
       modelListFilter->setType("grouping");
-
+      connect(modelListFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+              modelComboBox, SLOT(setCurrentText(QString)));
 
       trialListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
       trialComboBox->setModel(trialListFilter);
@@ -521,7 +523,7 @@ void MainWindow::initialiseToolBar()
 
     trialWidget = new TrialWidget(this);
     toolbar->addWidget(trialWidget);
-    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
+//    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
 
     toolbar->addSeparator();
     stopAct = toolbar->addAction(QIcon(":/images/sign_stop.png"), "Stop");
@@ -747,14 +749,12 @@ void MainWindow::loadTrial()
 
 void MainWindow::loadAddOn()
 {
-    QString currentModel = modelComboBox->currentText();
-    if (currentModel.isEmpty())
+    if (SessionManager::instance()->currentModel().isEmpty())
         return; // for now we don't want users attempting load add-ons without models
-
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load add-on"),
                                                     SessionManager::instance()->defaultLocation("trialsDir"),
-                                                    "Add-ons (" + currentModel + ".*.eNa)");
+                                                    "Add-ons (" + SessionManager::instance()->currentModel() + ".*.eNa)");
     if (!fileName.isEmpty())
     {
         QString easyNetDataHome=SessionManager::instance()->easyNetDataHome();
@@ -1249,7 +1249,7 @@ void MainWindow::createActions()
     restartInterpreterAct = new QAction(tr("Restart Interpreter"), this);
     restartInterpreterAct->setStatusTip(tr("Restart the lazyNut interpreter, to start a new session"));
     connect(restartInterpreterAct, SIGNAL(triggered()), this, SLOT(restart()));
-    restartInterpreterAct->setDisabled(true);
+//    restartInterpreterAct->setDisabled(true);
 
 
     viewSettingsAct = new QAction(tr("view/change easyNet settings"), this);
@@ -1322,9 +1322,8 @@ void MainWindow::createActions()
 
 void MainWindow::restart()
 {
-    if (!proceedWithRestartOk())
-        return;
-
+//    if (!proceedWithRestartOk())
+//        return;
     SessionManager::instance()->restartLazyNut();
 }
 

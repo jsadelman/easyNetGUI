@@ -16,8 +16,8 @@ public:
     TrialEditor(QWidget *parent = 0);
     ~TrialEditor();
 
-public slots:
-    void setTrialName(QString name);
+//public slots:
+//    void setTrialName(QString name);
 
 private slots:
     void buildForm(QDomDocument* domDoc);
