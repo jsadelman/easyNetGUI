@@ -101,8 +101,7 @@ void MainWindow::build()
     diagramPanel->setCurrentIndex(modelTabIdx);
     diagramSceneTabChanged(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
-    setQuietMode();
-    setDebugMode(false);
+    setQuietMode(true);
 
     #ifdef WIN32
     if (qApp->arguments().count() > 1)
@@ -110,6 +109,7 @@ void MainWindow::build()
     #endif
 
     SessionManager::instance()->startLazyNut();
+    setDebugMode(false);
 
 
 
@@ -523,7 +523,7 @@ void MainWindow::initialiseToolBar()
     toolbar->addWidget(trialWidget);
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
 
-    toolbar->addSeparator();
+//    toolbar->addSeparator();
     stopAct = toolbar->addAction(QIcon(":/images/sign_stop.png"), "Stop");
     stopAct->setToolTip("stop simulation");
     stopAct->setEnabled(false);
@@ -553,12 +553,17 @@ void MainWindow::initialiseToolBar()
 }
 
 
-void MainWindow::setQuietMode()
+void MainWindow::setQuietMode(bool state)
 {
-    if (setQuietModeAct->isChecked())
+    setQuietModeAct->setChecked(state);
+    if (state)
+    {
         quietMode = "quietly ";
+    }
     else
+    {
         quietMode = "";
+    }
 }
 
 void MainWindow::msgBox(QString msg)
@@ -573,9 +578,17 @@ void MainWindow::setDebugMode(bool isDebugMode)
 {
     m_debugMode = isDebugMode;
     if (isDebugMode)
+    {
         diagramPanel->insertTab(conversionTabIdx, conversionPage, "Conversions");
+        SessionManager::instance()->runCmd(QString("loglevel debug"));
+        setQuietMode(false);
+    }
     else
+    {
         diagramPanel->removeTab(conversionTabIdx);
+        SessionManager::instance()->runCmd(QString("loglevel info"));
+        setQuietMode(true);
+    }
 
     emit debugModeChanged(isDebugMode);
 }
