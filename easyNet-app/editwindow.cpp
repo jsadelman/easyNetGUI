@@ -334,7 +334,8 @@ void EditWindow::findForward(const QString &str, QFlags<QTextDocument::FindFlag>
         if (!result)
         {
             QMessageBox::warning(this, "Find",QString("The text was not found"));
-            findDialog->hide();
+//            findDialog->hide();
+            findDialog->raise();
         }
     }
 }
