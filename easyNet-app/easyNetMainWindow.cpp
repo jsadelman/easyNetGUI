@@ -407,7 +407,7 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
      introDock->setWidget(introPanel);
      addDockWidget(Qt::LeftDockWidgetArea, introDock);
      viewMenu->addAction(introDock->toggleViewAction());
-     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+//     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
      codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
      codePanelDock->setWidget(lazynutPanel);
@@ -1299,6 +1299,10 @@ void MainWindow::createActions()
     versionAct = new QAction("Version",this);
     connect(versionAct,SIGNAL(triggered()),this,SLOT(getVersion()));
 
+//    assistantAct = new QAction(tr("Help Contents"), this);
+//    assistantAct->setShortcut(QKeySequence::HelpContents);
+//    connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
+
     assistantAct = new QAction(tr("Help Contents"), this);
     assistantAct->setShortcut(QKeySequence::HelpContents);
     connect(assistantAct, SIGNAL(triggered()), this, SLOT(showDocumentation()));
@@ -1343,7 +1347,13 @@ void MainWindow::restart()
 
 void MainWindow::showDocumentation()
 {
-    assistant->showDocumentation("index.html");
+    qDebug() << "Entered showDocumentation";
+//    assistant->showDocumentation("index.html");
+    introDock->show();
+    introDock->raise();
+    introPanel->setCurrentIndex(infoTabIdx);
+
+
 }
 
 void MainWindow::createMenus()
