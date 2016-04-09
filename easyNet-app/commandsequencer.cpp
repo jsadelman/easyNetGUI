@@ -83,7 +83,7 @@ void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int
     runCommands(QStringList{command}, _getAnswer, mode);
 }
 
-void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
+void CommandSequencer::processLazyNutOutput(const QString& lazyNutOutput)
 {
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
@@ -96,8 +96,15 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
     int beginOffset, endOffset;
     while (true)
     {
-        if (dotsRex.indexIn(lazyNutBuffer,baseOffset) > 0)
-            emit dotsCount(dotsRex.cap(1).length());
+        auto drbaseOffset=baseOffset;
+        int dotcount=0,newoff;
+        while ((newoff=dotsRex.indexIn(lazyNutBuffer,drbaseOffset)) > 0)
+        {
+            dotcount+=dotsRex.cap(1).length();
+            drbaseOffset=newoff+dotsRex.matchedLength();
+        }
+        qDebug()<<"dotdone"<<dotcount;
+        if(dotcount>0) emit dotsCount(dotcount);
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
         beginContent = beginRex.cap(1);
@@ -116,8 +123,8 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
         {
             emit userLazyNutOutputReady(lazyNutOutput.left(endOffset + endRex.matchedLength() - outputOffset));
         }
-        lazyNutOutput.remove(0, endOffset + endRex.matchedLength() - outputOffset);
-
+        //lazyNutOutput.remove(0, endOffset + endRex.matchedLength() - outputOffset);
+// don't bother removing here, because not used again
         // extract ERROR lines
         int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
         QStringList errorList = QStringList();
