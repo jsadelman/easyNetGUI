@@ -156,7 +156,7 @@ private slots:
     void diagramSceneTabChanged(int index);
     void runScript();
     void processHistoryKey(int dir, QString text);
-    void setQuietMode();
+    void setQuietMode(bool state);
     void showExplorer();
     void restart();
     void showMostRecentError();
