@@ -1329,7 +1329,7 @@ void MainWindow::createActions()
 
     setQuietModeAct = new QAction(tr("Quiet mode"), this);
     setQuietModeAct->setCheckable(true);
-    connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
+    connect(setQuietModeAct, SIGNAL(triggered(bool)), this, SLOT(setQuietMode(bool)));
     setQuietModeAct->setChecked(true);
 
     debugModeAct = new QAction(tr("Debug mode"), this);
