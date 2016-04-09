@@ -43,6 +43,7 @@
 
 #include <QtCore/QUrl>
 #include <QtWidgets/QTextBrowser>
+#include <QDir>
 
 class TextEdit : public QTextBrowser
 {
@@ -51,10 +52,12 @@ class TextEdit : public QTextBrowser
 public:
     TextEdit(QWidget *parent = 0);
     void setContents(const QString &fileName);
-
+public slots:
+    void do_source(const QUrl& url);
 private:
     QVariant loadResource(int type, const QUrl &name);
     QUrl srcUrl;
+    QDir currdir;
 };
 
 #endif

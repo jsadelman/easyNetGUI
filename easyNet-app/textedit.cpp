@@ -40,6 +40,7 @@
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QFile>
+#include <QDebug>
 
 #include "textedit.h"
 
@@ -48,13 +49,21 @@ TextEdit::TextEdit(QWidget *parent)
 {
     setReadOnly(true);
     setOpenExternalLinks(true);
-    setSearchPaths({QString(":/documentation/siteexport")});
+//    setSearchPaths({QString(":/documentation/siteexport")});
+    connect(this,SIGNAL(sourceChanged(QUrl)),this,SLOT(do_source(QUrl)));
+}
+
+void TextEdit::do_source(const QUrl& url)
+{
+    QString resolvedPath=currdir.filePath(url.toString());
+    setContents(resolvedPath);
 }
 
 void TextEdit::setContents(const QString &fileName)
 {
     QFileInfo fi(fileName);
     srcUrl = QUrl::fromLocalFile(fi.absoluteFilePath());
+    currdir=QDir::cleanPath(fileName+"/..");
     QFile file(fileName);
     if (file.open(QIODevice::ReadOnly)) {
         QString data(file.readAll());
