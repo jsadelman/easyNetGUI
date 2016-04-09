@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="no-js">
+<head>
+    <meta charset="utf-8" />
+    <title>lazynut_scripting_language:reference:dataframe []</title>
+    <script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script>
+    <meta name="generator" content="DokuWiki"/>
+<meta name="robots" content="index,follow"/>
+<meta name="keywords" content="lazynut_scripting_language,reference,dataframe"/>
+<link rel="search" type="application/opensearchdescription+xml" href="../../lib/exe/opensearch.html" title=""/>
+<link rel="start" href="dataframe.html"/>
+<link rel="contents" href="dataframe.html" title="Sitemap"/>
+<link rel="alternate" type="application/rss+xml" title="Recent changes" />
+<link rel="alternate" type="application/rss+xml" title="Current namespace" />
+<link rel="alternate" type="text/html" title="Plain HTML" href="dataframe.html"/>
+<link rel="alternate" type="text/plain" title="Wiki Markup" href="dataframe.html"/>
+<link rel="canonical" href="http://adelmanlab.org/easyNet/documentation/doku.php?id=lazynut_scripting_language:reference:dataframe"/>
+<link rel="stylesheet" type="text/css" href="../../lib/exe/css.php.t.dokuwiki.css"/>
+<script type="text/javascript">/*<![CDATA[*/var NS='lazynut_scripting_language:reference';var JSINFO = {"id":"lazynut_scripting_language:reference:dataframe","namespace":"lazynut_scripting_language:reference"};
+/*!]]>*/</script>
+<script type="text/javascript" charset="utf-8" src="../../lib/exe/js.php.t.dokuwiki.js"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="shortcut icon" href="../../lib/tpl/dokuwiki/images/favicon.ico" />
+<link rel="apple-touch-icon" href="../../lib/tpl/dokuwiki/images/apple-touch-icon.png" />
+    </head>
+
+<body>
+    <!--[if lte IE 7 ]><div id="IE7"><![endif]--><!--[if IE 8 ]><div id="IE8"><![endif]-->
+    <div id="dokuwiki__site"><div id="dokuwiki__top" class="site dokuwiki mode_show tpl_dokuwiki     ">
+
+        
+<!-- ********** HEADER ********** -->
+<div id="dokuwiki__header"><div class="pad group">
+
+    
+    <div class="headings group">
+        <ul class="a11y skip">
+            <li><a href="#dokuwiki__content">skip to content</a></li>
+        </ul>
+
+        <h1><a href="../../start.html"  accesskey="h" title="[H]"><img src="../../wiki/logo.png" width="1000" height="206" alt="" /> <span></span></a></h1>
+            </div>
+
+    <div class="tools group">
+        <!-- USER TOOLS -->
+                    <div id="dokuwiki__usertools">
+                <h3 class="a11y">User Tools</h3>
+                <ul>
+                    <li><a href="dataframe.html"  class="action register" rel="nofollow" title="Register">Register</a></li><li><a href="dataframe.html"  class="action login" rel="nofollow" title="Login">Login</a></li>                </ul>
+            </div>
+        
+        <!-- SITE TOOLS -->
+        <div id="dokuwiki__sitetools">
+            <h3 class="a11y">Site Tools</h3>
+            <form action="../../start.html" accept-charset="utf-8" class="search" id="dw__search" method="get" role="search"><div class="no"><input type="hidden" name="do" value="search" /><input type="text" id="qsearch__in" accesskey="f" name="id" class="edit" title="[F]" /><input type="submit" value="Search" class="button" title="Search" /><div id="qsearch__out" class="ajax_qsearch JSpopup"></div></div></form>            <div class="mobileTools">
+                <form action="../..//easyNet/documentation/doku.html.doku.php.html" method="get" accept-charset="utf-8"><div class="no"><input type="hidden" name="id" value="lazynut_scripting_language:reference:dataframe" /><select name="do" class="edit quickselect" title="Tools"><option value="">Tools</option><optgroup label="Page Tools"><option value="edit">Show pagesource</option><option value="revisions">Old revisions</option><option value="backlink">Backlinks</option></optgroup><optgroup label="Site Tools"><option value="recent">Recent changes</option><option value="media">Media Manager</option><option value="index">Sitemap</option></optgroup><optgroup label="User Tools"><option value="login">Login</option><option value="register">Register</option></optgroup></select><input type="submit" value="&gt;" /></div></form>            </div>
+            <ul>
+                <li><a href="dataframe.html"  class="action recent" accesskey="r" rel="nofollow" title="Recent changes [R]">Recent changes</a></li><li><a href="dataframe.html"  class="action media" rel="nofollow" title="Media Manager">Media Manager</a></li><li><a href="dataframe.html"  class="action index" accesskey="x" rel="nofollow" title="Sitemap [X]">Sitemap</a></li>            </ul>
+        </div>
+
+    </div>
+
+    <!-- BREADCRUMBS -->
+            <div class="breadcrumbs">
+                                        <div class="trace"><span class="bchead">Trace:</span> <span class="bcsep">•</span> <bdi><a href="representation/subtypes.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:subtypes">subtypes</a></bdi> <span class="bcsep">•</span> <bdi><a href="representation/vector_representation_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:vector_representation_impl">vector_representation_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="steps/subtypes.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:steps:subtypes">subtypes</a></bdi> <span class="bcsep">•</span> <bdi><a href="steps/trial_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:steps:trial_impl">trial_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="xfile/rplot_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:xfile:rplot_impl">rplot_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="xfile/subtypes.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:xfile:subtypes">subtypes</a></bdi> <span class="bcsep">•</span> <bdi><a href="all-objects.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:all-objects">all-objects</a></bdi> <span class="bcsep">•</span> <bdi><a href="connection.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:connection">connection</a></bdi> <span class="bcsep">•</span> <bdi><a href="conversion.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:conversion">conversion</a></bdi> <span class="bcsep">•</span> <span class="curid"><bdi><a href="dataframe.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:dataframe">dataframe</a></bdi></span></div>
+                    </div>
+    
+    
+    <hr class="a11y" />
+</div></div><!-- /header -->
+
+        <div class="wrapper group">
+
+            
+            <!-- ********** CONTENT ********** -->
+            <div id="dokuwiki__content"><div class="pad group">
+
+                <div class="pageId"><span>lazynut_scripting_language:reference:dataframe</span></div>
+
+                <div class="page group">
+                                                            <!-- wikipage start -->
+                    <!-- TOC START -->
+<div id="dw__toc">
+<h3 class="toggle">Table of Contents</h3>
+<div>
+
+<ul class="toc">
+<li class="level1"><div class="li"><a href="#methods_common_to_all_dataframes">Methods common to all dataframes</a></div>
+<ul class="toc">
+<li class="level2"><div class="li"><a href="#description">description</a></div></li>
+<li class="level2"><div class="li"><a href="#load">load</a></div></li>
+<li class="level2"><div class="li"><a href="#copy">copy</a></div></li>
+<li class="level2"><div class="li"><a href="#clone">clone</a></div></li>
+<li class="level2"><div class="li"><a href="#save_csv">save_csv</a></div></li>
+<li class="level2"><div class="li"><a href="#load_csv">load_csv</a></div></li>
+<li class="level2"><div class="li"><a href="#get">get</a></div></li>
+<li class="level2"><div class="li"><a href="#clear">clear</a></div></li>
+<li class="level2"><div class="li"><a href="#get_colnames">get_colnames</a></div></li>
+<li class="level2"><div class="li"><a href="#get_colname_dimensions">get_colname_dimensions</a></div></li>
+<li class="level2"><div class="li"><a href="#get_colnames_table">get_colnames_table</a></div></li>
+<li class="level2"><div class="li"><a href="#get_colwise">get_colwise</a></div></li>
+<li class="level2"><div class="li"><a href="#get_column_as_list">get_column_as_list</a></div></li>
+<li class="level2"><div class="li"><a href="#for_each_row">for_each_row</a></div></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<!-- TOC END -->
+
+<h1 class="sectionedit1" id="methods_common_to_all_dataframes">Methods common to all dataframes</h1>
+<div class="level1">
+
+<p>
+The dataframe object is used for R data.frame objects that are managed by 
+<em>lazyNut</em>.  A data frame with <em>lazyNut</em> object name may be accessed in R
+through <code>eN[&quot;object_name&quot;]</code> .  An S4 class manages the relationship on the 
+R side.
+</p>
+
+</div>
+
+<h2 class="sectionedit2" id="description">description</h2>
+<div class="level2">
+<pre class="code">some_df description</pre>
+
+<p>
+The description of some_df will have additional elements: 
+<code>File name</code> if there is an associated file (name) for the data frame;
+<code>rows</code>, the number of rows; and
+<code>columns</code>, the number of columns.
+</p>
+
+</div>
+
+<h2 class="sectionedit3" id="load">load</h2>
+<div class="level2">
+<pre class="code">some_df load filename...</pre>
+
+<p>
+The file <code>filename</code> is loaded into the dataframe, assuming “eNd” ragged
+array file format.  This may trigger subtype-specific processing.
+</p>
+
+</div>
+
+<h2 class="sectionedit4" id="copy">copy</h2>
+<div class="level2">
+<pre class="code">some_df copy source_df</pre>
+
+<p>
+Create a “sliced” copy of <code>some_df</code> that is named <code>source_df</code>. Only the data is 
+copied, the subtype and any subtype-specific properties are “sliced” off.
+</p>
+
+</div>
+
+<h2 class="sectionedit5" id="clone">clone</h2>
+<div class="level2">
+<pre class="code">some_df clone source_df</pre>
+
+<p>
+Create a “deep” copy of <code>some_df</code> that is named <code>source_df</code>. Both data and 
+facet information are copied, insofar as this is sensible.
+</p>
+
+</div>
+
+<h2 class="sectionedit6" id="save_csv">save_csv</h2>
+<div class="level2">
+<pre class="code">some_df save_csv filename...</pre>
+
+<p>
+Saves <code>some_df</code> using R write.csv to <code>filename</code>.
+</p>
+
+</div>
+
+<h2 class="sectionedit7" id="load_csv">load_csv</h2>
+<div class="level2">
+<pre class="code">some_df load_csv filename...</pre>
+
+<p>
+Loads into <code>some_df</code> using R read.csv from <code>filename</code>.  Subtype-specific
+load-time processing will occur.
+</p>
+
+</div>
+
+<h2 class="sectionedit8" id="get">get</h2>
+<div class="level2">
+<pre class="code">some_df get row_spec col_spec</pre>
+
+<p>
+Emit the elements of the dataframe <code>some_df</code> indicated by the row and column 
+specifications <code>row_spec</code> and <code>col_spec</code>, which are in a format like 1-5,7-9.
+</p>
+<pre class="code">some_df get</pre>
+
+<p>
+Emit the whole dataframe <code>some_df</code> in a format similar to <abbr title="HyperText Markup Language">HTML</abbr>, with additional
+tags indicating the type of each element.
+</p>
+
+</div>
+
+<h2 class="sectionedit9" id="clear">clear</h2>
+<div class="level2">
+<pre class="code">some_df clear</pre>
+
+<p>
+Erase all data in the data frame <code>some_df</code>.  The subtype is not cleared.
+</p>
+
+</div>
+
+<h2 class="sectionedit10" id="get_colnames">get_colnames</h2>
+<div class="level2">
+<pre class="code">some_df get_colnames</pre>
+
+<p>
+List the column names of the dataframe <code>some_df</code>.
+</p>
+
+</div>
+
+<h2 class="sectionedit11" id="get_colname_dimensions">get_colname_dimensions</h2>
+<div class="level2">
+<pre class="code">some_df get_colname_dimensions</pre>
+
+<p>
+List the column names of the dataframe <code>some_df</code>, omitting the time column, and
+removing any common prefix among the remaining names.
+</p>
+
+</div>
+
+<h2 class="sectionedit12" id="get_colnames_table">get_colnames_table</h2>
+<div class="level2">
+<pre class="code">some_df get_colnames_table</pre>
+
+<p>
+Emit the column names only of the dataframe <code>some_df</code> in the same format as <code>get</code>.
+</p>
+
+</div>
+
+<h2 class="sectionedit13" id="get_colwise">get_colwise</h2>
+<div class="level2">
+<pre class="code">some_df get_colwise</pre>
+
+<p>
+Emit the dataframe <code>some_df</code> in a transposed format.  The TBODY tag is replaced
+with TCBODY; the TR tag with TC; and the TC element carries a type attribute, rather
+than each element having a typing tag.
+</p>
+
+</div>
+
+<h2 class="sectionedit14" id="get_column_as_list">get_column_as_list</h2>
+<div class="level2">
+<pre class="code">some_df get_column_as_list colname</pre>
+
+<p>
+Emit the elements of the column with heading <code>colname</code> of the dataframe <code>some_df</code>
+in a simple list without special table tags.
+</p>
+
+</div>
+
+<h2 class="sectionedit15" id="for_each_row">for_each_row</h2>
+<div class="level2">
+<pre class="code">some_df for_each_row any_command...</pre>
+
+<p>
+Iterate over the rows of <code>some_df</code>.  On each iteration, set a local macro variable
+with the name of the column element with a value of the corresponding cell, and
+execute <code>any_command</code>.
+</p>
+
+</div>
+
+                    <!-- wikipage stop -->
+                                    </div>
+
+                <div class="docInfo"><bdi>lazynut_scripting_language/reference/dataframe.txt</bdi> · Last modified: 2016/03/25 13:12 (external edit)</div>
+
+                            </div></div><!-- /content -->
+
+            <hr class="a11y" />
+
+            <!-- PAGE ACTIONS -->
+            <div id="dokuwiki__pagetools">
+                <h3 class="a11y">Page Tools</h3>
+                <div class="tools">
+                    <ul>
+                        <li><a href="dataframe.html"  class="action source" accesskey="v" rel="nofollow" title="Show pagesource [V]"><span>Show pagesource</span></a></li><li><a href="dataframe.html"  class="action revs" accesskey="o" rel="nofollow" title="Old revisions [O]"><span>Old revisions</span></a></li><li><a href="dataframe.html"  class="action backlink" rel="nofollow" title="Backlinks"><span>Backlinks</span></a></li><li><a href="#dokuwiki__top"  class="action top" accesskey="t" rel="nofollow" title="Back to top [T]"><span>Back to top</span></a></li>                    </ul>
+                </div>
+            </div>
+        </div><!-- /wrapper -->
+
+        
+<!-- ********** FOOTER ********** -->
+<div id="dokuwiki__footer"><div class="pad">
+    <div class="license">Except where otherwise noted, content on this wiki is licensed under the following license: <bdi><a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license" class="urlextern">CC Attribution-Share Alike 3.0 Unported</a></bdi></div>
+    <div class="buttons">
+        <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="../../lib/images/license/button/cc-by-sa.png" alt="CC Attribution-Share Alike 3.0 Unported" /></a>        <a href="http://www.dokuwiki.org/donate" title="Donate" ><img
+            src="../../lib/tpl/dokuwiki/images/button-donate.gif" width="80" height="15" alt="Donate" /></a>
+        <a href="http://www.php.net" title="Powered by PHP" ><img
+            src="../../lib/tpl/dokuwiki/images/button-php.gif" width="80" height="15" alt="Powered by PHP" /></a>
+        <a href="http://validator.w3.org/check/referer" title="Valid HTML5" ><img
+            src="../../lib/tpl/dokuwiki/images/button-html5.png" width="80" height="15" alt="Valid HTML5" /></a>
+        <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3" title="Valid CSS" ><img
+            src="../../lib/tpl/dokuwiki/images/button-css.png" width="80" height="15" alt="Valid CSS" /></a>
+        <a href="http://dokuwiki.org/" title="Driven by DokuWiki" ><img
+            src="../../lib/tpl/dokuwiki/images/button-dw.png" width="80" height="15" alt="Driven by DokuWiki" /></a>
+    </div>
+</div></div><!-- /footer -->
+
+    </div></div><!-- /site -->
+
+    <div class="no"><img  width="2" height="1" alt="" /></div>
+    <div id="screen__mode" class="no"></div>    <!--[if ( lte IE 7 | IE 8 ) ]></div><![endif]-->
+</body>
+</html>

@@ -54,7 +54,8 @@ HelpWindow::HelpWindow()
     textViewer = new TextEdit;
     QString link = QApplication::applicationDirPath() + "/documentation/intro.html";
 //    textViewer->setContents(link);
-    textViewer->setContents(QLatin1String(":/documentation/intro.html"));
+//    textViewer->setContents(QLatin1String(":/documentation/intro.html"));
+    textViewer->setContents(QLatin1String(":/documentation/siteexport/start.html"));
 
     setCentralWidget(textViewer);
     setWindowTitle(tr("easyNet help"));

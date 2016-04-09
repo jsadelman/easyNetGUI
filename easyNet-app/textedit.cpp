@@ -44,9 +44,11 @@
 #include "textedit.h"
 
 TextEdit::TextEdit(QWidget *parent)
-    : QTextEdit(parent)
+    : QTextBrowser(parent)
 {
     setReadOnly(true);
+    setOpenExternalLinks(true);
+    setSearchPaths({QString(":/documentation/siteexport")});
 }
 
 void TextEdit::setContents(const QString &fileName)

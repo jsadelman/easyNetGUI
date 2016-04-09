@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="no-js">
+<head>
+    <meta charset="utf-8" />
+    <title>lazynut_scripting_language:reference:steps:trial_impl []</title>
+    <script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script>
+    <meta name="generator" content="DokuWiki"/>
+<meta name="robots" content="index,follow"/>
+<meta name="keywords" content="lazynut_scripting_language,reference,steps,trial_impl"/>
+<link rel="search" type="application/opensearchdescription+xml" href="../../../lib/exe/opensearch.html" title=""/>
+<link rel="start" href="trial_impl.html"/>
+<link rel="contents" href="trial_impl.html" title="Sitemap"/>
+<link rel="alternate" type="application/rss+xml" title="Recent changes" />
+<link rel="alternate" type="application/rss+xml" title="Current namespace" />
+<link rel="alternate" type="text/html" title="Plain HTML" href="trial_impl.html"/>
+<link rel="alternate" type="text/plain" title="Wiki Markup" href="trial_impl.html"/>
+<link rel="canonical" href="http://adelmanlab.org/easyNet/documentation/doku.php?id=lazynut_scripting_language:reference:steps:trial_impl"/>
+<link rel="stylesheet" type="text/css" href="../../../lib/exe/css.php.t.dokuwiki.css"/>
+<script type="text/javascript">/*<![CDATA[*/var NS='lazynut_scripting_language:reference:steps';var JSINFO = {"id":"lazynut_scripting_language:reference:steps:trial_impl","namespace":"lazynut_scripting_language:reference:steps"};
+/*!]]>*/</script>
+<script type="text/javascript" charset="utf-8" src="../../../lib/exe/js.php.t.dokuwiki.js"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="shortcut icon" href="../../../lib/tpl/dokuwiki/images/favicon.ico" />
+<link rel="apple-touch-icon" href="../../../lib/tpl/dokuwiki/images/apple-touch-icon.png" />
+    </head>
+
+<body>
+    <!--[if lte IE 7 ]><div id="IE7"><![endif]--><!--[if IE 8 ]><div id="IE8"><![endif]-->
+    <div id="dokuwiki__site"><div id="dokuwiki__top" class="site dokuwiki mode_show tpl_dokuwiki     ">
+
+        
+<!-- ********** HEADER ********** -->
+<div id="dokuwiki__header"><div class="pad group">
+
+    
+    <div class="headings group">
+        <ul class="a11y skip">
+            <li><a href="#dokuwiki__content">skip to content</a></li>
+        </ul>
+
+        <h1><a href="../../../start.html"  accesskey="h" title="[H]"><img src="../../../wiki/logo.png" width="1000" height="206" alt="" /> <span></span></a></h1>
+            </div>
+
+    <div class="tools group">
+        <!-- USER TOOLS -->
+                    <div id="dokuwiki__usertools">
+                <h3 class="a11y">User Tools</h3>
+                <ul>
+                    <li><a href="trial_impl.html"  class="action register" rel="nofollow" title="Register">Register</a></li><li><a href="trial_impl.html"  class="action login" rel="nofollow" title="Login">Login</a></li>                </ul>
+            </div>
+        
+        <!-- SITE TOOLS -->
+        <div id="dokuwiki__sitetools">
+            <h3 class="a11y">Site Tools</h3>
+            <form action="../../../start.html" accept-charset="utf-8" class="search" id="dw__search" method="get" role="search"><div class="no"><input type="hidden" name="do" value="search" /><input type="text" id="qsearch__in" accesskey="f" name="id" class="edit" title="[F]" /><input type="submit" value="Search" class="button" title="Search" /><div id="qsearch__out" class="ajax_qsearch JSpopup"></div></div></form>            <div class="mobileTools">
+                <form action="../../..//easyNet/documentation/doku.html.doku.php.html" method="get" accept-charset="utf-8"><div class="no"><input type="hidden" name="id" value="lazynut_scripting_language:reference:steps:trial_impl" /><select name="do" class="edit quickselect" title="Tools"><option value="">Tools</option><optgroup label="Page Tools"><option value="edit">Show pagesource</option><option value="revisions">Old revisions</option><option value="backlink">Backlinks</option></optgroup><optgroup label="Site Tools"><option value="recent">Recent changes</option><option value="media">Media Manager</option><option value="index">Sitemap</option></optgroup><optgroup label="User Tools"><option value="login">Login</option><option value="register">Register</option></optgroup></select><input type="submit" value="&gt;" /></div></form>            </div>
+            <ul>
+                <li><a href="trial_impl.html"  class="action recent" accesskey="r" rel="nofollow" title="Recent changes [R]">Recent changes</a></li><li><a href="trial_impl.html"  class="action media" rel="nofollow" title="Media Manager">Media Manager</a></li><li><a href="trial_impl.html"  class="action index" accesskey="x" rel="nofollow" title="Sitemap [X]">Sitemap</a></li>            </ul>
+        </div>
+
+    </div>
+
+    <!-- BREADCRUMBS -->
+            <div class="breadcrumbs">
+                                        <div class="trace"><span class="bchead">Trace:</span> <span class="bcsep">•</span> <bdi><a href="../pattern/wtstring_pattern_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:pattern:wtstring_pattern_impl">wtstring_pattern_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="../representation/blocked_representation_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:blocked_representation_impl">blocked_representation_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="../representation/keyed_representation_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:keyed_representation_impl">keyed_representation_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="../representation/representation_reference_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:representation_reference_impl">representation_reference_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="../representation/spatial_representation_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:spatial_representation_impl">spatial_representation_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="../representation/string_representation_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:string_representation_impl">string_representation_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="../representation/subtypes.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:subtypes">subtypes</a></bdi> <span class="bcsep">•</span> <bdi><a href="../representation/vector_representation_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:representation:vector_representation_impl">vector_representation_impl</a></bdi> <span class="bcsep">•</span> <bdi><a href="subtypes.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:steps:subtypes">subtypes</a></bdi> <span class="bcsep">•</span> <span class="curid"><bdi><a href="trial_impl.html"  class="breadcrumbs" title="lazynut_scripting_language:reference:steps:trial_impl">trial_impl</a></bdi></span></div>
+                    </div>
+    
+    
+    <hr class="a11y" />
+</div></div><!-- /header -->
+
+        <div class="wrapper group">
+
+            
+            <!-- ********** CONTENT ********** -->
+            <div id="dokuwiki__content"><div class="pad group">
+
+                <div class="pageId"><span>lazynut_scripting_language:reference:steps:trial_impl</span></div>
+
+                <div class="page group">
+                                                            <!-- wikipage start -->
+                    <!-- TOC START -->
+<div id="dw__toc">
+<h3 class="toggle">Table of Contents</h3>
+<div>
+
+<ul class="toc">
+<li class="level1"><div class="li"><a href="#trial_impl">trial_impl</a></div></li>
+<li class="level1"><div class="li"><a href="#add_stimulus_event">add_stimulus_event</a></div></li>
+<li class="level1"><div class="li"><a href="#add_stimulus_event1">add_stimulus_event</a></div></li>
+<li class="level1"><div class="li"><a href="#set_description">set_description</a></div></li>
+<li class="level1"><div class="li"><a href="#set_stimulus_event_slot">set_stimulus_event_slot</a></div></li>
+<li class="level1"><div class="li"><a href="#set_stimulus_event_value">set_stimulus_event_value</a></div></li>
+<li class="level1"><div class="li"><a href="#remove_stimulus_event">remove_stimulus_event</a></div></li>
+<li class="level1"><div class="li"><a href="#add_stimulus_start_condition">add_stimulus_start_condition</a></div></li>
+<li class="level1"><div class="li"><a href="#add_stimulus_end_condition">add_stimulus_end_condition</a></div></li>
+<li class="level1"><div class="li"><a href="#remove_stimulus_start_condition">remove_stimulus_start_condition</a></div></li>
+<li class="level1"><div class="li"><a href="#remove_stimulus_end_condition">remove_stimulus_end_condition</a></div></li>
+<li class="level1"><div class="li"><a href="#set_end_condition">set_end_condition</a></div></li>
+<li class="level1"><div class="li"><a href="#remove_end_condtion">remove_end_condtion</a></div></li>
+<li class="level1"><div class="li"><a href="#details">details</a></div></li>
+<li class="level1"><div class="li"><a href="#default_observer">default_observer</a></div></li>
+<li class="level1"><div class="li"><a href="#set_cap">set_cap</a></div></li>
+<li class="level1"><div class="li"><a href="#event_pattern">event_pattern</a></div></li>
+<li class="level1"><div class="li"><a href="#response">response</a></div></li>
+<li class="level1"><div class="li"><a href="#response_time">response_time</a></div></li>
+<li class="level1"><div class="li"><a href="#run_set">run_set</a></div></li>
+<li class="level1"><div class="li"><a href="#run_set_multiple">run_set_multiple</a></div></li>
+<li class="level1"><div class="li"><a href="#set_cap_validity">set_cap_validity</a></div></li>
+</ul>
+</div>
+</div>
+<!-- TOC END -->
+
+<h1 class="sectionedit1" id="trial_impl">trial_impl</h1>
+<div class="level1">
+
+<p>
+Trial controls the running of trials and sets of trials.
+</p>
+
+</div>
+
+<h1 class="sectionedit2" id="add_stimulus_event">add_stimulus_event</h1>
+<div class="level1">
+<pre class="code">some_trial add_stimulus_event name slot start end value...</pre>
+
+<p>
+Add a stimulus clamping event named <code>name</code> to the trial sequence of
+<code>some_trial</code>.  The stimulus will be clamped to the input of the model with
+the name <code>slot</code>, which should be a conventional name (e.g., orthographic)
+that abstracts away from particular trials and models.  The elements in
+<code>value</code> (which may be macro variable names preceded by $) will be
+interpreted via the representation associated with that input slot to be
+converted to the representation for the corresponding input layer. Add <code>start</code>
+as a starting trigger event for this clamping event; add <code>end</code> as an ending
+trigger event for this clamping event.  Both <code>start</code> and <code>end</code> are with the
+syntax described at <code>add_stimulus_start_condition</code>.
+</p>
+
+<p>
+The
+onset and offset of the clamping are given by <code>start</code> and <code>end</code> which are of
+the format <code>event+delay</code> where <code>delay</code> is a number (or $macro variable
+indicating the amount of time to elapse after <code>event</code> for this to occur (+0
+may be omitted); <code>event</code> may be <code>BEGIN</code>, <code>END</code>, <code>obsname</code>, or <code>ename/start</code>
+or <code>ename/end</code>, where <code>obsname</code> is the name of an observer, or <code>ename</code> is
+the <code>name</code> of another stimulus event added to the trial.
+</p>
+
+</div>
+
+<h1 class="sectionedit3" id="add_stimulus_event1">add_stimulus_event</h1>
+<div class="level1">
+<pre class="code">some_trial add_stimulus_event_only name</pre>
+
+<p>
+Add a stimulus clamping event named <code>name</code> to the trial sequence of
+<code>some_trial</code>, without setting any of the properties of this event.
+</p>
+
+</div>
+
+<h1 class="sectionedit4" id="set_description">set_description</h1>
+<div class="level1">
+<pre class="code">some_trial set_description blah...</pre>
+
+<p>
+Associate a description <code>blah</code> with <code>some_trial</code>.
+</p>
+
+</div>
+
+<h1 class="sectionedit5" id="set_stimulus_event_slot">set_stimulus_event_slot</h1>
+<div class="level1">
+<pre class="code">some_trial set_stimulus_event_slot name slot</pre>
+
+<p>
+Identify the slot name that determines which layer and representation are used
+for clamping the event <code>name</code> of <code>some_trial</code> to be <code>slot</code>. The stimulus will be clamped to the input of the model with
+the name <code>slot</code>, which should be a conventional name (e.g., orthographic)
+that abstracts away from particular trials and models.<br/>
+
+</p>
+
+</div>
+
+<h1 class="sectionedit6" id="set_stimulus_event_value">set_stimulus_event_value</h1>
+<div class="level1">
+<pre class="code">some_trial set_stimulus_event_value name value...</pre>
+
+<p>
+Set the list of values that are used for clamping event <code>name</code> of
+<code>some_trial</code> to be <code>value</code>.  The elements in <code>value</code> will be interpreted via
+the representation associated with the prevailing input slot to be converted
+to the representation for the corresponding input layer.
+</p>
+
+</div>
+
+<h1 class="sectionedit7" id="remove_stimulus_event">remove_stimulus_event</h1>
+<div class="level1">
+<pre class="code">some_trial remove_stimulus_event name</pre>
+
+<p>
+Remove a stimulus clamping event named <code>name</code> from the trial sequence of
+<code>some_trial</code>.
+</p>
+
+</div>
+
+<h1 class="sectionedit8" id="add_stimulus_start_condition">add_stimulus_start_condition</h1>
+<div class="level1">
+<pre class="code">some_trial add_stimulus_start_condition eventname starttime</pre>
+
+<p>
+Indicate that <code>starttime</code> is one of the possible trigger times for the
+clamping event <code>eventname</code> of <code>some_trial</code> to onset; events always start
+when the first such time is reached.  The format of <code>starttime</code> is
+<code>event+delay</code> where <code>delay</code> is a number (or $macro variable) indicating the
+amount of time to elapse after <code>event</code> for this to occur (+0 may be
+omitted).  <code>event</code> may be literally <code>BEGIN</code> or <code>END</code>; the name of an
+observer; or <code>ename/start</code> or <code>ename/end</code>, where <code>ename</code> is the <code>name</code> of
+another stimulus event added to the trial.
+</p>
+
+</div>
+
+<h1 class="sectionedit9" id="add_stimulus_end_condition">add_stimulus_end_condition</h1>
+<div class="level1">
+<pre class="code">some_trial add_stimulus_end_condition eventname endtime</pre>
+
+<p>
+Indicate that <code>endtime</code> is one of the possible trigger times for the event
+<code>eventname</code> of <code>some_trial</code> to offset; events always start when the first
+such time is reached.  The format of <code>endtime</code> is as for <code>starttime</code> above.
+</p>
+
+</div>
+
+<h1 class="sectionedit10" id="remove_stimulus_start_condition">remove_stimulus_start_condition</h1>
+<div class="level1">
+<pre class="code">some_trial remove_stimulus_start_condition eventname starttime</pre>
+
+<p>
+Remove the onset tigger <code>starttime</code> for the event <code>eventname</code> of
+<code>some_trial</code>.
+</p>
+
+</div>
+
+<h1 class="sectionedit11" id="remove_stimulus_end_condition">remove_stimulus_end_condition</h1>
+<div class="level1">
+<pre class="code">some_trial remove_stimulus_end_condition eventname endtime</pre>
+
+<p>
+Remove the offset condition <code>endtime</code> for the event <code>eventname</code> of
+<code>some_trial</code>.
+</p>
+
+</div>
+
+<h1 class="sectionedit12" id="set_end_condition">set_end_condition</h1>
+<div class="level1">
+<pre class="code">some_trial set_end_condition terminationtime</pre>
+
+<p>
+Indicate that the trial <code>some_trial</code> ends when the termination time/event
+<code>terminationtime</code> is reached.  The format of <code>terminationtime</code> is as for
+<code>startime</code> of <code>add_stimulus_start_condition</code>.
+</p>
+
+</div>
+
+<h1 class="sectionedit13" id="remove_end_condtion">remove_end_condtion</h1>
+<div class="level1">
+<pre class="code">some_trial remove_end_condition terminationtime</pre>
+
+<p>
+Delete <code>terminationtime</code> from the list of times at which <code>some_trial</code> will end.
+</p>
+
+</div>
+
+<h1 class="sectionedit14" id="details">details</h1>
+<div class="level1">
+<pre class="code">some_trial details</pre>
+
+<p>
+Emit an extensive description of events and end conditions.
+</p>
+
+</div>
+
+<h1 class="sectionedit15" id="default_observer">default_observer</h1>
+<div class="level1">
+<pre class="code">some_trial default_observer</pre>
+
+<p>
+Return the dflog_observer that is managed by <code>some_trial</code> and whose settings
+(by default) record the content of any macro variables and the time that
+each observer mentioned in the trial description (first) becomes true.
+</p>
+
+</div>
+
+<h1 class="sectionedit16" id="set_cap">set_cap</h1>
+<div class="level1">
+<pre class="code">some_trial set_cap timeout</pre>
+
+<p>
+Establish a special <code>timeout</code> termination condition for <code>some_trial</code>.
+<code>timeout</code> is a number (without leading <code>+</code> symbol).  Layers will not be
+advanced beyond this time, and once all layers reach timeout, NAN
+(interpreted as timeout) will be recorded as the time of all observers
+that have been false throughout (unless overridden by <code>set_cap_validity</code>).
+</p>
+
+</div>
+
+<h1 class="sectionedit17" id="event_pattern">event_pattern</h1>
+<div class="level1">
+<pre class="code">some_trial event_pattern name</pre>
+
+<p>
+Return the pattern object that is used for clamping the event <code>name</code> during
+the trial <code>some_trial</code>.
+</p>
+
+</div>
+
+<h1 class="sectionedit18" id="response">response</h1>
+<div class="level1">
+<pre class="code">some_trial response name</pre>
+
+<p>
+Return a string pattern that represents the state of the observer <code>name</code>
+when it (first) becomes true during <code>some_trial</code>.  Only valid for observers
+named as a time/event for clamping start/end or trial end.
+</p>
+
+</div>
+
+<h1 class="sectionedit19" id="response_time">response_time</h1>
+<div class="level1">
+<pre class="code">some_trial response_time name</pre>
+
+<p>
+Return a strength pattern that represents the time at which the observer <code>name</code>
+when it (first) becomes true during <code>some_trial</code>.  Only valid for observers
+named as a time/event for clamping start/end or trial end.
+</p>
+
+</div>
+
+<h1 class="sectionedit20" id="run_set">run_set</h1>
+<div class="level1">
+<pre class="code">some_trial run_set df_stimset</pre>
+
+<p>
+For each row in the dataframe/stimulus_set <code>df_stimset</code>, run <code>some_trial</code> with
+local macro variables with the names of the columns of the <code>df_stimset</code> set to
+the corresponding values on the row.  The <code>default_observer</code> is set up and 
+enabled
+with appropriate trigger before the run, and this process is reversed after the run.
+</p>
+
+</div>
+
+<h1 class="sectionedit21" id="run_set_multiple">run_set_multiple</h1>
+<div class="level1">
+<pre class="code">some_trial run_set_multiple spec num df_stimset</pre>
+
+<p>
+As <code>run_set</code> except that each row is used multiple times, the number of
+which is set by <code>num</code>, and the ordering of which is set by <code>spec</code>.  A <code>spec</code>
+of <code>ABAB</code> indicates that the whole set should be run through before the next
+of the <code>num</code> repetitions, whereas <code>AABB</code> indicates that that each row should
+be run <code>num</code> times before proceeding to the next row.
+</p>
+
+</div>
+
+<h1 class="sectionedit22" id="set_cap_validity">set_cap_validity</h1>
+<div class="level1">
+<pre class="code">some_trial set_cap_validity 0</pre>
+
+<p>
+Indicate that when the cap timeout is reached, the time, not NAN (timeout),
+should be recorded as response_time for observers that have no become true.
+</p>
+<pre class="code">some_trial set_cap_validity 1</pre>
+
+<p>
+Revert to the normal behaviour of the cap, where NAN (timeout) is recorded.
+</p>
+
+</div>
+
+                    <!-- wikipage stop -->
+                                    </div>
+
+                <div class="docInfo"><bdi>lazynut_scripting_language/reference/steps/trial_impl.txt</bdi> · Last modified: 2016/03/25 14:13 (external edit)</div>
+
+                            </div></div><!-- /content -->
+
+            <hr class="a11y" />
+
+            <!-- PAGE ACTIONS -->
+            <div id="dokuwiki__pagetools">
+                <h3 class="a11y">Page Tools</h3>
+                <div class="tools">
+                    <ul>
+                        <li><a href="trial_impl.html"  class="action source" accesskey="v" rel="nofollow" title="Show pagesource [V]"><span>Show pagesource</span></a></li><li><a href="trial_impl.html"  class="action revs" accesskey="o" rel="nofollow" title="Old revisions [O]"><span>Old revisions</span></a></li><li><a href="trial_impl.html"  class="action backlink" rel="nofollow" title="Backlinks"><span>Backlinks</span></a></li><li><a href="#dokuwiki__top"  class="action top" accesskey="t" rel="nofollow" title="Back to top [T]"><span>Back to top</span></a></li>                    </ul>
+                </div>
+            </div>
+        </div><!-- /wrapper -->
+
+        
+<!-- ********** FOOTER ********** -->
+<div id="dokuwiki__footer"><div class="pad">
+    <div class="license">Except where otherwise noted, content on this wiki is licensed under the following license: <bdi><a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license" class="urlextern">CC Attribution-Share Alike 3.0 Unported</a></bdi></div>
+    <div class="buttons">
+        <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license"><img src="../../../lib/images/license/button/cc-by-sa.png" alt="CC Attribution-Share Alike 3.0 Unported" /></a>        <a href="http://www.dokuwiki.org/donate" title="Donate" ><img
+            src="../../../lib/tpl/dokuwiki/images/button-donate.gif" width="80" height="15" alt="Donate" /></a>
+        <a href="http://www.php.net" title="Powered by PHP" ><img
+            src="../../../lib/tpl/dokuwiki/images/button-php.gif" width="80" height="15" alt="Powered by PHP" /></a>
+        <a href="http://validator.w3.org/check/referer" title="Valid HTML5" ><img
+            src="../../../lib/tpl/dokuwiki/images/button-html5.png" width="80" height="15" alt="Valid HTML5" /></a>
+        <a href="http://jigsaw.w3.org/css-validator/check/referer?profile=css3" title="Valid CSS" ><img
+            src="../../../lib/tpl/dokuwiki/images/button-css.png" width="80" height="15" alt="Valid CSS" /></a>
+        <a href="http://dokuwiki.org/" title="Driven by DokuWiki" ><img
+            src="../../../lib/tpl/dokuwiki/images/button-dw.png" width="80" height="15" alt="Driven by DokuWiki" /></a>
+    </div>
+</div></div><!-- /footer -->
+
+    </div></div><!-- /site -->
+
+    <div class="no"><img  width="2" height="1" alt="" /></div>
+    <div id="screen__mode" class="no"></div>    <!--[if ( lte IE 7 | IE 8 ) ]></div><![endif]-->
+</body>
+</html>

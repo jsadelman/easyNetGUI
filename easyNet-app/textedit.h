@@ -42,9 +42,9 @@
 #define TEXTEDIT_H
 
 #include <QtCore/QUrl>
-#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QTextBrowser>
 
-class TextEdit : public QTextEdit
+class TextEdit : public QTextBrowser
 {
     Q_OBJECT
 
