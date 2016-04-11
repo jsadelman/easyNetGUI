@@ -113,7 +113,6 @@ void MainWindow::build()
     #endif
 
     SessionManager::instance()->startLazyNut();
-    setDebugMode(false);
 
 
 
