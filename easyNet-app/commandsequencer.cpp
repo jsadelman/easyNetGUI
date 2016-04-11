@@ -98,7 +98,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
     {
         auto drbaseOffset=baseOffset;
         int dotcount=0,newoff;
-        while ((drbaseOffset<lazyNutBuffer.length())&& ((newoff=dotsRex.indexIn(lazyNutBuffer,drbaseOffset) > 0)))
+        while ((drbaseOffset<lazyNutBuffer.length())&& ((newoff=dotsRex.indexIn(lazyNutBuffer,drbaseOffset)) > 0))
         {
             dotcount+=dotsRex.cap(1).length();
             drbaseOffset=newoff+dotsRex.matchedLength();
