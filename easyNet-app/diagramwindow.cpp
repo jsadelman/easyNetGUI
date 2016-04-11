@@ -205,11 +205,11 @@ void DiagramWindow::createMenus()
 //    addDockWidget(Qt::LeftDockWidgetArea, layoutDock);
 
 
-    modelSettingsAct = new QAction(QIcon(":/images/list-4x.png"),tr("Fit to window"), this);
+    modelSettingsAct = new QAction(QIcon(":/images/list-4x.png"),tr("Model Load-Time Settings"), this);
     modelSettingsAct->setStatusTip(tr("Display model settings"));
     connect(modelSettingsAct,SIGNAL(triggered()), this,SIGNAL(showModelSettingsSignal()));
 
-    parameterSettingsAct = new QAction(QIcon(":/images/parameters.png"),tr("Fit to window"), this);
+    parameterSettingsAct = new QAction(QIcon(":/images/parameters.png"),tr("Model Parameters"), this);
     parameterSettingsAct->setStatusTip(tr("Display parameter settings"));
     connect(parameterSettingsAct,SIGNAL(triggered()), this,SIGNAL(showParameterSettingsSignal()));
 
@@ -337,7 +337,7 @@ void DiagramWindow::createMenus()
     restoreProperties();
 #endif
 
-    diagramTopToolBar = new QToolBar("Layout");
+    diagramTopToolBar = new QToolBar("Details");
     addToolBar(Qt::TopToolBarArea,diagramTopToolBar);
     diagramTopToolBar->setMovable(false);
     diagramTopToolBar->addAction(modelSettingsAct);
