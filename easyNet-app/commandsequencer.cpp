@@ -89,7 +89,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
     if (commandList.isEmpty())
     {
          emit userLazyNutOutputReady(lazyNutOutput);
-//        lazyNutBuffer.clear();
+        lazyNutBuffer.clear();
         return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or error
     }
     QString currentCmd, beginContent, timeString;
@@ -98,7 +98,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
     {
         auto drbaseOffset=baseOffset;
         int dotcount=0,newoff;
-        while ((newoff=dotsRex.indexIn(lazyNutBuffer,drbaseOffset)) > 0)
+        while ((drbaseOffset<lazyNutBuffer.length())&& ((newoff=dotsRex.indexIn(lazyNutBuffer,drbaseOffset) > 0)))
         {
             dotcount+=dotsRex.cap(1).length();
             drbaseOffset=newoff+dotsRex.matchedLength();

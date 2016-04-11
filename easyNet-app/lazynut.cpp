@@ -3,12 +3,12 @@
 
 LazyNut::LazyNut(QObject *parent)
 {
-    connect(this,SIGNAL(readyReadStandardError()),this,SLOT(getOutput()));
+    connect(this,SIGNAL(readyReadStandardOutput()),this,SLOT(getOutput()));
 }
 
 LazyNut::~LazyNut()
 {
-    terminate();
+ //   terminate();
 }
 
 void LazyNut::sendCommand(QString command)
@@ -19,7 +19,7 @@ void LazyNut::sendCommand(QString command)
 void LazyNut::getOutput()
 {
     //qDebug () << "LazyNut::getOutput()";
-    QByteArray ba = readAllStandardError();
+    QByteArray ba = readAllStandardOutput();
     QString st = QString(ba);
     emit outputReady(st);
 //    emit outputReady(QString(readAllStandardError()));
