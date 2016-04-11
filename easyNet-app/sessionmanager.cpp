@@ -493,12 +493,14 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
     if (lazyNutHeaderBuffer.contains(OOBrex))
     {
         OOBsecret = OOBrex.cap(1);
-//        emit userLazyNutOutputReady(lazyNutHeaderBuffer.left(lazyNutHeaderBuffer.indexOf(OOBsecret) + OOBsecret.length()));
-        emit userLazyNutOutputReady(lazyNutHeaderBuffer);
-        lazyNutHeaderBuffer.clear();
+        QString lazyNutIntro=lazyNutHeaderBuffer.left(lazyNutHeaderBuffer.indexOf(OOBsecret));
+        emit userLazyNutOutputReady(lazyNutIntro);
+//
+        lazyNutHeaderBuffer=lazyNutHeaderBuffer.mid(lazyNutHeaderBuffer.indexOf(OOBsecret) + OOBsecret.length());
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
         connect(lazyNut, SIGNAL(outputReady(QString)), commandSequencer, SLOT(processLazyNutOutput(QString)));
         emit lazyNutStarted();
+        lazyNut->outputReady(lazyNutHeaderBuffer);
         startOOB();
     }
 }
@@ -568,7 +570,8 @@ void SessionManager::setDefaultLocations()
 
 void SessionManager::killLazyNut()
 {
-    lazyNut->kill();
+    lazyNut->closeWriteChannel();
+    oob->closeWriteChannel();
 }
 
 void SessionManager::oobStop()
