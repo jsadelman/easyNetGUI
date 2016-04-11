@@ -54,6 +54,7 @@ class Ui_DataTabsViewer;
 class Ui_DataComboViewer;
 class QTime;
 class SettingsWidget;
+class FloatingDialogWindow;
 
 QT_END_NAMESPACE
 
@@ -95,6 +96,9 @@ public slots:
     void setDebugMode(bool isDebugMode);
     void updateTrialRunListCount(int count);
 
+    void showModelSettings();
+    void showParameterSettings();
+    void setStopButtonIcon(bool state);
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -224,12 +228,15 @@ public:
     QTabWidget *explorerPanel;
     DiagramSceneTabWidget *diagramPanel;
     DiagramWindow *diagramWindow;
-    QDockWidget* introDock;
+//    QDockWidget* introDock;
     QDockWidget* codePanelDock;
     QDockWidget *methodsDock;
     QDockWidget *diagramDock;
     QDockWidget *explorerDock;
     QDockWidget *resultsDock;
+    FloatingDialogWindow* modelSettingsDialog;
+    FloatingDialogWindow* paramSettingsDialog;
+    FloatingDialogWindow* dataViewSettingsDialog;
 
     QListWidget* customerList;
     QListWidget* paragraphsList;
@@ -303,7 +310,9 @@ public:
 
     QPushButton     * trialButton;
     QPushButton     * modelButton;
-    QToolButton * addonButton;
+    QToolButton     * addonButton;
+    QToolButton     * stopButton;
+
     QWidget         *spacer;
     QAction         *stopAct;
     ObjectCacheFilter* modelListFilter;

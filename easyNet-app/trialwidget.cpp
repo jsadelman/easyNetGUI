@@ -62,7 +62,7 @@ TrialWidget::TrialWidget(QWidget *parent)
            this, SLOT(updateModelStochasticity(QDomDocument*)));
 
 
-    runAction = new QAction(QIcon(":/images/media-play-8x.png"),tr("&Run"), this);
+    runAction = new QAction(tr("&Run"), this);
     runAction->setStatusTip(tr("Run"));
     connect(runAction,SIGNAL(triggered()),this,SLOT(runTrial()));
     runButton = new QToolButton(this);
@@ -257,6 +257,8 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which model to run");
         return;
     }
+    qDebug() << trialRunMode;
+
     if (trialRunMode == TrialRunMode_List && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
     {
         int answer = disableObserversMsg->exec();
@@ -267,8 +269,9 @@ void TrialWidget::runTrial()
     }
     QSharedPointer<QDomDocument> trialRunInfo = createTrialRunInfo();
     emit aboutToRunTrial(trialRunInfo);
+
     LazyNutJob *job = new LazyNutJob;
-    if (!SessionManager::instance()->suspendingObservers())
+    if (trialRunMode != TrialRunMode_List || !SessionManager::instance()->suspendingObservers())
     {
         foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("%1 clear").arg(observer);

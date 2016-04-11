@@ -143,10 +143,10 @@ void EditWindow::createActions()
 
     }
 
-    copyAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy"), this);
+    copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
-//    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
-//                             "clipboard"));
+    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
+                             "clipboard"));
     connect(copyAct, SIGNAL(triggered()), textEdit, SLOT(copy()));
     copyAct->setEnabled(false);
     connect(textEdit, SIGNAL(copyAvailable(bool)),

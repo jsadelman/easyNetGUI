@@ -36,7 +36,7 @@ public:
     QAction *copyAct;
     QAction *pasteAct;
     QAction *findAct;
-    QAction *stopAct;
+    QAction *stopScriptAct;
     QAction *pauseAct;
     QString startDir;
 

@@ -172,5 +172,8 @@
         <file>images/download.png</file>
         <file>images/parameters.png</file>
         <file>images/sign_stop.png</file>
+        <file>images/stop-disabled.png</file>
+        <file>images/stop-enabled.png</file>
+        <file>images/log.png</file>
     </qresource>
 </RCC>

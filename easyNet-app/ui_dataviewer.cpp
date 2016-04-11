@@ -118,7 +118,7 @@ void Ui_DataViewer::createActions()
     destroyAct = new QAction(QIcon(":/images/icon_trash.png"), "delete", this);
     destroyAct->setToolTip("delete current item");
 
-    settingsAct = new QAction(QIcon(":/images/parameters.png"), tr("&Settings"), this);
+    settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
     settingsAct->setToolTip(tr("Show settings form"));
 
 }

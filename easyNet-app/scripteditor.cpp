@@ -17,8 +17,8 @@ ScriptEditor::ScriptEditor(QString _startDir, QWidget *parent)
     runSelectionAct->setStatusTip(tr("Run selected text"));
     connect(runSelectionAct,SIGNAL(triggered()),this, SLOT(runSelection()));
 
-    stopAct = new QAction("STOP",this);
-//    connect(stopAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(stop()));
+    stopScriptAct = new QAction("STOP",this);
+//    connect(stopScriptAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(stop()));
     pauseAct = new QAction("PAUSE",this);
 //    connect(pauseAct,SIGNAL(triggered()),SessionManager::instance(),SLOT(pause()));
 //    connect(SessionManager::instance(),SIGNAL(isPaused(bool)),this,SLOT(showPauseState(bool)));

@@ -44,25 +44,79 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
 #include <QDebug>
+#include <QtWidgets/QPushButton>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QTextBrowser>
 
 #include "helpwindow.h"
 #include "textedit.h"
+#include <QDesktopWidget>
+#include <QSize>
 
-// ![0]
-HelpWindow::HelpWindow()
+HelpWindow::HelpWindow(const QString &path, const QString &page,
+                       QWidget *parent = 0)
 {
-    textViewer = new TextEdit;
-    QString link = QApplication::applicationDirPath() + "/documentation/intro.html";
-    QLatin1String loc(":/documentation/siteexport/start.html");
-    textViewer->setContents(loc);
+    setAttribute(Qt::WA_DeleteOnClose);
+    QRect screenSize = QDesktopWidget().availableGeometry(this);
+    this->resize(QSize(screenSize.width() * 0.6f, screenSize.height() * 0.7f));
 
-    setCentralWidget(textViewer);
-    setWindowTitle(tr("easyNet help"));
+    textViewer = new QTextBrowser; // TextEdit;
+//    QString loc(QString(path) + QString(page));
+////    QString loc(":/documentation/siteexport/start.html");
+//    textViewer->setContents(loc);
+
+////    setCentralWidget(textViewer);
+//    setWindowTitle(tr("easyNet help"));
+
+    homeButton = new QPushButton(tr("&Home"));
+    backButton = new QPushButton(tr("&Back"));
+    closeButton = new QPushButton(tr("Close"));
+    closeButton->setShortcut(tr("Esc"));
+
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
+    buttonLayout->addWidget(homeButton);
+    buttonLayout->addWidget(backButton);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(closeButton);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addLayout(buttonLayout);
+    mainLayout->addWidget(textViewer);
+    setLayout(mainLayout);
+
+    connect(homeButton, SIGNAL(clicked()), textViewer, SLOT(home()));
+    connect(backButton, SIGNAL(clicked()),
+            textViewer, SLOT(backward()));
+    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(textViewer, SIGNAL(sourceChanged(const QUrl &)),
+            this, SLOT(updateWindowTitle()));
+
+    textViewer->setSearchPaths(QStringList() << path << ":/images");
+//    textViewer->setSearchPaths(QStringList() << path );
+    textViewer->setSource(page);
+
 }
 
-void HelpWindow::showInfo(QString page)
+void HelpWindow::showPage(const QString &page)
 {
-//    qDebug() << "show info" << page;
-    textViewer->setContents(page);
+    HelpWindow *browser = new HelpWindow(QString(":/documentation/siteexport/"),
+                                         QString(page));
+    browser->resize(500, 400);
+    browser->show();
 }
+
+void HelpWindow::updateWindowTitle()
+{
+    qDebug() << textViewer->documentTitle();
+//    qDebug() << path;
+//    qDebug() << page;
+    setWindowTitle(tr("Help: %1").arg(textViewer->documentTitle()));
+}
+
+//void HelpWindow::showInfo(QString page)
+//{
+////    qDebug() << "show info" << page;
+//    textViewer->setContents(page);
+//}
 

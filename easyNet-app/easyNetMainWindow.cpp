@@ -61,6 +61,7 @@
 #include "settingsformdialog.h"
 #include "modelsettingsdisplay.h"
 #include "settingswidget.h"
+#include "floatingDialogWindow.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -92,11 +93,14 @@ void MainWindow::build()
     QWidget *dummyWidget = new QWidget;
     dummyWidget->hide();
     setCentralWidget(dummyWidget);
+//    setCentralWidget(introPanel);
+//    setCentralWidget(infoWindow);
+//    infoWindow->hide();
     connectSignalsAndSlots();
 
     /* INITIAL DISPLAY AT STARTUP */
-    introDock->raise();
-    introPanel->setCurrentIndex(infoTabIdx); // start on Intro tab, to welcome user
+//    introDock->raise();
+//    introPanel->setCurrentIndex(infoTabIdx); // start on Intro tab, to welcome user
     diagramDock->raise();
     diagramPanel->setCurrentIndex(modelTabIdx);
     diagramSceneTabChanged(modelTabIdx);
@@ -126,6 +130,10 @@ void MainWindow::constructForms()
     /* CONSTRUCT TABWIDGETS */
 
     introPanel = new QTabWidget;
+    introPanel->setMovable(true);
+    introPanel->setTabsClosable(true);
+
+
     lazynutPanel = new QTabWidget;
     methodsPanel = new QTabWidget;
     explorerPanel = new QTabWidget;
@@ -143,11 +151,12 @@ void MainWindow::constructForms()
     scriptEdit = new ScriptEditor(SessionManager::instance()->defaultLocation("scriptsDir"), this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
-    commandLog = new CommandLog(this);
+    commandLog = new CommandLog(this, false);
     highlighter2 = new Highlighter(commandLog->textEdit->document());
-    errorLog = new CommandLog(this);
+    errorLog = new CommandLog(this, true);
     highlighter3 = new Highlighter(errorLog->textEdit->document());
-    rLog = new CommandLog(this);
+    rLog = new CommandLog(this, true);
+
     debugLog = new DebugLog (this);
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
@@ -206,16 +215,30 @@ void MainWindow::constructForms()
 
     diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
-    modelSettingsDisplay = new ModelSettingsDisplay(this);
-    modelSettingsDisplay->setCommand("list_settings");
 
-    infoWindow = new HelpWindow;
-    assistant = new Assistant(QString("%1/documentation/easyNetDemo.qhc").arg(SessionManager::instance()->easyNetDataHome()));
-    infoWindow->show();
+    modelSettingsDisplay = new ModelSettingsDisplay(this);
+    modelSettingsDialog = new FloatingDialogWindow(this);
+    modelSettingsDialog->setCentralWidget(modelSettingsDisplay);
+    modelSettingsDisplay->setCommand("list_settings");
+//    modelSettingsDisplay->hide();
+
+
+    paramSettingsDialog = new FloatingDialogWindow(this);
+    paramSettingsDialog->setCentralWidget(paramViewer);
+//    paramSettingsDialog->hide();
+
+    dataViewSettingsDialog = new FloatingDialogWindow(this);
+    dataViewSettingsDialog->setCentralWidget(dataViewSettingsWidget);
+
+
+//    infoWindow = new HelpWindow(QLatin1String(":/documentation/siteexport/"),QLatin1String("start.html"),this);
+    HelpWindow::showPage("start.html");
+    //    assistant = new Assistant(QString("%1/documentation/easyNetDemo.qhc").arg(SessionManager::instance()->easyNetDataHome()));
+//    infoWindow->show();
 
 
     /* ADD TABS */
-    infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
+//    infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
     conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
@@ -224,10 +247,10 @@ void MainWindow::constructForms()
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
-    modelSettingsTabIdx = methodsPanel->addTab(modelSettingsDisplay, tr("Model"));
-    paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
+//    modelSettingsTabIdx = methodsPanel->addTab(modelSettingsDisplay, tr("Model"));
+//    paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
 //    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
-    dataViewSettingsTabIdx = methodsPanel->addTab(dataViewSettingsWidget, tr("Dataframe/plot settings"));
+//    dataViewSettingsTabIdx = methodsPanel->addTab(dataViewSettingsWidget, tr("Dataframe/plot settings"));
 
     lazynutPanel->addTab(lazyNutConsole, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
@@ -319,6 +342,8 @@ void MainWindow::connectSignalsAndSlots()
     connect(stimSetViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(plotViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+    connect(diagramWindow,SIGNAL(showModelSettingsSignal()), this,SLOT(showModelSettings()));
+    connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
 
 
     connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
@@ -368,11 +393,11 @@ void MainWindow::showExplorer()
 //    methodsPanel->setCurrentIndex(plotSettingsTabIdx);
 //}
 
-void MainWindow::showDataViewSettings()
-{
-    methodsDock->raise();
-    methodsPanel->setCurrentIndex(dataViewSettingsTabIdx);
-}
+//void MainWindow::showDataViewSettings()
+//{
+//    methodsDock->raise();
+//    methodsPanel->setCurrentIndex(dataViewSettingsTabIdx);
+//}
 
 void MainWindow::showPlotViewer()
 {
@@ -403,11 +428,11 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
  void MainWindow::createDockWindows()
 {
 
-     introDock = new QDockWidget("Intro",this);
-     introDock->setWidget(introPanel);
-     addDockWidget(Qt::LeftDockWidgetArea, introDock);
-     viewMenu->addAction(introDock->toggleViewAction());
-//     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+//     introDock = new QDockWidget("Intro",this);
+//     introDock->setWidget(introPanel);
+//     addDockWidget(Qt::LeftDockWidgetArea, introDock);
+//     viewMenu->addAction(introDock->toggleViewAction());
+////     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
      codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
      codePanelDock->setWidget(lazynutPanel);
@@ -441,7 +466,7 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
      viewMenu->addAction(resultsDock->toggleViewAction());
      resultsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-     tabifyDockWidget(introDock, codePanelDock);
+//     tabifyDockWidget(introDock, codePanelDock);
      tabifyDockWidget(codePanelDock, methodsDock);
      tabifyDockWidget(diagramDock, explorerDock);
      tabifyDockWidget(explorerDock, resultsDock);
@@ -524,12 +549,18 @@ void MainWindow::initialiseToolBar()
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
 
 //    toolbar->addSeparator();
-    stopAct = toolbar->addAction(QIcon(":/images/sign_stop.png"), "Stop");
+    stopAct = new QAction("Stop", this);
     stopAct->setToolTip("stop simulation");
-    stopAct->setEnabled(false);
     connect(stopAct, SIGNAL(triggered()), SessionManager::instance(), SLOT(oobStop()));
-    connect(SessionManager::instance(), &SessionManager::commandsInJob, [=](){stopAct->setEnabled(true);});
-    connect(SessionManager::instance(), &SessionManager::jobExecuted, [=](){stopAct->setEnabled(false);});
+    connect(SessionManager::instance(), &SessionManager::commandsInJob, [=](){setStopButtonIcon(true);});
+    connect(SessionManager::instance(), &SessionManager::jobExecuted, [=](){setStopButtonIcon(false);});
+    stopButton = new QToolButton(this);
+    stopButton->setAutoRaise(true);
+    stopButton->setDefaultAction(stopAct);
+    stopButton->setIconSize(QSize(40, 40));
+    setStopButtonIcon(false);
+    stopButton->show();
+    toolbar->addWidget(stopButton);
     toolbar->addSeparator();
 
     toolbar->addWidget(spacer);
@@ -548,10 +579,28 @@ void MainWindow::initialiseToolBar()
     connect(this, &MainWindow::runAllTrialEnded, [=]()
     {
         runAllTrialMsgAct->setVisible(false);
+        stopButton->setIcon(QIcon(":/images/stop-disabled.png"));
     });
 
 }
 
+void MainWindow::setStopButtonIcon(bool state)
+{
+    qDebug() << "setStopButtonIcon";
+    if (state)
+    {
+        stopButton->setIcon(QIcon(":/images/stop-enabled.png"));
+//        stopButton->setIcon(QIcon(":/images/run_enabled.png"));
+        stopButton->setEnabled(true);
+    }
+    else
+    {
+        stopButton->setIcon(QIcon(":/images/stop-disabled.png"));
+//        stopButton->setIcon(QIcon(":/images/run_disabled.png"));
+        stopButton->setEnabled(false);
+    }
+
+}
 
 void MainWindow::setQuietMode(bool state)
 {
@@ -636,8 +685,8 @@ void MainWindow::loadModel(QString fileName,bool complete)
     // show info page, if there is one
     QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
     page.append(".html");
-    if (QFileInfo(page).exists())
-        infoWindow->showInfo(page);
+//    if (QFileInfo(page).exists())
+//        infoWindow->showInfo(page);
 
     // note: this synch is wrong, yet it works fine if one loads just one model while
     // no other jobs run. In general commandsCompleted() might be sent from a previous job.
@@ -1329,7 +1378,7 @@ void MainWindow::createActions()
 
     setQuietModeAct = new QAction(tr("Quiet mode"), this);
     setQuietModeAct->setCheckable(true);
-    connect(setQuietModeAct, SIGNAL(triggered()), this, SLOT(setQuietMode()));
+    connect(setQuietModeAct, SIGNAL(triggered(bool)), this, SLOT(setQuietMode(bool)));
     setQuietModeAct->setChecked(true);
 
     debugModeAct = new QAction(tr("Debug mode"), this);
@@ -1349,11 +1398,19 @@ void MainWindow::showDocumentation()
 {
     qDebug() << "Entered showDocumentation";
 //    assistant->showDocumentation("index.html");
-    introDock->show();
-    introDock->raise();
-    introPanel->setCurrentIndex(infoTabIdx);
 
+//    introDock->show();
+//    introDock->raise();
+//    introPanel->setCurrentIndex(infoTabIdx);
 
+//    introPanel->show();
+//    introPanel->raise();
+
+//    infoWindow->show();
+//    infoWindow->showNormal();
+//    infoWindow->raise();
+
+    HelpWindow::showPage("start.html");
 }
 
 void MainWindow::createMenus()
@@ -1540,4 +1597,29 @@ void MainWindow::processHistoryKey(int dir, QString text)
 {
     QString line = commandLog->getHistory(dir, text);
     emit showHistory(line);
+}
+
+void MainWindow::showModelSettings()
+{
+    modelSettingsDialog->show();
+    modelSettingsDialog->showNormal();
+    modelSettingsDialog->raise();
+
+}
+
+void MainWindow::showParameterSettings()
+{
+    paramSettingsDialog->show();
+    paramSettingsDialog->showNormal();
+    paramSettingsDialog->raise();
+
+}
+
+
+void MainWindow::showDataViewSettings()
+{
+    dataViewSettingsDialog->show();
+    dataViewSettingsDialog->showNormal();
+    dataViewSettingsDialog->raise();
+
 }

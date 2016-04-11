@@ -11,10 +11,10 @@
 #include <QTextCursor>
 #include <QDebug>
 
-CommandLog::CommandLog(QWidget *parent)
+CommandLog::CommandLog(QWidget *parent, bool inclNewAct)
     : EditWindow(parent, true)
 {
-    fileToolBar->removeAction(newAct);
+    if (!inclNewAct) fileToolBar->removeAction(newAct);
     fileToolBar->removeAction(openAct);
     if (!isReadOnly)
     {

@@ -26,6 +26,9 @@ public slots:
     void initArrangement();
 
     void ToggleControlsDock();
+signals:
+    showModelSettingsSignal();
+    showParameterSettingsSignal();
 private slots:
     void sceneScaleChanged(const QString &scale);
     void fitVisible(bool on);
@@ -50,6 +53,8 @@ private:
     QSpinBox *shapeNonOverlapPaddingSpinBox;
     QDoubleSpinBox *flowSeparationModifierSpinBox;
 //    QRadioButton *fitVisibleButton;
+    QAction* modelSettingsAct;
+    QAction* parameterSettingsAct;
     QAction* fitVisibleAct;
     QPushButton *loadLayoutButton;
     QPushButton *saveLayoutButton;
@@ -57,6 +62,7 @@ private:
     QPushButton *arrangeActButton;
     QDockWidget *controlsDock;
     QToolBar *diagramToolBar;
+    QToolBar *diagramTopToolBar;
     bool hidden;
 
 };

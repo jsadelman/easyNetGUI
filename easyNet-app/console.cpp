@@ -20,7 +20,7 @@ Console::Console(QWidget *parent)
     editToolBar->removeAction(cutAct);
     editToolBar->removeAction(pasteAct);
 
-    coreDumpAct = new QAction(QIcon(":/images/Radioactive-icon.png"), tr("Core Dump"), this);
+    coreDumpAct = new QAction(QIcon(":/images/log.png"), tr("Core Dump"), this);
     coreDumpAct->setStatusTip(tr("Save the content of the console to file"));
     connect(coreDumpAct, SIGNAL(triggered()), this, SLOT(coreDump()));
     fileToolBar->addAction(coreDumpAct);

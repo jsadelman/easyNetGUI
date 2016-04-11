@@ -22,7 +22,7 @@ class CommandLog : public EditWindow
     friend class MainWindow;
 
 public:
-    CommandLog(QWidget *parent = 0);
+    CommandLog(QWidget *parent = 0, bool inclNewAct = false);
     ~CommandLog();
 public slots:
     QString getHistory(int shift, QString text);

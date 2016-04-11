@@ -18,6 +18,7 @@ using dunnart::CanvasItem;
 DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent)
     : diagramSceneTabWidget(diagramSceneTabWidget), QMainWindow(parent)
 {
+
     setCentralWidget(diagramSceneTabWidget);
     createMenus();
     connect(diagramSceneTabWidget, SIGNAL(initArrangement()), this, SLOT(initArrangement()));
@@ -203,6 +204,15 @@ void DiagramWindow::createMenus()
 
 //    addDockWidget(Qt::LeftDockWidgetArea, layoutDock);
 
+
+    modelSettingsAct = new QAction(QIcon(":/images/list-4x.png"),tr("Fit to window"), this);
+    modelSettingsAct->setStatusTip(tr("Display model settings"));
+    connect(modelSettingsAct,SIGNAL(triggered()), this,SIGNAL(showModelSettingsSignal()));
+
+    parameterSettingsAct = new QAction(QIcon(":/images/parameters.png"),tr("Fit to window"), this);
+    parameterSettingsAct->setStatusTip(tr("Display parameter settings"));
+    connect(parameterSettingsAct,SIGNAL(triggered()), this,SIGNAL(showParameterSettingsSignal()));
+
     fitVisibleAct = new QAction(QIcon(":/images/resize.png"),tr("Fit to window"), this);
     fitVisibleAct->setStatusTip(tr("Resize diagram to fit window"));
     fitVisibleAct->setCheckable(true);
@@ -326,6 +336,13 @@ void DiagramWindow::createMenus()
 
     restoreProperties();
 #endif
+
+    diagramTopToolBar = new QToolBar("Layout");
+    addToolBar(Qt::TopToolBarArea,diagramTopToolBar);
+    diagramTopToolBar->setMovable(false);
+    diagramTopToolBar->addAction(modelSettingsAct);
+    diagramTopToolBar->addAction(parameterSettingsAct);
+    diagramTopToolBar->addSeparator();
 
     diagramToolBar = new QToolBar("Layout");
     addToolBar(Qt::LeftToolBarArea,diagramToolBar);
