@@ -32,7 +32,7 @@ public slots:
     bool isOn();
     void clearCommandList();
 
-    void processLazyNutOutput(QString lazyNutOutput);
+    void processLazyNutOutput(const QString& lazyNutOutput);
 
 signals:
     // send output to editor
