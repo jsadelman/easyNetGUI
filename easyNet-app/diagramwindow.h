@@ -27,8 +27,8 @@ public slots:
 
     void ToggleControlsDock();
 signals:
-    showModelSettingsSignal();
-    showParameterSettingsSignal();
+    void showModelSettingsSignal();
+    void showParameterSettingsSignal();
 private slots:
     void sceneScaleChanged(const QString &scale);
     void fitVisible(bool on);
