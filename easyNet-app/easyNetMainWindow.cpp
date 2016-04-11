@@ -337,6 +337,8 @@ void MainWindow::connectSignalsAndSlots()
             debugLog, SLOT(addRowToTable(QString)));
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             debugLog, SLOT(updateCmd(QString,QString)));
+    connect(SessionManager::instance(), SIGNAL(resetExecuted()),
+            debugLog, SLOT(skipRemainingCommands()));
 //    connect(stopAct, SIGNAL(triggered()), debugLog, SLOT(skipRemainingCommands()));
 //    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
 //             debugLog, SLOT(skipRemainingCommands()));
@@ -884,8 +886,8 @@ bool MainWindow::proceedWithRestartOk()
     QMessageBox::StandardButton reply =
             QMessageBox::warning(
                 this,
-                "Restart interpreter",
-                "The operation you have chosen requires to restart the interpreter."
+                "Restart simulation engine",
+                "The operation you have chosen requires to restart the simulation engine."
                 "This will start a new session,  overwiting all data associated with the current session. Do you want to proceed?",
                 QMessageBox::Yes | QMessageBox::No,
                 QMessageBox::No);
@@ -1167,9 +1169,23 @@ void MainWindow::setFontSize(const QString & size)
 void MainWindow::lazyNutNotRunning()
 {
     lazyNutStatusWidget->setCurrentWidget(offLabel);
-    QMessageBox::critical(this, "critical",
-            QString("easyNet simulator not running or not found.\n"
-            "Please select a valid easyNetHome directory using the menu Settings -> Set easyNetHome directory"));
+    QMessageBox::critical(this, "Invalid simulation engine",
+            QString("easyNet simulation engine not running or not found.\n"
+                    "Please select a valid easyNetHome directory using the menu Settings -> Set easyNetHome directory"));
+}
+
+void MainWindow::setLazyNutFinished(bool crashed)
+{
+    lazyNutStatusWidget->setCurrentWidget(offLabel);
+    if (crashed)
+    {
+        int res = QMessageBox::critical(this, "Simulation engine crash",
+                QString("The simulation engine has crashed.\n"
+                        "Do you want to restart immediately?\nNote that after restart your current dataframes and plots will be lost"),
+                              QMessageBox::Yes |  QMessageBox::Cancel);
+        if (res == QMessageBox::Yes )
+            SessionManager::instance()->restartLazyNut();
+    }
 }
 
 void MainWindow::displayVersion(QString version)
@@ -1246,8 +1262,8 @@ void MainWindow::createActions()
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    restartInterpreterAct = new QAction(tr("Restart Interpreter"), this);
-    restartInterpreterAct->setStatusTip(tr("Restart the lazyNut interpreter, to start a new session"));
+    restartInterpreterAct = new QAction(tr("Restart simulation engine"), this);
+    restartInterpreterAct->setStatusTip(tr("Restart simulation engine"));
     connect(restartInterpreterAct, SIGNAL(triggered()), this, SLOT(restart()));
 //    restartInterpreterAct->setDisabled(true);
 
@@ -1322,9 +1338,19 @@ void MainWindow::createActions()
 
 void MainWindow::restart()
 {
-//    if (!proceedWithRestartOk())
-//        return;
-    SessionManager::instance()->restartLazyNut();
+    if (!proceedWithRestartOk())
+        return;
+//    if (SessionManager::instance()->isOn())
+//    {
+//        LazyNutJob *job = new LazyNutJob;
+//        job->cmdList << "stop" ;
+//        job->appendEndOfJobReceiver(SessionManager::instance(), SLOT(restartLazyNut()));
+//        SessionManager::instance()->submitJobs(job);
+//    }
+//    else
+//    {
+        SessionManager::instance()->restartLazyNut();
+//    }
 }
 
 void MainWindow::showDocumentation()
@@ -1432,6 +1458,8 @@ void MainWindow::createStatusBar()
     statusBar()->addPermanentWidget(lazyNutStatusWidget, 0);
     connect(SessionManager::instance(), SIGNAL(isReady(bool)), this, SLOT(setLazyNutIsReady(bool)));
     connect(SessionManager::instance(), SIGNAL(lazyNutNotRunning()), this, SLOT(lazyNutNotRunning()));
+    connect(SessionManager::instance(), SIGNAL(lazyNutFinished(bool)), this, SLOT(setLazyNutFinished(bool)));
+
 
     lazyNutCmdLabel = new QLabel;
     lazyNutCmdLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);

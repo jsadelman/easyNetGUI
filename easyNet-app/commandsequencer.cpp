@@ -88,6 +88,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
     lazyNutBuffer.append(lazyNutOutput);
     if (commandList.isEmpty())
     {
+        qDebug() << "CMD LIST EMPTY" << lazyNutOutput;
          emit userLazyNutOutputReady(lazyNutOutput);
 //        lazyNutBuffer.clear();
         return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or error
@@ -107,7 +108,9 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
         if (!(baseOffset <= beginOffset && beginOffset < endOffset))
         {
             if (echoInterpreter(currentCmd) || (logMode & ECHO_INTERPRETER))
+            {
                 emit userLazyNutOutputReady(lazyNutOutput);
+            }
             return;
         }
         timeString = endRex.cap(1);
@@ -170,7 +173,6 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
             lazyNutBuffer.clear();
             ready = true;
             emit isReady(ready);
-//            qDebug() << " emit commandsExecuted();";
             emit jobExecuted();
             return;
         }

@@ -134,9 +134,11 @@ signals:
      void currentTrialChanged(QString);
       void currentSetChanged(QString);
 
-    void lazyNutCrash();
+    void lazyNutFinished(bool);
     void easyNetDataHomeChanged();
     void easyNetHomeChanged();
+
+    void resetExecuted();
 
 public slots:
 
@@ -171,7 +173,7 @@ private slots:
 //    void macroStarted();
 //    void macroEnded();
 
-    void sendLazyNutCrash(int, QProcess::ExitStatus);
+//    void sendLazyNutFinishedStatus(int, QProcess::ExitStatus);
 
 private:
 
@@ -209,6 +211,7 @@ private:
     QMap <QString, int> m_plotFlags;
     QStringList m_enabledObservers;
     bool        m_suspendingObservers;
+    bool        killingLazyNut;
 
     ObjectNameValidator *validator;
     QStringList m_extraNamedItems;

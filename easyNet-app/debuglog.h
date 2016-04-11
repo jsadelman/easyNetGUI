@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QMainWindow>
 #include <QTextDocument>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 class QToolBar;

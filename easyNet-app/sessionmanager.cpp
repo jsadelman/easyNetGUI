@@ -45,6 +45,7 @@ SessionManager::SessionManager()
       OOBrex("OOB secret: (\\w+)(?=\\r?\\n)"),
       m_plotFlags(),
       m_suspendingObservers(false),
+      killingLazyNut(false),
       m_easyNetHome(""),
       m_easyNetDataHome(""),
       m_currentModel(""),
@@ -63,15 +64,11 @@ SessionManager::SessionManager()
       binDir("bin"),
       oobBaseName("lazyNut_oob.exe"),
       #endif
+      lazyNut(nullptr),
       commandSequencer(nullptr),
       oob(nullptr)
 
 {
-    lazyNut = new LazyNut(this);
-    connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
-    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
-    connect(lazyNut, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(sendLazyNutCrash(int,QProcess::ExitStatus)));
-
     jobQueue = new LazyNutJobQueue;
 
     descriptionCache = new ObjectCache(this);
@@ -144,6 +141,16 @@ SessionManager::SessionManager()
 
 void SessionManager::startLazyNut()
 {
+    delete lazyNut;
+    lazyNut = new LazyNut(this);
+    connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
+    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
+    connect(lazyNut,  static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&LazyNut::finished), [=](int code, QProcess::ExitStatus status)
+    {
+        emit lazyNutFinished(!(killingLazyNut || status == QProcess::NormalExit));
+        killingLazyNut = false;
+    });
+
     QSettings settings("easyNet", "GUI");
     QString easyNetHome = QDir::toNativeSeparators(settings.value("easyNetHome","../..").toString());
     QString easyNetDataHome = QDir::toNativeSeparators(settings.value("easyNetDataHome",easyNetHome).toString());
@@ -155,7 +162,6 @@ void SessionManager::startLazyNut()
     lazyNut->setProgram(defaultLocation("lazyNutBat"));
 
     lazyNut->start();
-
     if (!lazyNut->waitForStarted())
     {
         qDebug() << lazyNut->program() <<
@@ -166,6 +172,7 @@ void SessionManager::startLazyNut()
         emit lazyNutNotRunning();
         eNerror << "lazyNut not running";
     }
+
 }
 
 QString SessionManager::easyNetDir(QString env)
@@ -202,22 +209,11 @@ void SessionManager::setEasyNetDir(QString env, QString dir)
     return;
 }
 
-void SessionManager::sendLazyNutCrash(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    if (exitCode != 0 || exitStatus !=QProcess::NormalExit)
-    {
-        qDebug() << "exit status " << exitCode << exitStatus;
-//        emit lazyNutCrash();
-    }
-}
 
 
 void SessionManager::restartLazyNut()
 {
     killLazyNut();
-    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
-    oob->kill();
-    oob->waitForFinished();
     reset();
     startLazyNut();
 }
@@ -495,6 +491,8 @@ void SessionManager::copyTrialRunInfo(QString fromObj, QString toObj)
 
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {
+//    qDebug() << lazyNutOutput;
+
     lazyNutHeaderBuffer.append(lazyNutOutput);
     if (lazyNutHeaderBuffer.contains(OOBrex))
     {
@@ -579,14 +577,28 @@ void SessionManager::setDefaultLocations()
 
 void SessionManager::killLazyNut()
 {
+    killingLazyNut = true;
     lazyNut->kill();
-    lazyNut->waitForFinished();
+    if (!lazyNut->waitForFinished())
+    {
+        qDebug() << Q_FUNC_INFO << "lazyNut cannot be killed";
+    }
+    if (oob)
+    {
+        oob->kill();
+        if (!oob->waitForFinished())
+        {
+            qDebug() << Q_FUNC_INFO << "lazyNut_oob cannot be killed";
+        }
+    }
 }
 
 void SessionManager::reset()
 {
     descriptionCache->clear();
-    jobQueue->clear(); // redundant I guess
+    jobQueue->clear();
+    jobQueue->forceFree();
+    emit resetExecuted();
 }
 
 void SessionManager::oobStop()
