@@ -249,7 +249,5 @@
         <file>documentation/siteexport/wiki/welcome.html</file>
         <file>documentation/siteexport/lazynut_scripting_language.html</file>
         <file>documentation/siteexport/start.html</file>
-        <file>documentation/siteexport/lib/images/fileicons/odg.png</file>
-        <file>documentation/siteexport/lib/scripts/jquery/jquery-ui-theme/images/ui-bg_glass_95_fef1ec_1x400.png</file>
     </qresource>
 </RCC>
