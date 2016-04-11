@@ -103,7 +103,6 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
             dotcount+=dotsRex.cap(1).length();
             drbaseOffset=newoff+dotsRex.matchedLength();
         }
-        qDebug()<<"dotdone"<<dotcount;
         if(dotcount>0) emit dotsCount(dotcount);
         currentCmd = commandList.first();
         beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
