@@ -570,6 +570,7 @@ void SessionManager::setDefaultLocations()
 
 void SessionManager::killLazyNut()
 {
+    oob->write("stop\n");
     lazyNut->closeWriteChannel();
     oob->closeWriteChannel();
 }

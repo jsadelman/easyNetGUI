@@ -8,7 +8,7 @@ LazyNut::LazyNut(QObject *parent)
 
 LazyNut::~LazyNut()
 {
- //   terminate();
+    terminate();
 }
 
 void LazyNut::sendCommand(QString command)
