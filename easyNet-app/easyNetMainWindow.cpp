@@ -1576,7 +1576,8 @@ void MainWindow::clearErrorOnStatusBar()
 
 void MainWindow::showCmdOnStatusBar(QString cmd)
 {
-    lazyNutCmdLabel->setText(QString("LAST COMMAND: %1").arg(cmd));
+    static QString format=QString("LAST COMMAND: %1");
+    lazyNutCmdLabel->setText(format.arg(cmd));
 }
 
 void MainWindow::addOneToLazyNutProgressBar()
