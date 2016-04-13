@@ -99,10 +99,10 @@ QString CommandLog::getHistory(int shift, QString text)
     else if (shift==100 || shift==200) //TAB
     {
         words = text.split(" ");
-        qDebug() << "word list is " << words;
+//        qDebug() << "word list is " << words;
         int numSpaces = text.count(QLatin1Char(' '));
-        qDebug() << "numSpaces is " << numSpaces;
-        qDebug() << "words.size() is " << words.size();
+//        qDebug() << "numSpaces is " << numSpaces;
+//        qDebug() << "words.size() is " << words.size();
         if (numSpaces==0)
             pos=1;
         else if ((numSpaces>=1) && (words.size()>=1) && (words.size()<3))
@@ -130,7 +130,7 @@ QString CommandLog::getHistory(int shift, QString text)
 //        qDebug() << "last word is " << lastWord;
 //        qDebug() << "remainder is " << remainder;
 //        qDebug() << "pos is " << pos;
-//        if (lastWord.size() == 0) return(text);
+        if (lastWord.size() == 0) return(text);
         QStringList keywordList;
         if (pos!=2)
         {
@@ -145,7 +145,7 @@ QString CommandLog::getHistory(int shift, QString text)
 //            qDebug() << "idxList is " << idxList;
 //            qDebug() << "searchTerm is " << searchTerm;
             if (tabIdx >= idxList.size() + keywordList.size()) tabIdx = 0; // idxList.size() - 1;
-            if (tabIdx < idxList.size())
+            if (tabIdx < idxList.size() && tabIdx!=0)
             {
 //                qDebug() << "object name:" << objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString();
                 text = remainder.append(objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString());
@@ -154,14 +154,20 @@ QString CommandLog::getHistory(int shift, QString text)
             {
 //                qDebug() << "idxList.size()" << idxList.size();
 //                qDebug() << "keywordList" << keywordList;
-//                qDebug() << "command name:" << keywordList.at(tabIdx-idxList.size());
-                text = remainder.append(keywordList.at(tabIdx-idxList.size()));
+                int k_idx = tabIdx-idxList.size();
+                if (k_idx>0)
+                {
+//                    qDebug() << "command name:" << keywordList.at(k_idx);
+                    text = remainder.append(keywordList.at(k_idx));
+                }
              }
         }
         else
         {
-            if (tabIdx >= cmdList.size()) tabIdx = 0;
-            text=remainder.append(cmdList.at(tabIdx));
+            if (tabIdx >= cmdList.size())
+                tabIdx = 0;
+            else
+                text=remainder.append(cmdList.at(tabIdx));
         }
         tabIdx++;
 

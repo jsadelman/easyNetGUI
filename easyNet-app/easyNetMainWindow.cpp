@@ -231,7 +231,7 @@ void MainWindow::constructForms()
 
 
 //    infoWindow = new HelpWindow(QLatin1String(":/documentation/siteexport/"),QLatin1String("start.html"),this);
-    HelpWindow::showPage("start.html");
+//    HelpWindow::showPage("start.html");
     //    assistant = new Assistant(QString("%1/documentation/easyNetDemo.qhc").arg(SessionManager::instance()->easyNetDataHome()));
 //    infoWindow->show();
 
