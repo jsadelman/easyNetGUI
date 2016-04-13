@@ -572,6 +572,8 @@ void SessionManager::killLazyNut()
 {
     oob->write("stop\n");
     lazyNut->closeWriteChannel();
+
+    oob->write("quit\n");
     oob->closeWriteChannel();
 }
 
