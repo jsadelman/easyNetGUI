@@ -110,11 +110,15 @@ void PairedListWidget::buildWidget()
     searchEdit = new QLineEdit(this);
     connect(searchEdit, &QLineEdit::textEdited, [=](QString text)
     {
-        QModelIndexList indexList = notSelectedModel->match(notSelectedModel->index(0,0), Qt::DisplayRole, text);
+        // first try case-sensitive search
+        QModelIndexList indexList = notSelectedModel->match(notSelectedModel->index(0,0), Qt::DisplayRole, text, 1, Qt::MatchCaseSensitive);
+        if (indexList.isEmpty())
+            // no joy -- try case-insensitive search
+            indexList = notSelectedModel->match(notSelectedModel->index(0,0), Qt::DisplayRole, text);
         if (!indexList.isEmpty())
             notSelectedView->setCurrentIndex(indexList.at(0));
     });
-    connect(searchEdit, &QLineEdit::editingFinished, [=]()
+    connect(searchEdit, &QLineEdit::returnPressed, [=]()
     {
         addSelected();
         searchEdit->clear();
