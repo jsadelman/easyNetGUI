@@ -2,6 +2,7 @@
 #define BOX_H
 
 #include <QGraphicsItem>
+#include <QGraphicsPolygonItem>
 #include <QDomDocument>
 #include <QSet>
 #include <QString>
@@ -11,9 +12,8 @@
 class ObjectCacheFilter;
 class ObjectUpdater;
 
-#include "diagramitem.h"
 
-class Box: public DiagramItem
+class Box: public QGraphicsPolygonItem, public QObject
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
@@ -50,10 +50,13 @@ public:
     virtual void paintLabel(QPainter *painter);
     virtual QRectF labelBoundingRect(void) const;
     void setCentrePos(const QPointF&p){m_centrePos=p;}
-    QPointF centrePos(){return m_centrePos;}
+    QPointF centrePos()const{return m_centrePos;}
     QStringList defaultPlotTypes();
-
+    qreal height(){return m_height;}
+    qreal width(){return m_width;}
     qreal autoWidth();
+    QSet<Box *> neighbours();
+
 signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);
     void lazyNutTypeChanged();
@@ -101,7 +104,7 @@ private:
 
 
     QPointF m_centrePos;
-
+    qreal m_height,m_width;
 
 };
 

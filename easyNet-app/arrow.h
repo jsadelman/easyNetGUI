@@ -2,13 +2,14 @@
 #define ARROW_H
 
 #include <QGraphicsItem>
+#include <QGraphicsPathItem>
 #include <QAction>
 
 #include "diagramitem.h"
 
 class Box;
 
-class Arrow: public DiagramItem
+class Arrow: public QGraphicsPathItem
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
@@ -26,7 +27,8 @@ public:
     enum End {SRCPT,DSTPT};
     enum Strategy {CENTRE_CONNECTION_PIN};
     ArrowType getArrowType()const{return m_arrowType;}
-    void setNewEndpoint(End,QPointF,Box*,Strategy);
+    void setNewEndpoint(End,QPointF,Box*,Strategy=CENTRE_CONNECTION_PIN);
+    void initWithConnection(Box*,Box*);
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);

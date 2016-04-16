@@ -19,7 +19,7 @@ const QColor observedCol = QColor("white");
 
 
 Box::Box()
-    :
+    : QObject(),
       m_longNameToDisplayIntact("longname"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618),

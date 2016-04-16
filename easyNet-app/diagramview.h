@@ -1,7 +1,6 @@
 #ifndef DIAGRAMVIEW_H
 #define DIAGRAMVIEW_H
 
-#include "libdunnartcanvas/canvasview.h"
 #include "diagramscene.h"
 
 

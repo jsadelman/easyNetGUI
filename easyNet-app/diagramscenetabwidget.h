@@ -1,13 +1,13 @@
 #ifndef DIAGRAMSCENETABWIDGET_H
 #define DIAGRAMSCENETABWIDGET_H
 
-#include "libdunnartcanvas/canvastabwidget.h"
+#include <QTabWidget>
 
 class DiagramScene;
 class DiagramView;
 
 
-class DiagramSceneTabWidget : public dunnart::CanvasTabWidget
+class DiagramSceneTabWidget : public QTabWidget
 {
     Q_OBJECT
 public:
@@ -24,7 +24,7 @@ signals:
     void zoomChanged();
 
 private slots:
-    void emitCurrentDiagramSceneChanged(dunnart::Canvas* canvas);
+    void emitCurrentDiagramSceneChanged(DiagramScene* canvas);
 };
 
 #endif // DIAGRAMSCENETABWIDGET_H

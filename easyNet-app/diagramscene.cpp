@@ -75,7 +75,7 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     selectedObject = "";
 //    myItemMenu = itemMenu;
 //    myMode = MoveItem;
-//    myItemType = DiagramItem::Layer;
+//    myItemType = QGraphicsItem::Layer;
 //    line = 0;
 //    textItem = 0;
 //    myItemColor = Qt::white;
@@ -135,19 +135,19 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
 // This implementation of the connected component algorithm is adapted from:
 // https://breakingcode.wordpress.com/2013/04/08/finding-connected-components-in-a-graph/
-QList<QSet<DiagramItem *> > DiagramScene::connectedComponents()
+QList<QSet<Box *> > DiagramScene::connectedComponents()
 {
-    QList<QSet<DiagramItem *> > cc;
-    QSet<DiagramItem *> shapeSet = shapes().toSet();
+    QList<QSet<Box *> > cc;
+    QSet<Box *> shapeSet = shapes().toSet();
     while (!shapeSet.isEmpty())
     {
-        DiagramItem * shape = shapeSet.toList().first();
+        Box * shape = shapeSet.toList().first();
         shapeSet.remove(shape);
-        QSet<DiagramItem *> group({shape});
-        QList<DiagramItem *> queue({shape});
+        QSet<Box *> group({shape});
+        QList<Box *> queue({shape});
         while (!queue.isEmpty())
         {
-            QSet<DiagramItem *> neighbourSet = queue.takeFirst()->neighbours();
+            QSet<Box *> neighbourSet = queue.takeFirst()->neighbours();
             neighbourSet.subtract(group);
             shapeSet.subtract(neighbourSet);
             group.unite(neighbourSet);
@@ -158,13 +158,13 @@ QList<QSet<DiagramItem *> > DiagramScene::connectedComponents()
     return cc;
 }
 
-QList<DiagramItem *> DiagramScene::shapes()
+QList<Box *> DiagramScene::shapes()
 {
-    QList<DiagramItem *> result;
+    QList<Box *> result;
     QListIterator<QGraphicsItem*> it(items());
     while(it.hasNext())
     {
-        DiagramItem *shape = dynamic_cast<DiagramItem*>(it.next());
+        Box *shape = dynamic_cast<Box*>(it.next());
         if (shape)
             result.append(shape);
     }
@@ -187,7 +187,7 @@ QList<Box *> DiagramScene::boxes()
 void DiagramScene::read(const QJsonObject &json)
 {
     qreal boxWidth = json["boxWidth"].toDouble();
-    QJsonArray itemArray = json["diagramItems"].toArray();
+    QJsonArray itemArray = json["QGraphicsItems"].toArray();
     for (int itemIndex = 0; itemIndex < itemArray.size(); ++itemIndex)
     {
         QJsonObject itemObject = itemArray[itemIndex].toObject();
@@ -213,7 +213,7 @@ void DiagramScene::write(QJsonObject &json)
             if (boxWidth == 0)
                 boxWidth = box->autoWidth();
     }
-    json["diagramItems"] = itemArray;
+    json["QGraphicsItems"] = itemArray;
     json["boxWidth"] = boxWidth;
 }
 
@@ -223,7 +223,7 @@ void DiagramScene::setBaseName(QString baseName)
     m_layoutFile = m_baseName.append(QString(".%1.json").arg(m_boxType));
 }
 
-bool DiagramScene::validForAlignment(QList<DiagramItem *> items)
+bool DiagramScene::validForAlignment(QList<Box *> items)
 {
     return true;
 }
@@ -257,7 +257,7 @@ void DiagramScene::setSelected(QString name)
 {
 #if 0
     if (itemHash.contains(name))
-        setSelection(QList<DiagramItem*>{itemHash.value(name)});
+        setSelection(QList<QGraphicsItem*>{itemHash.value(name)});
 #endif
 }
 
@@ -357,7 +357,7 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     foreach (QGraphicsItem *item, QGraphicsScene::items(mouseEvent->scenePos()))
     {
-        auto canvasItem = dynamic_cast<DiagramItem*>(item);
+        auto canvasItem = dynamic_cast<QGraphicsItem*>(item);
         if (canvasItem)
         {
             selectedObject = itemHash.key(canvasItem);
@@ -410,14 +410,15 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
 
 void DiagramScene::removeObject(QString name)
 {
-   DiagramItem* item = itemHash.value(name);
+   QGraphicsItem* item = itemHash.value(name);
     if (!item)
         return;
-
-    setSelection(QList<DiagramItem*>{item});
+#if 0
+    setSelection(QList<QGraphicsItem*>{item});
     setProperty("structuralEditingDisabled", false);
     deleteSelection();
     setProperty("structuralEditingDisabled", true);
+ #endif
     delete item;
     itemHash.remove(name);
 
@@ -505,8 +506,9 @@ void DiagramScene::render()
                     arrow->setNewEndpoint(Arrow::DSTPT, endItem->centrePos(), endItem, Arrow::CENTRE_CONNECTION_PIN);
                 }
             }
+#if 0
             arrow->setDirected(true);
-
+#endif
             if (!itemHash.contains(name))
             {
                 addItem(arrow);
@@ -515,8 +517,10 @@ void DiagramScene::render()
         }
     }
     renderList.clear();
+#if 0
     layout()->initialise();
     updateConnectorsForLayout();
+#endif
     if (newModelLoaded())
     {
         setNewModelLoaded(false);

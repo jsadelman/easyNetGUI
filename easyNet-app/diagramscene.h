@@ -41,7 +41,6 @@
 #ifndef DIAGRAMSCENE_H
 #define DIAGRAMSCENE_H
 
-#include "diagramitem.h"
 #include "diagramtextitem.h"
 #include "arrow.h"
 #include "box.h"
@@ -102,16 +101,17 @@ public:
     void setLayoutFile(QString layoutFile) {m_layoutFile = layoutFile;}
     bool newModelLoaded() {return m_newModelLoaded;}
     void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
-    bool validForAlignment(QList<DiagramItem *> items);
+    bool validForAlignment(QList<Box *> items);
     QFont canvasFont()const;
 
-    QList<QSet<DiagramItem *> > connectedComponents();
-    QList<DiagramItem *> shapes();
+    QList<QSet<Box *> > connectedComponents();
+    QList<Box *> shapes();
     QList<Box *> boxes();
+
 
 public slots:
 //    void setMode(Mode mode);
-//    void setItemType(DiagramItem::DiagramType type);
+//    void setItemType(QGraphicsItem::DiagramType type);
 //    void setArrowTipType(Arrow::ArrowTipType type);
 //    void editorLostFocus(DiagramTextItem *item);
 //    void syncToObjCatalogue();
@@ -124,7 +124,7 @@ public slots:
     void goToSleep();
 
 signals:
-    void itemInserted(DiagramItem*);
+    void itemInserted(QGraphicsItem*);
     void textInserted(QGraphicsTextItem*);
     void itemSelected(QGraphicsItem*);
     void objectSelected(QString);
@@ -163,7 +163,7 @@ private:
     bool awake;
 
     ObjectCache *objectCatalogue;
-    QHash<QString, DiagramItem*> itemHash;
+    QHash<QString, QGraphicsItem*> itemHash;
 //    ObjectCatalogueFilter *objectFilter;
     ObjectUpdater *descriptionUpdater;
     ObjectCacheFilter *boxFilter;
@@ -190,7 +190,7 @@ private:
 //    QString savedLayout;
 //    bool layoutLoaded = false;
 //    bool layoutChanged;
-//    DiagramItem::DiagramType myItemType;
+//    QGraphicsItem::DiagramType myItemType;
 //    Arrow::ArrowTipType myArrowTipType;
 //    QMenu *myItemMenu;
 //    Mode myMode;

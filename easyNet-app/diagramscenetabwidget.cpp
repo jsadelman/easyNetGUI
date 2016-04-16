@@ -1,6 +1,5 @@
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
-#include "libdunnartcanvas/canvasview.h"
 #include "diagramview.h"
 
 #include <QUndoGroup>
