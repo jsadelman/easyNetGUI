@@ -48,8 +48,6 @@
 #include "lazynutjob.h"
 #include "box.h"
 #include "arrow.h"
-#include "libdunnartcanvas/canvasitem.h"
-#include "libdunnartcanvas/graphlayout.h"
 
 
 #include <algorithm>

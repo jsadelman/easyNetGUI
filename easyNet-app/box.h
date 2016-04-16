@@ -1,14 +1,17 @@
 #ifndef BOX_H
 #define BOX_H
 
-#include "libdunnartcanvas/shape.h"
+#include <QGraphicsItem>
+#include <QDomDocument>
+#include <QSet>
+#include <QString>
 
 class ObjectCacheFilter;
 class ObjectUpdater;
 
+#include "diagramitem.h"
 
-
-class Box: public dunnart::ShapeObj
+class Box: public DiagramItem
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)

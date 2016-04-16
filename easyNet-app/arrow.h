@@ -1,9 +1,14 @@
 #ifndef ARROW_H
 #define ARROW_H
 
-#include "libdunnartcanvas/dunnart_connector.h"
+#include <QGraphicsItem>
+#include <QAction>
 
-class Arrow: public dunnart::Connector
+#include "diagramitem.h"
+
+class Box;
+
+class Arrow: public DiagramItem
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
@@ -15,7 +20,8 @@ public:
     virtual void setName(const QString& name) {m_name = name;}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType) {m_lazyNutType = lazyNutType;}
-
+    Box* getStartItem()const{return startItem;}
+    Box* getEndItem()const{return endItem;}
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
@@ -26,6 +32,7 @@ private:
 
     QString m_name;
     QString m_lazyNutType;
+    Box* startItem,*endItem;
 };
 
 #endif // ARROW_H

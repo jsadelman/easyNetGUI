@@ -45,12 +45,7 @@
 #include "diagramtextitem.h"
 #include "arrow.h"
 
-#include "libdunnartcanvas/canvas.h"
-
-namespace dunnart {
-    class CanvasItem;
-    class ShapeObj;
-}
+#include <QGraphicsScene>
 
 QT_BEGIN_NAMESPACE
 class QGraphicsSceneMouseEvent;
@@ -74,7 +69,7 @@ class Box;
 QT_END_NAMESPACE
 
 //! [0]
-class DiagramScene : public dunnart::Canvas
+class DiagramScene : public QGraphicsScene
 {
     Q_OBJECT
     Q_PROPERTY(QString boxType READ boxType)
@@ -107,11 +102,11 @@ public:
     void setLayoutFile(QString layoutFile) {m_layoutFile = layoutFile;}
     bool newModelLoaded() {return m_newModelLoaded;}
     void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
-    bool validForAlignment(QList<dunnart::CanvasItem *> items);
+    bool validForAlignment(QList<QGraphicsItem *> items);
 
 
-    QList<QSet<dunnart::ShapeObj *> > connectedComponents();
-    QList<dunnart::ShapeObj *> shapes();
+    QList<QSet<QGraphicsItem *> > connectedComponents();
+    QList<QGraphicsItem *> shapes();
     QList<Box *> boxes();
 
 public slots:

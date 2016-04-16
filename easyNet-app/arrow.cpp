@@ -2,7 +2,7 @@
 #include "sessionmanager.h"
 #include "xmlelement.h"
 #include "objectcache.h"
-
+#include "box.h"
 #include <QDebug>
 
 Arrow::Arrow() : Connector()

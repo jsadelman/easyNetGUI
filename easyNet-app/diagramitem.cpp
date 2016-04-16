@@ -40,6 +40,7 @@
 
 #include "diagramitem.h"
 #include "arrow.h"
+#include "box.h"
 #include <math.h>
 
 #include <QGraphicsScene>
