@@ -65,7 +65,7 @@ void DataframeViewer::setParametersTable(bool isParametersTable)
 
 void DataframeViewer::open()
 {
-
+    qDebug() << "Entered open() in DataframeViewer" << this;
     QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
                                                     lastOpenDir.isEmpty() ? defaultOpenDir : lastOpenDir,
                                                     tr("Database Files (*.eNd);;Text files (*.csv);;All files (*.*)"));

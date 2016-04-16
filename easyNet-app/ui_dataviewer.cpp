@@ -10,6 +10,7 @@
 
 #include <QAction>
 #include <QSignalMapper>
+#include <QShortcut>
 #include <QDebug>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -105,15 +106,16 @@ void Ui_DataViewer::createActions()
 //    setDispatchModeAutoAct->setToolTip("Override default page behaviour");
 //    setDispatchModeAutoAct->setCheckable(true);
 
-
+    qDebug() << "Defining openAct" << this;
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
-    openAct->setShortcuts(QKeySequence::Open);
+//    openAct->setShortcuts(QKeySequence::Open);
+    // shortcuts don't work  here due to ambiguity across the different ui_dataviewer instances
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
-    saveAct->setShortcuts(QKeySequence::Save);
+//    saveAct->setShortcuts(QKeySequence::Save);
 
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
-    copyAct->setShortcuts(QKeySequence::Copy);
+//    copyAct->setShortcuts(QKeySequence::Copy);
 
     destroyAct = new QAction(QIcon(":/images/icon_trash.png"), "delete", this);
     destroyAct->setToolTip("delete current item");

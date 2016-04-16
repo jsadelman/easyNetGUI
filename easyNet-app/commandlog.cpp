@@ -134,7 +134,10 @@ QString CommandLog::getHistory(int shift, QString text)
         QStringList keywordList;
         if (pos!=2)
         {
-            QModelIndexList idxList = objectListFilter->match(objectListFilter->index(0, 0), Qt::DisplayRole, QVariant::fromValue(lastWord), -1, Qt::MatchStartsWith);
+//            qDebug() << "searching for" << lastWord;
+//            qDebug() << "searching for QVariant" << QVariant::fromValue(lastWord);
+//            qDebug() << objectListFilter->index(0, 0);
+            QModelIndexList idxList = objectListFilter->match(objectListFilter->index(0, 0), Qt::DisplayRole, QVariant::fromValue(lastWord), -1, Qt::MatchStartsWith | Qt::MatchCaseSensitive);
             QString searchTerm=QString("^.*$");
             if (lastWord.size()) searchTerm = QString("^") + lastWord + QString(".+");
 
@@ -145,7 +148,7 @@ QString CommandLog::getHistory(int shift, QString text)
 //            qDebug() << "idxList is " << idxList;
 //            qDebug() << "searchTerm is " << searchTerm;
             if (tabIdx >= idxList.size() + keywordList.size()) tabIdx = 0; // idxList.size() - 1;
-            if (tabIdx < idxList.size() && tabIdx!=0)
+            if (tabIdx < idxList.size())
             {
 //                qDebug() << "object name:" << objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString();
                 text = remainder.append(objectListFilter->data(idxList.at(tabIdx), Qt::DisplayRole).toString());

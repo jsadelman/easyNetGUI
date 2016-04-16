@@ -557,10 +557,11 @@ void SessionManager::lazyNutProcessError(int error)
 void SessionManager::setDefaultLocations()
 {
     m_defaultLocation["lazyNutBat"]   =   QString("%1/%2/nm_files/%3").arg(easyNetHome()).arg(binDir).arg(lazyNutBasename);
-    m_defaultLocation["scriptsDir"]   =   QString("%1/Models").arg(easyNetDataHome());
+    m_defaultLocation["modelsDir"]    =   QString("%1/Models").arg(easyNetDataHome());
+    m_defaultLocation["scriptsDir"]   =   QString("%1/Scripts").arg(easyNetDataHome());
     m_defaultLocation["testsDir"]     =   QString("%1/Tests").arg(easyNetDataHome());
     m_defaultLocation["trialsDir"]    =   QString("%1/Trials").arg(easyNetDataHome());
-    m_defaultLocation["stimDir"]     =    QString("%1/Databases/Stimulus_files").arg(easyNetDataHome());
+    m_defaultLocation["stimDir"]      =   QString("%1/Databases/Stimulus_files").arg(easyNetDataHome());
     m_defaultLocation["dfDir"]        =   QString("%1/Databases").arg(easyNetDataHome());
     m_defaultLocation["rPlotsDir"]    =   QString("%1/%2/R-library/plots").arg(easyNetHome()).arg(binDir);
     m_defaultLocation["outputDir"]    =   QString("%1/Output_files").arg(easyNetHome());
