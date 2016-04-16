@@ -65,16 +65,12 @@
 #include <QDomDocument>
 #include <QDebug>
 
-using dunnart::CanvasItem;
-using dunnart::RectangleShape;
-using dunnart::ShapeObj;
-using dunnart::Connector;
 
 Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
 DiagramScene::DiagramScene(QString box_type, QString arrow_type)
-    : m_boxType(box_type), m_arrowType(arrow_type), awake(false), Canvas()
+    : m_boxType(box_type), m_arrowType(arrow_type), awake(false)
 {
     selectedObject = "";
 //    myItemMenu = itemMenu;
@@ -130,7 +126,7 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
     connect(arrowDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
             this, SLOT(renderObject(QDomDocument*)));
-    connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
+    //connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 
     // default state is wake up
     wakeUp();
@@ -139,19 +135,19 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
 // This implementation of the connected component algorithm is adapted from:
 // https://breakingcode.wordpress.com/2013/04/08/finding-connected-components-in-a-graph/
-QList<QSet<ShapeObj *> > DiagramScene::connectedComponents()
+QList<QSet<DiagramItem *> > DiagramScene::connectedComponents()
 {
-    QList<QSet<ShapeObj *> > cc;
-    QSet<ShapeObj *> shapeSet = shapes().toSet();
+    QList<QSet<DiagramItem *> > cc;
+    QSet<DiagramItem *> shapeSet = shapes().toSet();
     while (!shapeSet.isEmpty())
     {
-        ShapeObj * shape = shapeSet.toList().first();
+        DiagramItem * shape = shapeSet.toList().first();
         shapeSet.remove(shape);
-        QSet<ShapeObj *> group({shape});
-        QList<ShapeObj *> queue({shape});
+        QSet<DiagramItem *> group({shape});
+        QList<DiagramItem *> queue({shape});
         while (!queue.isEmpty())
         {
-            QSet<ShapeObj *> neighbourSet = queue.takeFirst()->neighbours();
+            QSet<DiagramItem *> neighbourSet = queue.takeFirst()->neighbours();
             neighbourSet.subtract(group);
             shapeSet.subtract(neighbourSet);
             group.unite(neighbourSet);
@@ -162,13 +158,13 @@ QList<QSet<ShapeObj *> > DiagramScene::connectedComponents()
     return cc;
 }
 
-QList<ShapeObj *> DiagramScene::shapes()
+QList<DiagramItem *> DiagramScene::shapes()
 {
-    QList<ShapeObj *> result;
-    QListIterator<CanvasItem*> it(items());
+    QList<DiagramItem *> result;
+    QListIterator<QGraphicsItem*> it(items());
     while(it.hasNext())
     {
-        ShapeObj *shape = qobject_cast<ShapeObj*>(it.next());
+        DiagramItem *shape = dynamic_cast<DiagramItem*>(it.next());
         if (shape)
             result.append(shape);
     }
@@ -178,10 +174,10 @@ QList<ShapeObj *> DiagramScene::shapes()
 QList<Box *> DiagramScene::boxes()
 {
     QList<Box *> result;
-    QListIterator<CanvasItem*> it(items());
+    QListIterator<QGraphicsItem*> it(items());
     while(it.hasNext())
     {
-        Box *box = qobject_cast<Box*>(it.next());
+        Box *box = dynamic_cast<Box*>(it.next());
         if (box)
             result.append(box);
     }
@@ -198,7 +194,7 @@ void DiagramScene::read(const QJsonObject &json)
         QString name = itemObject["name"].toString();
         if (itemHash.contains(name))
         {
-            Box * box = qobject_cast<Box*>(itemHash.value(name));
+            Box * box = dynamic_cast<Box*>(itemHash.value(name));
             if (box)
                 box->read(itemObject, boxWidth);
         }
@@ -227,16 +223,9 @@ void DiagramScene::setBaseName(QString baseName)
     m_layoutFile = m_baseName.append(QString(".%1.json").arg(m_boxType));
 }
 
-bool DiagramScene::validForAlignment(QList<dunnart::CanvasItem *> items)
+bool DiagramScene::validForAlignment(QList<DiagramItem *> items)
 {
-    // a list of selected items should contain at least one ShapeObj,
-    // otherwise Dunnart crashes.
-    foreach(dunnart::CanvasItem *item, items)
-    {
-        if (qobject_cast<ShapeObj*>(item))
-            return true;
-    }
-    return false;
+    return true;
 }
 
 //! [4]
@@ -267,7 +256,7 @@ void DiagramScene::prepareToLoadLayout(QString fileName)
 void DiagramScene::setSelected(QString name)
 {
     if (itemHash.contains(name))
-        setSelection(QList<CanvasItem*>{itemHash.value(name)});
+        setSelection(QList<DiagramItem*>{itemHash.value(name)});
 }
 
 void DiagramScene::initShapePlacement()
@@ -373,7 +362,9 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
             break;
         }
     }
-    Canvas::mouseDoubleClickEvent(mouseEvent);
+#if 0
+    QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+#endif
 }
 
 void DiagramScene::positionObject(QString name, QString type, QString subtype, QDomDocument *domDoc)

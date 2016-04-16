@@ -102,11 +102,11 @@ public:
     void setLayoutFile(QString layoutFile) {m_layoutFile = layoutFile;}
     bool newModelLoaded() {return m_newModelLoaded;}
     void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
-    bool validForAlignment(QList<QGraphicsItem *> items);
+    bool validForAlignment(QList<DiagramItem *> items);
+    QFont canvasFont()const;
 
-
-    QList<QSet<QGraphicsItem *> > connectedComponents();
-    QList<QGraphicsItem *> shapes();
+    QList<QSet<DiagramItem *> > connectedComponents();
+    QList<DiagramItem *> shapes();
     QList<Box *> boxes();
 
 public slots:
@@ -163,7 +163,7 @@ private:
     bool awake;
 
     ObjectCache *objectCatalogue;
-    QHash<QString, dunnart::CanvasItem*> itemHash;
+    QHash<QString, DiagramItem*> itemHash;
 //    ObjectCatalogueFilter *objectFilter;
     ObjectUpdater *descriptionUpdater;
     ObjectCacheFilter *boxFilter;

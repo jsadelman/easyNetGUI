@@ -20,8 +20,10 @@ public:
     virtual void setName(const QString& name) {m_name = name;}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType) {m_lazyNutType = lazyNutType;}
-    Box* getStartItem()const{return startItem;}
-    Box* getEndItem()const{return endItem;}
+    Box* getStartItem()const{return m_startItem;}
+    Box* getEndItem()const{return m_endItem;}
+    enum ArrowType {Line,SelfLoop};
+    ArrowType getArrowType()const{return m_arrowType;}
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
@@ -32,7 +34,8 @@ private:
 
     QString m_name;
     QString m_lazyNutType;
-    Box* startItem,*endItem;
+    Box* m_startItem,*m_endItem;
+    ArrowType m_arrowType;
 };
 
 #endif // ARROW_H
