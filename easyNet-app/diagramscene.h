@@ -44,7 +44,7 @@
 #include "diagramitem.h"
 #include "diagramtextitem.h"
 #include "arrow.h"
-
+#include "box.h"
 #include <QGraphicsScene>
 
 QT_BEGIN_NAMESPACE

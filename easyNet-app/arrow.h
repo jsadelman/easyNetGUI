@@ -23,7 +23,10 @@ public:
     Box* getStartItem()const{return m_startItem;}
     Box* getEndItem()const{return m_endItem;}
     enum ArrowType {Line,SelfLoop};
+    enum End {SRCPT,DSTPT};
+    enum Strategy {CENTRE_CONNECTION_PIN};
     ArrowType getArrowType()const{return m_arrowType;}
+    void setNewEndpoint(End,QPointF,Box*,Strategy);
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);

@@ -255,8 +255,10 @@ void DiagramScene::prepareToLoadLayout(QString fileName)
 
 void DiagramScene::setSelected(QString name)
 {
+#if 0
     if (itemHash.contains(name))
         setSelection(QList<DiagramItem*>{itemHash.value(name)});
+#endif
 }
 
 void DiagramScene::initShapePlacement()
@@ -298,9 +300,10 @@ void DiagramScene::setAnalyzedLocations(QDomDocument *domDoc)
             xm=xm.nextSibling();
         }while(!xm.isNull());
     }
-
+#if 0
     layout()->initialise();
     updateConnectorsForLayout();
+#endif
     emit animationFinished();
 }
 
@@ -354,7 +357,7 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     foreach (QGraphicsItem *item, QGraphicsScene::items(mouseEvent->scenePos()))
     {
-        CanvasItem *canvasItem = qgraphicsitem_cast<CanvasItem*>(item);
+        auto canvasItem = dynamic_cast<DiagramItem*>(item);
         if (canvasItem)
         {
             selectedObject = itemHash.key(canvasItem);
@@ -407,11 +410,11 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
 
 void DiagramScene::removeObject(QString name)
 {
-    CanvasItem* item = itemHash.value(name);
+   DiagramItem* item = itemHash.value(name);
     if (!item)
         return;
 
-    setSelection(QList<CanvasItem*>{item});
+    setSelection(QList<DiagramItem*>{item});
     setProperty("structuralEditingDisabled", false);
     deleteSelection();
     setProperty("structuralEditingDisabled", true);
@@ -475,20 +478,20 @@ void DiagramScene::render()
 
             if (!startItem && !endItem)
             {
-                arrow->setNewEndpoint(dunnart::SRCPT, defaultPosition, nullptr);
-                arrow->setNewEndpoint(dunnart::DSTPT, defaultPosition - QPointF(0, 50), nullptr);
+                arrow->setNewEndpoint(Arrow::SRCPT, defaultPosition, nullptr);
+                arrow->setNewEndpoint(Arrow::DSTPT, defaultPosition - QPointF(0, 50), nullptr);
 //                currentPosition += arrowOffset;
 //                arrow->setArrowStart(currentPosition);
             }
             else if (!startItem)
             {
-                arrow->setNewEndpoint(dunnart::DSTPT, endItem->centrePos(), endItem, dunnart::CENTRE_CONNECTION_PIN);
-                arrow->setNewEndpoint(dunnart::SRCPT, endItem->centrePos() + QPointF(0,endItem->height()/2 + 50), nullptr);
+                arrow->setNewEndpoint(Arrow::DSTPT, endItem->centrePos(), endItem,Arrow::CENTRE_CONNECTION_PIN);
+                arrow->setNewEndpoint(Arrow::SRCPT, endItem->centrePos() + QPointF(0,endItem->height()/2 + 50), nullptr);
             }
             else if (!endItem)
             {
-                arrow->setNewEndpoint(dunnart::SRCPT, startItem->centrePos(), startItem, dunnart::CENTRE_CONNECTION_PIN);
-                arrow->setNewEndpoint(dunnart::DSTPT, startItem->centrePos() - QPointF(0,startItem->height()/2 + 50), nullptr);
+                arrow->setNewEndpoint(Arrow::SRCPT, startItem->centrePos(), startItem, Arrow::CENTRE_CONNECTION_PIN);
+                arrow->setNewEndpoint(Arrow::DSTPT, startItem->centrePos() - QPointF(0,startItem->height()/2 + 50), nullptr);
             }
             else
             {
@@ -498,8 +501,8 @@ void DiagramScene::render()
                 }
                 else
                 {
-                    arrow->setNewEndpoint(dunnart::SRCPT, startItem->centrePos(), startItem, dunnart::CENTRE_CONNECTION_PIN);
-                    arrow->setNewEndpoint(dunnart::DSTPT, endItem->centrePos(), endItem, dunnart::CENTRE_CONNECTION_PIN);
+                    arrow->setNewEndpoint(Arrow::SRCPT, startItem->centrePos(), startItem, Arrow::CENTRE_CONNECTION_PIN);
+                    arrow->setNewEndpoint(Arrow::DSTPT, endItem->centrePos(), endItem, Arrow::CENTRE_CONNECTION_PIN);
                 }
             }
             arrow->setDirected(true);

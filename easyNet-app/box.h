@@ -5,6 +5,8 @@
 #include <QDomDocument>
 #include <QSet>
 #include <QString>
+#include <QAction>
+#include <QFont>
 
 class ObjectCacheFilter;
 class ObjectUpdater;
@@ -47,7 +49,8 @@ public:
     void autoSize();
     virtual void paintLabel(QPainter *painter);
     virtual QRectF labelBoundingRect(void) const;
-
+    void setCentrePos(const QPointF&p){m_centrePos=p;}
+    QPointF centrePos(){return m_centrePos;}
     QStringList defaultPlotTypes();
 
     qreal autoWidth();
@@ -97,7 +100,7 @@ private:
     QString m_layerTransfer;
 
 
-
+    QPointF m_centrePos;
 
 
 };

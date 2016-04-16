@@ -44,7 +44,7 @@
 #include <QGraphicsPixmapItem>
 #include <QList>
 #include <QJsonObject>
-
+#include <QSet>
 QT_BEGIN_NAMESPACE
 class QPixmap;
 class QGraphicsItem;
@@ -65,6 +65,7 @@ class Arrow;
 //! [0]
 class DiagramItem : public QGraphicsPolygonItem
 {
+    Q_OBJECT
 public:
     enum { Type = UserType + 15 };
     enum DiagramType { Layer, Diamond };
@@ -96,7 +97,7 @@ public:
                const QStyleOptionGraphicsItem *option, QWidget *widget);
     void paintLabel(QPainter *painter);
     void updatePosition();
-
+    QSet<DiagramItem*>neighbours()const{return m_neighbours;}
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
@@ -128,7 +129,7 @@ protected:
     qreal myheight = 100;
     QColor myColor;
     int penWidth;
-
+    QSet<DiagramItem*>m_neighbours;
 
 };
 //! [0]

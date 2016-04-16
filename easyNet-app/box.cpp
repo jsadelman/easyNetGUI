@@ -1,7 +1,6 @@
 #include "box.h"
 #include "sessionmanager.h"
 #include "lazynutjobparam.h"
-#include "libdunnartcanvas/limitstring.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "enumclasses.h"
@@ -18,10 +17,9 @@ const QColor layerCol = QColor(240, 240, 210);
 const QColor representationCol = QColor("azure");
 const QColor observedCol = QColor("white");
 
-using dunnart::limitString;
 
 Box::Box()
-    : ShapeObj("rect"),
+    :
       m_longNameToDisplayIntact("longname"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618),
