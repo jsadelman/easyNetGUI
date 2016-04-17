@@ -65,19 +65,20 @@ public:
     virtual QRectF labelBoundingRect(void) const;
     void setCentrePos(const QPointF&p)
     {
-        auto x=p-m_centrePos;
+        auto x=p-center();
         moveBy(x.x(),x.y());
-        m_centrePos=p;
+        myCenter=p;
     }
-    QPointF centrePos()const{return m_centrePos;}
+    QPointF centrePos()const{return center();}
     QStringList defaultPlotTypes();
-    qreal height()const{return size.height();}
-    qreal width()const{return size.width();}
+    qreal height()const{return size().height();}
+    qreal width()const{return size().width();}
     qreal autoWidth();
 //    QSet<Box *> neighbours();
     void setFillColour(QColor);
     void setDashedStroke(bool);
-    void cmd_setSize(QSizeF f){size=f;}
+    void cmd_setSize(QSizeF f){myheight=f.height();mywidth=f.width();}
+    QSizeF size()const{return QSizeF(mywidth,myheight);}
 signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);
     void lazyNutTypeChanged();
@@ -124,8 +125,6 @@ private:
     QString m_layerTransfer;
 
 
-    QPointF m_centrePos;
-    QSizeF size;
 
 };
 

@@ -28,8 +28,7 @@ Box::Box()
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
       enabledObserverSet(),
       m_defaultPlotTypes(),
-      m_layerTransfer(),
-      m_centrePos(scenePos())
+      m_layerTransfer()
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemIsMovable);

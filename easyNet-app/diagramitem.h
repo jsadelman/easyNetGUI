@@ -84,7 +84,7 @@ public:
     QList<Arrow *> arrowList() const;
     QPixmap image() const;
     int type() const { return Type;}
-    QPointF const center() {return myCenter; }
+    QPointF center() const {return myCenter; }
     QPointF  connectionPoint(Arrow *arrow) const;
     QPainterPath  loopPath(Arrow *arrow) const;
     qreal loopRotation() const {return myLoopRotation;}

@@ -9,7 +9,7 @@
 
 class Box;
 
-class Arrow: public QObject, public QGraphicsPathItem
+class Arrow: public QObject, public QGraphicsItemGroup
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
@@ -45,6 +45,8 @@ private:
     Box* m_startItem,*m_endItem;
     ArrowType m_arrowType;
     bool m_dashedStroke;
+    QGraphicsLineItem* m_line;
+    QGraphicsItem* m_head;
 };
 
 #endif // ARROW_H
