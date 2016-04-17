@@ -24,14 +24,15 @@ DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidg
 
 void DiagramWindow::rearrange(bool ignoreEdges)
 {
-#if 0
+
     if (fitVisibleAct->isChecked())
         connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
                 this, SLOT(toFitVisible()));
-
+#if 0
     diagramSceneTabWidget->currentCanvas()->layout()->runDirect(true, ignoreEdges);
     diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
 #endif
+    diagramSceneTabWidget->currentDiagramScene()->initShapePlacement();
 }
 
 void DiagramWindow::arrange(bool ignoreEdges)
@@ -128,7 +129,6 @@ void DiagramWindow::alignSelection(DiagramScene::Alignment alignType)
 #endif
     {
         diagramSceneTabWidget->currentCanvas()->alignSelection(alignType);
-        arrange(true);
     }
 }
 
@@ -414,11 +414,11 @@ void DiagramWindow::ToggleControlsDock()
 
 void DiagramWindow::vertAlignSlot()
 {
-//    alignSelection ((int) dunnart::ALIGN_MIDDLE);
+    alignSelection (DiagramScene::Vertical);
 }
 
 void DiagramWindow::horizAlignSlot()
 {
-//    alignSelection ((int) dunnart::ALIGN_CENTER);
+    alignSelection (DiagramScene::Horizontal);
 }
 

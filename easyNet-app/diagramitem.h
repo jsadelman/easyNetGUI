@@ -46,6 +46,7 @@
 #include <QJsonObject>
 #include <QSet>
 #include <QAction>
+#include <QPen>
 QT_BEGIN_NAMESPACE
 class QPixmap;
 class QGraphicsItem;
@@ -107,7 +108,7 @@ protected:
     //void paintLabel();
     virtual QAction *buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu& menu)=0;
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
-
+    QPen m_pen;
 
 //private:
     DiagramType myDiagramType;

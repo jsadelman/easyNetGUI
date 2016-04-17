@@ -460,15 +460,14 @@ void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 //        mywidth = minBoundingRect->width() + 2 * BOUNDINGRECTPADDING;
         setGeometry();
     }
-    QPen selPen = pen();
-    selPen.setColor(
+    m_pen.setColor(
                 isSelected()?
                     Qt::yellow:
                     Qt::black);
 
-    selPen.setWidth(penWidth);
+    m_pen.setWidth(penWidth);
 
-    setPen(selPen);
+    setPen(m_pen);
     auto moption=*option;
     moption.state&= ~QStyle::State_Selected;
     QGraphicsPolygonItem::paint(painter,& moption, widget);

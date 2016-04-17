@@ -108,9 +108,15 @@ void Box::setFillColour(QColor q)
   setBrush(br);
 }
 
-void Box::setDashedStroke(bool)
+void Box::setDashedStroke(bool arg)
 {
-
+  if(arg)
+  {
+      m_pen.setStyle(Qt::DashLine);
+   }
+  else{
+      m_pen.setStyle(Qt::SolidLine);
+  }
 }
 
 void Box::autoSize()

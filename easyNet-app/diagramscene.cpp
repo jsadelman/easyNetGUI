@@ -256,9 +256,24 @@ bool DiagramScene::validForAlignment(QList<Box *> items)
     return true;
 }
 
-void DiagramScene::alignSelection(DiagramScene::Alignment)
+void DiagramScene::alignSelection(DiagramScene::Alignment al)
 {
-
+  qreal average=0;
+  int n=0;
+  for(auto& item:selectedItems())
+  {
+      qreal coord=(al==DiagramScene::Horizontal)?item->x():item->y();
+      average+=(coord-average)/(++n);
+  }
+  for(auto& item:selectedItems())
+  {
+      qreal coord=(al==DiagramScene::Horizontal)?item->x():item->y();
+      qreal xchange=(al==DiagramScene::Horizontal)?average-coord:0;
+      qreal ychange=(al==DiagramScene::Horizontal)?0:average-coord;
+      qDebug()<<"moving "<<xchange<<" "<<ychange;
+      item->moveBy(xchange,ychange);
+  }
+  updateConnectorsForLayout();
 }
 
 void DiagramScene::deleteSelection()
@@ -436,8 +451,6 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
 
 //        box->setProperty("position", defaultPosition);
         box->setCentrePos(defaultPosition);
-if(defaultPosition.y()<750)
-    defaultPosition+=QPointF(250,0); else defaultPosition+=QPointF(-1500,250);
         box->setProperty("longNameToDisplayIntact", boxLongNameToDisplayIntact);
         box->setProperty("widthMarginProportionToLongestLabel", boxWidthMarginProportionToLongestLabel);
         box->setProperty("widthOverHeight", boxWidthOverHeight);

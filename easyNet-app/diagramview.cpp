@@ -11,6 +11,8 @@
 
 DiagramView::DiagramView(DiagramScene *scene) : QGraphicsView(scene)
 {
+    setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
 }
 
 void DiagramView::fitVisible()

@@ -4,6 +4,7 @@
 #include <QGraphicsItem>
 #include <QGraphicsPathItem>
 #include <QAction>
+#include <QPen>
 
 #include "diagramitem.h"
 
@@ -32,7 +33,9 @@ public:
     bool dashedStroke()const{return m_dashedStroke;}
     void setDashedStroke(bool);
     void updatePosition();
-
+    QPointF startPoint();
+    QPointF endPoint();
+    void updatePen();
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
@@ -49,6 +52,8 @@ private:
     bool m_dashedStroke;
     QGraphicsItem* m_line;
     QGraphicsItem* m_head;
+    QPointF m_altStartPt,m_altEndPt;
+    QPen m_pen;
 };
 
 #endif // ARROW_H
