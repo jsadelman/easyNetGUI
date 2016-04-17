@@ -45,6 +45,7 @@
 #include <QList>
 #include <QJsonObject>
 #include <QSet>
+#include <QAction>
 QT_BEGIN_NAMESPACE
 class QPixmap;
 class QGraphicsItem;
@@ -104,6 +105,8 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void setGeometry();
     //void paintLabel();
+    virtual QAction *buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu& menu)=0;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 
 //private:

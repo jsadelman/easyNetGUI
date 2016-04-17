@@ -23,7 +23,6 @@ Box::Box()
       DiagramItem(DiagramItem::Layer,"",new QMenu,0),
       m_longNameToDisplayIntact("longname"),
       m_widthMarginProportionToLongestLabel(0.1),
-      m_widthOverHeight(1.618),
       m_labelPointSize(9),
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
       enabledObserverSet(),
@@ -123,7 +122,7 @@ void Box::autoSize()
 
 void Box::paintLabel(QPainter *painter)
 {
-    painter->setPen(Qt::black);
+    painter->setPen(QPen(Qt::black,4));
     painter->setFont(labelFont);
     painter->setBackground(Qt::transparent);
 //    if (canvas())

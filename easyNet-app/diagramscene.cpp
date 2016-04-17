@@ -414,12 +414,15 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
 
         // temporarily define dimensions here
 
-        box->setProperty("position", defaultPosition);
+//        box->setProperty("position", defaultPosition);
+        box->setCentrePos(defaultPosition);
+if(defaultPosition.y()<750)
+    defaultPosition+=QPointF(250,0); else defaultPosition+=QPointF(-1500,250);
         box->setProperty("longNameToDisplayIntact", boxLongNameToDisplayIntact);
         box->setProperty("widthMarginProportionToLongestLabel", boxWidthMarginProportionToLongestLabel);
         box->setProperty("widthOverHeight", boxWidthOverHeight);
 //        box->setLabelPointSize(14);
-        box->autoSize();
+ //       box->autoSize();
         box->setLabel(name);
         box->setToolTip(name);
 //        if (m_boxType == "representation")
@@ -534,6 +537,7 @@ void DiagramScene::render()
             {
                 addItem(arrow);
                 itemHash.insert(name,arrow);
+                qDebug()<<"hashing arrow "<<name;
             }
         }
     }

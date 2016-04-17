@@ -14,7 +14,7 @@ Arrow::Arrow():m_startItem(0),m_endItem(0)
     m_head=new QGraphicsPolygonItem(this);
     addToGroup(m_line);
     QPen pen;
-    pen.setWidth(6);
+    pen.setWidth(3);
     pen.setColor(Qt::black);
     m_line->setPen(pen);
 }
@@ -106,6 +106,27 @@ QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &
         unlesion();
 
     return action;
+}
+
+void Arrow::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+        // Drop through to parent handler.
+    }
+    else if (event->button() == Qt::RightButton)
+    {
+        QMenu menu;
+        QAction *action = buildAndExecContextMenu(event, menu);
+
+        if (action)
+        {
+            event->accept();
+        }
+    }
+
+    QGraphicsItem::mousePressEvent(event);
 }
 
 void Arrow::lesion()

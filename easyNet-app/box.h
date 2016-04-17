@@ -124,7 +124,7 @@ private:
     QStringList m_defaultPlotTypes;
     QString m_layerTransfer;
 
-
+ //  static QPointF defaultPosition;
 };
 
 extern const QColor layerCol;

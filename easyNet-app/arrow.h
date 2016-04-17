@@ -35,6 +35,7 @@ public:
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
 private:
     void lesion();

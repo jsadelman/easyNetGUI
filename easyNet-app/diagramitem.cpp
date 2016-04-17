@@ -51,6 +51,7 @@
 #include <QDebug>
 #include <QStyleOptionGraphicsItem>
 #include <QStyle>
+#include <QApplication>
 
 const qreal Pi = 3.14;
 
@@ -290,7 +291,7 @@ QList<Arrow *> DiagramItem::arrowList() const
 //! [4]
 QPixmap DiagramItem::image() const
 {
-    QPixmap pixmap(mywidth+16, myheight+16);
+    QPixmap pixmap(mywidth, myheight);
 /*    pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     painter.translate(mywidth/2.f+8, myheight/2.f+8);
@@ -462,7 +463,7 @@ void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
     if (boundingRect().width() < minBoundingRect->width() + 2 * BOUNDINGRECTPADDING)
     {
         prepareGeometryChange();
-        mywidth = minBoundingRect->width() + 2 * BOUNDINGRECTPADDING;
+//        mywidth = minBoundingRect->width() + 2 * BOUNDINGRECTPADDING;
         setGeometry();
     }
     QPen selPen = pen();
@@ -519,3 +520,23 @@ QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &valu
     return value;
 }
 //! [6]
+void DiagramItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+        // Drop through to parent handler.
+    }
+    else if (event->button() == Qt::RightButton)
+    {
+        QMenu menu;
+        QAction *action = buildAndExecContextMenu(event, menu);
+
+        if (action)
+        {
+            event->accept();
+        }
+    }
+
+    QGraphicsItem::mousePressEvent(event);
+}
