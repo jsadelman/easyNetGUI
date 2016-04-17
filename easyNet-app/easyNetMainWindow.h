@@ -95,7 +95,7 @@ public slots:
     void msgBox(QString msg);
     void setDebugMode(bool isDebugMode);
     void updateTrialRunListCount(int count);
-
+    void initialLayout();
     void showModelSettings();
     void showParameterSettings();
     void setStopButtonIcon(bool state);

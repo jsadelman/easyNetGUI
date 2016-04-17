@@ -13,6 +13,7 @@ public:
 
 public slots:
     void fitVisible();
+    void fitVisible(bool);
     void loadLayout();
     void saveLayout();
     void zoomChanged();

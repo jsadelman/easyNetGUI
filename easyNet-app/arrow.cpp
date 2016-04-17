@@ -14,14 +14,14 @@ Arrow::Arrow():m_startItem(0),m_endItem(0)
     m_head=new QGraphicsPolygonItem(this);
     addToGroup(m_line);
     QPen pen;
-    pen.setWidth(3);
+    pen.setWidth(6);
     pen.setColor(Qt::black);
     m_line->setPen(pen);
+        setFlag(QGraphicsItem::ItemIsSelectable);
 }
 
 void Arrow::setNewEndpoint(Arrow::End end, QPointF pt, Box *bx, Arrow::Strategy)
 {
-  qDebug()<<"setNewEndpoint";
   if(end==Arrow::SRCPT)
   {
       if(m_startItem!=bx)
@@ -46,7 +46,6 @@ void Arrow::setNewEndpoint(Arrow::End end, QPointF pt, Box *bx, Arrow::Strategy)
 
 void Arrow::initWithConnection(Box *from, Box *to)
 {
-    qDebug()<<"initWith";
   m_startItem=from;
   m_endItem=to;
   if(m_startItem!=m_endItem) m_arrowType=Arrow::Line; else m_arrowType=Arrow::SelfLoop;
@@ -69,7 +68,7 @@ void Arrow::updatePosition()
     line.setP2(m_endItem->connectionPoint(this)+m_endItem->center());
     m_line->setLine(line);
 //    addToGroup(m_line);
-    qDebug()<<line;
+
 }
 
 QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
@@ -110,12 +109,12 @@ QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &
 
 void Arrow::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
+ /*   if (event->button() == Qt::LeftButton)
     {
         QApplication::setOverrideCursor(Qt::ClosedHandCursor);
         // Drop through to parent handler.
     }
-    else if (event->button() == Qt::RightButton)
+    else*/ if (event->button() == Qt::RightButton)
     {
         QMenu menu;
         QAction *action = buildAndExecContextMenu(event, menu);

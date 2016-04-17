@@ -585,7 +585,6 @@ void MainWindow::initialiseToolBar()
 
 void MainWindow::setStopButtonIcon(bool state)
 {
-    qDebug() << "setStopButtonIcon";
     if (state)
     {
         stopButton->setIcon(QIcon(":/images/stop-enabled.png"));
@@ -718,6 +717,7 @@ void MainWindow::loadModel()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
+    diagramPanel->hide();
     loadModel(fileName,true);
 }
 void MainWindow::loadModelUnconfigured()
@@ -726,6 +726,7 @@ void MainWindow::loadModelUnconfigured()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
+    diagramPanel->hide();
     loadModel(fileName,false);
 }
 void MainWindow::modelConfigNeeded()
@@ -775,10 +776,15 @@ void MainWindow::afterModelStaged()
     qDebug() << "Time taken to load and stage model:" << QString::number(loadModelTimer.elapsed()) << "ms";
     commandLog->addText(QString("## Time taken to load and stage model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
-
+    connect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
 }
 
+void MainWindow::initialLayout()
+{
+    diagramPanel->show();
+    disconnect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
 
+}
 
 void MainWindow::loadTrial()
 {

@@ -66,7 +66,7 @@ DiagramItem::DiagramItem(DiagramType diagramType, QString name, QMenu *contextMe
     myDiagramType = diagramType;
     myContextMenu = contextMenu;
     myColor = Qt::black;
-    penWidth = 6;
+    penWidth = 10;
     setGeometry();
 
 
@@ -292,12 +292,7 @@ QList<Arrow *> DiagramItem::arrowList() const
 QPixmap DiagramItem::image() const
 {
     QPixmap pixmap(mywidth, myheight);
-/*    pixmap.fill(Qt::transparent);
-    QPainter painter(&pixmap);
-    painter.translate(mywidth/2.f+8, myheight/2.f+8);
-    painter.setPen(QPen(Qt::black, 8));
-    painter.drawPolyline(myPolygon);
-*/    return pixmap;
+  return pixmap;
 }
 
 QPointF DiagramItem::connectionPoint(Arrow *arrow) const
@@ -363,7 +358,6 @@ QPointF DiagramItem::connectionPoint(Arrow *arrow) const
     qreal relativePointLocation=.5;
     if (arrowCount != 1)
     {
-        qDebug()<<arrowCount;
        relativePointLocation = (qreal)(arrowIndex-1)/(qreal)(arrowCount-1);
     }
 
@@ -522,12 +516,7 @@ QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &valu
 //! [6]
 void DiagramItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-    {
-        QApplication::setOverrideCursor(Qt::ClosedHandCursor);
-        // Drop through to parent handler.
-    }
-    else if (event->button() == Qt::RightButton)
+if (event->button() == Qt::RightButton)
     {
         QMenu menu;
         QAction *action = buildAndExecContextMenu(event, menu);

@@ -198,17 +198,35 @@ void DiagramScene::read(const QJsonObject &json)
 {
     qreal boxWidth = json["boxWidth"].toDouble();
     QJsonArray itemArray = json["QGraphicsItems"].toArray();
+    qDebug()<<itemArray;
     for (int itemIndex = 0; itemIndex < itemArray.size(); ++itemIndex)
     {
         QJsonObject itemObject = itemArray[itemIndex].toObject();
         QString name = itemObject["name"].toString();
         if (itemHash.contains(name))
         {
+            qDebug()<<"reading "<<name<<"\n";
             Box * box = dynamic_cast<Box*>(itemHash.value(name));
             if (box)
                 box->read(itemObject, boxWidth);
         }
     }
+    QJsonArray itemArray2 = json["diagramItems"].toArray();
+    qDebug()<<itemArray2;
+    for (int itemIndex = 0; itemIndex < itemArray2.size(); ++itemIndex)
+    {
+        QJsonObject itemObject = itemArray2[itemIndex].toObject();
+        QString name = itemObject["name"].toString();
+        if (itemHash.contains(name))
+        {
+            qDebug()<<"reading "<<name<<"\n";
+            Box * box = dynamic_cast<Box*>(itemHash.value(name));
+            if (box)
+                box->read(itemObject, boxWidth);
+        }
+    }
+    emit animationFinished();
+
 }
 
 void DiagramScene::write(QJsonObject &json)
@@ -378,14 +396,16 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     foreach (QGraphicsItem *item, QGraphicsScene::items(mouseEvent->scenePos()))
     {
-        auto canvasItem = dynamic_cast<QGraphicsItem*>(item);
-        if (canvasItem)
+        if(item)
         {
-            selectedObject = itemHash.key(canvasItem);
+            auto selectedObject = itemHash.key(item);
+            if(item->parentItem()) selectedObject=itemHash.key(item->parentItem());
+            qDebug()<<selectedObject;
             emit objectSelected(selectedObject);
             break;
         }
     }
+
 #if 0
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
 #endif
@@ -536,8 +556,8 @@ void DiagramScene::render()
             if (!itemHash.contains(name))
             {
                 addItem(arrow);
-                itemHash.insert(name,arrow);
-                qDebug()<<"hashing arrow "<<name;
+                auto ptr=dynamic_cast<QGraphicsItem*>(arrow);
+                itemHash.insert(name,ptr);
             }
         }
     }
