@@ -7,12 +7,16 @@
 #include <QMenu>
 #include <QApplication>
 #include <QGraphicsSceneEvent>
-
-Arrow::Arrow()
+#include <QPen>
+Arrow::Arrow():m_startItem(0),m_endItem(0)
 {
     m_line=new QGraphicsLineItem(this);
     m_head=new QGraphicsPolygonItem(this);
     addToGroup(m_line);
+    QPen pen;
+    pen.setWidth(6);
+    pen.setColor(Qt::black);
+    m_line->setPen(pen);
 }
 
 void Arrow::setNewEndpoint(Arrow::End end, QPointF pt, Box *bx, Arrow::Strategy)
@@ -58,11 +62,13 @@ void Arrow::setDashedStroke(bool)
 
 void Arrow::updatePosition()
 {
+//    removeFromGroup(m_line);
     prepareGeometryChange();
     QLineF line;
     line.setP1(m_startItem->connectionPoint(this)+m_startItem->center());
     line.setP2(m_endItem->connectionPoint(this)+m_endItem->center());
     m_line->setLine(line);
+//    addToGroup(m_line);
     qDebug()<<line;
 }
 

@@ -110,7 +110,7 @@ public:
     QList<DiagramItem *> shapes();
     QList<Box *> boxes();
     QUndoStack* undoStack(){return m_undoStack;}
-
+    void updateConnectorsForLayout();
 public slots:
 //    void setMode(Mode mode);
 //    void setItemType(QGraphicsItem::DiagramType type);

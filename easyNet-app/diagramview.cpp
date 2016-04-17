@@ -47,8 +47,8 @@ void DiagramView::fitVisible(bool computeBoundingRect)
 void DiagramView::read(const QJsonObject &json)
 {
     qobject_cast<DiagramScene*>(canvas())->read(json);
-# if 0
     canvas()->updateConnectorsForLayout();
+# if 0
     qreal zoomScale = json["zoomScale"].toDouble();
     qreal zoomDx = json["zoomDx"].toDouble();
     qreal zoomDy = json["zoomDy"].toDouble();

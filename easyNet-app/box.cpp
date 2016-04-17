@@ -37,7 +37,6 @@ Box::Box()
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
     m_ports.clear();
 
-
 }
 
 void Box::setLazyNutType(const QString &lazyNutType)
@@ -101,9 +100,12 @@ qreal Box::autoWidth()
     return (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
 }
 
-void Box::setFillColour(QColor)
+void Box::setFillColour(QColor q)
 {
-
+  QBrush br;
+  br.setColor(q);
+  br.setStyle(Qt::SolidPattern);
+  setBrush(br);
 }
 
 void Box::setDashedStroke(bool)
@@ -123,6 +125,7 @@ void Box::paintLabel(QPainter *painter)
 {
     painter->setPen(Qt::black);
     painter->setFont(labelFont);
+    painter->setBackground(Qt::transparent);
 //    if (canvas())
 //    {
 //        QFont labelFont = canvas()->canvasFont();

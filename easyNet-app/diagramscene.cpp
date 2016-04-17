@@ -185,6 +185,15 @@ QList<Box *> DiagramScene::boxes()
     return result;
 }
 
+void DiagramScene::updateConnectorsForLayout()
+{
+    for(auto x:items())
+    {
+        if(auto arrow=dynamic_cast<Arrow*>(x))
+            arrow->updatePosition();
+    }
+}
+
 void DiagramScene::read(const QJsonObject &json)
 {
     qreal boxWidth = json["boxWidth"].toDouble();
@@ -313,8 +322,9 @@ void DiagramScene::setAnalyzedLocations(QDomDocument *domDoc)
     }
 #if 0
     layout()->initialise();
-    updateConnectorsForLayout();
 #endif
+    updateConnectorsForLayout();
+
     emit animationFinished();
 }
 
@@ -530,8 +540,9 @@ void DiagramScene::render()
     renderList.clear();
 #if 0
     layout()->initialise();
-    updateConnectorsForLayout();
 #endif
+    updateConnectorsForLayout();
+
     if (newModelLoaded())
     {
         setNewModelLoaded(false);

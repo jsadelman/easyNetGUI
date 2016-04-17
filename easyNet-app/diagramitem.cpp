@@ -49,6 +49,8 @@
 #include <QPainter>
 #include <QPair>
 #include <QDebug>
+#include <QStyleOptionGraphicsItem>
+#include <QStyle>
 
 const qreal Pi = 3.14;
 
@@ -63,7 +65,7 @@ DiagramItem::DiagramItem(DiagramType diagramType, QString name, QMenu *contextMe
     myDiagramType = diagramType;
     myContextMenu = contextMenu;
     myColor = Qt::black;
-    penWidth = 2;
+    penWidth = 6;
     setGeometry();
 
 
@@ -112,7 +114,7 @@ void DiagramItem::setGeometry()
         // these properties will be exposed
         //qreal mywidth = 150;
         //qreal myheight = 100;
-        dockingLineProportion = 0.4;
+        dockingLineProportion = .6;
         loopDiameterProportion = 0.3;
         qreal halfwidth = mywidth/2;
         qreal halfheight = myheight/2;
@@ -124,12 +126,12 @@ void DiagramItem::setGeometry()
                   << QPointF(-halfwidth, -halfheight);
         setPolygon(myPolygon);
 
-        myCenter = QPointF(0.0,0.0); //  relative center
+        //myCenter = QPointF(0.0,0.0); //  relative center
         // docking lines, a cross in the middle of the box,
-        horizontalDockingLine = QLineF(myCenter + QPointF(-dockingLineProportion*halfwidth,0),
-                                      myCenter + QPointF(dockingLineProportion*halfwidth,0));
-        verticalDockingLine =   QLineF(myCenter + QPointF(0,dockingLineProportion*halfheight),
-                                      myCenter + QPointF(0,-dockingLineProportion*halfheight));
+        horizontalDockingLine = QLineF(QPointF(-dockingLineProportion*halfwidth,0),
+                                      QPointF(dockingLineProportion*halfwidth,0));
+        verticalDockingLine =   QLineF(QPointF(0,dockingLineProportion*halfheight),
+                                      QPointF(0,-dockingLineProportion*halfheight));
         // docking lines for dangling arrows
         QLineF incomingArrowsDockingSide = QLineF(myPolygon.at(3),myPolygon.at(2)); // lower side
         incomingArrowsDockingLine = QLineF(incomingArrowsDockingSide.pointAt(0.5*(1 - dockingLineProportion)),
@@ -145,6 +147,7 @@ void DiagramItem::setGeometry()
     }
     case Diamond:
     {
+#if 0
         // not maintained, only for test
         qreal myside = 50;
         dockingLineProportion = 0.4;
@@ -164,7 +167,7 @@ void DiagramItem::setGeometry()
         selfLoopDockingSide = QLineF(myPolygon.at(2),myPolygon.at(1));
         myLoopRotation = -180; // clockwise
         break;
-
+#endif
     }
     default:
     {
@@ -287,34 +290,39 @@ QList<Arrow *> DiagramItem::arrowList() const
 //! [4]
 QPixmap DiagramItem::image() const
 {
-    QPixmap pixmap(250, 250);
-    pixmap.fill(Qt::transparent);
+    QPixmap pixmap(mywidth+16, myheight+16);
+/*    pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
+    painter.translate(mywidth/2.f+8, myheight/2.f+8);
     painter.setPen(QPen(Qt::black, 8));
-    painter.translate(125, 125);
     painter.drawPolyline(myPolygon);
-
-    return pixmap;
+*/    return pixmap;
 }
 
 QPointF DiagramItem::connectionPoint(Arrow *arrow) const
 {
+    qreal halfwidth = mywidth/2.;
+    qreal halfheight = myheight/2.;
     // Use for Line type only. For SelfLoop use loopPath() instead.
 
     // Determine how many arrows of the type Line
     // connect arrow's startItem to endItem or viceversa.
     // Determine the index of this arrow within that set of arrows.
     if (arrow->getArrowType() != Arrow::Line)
-        return myCenter; // should never hit this instruction
+        return QPointF(0,0);
+    const DiagramItem* otherItem=0;
     DiagramItem* startItem = arrow->getStartItem();
     DiagramItem* endItem = arrow->getEndItem();
+    if(this==startItem)otherItem=endItem;
+    if(this==endItem)otherItem=startItem;
     int arrowCount = 0;
     int arrowIndex = 0; // starts from 1, initialised to 0 to make compiler happy
     if (!( (startItem == this && endItem != this) ||
            (startItem != this && endItem == this) )) // this should be either start or end, not both
-        return myCenter; // should never hit this instruction
+        return QPointF(0,0);
     else if (!startItem) // incoming arrow
     {
+
         foreach (Arrow * other, arrowList())
         {
             if (!other->getStartItem()) // also incoming arrow
@@ -351,18 +359,14 @@ QPointF DiagramItem::connectionPoint(Arrow *arrow) const
             }
         }
     }
-    if (arrowCount == 1)
+    qreal relativePointLocation=.5;
+    if (arrowCount != 1)
     {
-        if (!startItem)
-            return incomingArrowsDockingLine.pointAt(0.5);
-        else if (!endItem)
-            return outgoingArrowsDockingLine.pointAt(0.5);
-        else
-            return myCenter;
+        qDebug()<<arrowCount;
+       relativePointLocation = (qreal)(arrowIndex-1)/(qreal)(arrowCount-1);
     }
-    else
+
     {
-        qreal relativePointLocation = (qreal)(arrowIndex-1)/(qreal)(arrowCount-1);
         if (!startItem)
             return incomingArrowsDockingLine.pointAt(relativePointLocation);
         else if (!endItem)
@@ -372,10 +376,16 @@ QPointF DiagramItem::connectionPoint(Arrow *arrow) const
             // use vertical or horizontal docking line depending on arrow's angle
             if ((endItem->pos().x() - startItem->pos().x()) == 0 ||
                     ::fabs( (endItem->pos().y() - startItem->pos().y()) /
-                            (endItem->pos().x() - startItem->pos().x()) ) > 1)
-                return horizontalDockingLine.pointAt(relativePointLocation);
+                            (endItem->pos().x() - startItem->pos().x()) ) > (halfheight/halfwidth))
+            {
+                QPointF rel=QPointF(0,(otherItem->center().y()>center().y())?halfheight:-halfheight);
+                return horizontalDockingLine.pointAt(relativePointLocation)+rel;
+            }
             else
-                return verticalDockingLine.pointAt(relativePointLocation);
+            {
+                QPointF rel=QPointF((otherItem->center().x()>center().x())?halfwidth:-halfwidth,0);
+                return verticalDockingLine.pointAt(relativePointLocation)+rel;
+            }
         }
     }
 
@@ -444,8 +454,8 @@ void DiagramItem::write(QJsonObject &json) const
 
 void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    Q_UNUSED(option)
-    Q_UNUSED(widget)
+//    Q_UNUSED(option)
+//    Q_UNUSED(widget)
     // check if label fits
     QRectF * minBoundingRect = new QRectF;
     painter->drawText(boundingRect(), Qt::AlignCenter | Qt::TextSingleLine, label,minBoundingRect);
@@ -455,23 +465,18 @@ void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
         mywidth = minBoundingRect->width() + 2 * BOUNDINGRECTPADDING;
         setGeometry();
     }
-    QPen myPen = pen();
-    myPen.setColor(myColor);
-    myPen.setWidth(penWidth);
-    painter->setPen(myPen);
-    painter->setBrush(QColor("white"));
-    painter->drawPolygon(polygon());
-    if (isSelected())
-    {
-        QColor selectionColor = QColor("yellow");
-        selectionColor.setAlpha(100);
-        painter->setPen(QPen(selectionColor,6,Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        painter->setBrush(Qt::NoBrush);
-        painter->drawPolygon(polygon());
-    }
+    QPen selPen = pen();
+    selPen.setColor(
+                isSelected()?
+                    Qt::yellow:
+                    Qt::black);
 
+    selPen.setWidth(penWidth);
 
-    //QGraphicsPolygonItem::paint(painter, option, widget);
+    setPen(selPen);
+    auto moption=*option;
+    moption.state&= ~QStyle::State_Selected;
+    QGraphicsPolygonItem::paint(painter,& moption, widget);
     paintLabel(painter);
 }
 

@@ -67,7 +67,7 @@ public:
     {
         auto x=p-center();
         moveBy(x.x(),x.y());
-        myCenter=p;
+//        myCenter=p;
     }
     QPointF centrePos()const{return center();}
     QStringList defaultPlotTypes();
@@ -123,7 +123,6 @@ private:
     QRegExp default_input_observer_Rex;
     QStringList m_defaultPlotTypes;
     QString m_layerTransfer;
-
 
 
 };

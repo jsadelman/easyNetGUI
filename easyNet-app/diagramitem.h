@@ -84,7 +84,7 @@ public:
     QList<Arrow *> arrowList() const;
     QPixmap image() const;
     int type() const { return Type;}
-    QPointF center() const {return myCenter; }
+    QPointF center() const {return scenePos(); }
     QPointF  connectionPoint(Arrow *arrow) const;
     QPainterPath  loopPath(Arrow *arrow) const;
     qreal loopRotation() const {return myLoopRotation;}
@@ -109,7 +109,7 @@ protected:
 //private:
     DiagramType myDiagramType;
     QPolygonF myPolygon;
-    QPointF myCenter;
+//    QPointF myCenter;
     QMenu *myContextMenu;
     QList<Arrow *> arrows;
     QLineF horizontalDockingLine;
