@@ -22,9 +22,6 @@ EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
     textEdit->setReadOnly(isReadOnly);
     startDir="";
 
-//    newAct = p_newAct;
-//    openAct = p_openAct;
-
     //cutAllowed = a_cutAllowed;
     //pasteAllowed = a_pasteAllowed;
     createActions();
@@ -63,7 +60,7 @@ void EditWindow::newFile()
 {
     if (maybeSave()) {
         textEdit->clear();
-        setCurrentFile("");
+        setCurrentFile("Untitled");
     }
 }
 
@@ -80,7 +77,7 @@ void EditWindow::open()
 
 bool EditWindow::save()
 {
-    if (curFile.isEmpty()) {
+    if (curFile.isEmpty() || curFile.startsWith("Untitled")) {
         return saveAs();
     } else {
         return saveFile(curFile);
@@ -92,6 +89,12 @@ bool EditWindow::saveAs()
     QFileDialog dialog(this);
     dialog.setWindowModality(Qt::WindowModal);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDirectory(startDir);
+    if (startDir.contains("Scripts"))
+    {
+        dialog.setNameFilter("easynet script files (*.eNs)");
+        dialog.setDefaultSuffix(".eNs");
+    }
     QStringList files;
     if (dialog.exec())
         files = dialog.selectedFiles();
@@ -110,42 +113,43 @@ void EditWindow::createActions()
 {
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
-//    newAct->setStatusTip(tr("Create a new file"));
+    newAct->setToolTip(tr("Create a new file"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
 
-      openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
-//    openAct->setStatusTip(tr("Open an existing file"));
+//    openAct->setShortcutContext(Qt::WidgetShortcut);
+    openAct->setToolTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
-//    saveAct->setStatusTip(tr("Save the document to disk"));
+    saveAct->setToolTip(tr("Save the document to disk"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
     saveAsAct = new QAction(QIcon(":/images/save_as_download_disk.png"), tr("Save &As..."), this);
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
-//    saveAsAct->setStatusTip(tr("Save the document under a new name"));
+    saveAsAct->setToolTip(tr("Save the document under a new name"));
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
     if (!isReadOnly)
     {
-    cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
-    cutAct->setShortcuts(QKeySequence::Cut);
-//    cutAct->setStatusTip(tr("Cut the current selection's contents to the "
-//                            "clipboard"));
-    connect(cutAct, SIGNAL(triggered()), textEdit, SLOT(cut()));
-    cutAct->setEnabled(false);
-    connect(textEdit, SIGNAL(copyAvailable(bool)),
-            cutAct, SLOT(setEnabled(bool)));
+        cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
+        cutAct->setShortcuts(QKeySequence::Cut);
+        cutAct->setToolTip(tr("Cut the current selection's contents to the "
+                                "clipboard"));
+        connect(cutAct, SIGNAL(triggered()), textEdit, SLOT(cut()));
+        cutAct->setEnabled(false);
+        connect(textEdit, SIGNAL(copyAvailable(bool)),
+                cutAct, SLOT(setEnabled(bool)));
 
     }
 
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
-    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
+    copyAct->setToolTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
     connect(copyAct, SIGNAL(triggered()), textEdit, SLOT(copy()));
     copyAct->setEnabled(false);
@@ -156,8 +160,8 @@ void EditWindow::createActions()
     {
     pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste"), this);
     pasteAct->setShortcuts(QKeySequence::Paste);
-//    pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
-//                              "selection"));
+    pasteAct->setToolTip(tr("Paste the clipboard's contents into the current "
+                              "selection"));
     connect(pasteAct, SIGNAL(triggered()), textEdit, SLOT(paste()));
     }
 
@@ -170,34 +174,6 @@ void EditWindow::createActions()
 
 
 }
-
-
-
-/*
-void editWindow::createMenus()
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(newAct);
-    fileMenu->addAction(openAct);
-    fileMenu->addAction(saveAct);
-    fileMenu->addAction(saveAsAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
-
-    editMenu = menuBar()->addMenu(tr("&Edit"));
-    if (cutAllowed)
-        editMenu->addAction(cutAct);
-    editMenu->addAction(copyAct);
-    if (pasteAllowed)
-        editMenu->addAction(pasteAct);
-
-    menuBar()->addSeparator();
-
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
-}
-*/
 
 void EditWindow::createToolBars()
 {
@@ -294,7 +270,7 @@ void EditWindow::setCurrentFile(const QString &fileName)
 
     QString shownName = curFile;
     if (curFile.isEmpty())
-        shownName = "untitled.txt";
+        shownName = "Untitled";
     setWindowFilePath(shownName);
     setWindowTitle(strippedName(shownName));
     setFilenameLabel(strippedName(shownName));

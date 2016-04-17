@@ -4,6 +4,8 @@
 #include <QToolBar>
 #include <QTextCursor>
 #include <QDebug>
+#include <QShortcut>
+
 
 ScriptEditor::ScriptEditor(QString _startDir, QWidget *parent)
     : EditWindow(parent)

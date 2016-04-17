@@ -716,7 +716,7 @@ void MainWindow::loadModel()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
-                                                    SessionManager::instance()->defaultLocation("scriptsDir"),
+                                                    SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
     loadModel(fileName,true);
 }
@@ -724,7 +724,7 @@ void MainWindow::loadModelUnconfigured()
 {
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
-                                                    SessionManager::instance()->defaultLocation("scriptsDir"),
+                                                    SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
     loadModel(fileName,false);
 }
