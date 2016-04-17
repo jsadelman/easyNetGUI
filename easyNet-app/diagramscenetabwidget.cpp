@@ -5,11 +5,8 @@
 #include <QUndoGroup>
 #include <QDebug>
 
-using dunnart::CanvasView;
-using dunnart::Canvas;
-
 DiagramSceneTabWidget::DiagramSceneTabWidget(QMainWindow *window)
-    : CanvasTabWidget(window)
+    : QTabWidget(window)
 {
     setTabsClosable(false);
 //    addActions(QList<QAction*>{m_action_delete, m_action_undo, m_action_redo});
@@ -38,25 +35,25 @@ int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QStri
 
 DiagramScene *DiagramSceneTabWidget::currentDiagramScene()
 {
-    return qobject_cast<DiagramScene*>(currentCanvas());
+    return qobject_cast<DiagramScene*>(diagramSceneAt(currentIndex()));
 }
 
 DiagramView *DiagramSceneTabWidget::currentDiagramView()
 {
-    return qobject_cast<DiagramView*>(currentCanvasView());
+    return qobject_cast<DiagramView*>(currentWidget());
 }
 
 DiagramScene *DiagramSceneTabWidget::diagramSceneAt(int index)
 {
-    return qobject_cast<DiagramScene*>(canvasViewAt(index)->canvas());
+    return qobject_cast<DiagramScene*>(diagramViewAt(index)->scene());
 }
 
 DiagramView *DiagramSceneTabWidget::diagramViewAt(int index)
 {
-    return qobject_cast<DiagramView*>(canvasViewAt(index));
+    return qobject_cast<DiagramView*>(widget(index));
 }
 
-void DiagramSceneTabWidget::emitCurrentDiagramSceneChanged(Canvas *canvas)
+void DiagramSceneTabWidget::emitCurrentDiagramSceneChanged(QGraphicsScene *canvas)
 {
     DiagramScene* scene = qobject_cast<DiagramScene*>(canvas);
     if (scene)

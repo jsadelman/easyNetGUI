@@ -2,7 +2,11 @@
 #define DIAGRAMSCENETABWIDGET_H
 
 #include <QTabWidget>
+#include <QMainWindow>
+#include <QAction>
+#include <QUndoGroup>
 
+#include <QGraphicsScene>
 class DiagramScene;
 class DiagramView;
 
@@ -17,6 +21,8 @@ public:
     DiagramView *currentDiagramView();
     DiagramScene *diagramSceneAt(int index);
     DiagramView *diagramViewAt(int index);
+    DiagramScene *currentCanvas(){return currentDiagramScene();}
+    DiagramView *currentCanvasView(){return currentDiagramView();}
 
 signals:
     void currentDiagramSceneChanged(DiagramScene *scene);
@@ -24,7 +30,10 @@ signals:
     void zoomChanged();
 
 private slots:
-    void emitCurrentDiagramSceneChanged(DiagramScene* canvas);
+    void emitCurrentDiagramSceneChanged(QGraphicsScene* canvas);
+ private:
+    QAction *m_action_delete,    *m_action_undo,    *m_action_redo;
+    QUndoGroup *m_undo_group;
 };
 
 #endif // DIAGRAMSCENETABWIDGET_H

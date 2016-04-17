@@ -1,8 +1,6 @@
 #include "diagramwindow.h"
 #include "diagramscenetabwidget.h"
 #include "diagramscene.h"
-#include "libdunnartcanvas/graphlayout.h"
-#include "libdunnartcanvas/canvasview.h"
 #include "diagramview.h"
 
 
@@ -12,8 +10,6 @@
 #include <QDebug>
 
 
-using dunnart::Canvas;
-using dunnart::CanvasItem;
 
 DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent)
     : diagramSceneTabWidget(diagramSceneTabWidget), QMainWindow(parent)
@@ -28,18 +24,23 @@ DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidg
 
 void DiagramWindow::rearrange(bool ignoreEdges)
 {
+#if 0
     if (fitVisibleAct->isChecked())
         connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
                 this, SLOT(toFitVisible()));
 
     diagramSceneTabWidget->currentCanvas()->layout()->runDirect(true, ignoreEdges);
     diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
+#endif
 }
 
 void DiagramWindow::arrange(bool ignoreEdges)
 {
+#if 0
     diagramSceneTabWidget->currentCanvas()->layout()->clearFixedList();
+#endif
     rearrange(ignoreEdges);
+
 }
 
 void DiagramWindow::initArrangement()
@@ -118,11 +119,13 @@ void DiagramWindow::deleteSelection()
     diagramSceneTabWidget->currentCanvas()->deleteSelection();
 }
 
-void DiagramWindow::alignSelection(int alignType)
+void DiagramWindow::alignSelection(DiagramScene::Alignment alignType)
 {
 //    if (!diagramSceneTabWidget->currentCanvas()->selectedItems().isEmpty())
+#if 0
     if (diagramSceneTabWidget->currentDiagramScene()->validForAlignment(
                 diagramSceneTabWidget->currentCanvas()->selectedItems()))
+#endif
     {
         diagramSceneTabWidget->currentCanvas()->alignSelection(alignType);
         arrange(true);
@@ -364,7 +367,7 @@ void DiagramWindow::createMenus()
     diagramToolBar->addAction(horizAlign);
 //    diagramToolBar->addWidget(vertCentreButton);
 //    diagramToolBar->addWidget(horiCentreButton);
-    diagramSceneTabWidget->addEditToolBarActions(diagramToolBar);
+//    diagramSceneTabWidget->addEditToolBarActions(diagramToolBar);
     diagramToolBar->addAction(arrangeAct);
 //    diagramToolBar->addWidget(arrangeActButton);
 //    diagramToolBar->addWidget(deleteAlignmentButton);
@@ -411,11 +414,11 @@ void DiagramWindow::ToggleControlsDock()
 
 void DiagramWindow::vertAlignSlot()
 {
-    alignSelection ((int) dunnart::ALIGN_MIDDLE);
+//    alignSelection ((int) dunnart::ALIGN_MIDDLE);
 }
 
 void DiagramWindow::horizAlignSlot()
 {
-    alignSelection ((int) dunnart::ALIGN_CENTER);
+//    alignSelection ((int) dunnart::ALIGN_CENTER);
 }
 

@@ -64,6 +64,7 @@
 #include <QMetaObject>
 #include <QDomDocument>
 #include <QDebug>
+#include <QUndoStack>
 
 
 Q_DECLARE_METATYPE(QDomDocument*)

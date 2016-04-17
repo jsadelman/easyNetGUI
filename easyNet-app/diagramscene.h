@@ -62,7 +62,7 @@ class ObjectCache;
 class ObjectCacheFilter;
 class ObjectUpdater;
 class QDomDocument;
-
+class QUndoStack;
 class Box;
 
 QT_END_NAMESPACE
@@ -103,11 +103,13 @@ public:
     void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
     bool validForAlignment(QList<Box *> items);
     QFont canvasFont()const;
-
+    enum Alignment{Vertical,Horizontal};
+    void alignSelection(Alignment);
+    void deleteSelection();
     QList<QSet<Box *> > connectedComponents();
     QList<Box *> shapes();
     QList<Box *> boxes();
-
+    QUndoStack* undoStack(){return m_undoStack;}
 
 public slots:
 //    void setMode(Mode mode);
@@ -213,6 +215,7 @@ private:
     qreal boxWidthOverHeight;
 
     qreal jitter;
+    QUndoStack* m_undoStack;
 
     friend class DiagramWindow; // dunnart::Canvas has lots of friends, this is the same idea.
 };

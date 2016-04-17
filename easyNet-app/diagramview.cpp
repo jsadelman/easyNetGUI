@@ -1,5 +1,5 @@
 #include "diagramview.h"
-#include "canvasview.h"
+
 #include "diagramscene.h"
 
 #include <QScrollBar>
@@ -9,7 +9,7 @@
 #include <QJsonDocument>
 #include <QRectF>
 
-DiagramView::DiagramView(DiagramScene *scene) : CanvasView(scene)
+DiagramView::DiagramView(DiagramScene *scene) : QGraphicsView(scene)
 {
 }
 
@@ -42,8 +42,8 @@ void DiagramView::fitVisible(bool computeBoundingRect)
 void DiagramView::read(const QJsonObject &json)
 {
     qobject_cast<DiagramScene*>(canvas())->read(json);
-    canvas()->updateConnectorsForLayout();
 # if 0
+    canvas()->updateConnectorsForLayout();
     qreal zoomScale = json["zoomScale"].toDouble();
     qreal zoomDx = json["zoomDx"].toDouble();
     qreal zoomDy = json["zoomDy"].toDouble();

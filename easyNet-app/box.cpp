@@ -29,6 +29,9 @@ Box::Box()
       m_defaultPlotTypes(),
       m_layerTransfer()
 {
+    setFlag(QGraphicsItem::ItemIsSelectable);
+    setFlag(QGraphicsItem::ItemIsMovable);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges);
     labelFont = canvas() ? canvas()->canvasFont() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
     m_ports.clear();

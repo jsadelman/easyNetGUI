@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QTabBar>
-
+#include "diagramscene.h"
 class DiagramSceneTabWidget;
 class QComboBox;
 class QSpinBox;
@@ -38,7 +38,7 @@ private slots:
     void restoreProperties();
     void restore();
     void deleteSelection();
-    void alignSelection(int alignType);
+    void alignSelection(DiagramScene::Alignment alignType);
     void toFitVisible();
     void setZoom();
     void loadLayout();
