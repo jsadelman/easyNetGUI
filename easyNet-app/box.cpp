@@ -32,7 +32,7 @@ Box::Box()
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-    labelFont = canvas() ? canvas()->canvasFont() : QFont();
+    labelFont = scene() ? scene()->font() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
     m_ports.clear();
 

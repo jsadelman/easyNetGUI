@@ -8,12 +8,28 @@
 #include <QString>
 #include <QAction>
 #include <QFont>
+#include <QtCore>
 
 class ObjectCacheFilter;
 class ObjectUpdater;
+QString limitString(const QString& aString, int maxLength);
 
 
-class Box: public QGraphicsPolygonItem, public QObject
+inline QString limitString(const QString& aString, int maxLength) {
+    static const QString ELLIPSIS("..");
+
+    if (aString.length() <= maxLength)
+        return aString;
+
+
+    qreal spacePerPart = (maxLength - ELLIPSIS.length()) / 2.0;
+    QString beforeEllipsis = aString.left(qCeil(spacePerPart));
+    QString afterEllipsis = aString.right(qFloor(spacePerPart));
+
+    return beforeEllipsis + ELLIPSIS + afterEllipsis;
+}
+
+class Box: public QObject, public QGraphicsPolygonItem
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
@@ -58,7 +74,7 @@ public:
     QSet<Box *> neighbours();
     void setFillColour(QColor);
     void setDashedStroke(bool);
-
+    void cmd_setSize(QSizeF);
 signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);
     void lazyNutTypeChanged();

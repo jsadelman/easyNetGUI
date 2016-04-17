@@ -102,7 +102,7 @@ public:
     bool newModelLoaded() {return m_newModelLoaded;}
     void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
     bool validForAlignment(QList<Box *> items);
-    QFont canvasFont()const;
+    QFont canvasFont()const{return font();}
     enum Alignment{Vertical,Horizontal};
     void alignSelection(Alignment);
     void deleteSelection();

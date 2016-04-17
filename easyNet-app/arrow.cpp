@@ -4,8 +4,11 @@
 #include "objectcache.h"
 #include "box.h"
 #include <QDebug>
+#include <QMenu>
+#include <QApplication>
+#include <QGraphicsSceneEvent>
 
-Arrow::Arrow() : Connector()
+Arrow::Arrow()
 {
 }
 
@@ -28,7 +31,13 @@ QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &
 //    unlesionAct->setVisible(m_lazyNutType == "connection" && subtype == "lesioned_connection");
      unlesionAct->setVisible(m_lazyNutType == "connection" && dashedStroke());
 
-    QAction *action = Connector::buildAndExecContextMenu(event, menu);
+     QAction *action = NULL;
+     if (!menu.isEmpty())
+     {
+         QApplication::restoreOverrideCursor();
+         action = menu.exec(event->screenPos());
+     }
+
 
     if (action == lesionAct)
         lesion();

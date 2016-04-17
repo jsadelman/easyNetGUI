@@ -10,15 +10,6 @@ QT      += webkit webkitwidgets
 QT      += svg
 QT      += sql
 
-DUNNARTHEADERS = $${PWD}/../dunnart-libs
-INCLUDEPATH = .. \
-$$DUNNARTHEADERS \
-$$DUNNARTHEADERS/libvpsc \
-$$DUNNARTHEADERS/libcola \
-$$DUNNARTHEADERS/libtopology \
-$$DUNNARTHEADERS/libdunnartcanvas \
-
-include($$DUNNARTHEADERS/common_options.pri)
 
 DEPENDPATH =  .. .
 
@@ -28,7 +19,7 @@ TARGET = easyNet3
 TEMPLATE = app
 
 
-LIBS += -L$$DLLDESTDIR -ldunnartcanvas -lavoid
+LIBS +=
 
 SOURCES +=  \
     main.cpp \
@@ -250,14 +241,4 @@ CONFIG += c++11
 
 ICON = images/easyNet.hqx
 
-
-macx {
-  libdunnartcanvas.path = Contents/MacOS
-  libdunnartcanvas.files  = $${PWD}/../dll/libdunnartcanvas.1.dylib
-  libdunnartcanvas.files += $${PWD}/../dll/libavoid.1.dylib
-  libdunnartcanvas.files += $${PWD}/../dll/libvpsc.1.dylib
-  libdunnartcanvas.files += $${PWD}/../dll/libcola.1.dylib
-  libdunnartcanvas.files += $${PWD}/../dll/libtopology.1.dylib
-  QMAKE_BUNDLE_DATA += libdunnartcanvas
-}
 

@@ -9,7 +9,7 @@
 
 class Box;
 
-class Arrow: public QGraphicsPathItem
+class Arrow: public QObject, public QGraphicsPathItem
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
@@ -29,6 +29,8 @@ public:
     ArrowType getArrowType()const{return m_arrowType;}
     void setNewEndpoint(End,QPointF,Box*,Strategy=CENTRE_CONNECTION_PIN);
     void initWithConnection(Box*,Box*);
+    bool dashedStroke()const;
+    void setDashedStroke(bool);
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
