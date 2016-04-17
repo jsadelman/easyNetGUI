@@ -20,6 +20,7 @@ const QColor observedCol = QColor("white");
 
 Box::Box()
     : QObject(),
+      DiagramItem(DiagramItem::Layer,"",new QMenu,0),
       m_longNameToDisplayIntact("longname"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_widthOverHeight(1.618),

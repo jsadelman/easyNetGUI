@@ -31,6 +31,7 @@ public:
     void initWithConnection(Box*,Box*);
     bool dashedStroke()const;
     void setDashedStroke(bool);
+    void updatePosition();
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);

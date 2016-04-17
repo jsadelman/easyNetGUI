@@ -9,7 +9,7 @@
 #include <QAction>
 #include <QFont>
 #include <QtCore>
-
+#include "diagramitem.h"
 class ObjectCacheFilter;
 class ObjectUpdater;
 QString limitString(const QString& aString, int maxLength);
@@ -29,7 +29,7 @@ inline QString limitString(const QString& aString, int maxLength) {
     return beforeEllipsis + ELLIPSIS + afterEllipsis;
 }
 
-class Box: public QObject, public QGraphicsPolygonItem
+class Box: public QObject, public DiagramItem//QGraphicsPolygonItem
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
@@ -68,13 +68,13 @@ public:
     void setCentrePos(const QPointF&p){m_centrePos=p;}
     QPointF centrePos()const{return m_centrePos;}
     QStringList defaultPlotTypes();
-    qreal height()const{return m_height;}
-    qreal width()const{return m_width;}
+    qreal height()const{return size.height();}
+    qreal width()const{return size.width();}
     qreal autoWidth();
-    QSet<Box *> neighbours();
+//    QSet<Box *> neighbours();
     void setFillColour(QColor);
     void setDashedStroke(bool);
-    void cmd_setSize(QSizeF);
+    void cmd_setSize(QSizeF f){size=f;}
 signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);
     void lazyNutTypeChanged();
@@ -122,7 +122,7 @@ private:
 
 
     QPointF m_centrePos;
-    qreal m_height,m_width;
+    QSizeF size;
 
 };
 

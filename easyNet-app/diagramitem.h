@@ -65,7 +65,7 @@ class Arrow;
 //! [0]
 class DiagramItem : public QGraphicsPolygonItem
 {
-    Q_OBJECT
+
 public:
     enum { Type = UserType + 15 };
     enum DiagramType { Layer, Diamond };

@@ -136,19 +136,19 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
 // This implementation of the connected component algorithm is adapted from:
 // https://breakingcode.wordpress.com/2013/04/08/finding-connected-components-in-a-graph/
-QList<QSet<Box *> > DiagramScene::connectedComponents()
+QList<QSet<DiagramItem *> > DiagramScene::connectedComponents()
 {
-    QList<QSet<Box *> > cc;
-    QSet<Box *> shapeSet = shapes().toSet();
+    QList<QSet<DiagramItem *> > cc;
+    QSet<DiagramItem *> shapeSet = shapes().toSet();
     while (!shapeSet.isEmpty())
     {
-        Box * shape = shapeSet.toList().first();
+        DiagramItem * shape = shapeSet.toList().first();
         shapeSet.remove(shape);
-        QSet<Box *> group({shape});
-        QList<Box *> queue({shape});
+        QSet<DiagramItem *> group({shape});
+        QList<DiagramItem *> queue({shape});
         while (!queue.isEmpty())
         {
-            QSet<Box *> neighbourSet = queue.takeFirst()->neighbours();
+            QSet<DiagramItem *> neighbourSet = queue.takeFirst()->neighbours();
             neighbourSet.subtract(group);
             shapeSet.subtract(neighbourSet);
             group.unite(neighbourSet);
@@ -159,13 +159,13 @@ QList<QSet<Box *> > DiagramScene::connectedComponents()
     return cc;
 }
 
-QList<Box *> DiagramScene::shapes()
+QList<DiagramItem *> DiagramScene::shapes()
 {
-    QList<Box *> result;
+    QList<DiagramItem *> result;
     QListIterator<QGraphicsItem*> it(items());
     while(it.hasNext())
     {
-        Box *shape = dynamic_cast<Box*>(it.next());
+        DiagramItem *shape = dynamic_cast<DiagramItem*>(it.next());
         if (shape)
             result.append(shape);
     }

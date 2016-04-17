@@ -106,8 +106,8 @@ public:
     enum Alignment{Vertical,Horizontal};
     void alignSelection(Alignment);
     void deleteSelection();
-    QList<QSet<Box *> > connectedComponents();
-    QList<Box *> shapes();
+    QList<QSet<DiagramItem *> > connectedComponents();
+    QList<DiagramItem *> shapes();
     QList<Box *> boxes();
     QUndoStack* undoStack(){return m_undoStack;}
 

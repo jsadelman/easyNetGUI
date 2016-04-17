@@ -27,8 +27,7 @@ SOURCES +=  \
     treemodel.cpp \
     querycontext.cpp \
     objexplorer.cpp \
- #   arrow.cpp \
- #  diagramitem.cpp \
+   diagramitem.cpp \
    diagramscene.cpp \
     diagramtextitem.cpp \
 #    designwindow.cpp \
@@ -126,8 +125,8 @@ HEADERS  += \
     treemodel.h \
     querycontext.h \
     objexplorer.h \
- #  arrow.h \
- #    diagramitem.h \
+   arrow.h \
+     diagramitem.h \
     diagramscene.h \
     diagramtextitem.h \
  #   designwindow.h \
