@@ -23,7 +23,7 @@ public:
     virtual void setLazyNutType(const QString& lazyNutType) {m_lazyNutType = lazyNutType;}
     Box* getStartItem()const{return m_startItem;}
     Box* getEndItem()const{return m_endItem;}
-    enum ArrowType {Line,SelfLoop};
+    enum ArrowType {Unset,Line,SelfLoop};
     enum End {SRCPT,DSTPT};
     enum Strategy {CENTRE_CONNECTION_PIN};
     ArrowType getArrowType()const{return m_arrowType;}
@@ -32,6 +32,7 @@ public:
     bool dashedStroke()const{return m_dashedStroke;}
     void setDashedStroke(bool);
     void updatePosition();
+
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);
@@ -40,13 +41,13 @@ protected:
 private:
     void lesion();
     void unlesion();
-
+    void setArrowType(ArrowType p);
     QString m_name;
     QString m_lazyNutType;
     Box* m_startItem,*m_endItem;
     ArrowType m_arrowType;
     bool m_dashedStroke;
-    QGraphicsLineItem* m_line;
+    QGraphicsItem* m_line;
     QGraphicsItem* m_head;
 };
 

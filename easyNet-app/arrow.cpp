@@ -8,16 +8,65 @@
 #include <QApplication>
 #include <QGraphicsSceneEvent>
 #include <QPen>
-Arrow::Arrow():m_startItem(0),m_endItem(0)
+
+Arrow::Arrow():m_startItem(0),m_endItem(0),m_head(0),m_line(0),m_arrowType(Arrow::Unset)
 {
-    m_line=new QGraphicsLineItem(this);
-    m_head=new QGraphicsPolygonItem(this);
-    addToGroup(m_line);
-    QPen pen;
-    pen.setWidth(6);
-    pen.setColor(Qt::black);
-    m_line->setPen(pen);
-        setFlag(QGraphicsItem::ItemIsSelectable);
+    setFlag(QGraphicsItem::ItemIsSelectable);
+}
+
+void Arrow::setArrowType(Arrow::ArrowType typ)
+{
+    prepareGeometryChange();
+    if(m_arrowType!=typ)
+    {
+        if(m_line)
+        {
+          removeFromGroup(m_line);
+          delete m_line;
+        }
+    if(m_head)
+    {
+        removeFromGroup(m_head);
+        delete m_head;
+     }
+    switch(typ)
+        {
+          case(Arrow::Line):
+            {
+                auto line=new QGraphicsLineItem(this);
+                m_line=line;
+                auto head=new QGraphicsPolygonItem(this);
+                m_head=head;
+                QPen pen;
+                pen.setWidth(4);
+                pen.setColor(Qt::black);
+                line->setPen(pen);
+                head->setPen(pen);
+                head->setBrush(QBrush(Qt::black,Qt::SolidPattern));
+                addToGroup(m_line);
+                addToGroup(m_head);
+                break;
+            }
+          case(Arrow::SelfLoop):
+            {
+                auto line=new QGraphicsPathItem(this);
+                m_line=line;
+                auto head=new QGraphicsEllipseItem(this);
+                m_head=head;
+                QPen pen;
+                pen.setWidth(4);
+                pen.setColor(Qt::black);
+                line->setPen(pen);
+                head->setPen(pen);
+                head->setBrush(QBrush(Qt::black,Qt::SolidPattern));
+                addToGroup(m_line);
+                addToGroup(m_head);
+            }
+        };
+
+    }
+    m_arrowType=typ;
+
 }
 
 void Arrow::setNewEndpoint(Arrow::End end, QPointF pt, Box *bx, Arrow::Strategy)
@@ -28,7 +77,10 @@ void Arrow::setNewEndpoint(Arrow::End end, QPointF pt, Box *bx, Arrow::Strategy)
       {
           m_startItem->removeArrow(this);
           m_startItem=bx;
-          if(m_startItem!=m_endItem) m_arrowType=Arrow::Line; else m_arrowType=Arrow::SelfLoop;
+          if(m_startItem!=m_endItem)
+              setArrowType(Arrow::Line);
+          else
+              setArrowType(Arrow::SelfLoop);
           bx->addArrow(this);
       }
   }
@@ -38,17 +90,24 @@ void Arrow::setNewEndpoint(Arrow::End end, QPointF pt, Box *bx, Arrow::Strategy)
       {
           m_endItem->removeArrow(this);
           m_endItem=bx;
-          if(m_startItem!=m_endItem) m_arrowType=Arrow::Line; else m_arrowType=Arrow::SelfLoop;
+          if(m_startItem!=m_endItem)
+              setArrowType(Arrow::Line);
+          else
+              setArrowType(Arrow::SelfLoop);
           bx->addArrow(this);
       }
   }
+  updatePosition();
 }
 
 void Arrow::initWithConnection(Box *from, Box *to)
 {
   m_startItem=from;
   m_endItem=to;
-  if(m_startItem!=m_endItem) m_arrowType=Arrow::Line; else m_arrowType=Arrow::SelfLoop;
+  if(m_startItem!=m_endItem)
+      setArrowType(Arrow::Line);
+  else
+      setArrowType(Arrow::SelfLoop);
   from->addArrow(this);
   to->addArrow(this);
   updatePosition();
@@ -61,13 +120,51 @@ void Arrow::setDashedStroke(bool)
 
 void Arrow::updatePosition()
 {
-//    removeFromGroup(m_line);
     prepareGeometryChange();
-    QLineF line;
-    line.setP1(m_startItem->connectionPoint(this)+m_startItem->center());
-    line.setP2(m_endItem->connectionPoint(this)+m_endItem->center());
-    m_line->setLine(line);
-//    addToGroup(m_line);
+    QPointF P1(m_startItem->connectionPoint(this)+m_startItem->center());
+    QPointF P2(m_endItem->connectionPoint(this)+m_endItem->center());
+    switch(m_arrowType)
+    {
+    case(Arrow::Line):
+    {
+        auto mline=dynamic_cast<QGraphicsLineItem*>(m_line);
+
+        if(!mline) break;
+        QLineF line;
+        line.setP1(P1);
+        line.setP2(P2);
+        mline->setLine(line);
+        QGraphicsPolygonItem* mhead=dynamic_cast<QGraphicsPolygonItem*>(m_head);
+        if(!mhead) break;
+        QPolygonF tri;
+        tri.append(P2);
+        QLineF temp(P2,P1);
+        temp.setLength(20);
+        QLineF tempa(temp.p2(),temp.p1());
+        QLineF temp2(tempa.normalVector());
+        temp2.setLength(10);
+        tri.append(temp2.p2());
+        temp2.setLength(-10);
+        tri.append(temp2.p2());
+        mhead->setPolygon(tri);
+        break;
+    }
+    case(Arrow::SelfLoop):
+    {
+        QGraphicsPathItem*mline=dynamic_cast<QGraphicsPathItem*>(m_line);
+        if(!mline)break;
+        QPainterPath path=m_startItem->loopPath(this);
+        path.translate(m_startItem->center());
+        mline->setPath(path);
+        QGraphicsEllipseItem*mhead=dynamic_cast<QGraphicsEllipseItem*>(m_head);
+        if(!mhead)break;
+        QPointF end=path.currentPosition();
+        QRectF rect(end.x(),end.y()-5,10,10);
+        mhead->setRect(rect);
+        break;
+
+    }
+    };
 
 }
 

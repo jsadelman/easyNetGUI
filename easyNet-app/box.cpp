@@ -35,7 +35,7 @@ Box::Box()
     labelFont = scene() ? scene()->font() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
     m_ports.clear();
-
+    setZValue(10);
 }
 
 void Box::setLazyNutType(const QString &lazyNutType)

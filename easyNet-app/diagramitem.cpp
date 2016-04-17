@@ -66,7 +66,7 @@ DiagramItem::DiagramItem(DiagramType diagramType, QString name, QMenu *contextMe
     myDiagramType = diagramType;
     myContextMenu = contextMenu;
     myColor = Qt::black;
-    penWidth = 10;
+    penWidth = 4;
     setGeometry();
 
 
