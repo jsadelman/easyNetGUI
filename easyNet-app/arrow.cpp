@@ -12,6 +12,26 @@ Arrow::Arrow()
 {
 }
 
+void Arrow::setNewEndpoint(Arrow::End, QPointF, Box *, Arrow::Strategy)
+{
+
+}
+
+void Arrow::initWithConnection(Box *, Box *)
+{
+
+}
+
+void Arrow::setDashedStroke(bool)
+{
+
+}
+
+void Arrow::updatePosition()
+{
+
+}
+
 QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
 {
     if (!menu.isEmpty())

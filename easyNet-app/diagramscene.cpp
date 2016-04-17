@@ -229,6 +229,16 @@ bool DiagramScene::validForAlignment(QList<Box *> items)
     return true;
 }
 
+void DiagramScene::alignSelection(DiagramScene::Alignment)
+{
+
+}
+
+void DiagramScene::deleteSelection()
+{
+
+}
+
 //! [4]
 
 //    if (!layoutLoaded)

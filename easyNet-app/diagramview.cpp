@@ -13,6 +13,11 @@ DiagramView::DiagramView(DiagramScene *scene) : QGraphicsView(scene)
 {
 }
 
+void DiagramView::fitVisible()
+{
+
+}
+
 #if 0
 void DiagramView::fitVisible()
 {
@@ -93,4 +98,9 @@ void DiagramView::saveLayout()
         QJsonDocument savedLayoutDoc(layoutObject);
         savedLayoutFile.write(savedLayoutDoc.toJson());
     }
+}
+
+void DiagramView::zoomChanged()
+{
+
 }

@@ -58,14 +58,17 @@ public:
     virtual void setWidthOverHeight(qreal r) {m_widthOverHeight = r;}
 
     void setPorts(QMap <QString, QString> ports) {m_ports = ports;}
-
-
     void read(const QJsonObject &json, qreal boxWidth=0);
     void write(QJsonObject &json) const;
     void autoSize();
     virtual void paintLabel(QPainter *painter);
     virtual QRectF labelBoundingRect(void) const;
-    void setCentrePos(const QPointF&p){m_centrePos=p;}
+    void setCentrePos(const QPointF&p)
+    {
+        auto x=p-m_centrePos;
+        moveBy(x.x(),x.y());
+        m_centrePos=p;
+    }
     QPointF centrePos()const{return m_centrePos;}
     QStringList defaultPlotTypes();
     qreal height()const{return size.height();}

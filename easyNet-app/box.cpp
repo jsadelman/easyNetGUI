@@ -28,7 +28,8 @@ Box::Box()
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
       enabledObserverSet(),
       m_defaultPlotTypes(),
-      m_layerTransfer()
+      m_layerTransfer(),
+      m_centrePos(scenePos())
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemIsMovable);
@@ -99,6 +100,16 @@ qreal Box::autoWidth()
 {
     QFontMetrics fm(labelFont);
     return (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
+}
+
+void Box::setFillColour(QColor)
+{
+
+}
+
+void Box::setDashedStroke(bool)
+{
+
 }
 
 void Box::autoSize()

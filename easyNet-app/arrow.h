@@ -29,7 +29,7 @@ public:
     ArrowType getArrowType()const{return m_arrowType;}
     void setNewEndpoint(End,QPointF,Box*,Strategy=CENTRE_CONNECTION_PIN);
     void initWithConnection(Box*,Box*);
-    bool dashedStroke()const;
+    bool dashedStroke()const{return m_dashedStroke;}
     void setDashedStroke(bool);
     void updatePosition();
 protected:
@@ -44,6 +44,7 @@ private:
     QString m_lazyNutType;
     Box* m_startItem,*m_endItem;
     ArrowType m_arrowType;
+    bool m_dashedStroke;
 };
 
 #endif // ARROW_H

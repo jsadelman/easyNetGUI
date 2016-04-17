@@ -95,7 +95,7 @@ public:
 
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option, QWidget *widget);
-    void paintLabel(QPainter *painter);
+    virtual void paintLabel(QPainter *painter);
     void updatePosition();
     QSet<DiagramItem*>neighbours()const{return m_neighbours;}
 

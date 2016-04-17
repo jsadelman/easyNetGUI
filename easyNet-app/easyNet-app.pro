@@ -134,7 +134,7 @@ HEADERS  += \
     codeeditor.h \
     editwindow.h \
 #    plotsettingswindow.h \
-    lazynBut.h \
+    lazynut.h \
     sessionmanager.h \
     commandsequencer.h \
     enumclasses.h \
