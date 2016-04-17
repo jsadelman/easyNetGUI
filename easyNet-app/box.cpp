@@ -214,7 +214,12 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
         QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
         unlesionAct->setVisible(m_layerTransfer == "lesion_transfer");
 
-        QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
+        QAction *action = NULL;
+        if (!menu.isEmpty())
+        {
+            QApplication::restoreOverrideCursor();
+            action = menu.exec(event->screenPos());
+        }
 
         if (actionList.contains(action))
         {
@@ -256,7 +261,12 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
     }
     else
     {
-        QAction *action = ShapeObj::buildAndExecContextMenu(event, menu);
+        QAction *action = NULL;
+        if (!menu.isEmpty())
+        {
+            QApplication::restoreOverrideCursor();
+            action = menu.exec(event->screenPos());
+        }
         return action;
     }
 }

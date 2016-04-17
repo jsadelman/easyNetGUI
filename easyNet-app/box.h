@@ -52,10 +52,12 @@ public:
     void setCentrePos(const QPointF&p){m_centrePos=p;}
     QPointF centrePos()const{return m_centrePos;}
     QStringList defaultPlotTypes();
-    qreal height(){return m_height;}
-    qreal width(){return m_width;}
+    qreal height()const{return m_height;}
+    qreal width()const{return m_width;}
     qreal autoWidth();
     QSet<Box *> neighbours();
+    void setFillColour(QColor);
+    void setDashedStroke(bool);
 
 signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);
@@ -78,7 +80,7 @@ private:
     void lesionBox(bool lesion);
 
 
-    QString m_name;
+    QString m_name,m_label;
     QString m_lazyNutType;
     int m_labelPointSize;
     QFont labelFont;
