@@ -21,6 +21,7 @@ DiagramSceneTabWidget::DiagramSceneTabWidget(QMainWindow *window)
 //        qDebug() << "emit currentDiagramSceneChanged";
 //        emit currentDiagramSceneChanged(qobject_cast<DiagramScene*>(canvas));
 //    });
+    emptyScene=new DiagramScene("nul","nul");
 }
 
 int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QString arrowType)
@@ -36,11 +37,19 @@ int DiagramSceneTabWidget::newDiagramScene(QString title, QString boxType, QStri
 
 DiagramScene *DiagramSceneTabWidget::currentDiagramScene()
 {
+    if(held.contains(currentIndex()))
+    {
+        return qobject_cast<DiagramScene*>(qobject_cast<DiagramView*>(held[currentIndex()])->scene());
+    }
     return qobject_cast<DiagramScene*>(diagramSceneAt(currentIndex()));
 }
 
 DiagramView *DiagramSceneTabWidget::currentDiagramView()
 {
+    if(held.contains(currentIndex()))
+    {
+        return qobject_cast<DiagramView*>(held[currentIndex()]);
+    }
     return qobject_cast<DiagramView*>(currentWidget());
 }
 
@@ -52,6 +61,35 @@ DiagramScene *DiagramSceneTabWidget::diagramSceneAt(int index)
 DiagramView *DiagramSceneTabWidget::diagramViewAt(int index)
 {
     return qobject_cast<DiagramView*>(widget(index));
+}
+
+void DiagramSceneTabWidget::poke()
+{
+    for(auto x:held) x->update();
+}
+
+void DiagramSceneTabWidget::useFake(int idx, bool yn)
+{
+    if(yn)
+    {
+      held.insert(idx,widget(idx));
+      QString lab=tabText(idx);
+      removeTab(idx);
+      insertTab(idx,new DiagramView(emptyScene),lab);
+      setCurrentIndex(idx);
+    }
+    else
+    {
+        qDebug()<<"returning";
+        QString lab=tabText(idx);
+        QWidget* todel=widget(idx);
+        QWidget* returned=held[idx];
+        removeTab(idx);
+        insertTab(idx,returned,lab);
+        delete todel;
+        setCurrentIndex(idx);
+        held.remove(idx);
+    }
 }
 
 void DiagramSceneTabWidget::emitCurrentDiagramSceneChanged(QGraphicsScene *canvas)

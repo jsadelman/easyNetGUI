@@ -124,6 +124,7 @@ public slots:
     void initShapePlacement();
     void wakeUp();
     void goToSleep();
+    QGraphicsItem* getZeb(){return zeb;}
 
 signals:
     void itemInserted(QGraphicsItem*);
@@ -137,7 +138,6 @@ signals:
     void animationFinished();
     void createDataViewRequested(QString,QString,QString, QMap<QString, QString>, bool);
     void plotDestroyed(QString name);
-
 
 
 protected:
@@ -216,6 +216,7 @@ private:
 
     qreal jitter;
     QUndoStack* m_undoStack;
+    QGraphicsItem *zeb;
 
     friend class DiagramWindow; // dunnart::Canvas has lots of friends, this is the same idea.
 };

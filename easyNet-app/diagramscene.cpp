@@ -131,9 +131,12 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 
     // default state is wake up
     wakeUp();
+    QPixmap zebpix(150,200);
+    zebpix.load(":/images/zebra.png");
+    zeb = addPixmap(zebpix);
+    zeb->setScale(.25);
+    zeb->setPos(-300,-500);
 }
-
-
 // This implementation of the connected component algorithm is adapted from:
 // https://breakingcode.wordpress.com/2013/04/08/finding-connected-components-in-a-graph/
 QList<QSet<DiagramItem *> > DiagramScene::connectedComponents()
@@ -196,6 +199,7 @@ void DiagramScene::updateConnectorsForLayout()
 
 void DiagramScene::read(const QJsonObject &json)
 {
+    qDebug()<<"jsonread";
     qreal boxWidth = json["boxWidth"].toDouble();
     QJsonArray itemArray = json["QGraphicsItems"].toArray();
 
@@ -331,7 +335,7 @@ void DiagramScene::initShapePlacement()
 
 void DiagramScene::setAnalyzedLocations(QDomDocument *domDoc)
 {
-
+qDebug()<<"analyzing";
     foreach(Box*box, boxes())
     {
         QString n=box->name();

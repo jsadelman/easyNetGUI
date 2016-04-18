@@ -25,8 +25,10 @@ void DiagramView::fitVisible()
 void DiagramView::fitVisible(bool computeBoundingRect)
 {
     resetTransform();
+//    scene()->removeItem(canvas()->getZeb());
     QRectF sceneRect = computeBoundingRect ? canvas()->itemsBoundingRect() :
                                              canvas()->sceneRect();
+//    scene()->addItem(canvas()->getZeb());
     qreal viewBorder = 50;
     qreal sceneHeight = sceneRect.height() + viewBorder;
     qreal sceneWidth = sceneRect.width() + viewBorder;

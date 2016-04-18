@@ -716,7 +716,8 @@ void MainWindow::loadModel()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
-    diagramPanel->hide();
+//    diagramPanel->hide();
+    diagramPanel->useFake(modelTabIdx,true);
     loadModel(fileName,true);
 }
 void MainWindow::loadModelUnconfigured()
@@ -780,7 +781,9 @@ void MainWindow::afterModelStaged()
 
 void MainWindow::initialLayout()
 {
+    qDebug()<<"init";
     diagramPanel->show();
+    diagramPanel->useFake(modelTabIdx,false);
     disconnect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
 
 }
