@@ -5,7 +5,6 @@
 #include <QStringList>
 #include <QEventLoop>
 #include <QToolBar>
-#include <QWebView>
 #include <QGuiApplication>
 #include <QScreen>
 #include <QDebug>

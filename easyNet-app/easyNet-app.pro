@@ -6,7 +6,6 @@
 
 
 QT      += core gui xml
-QT      += webkit webkitwidgets
 QT      += svg
 QT      += sql
 
