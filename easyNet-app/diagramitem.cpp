@@ -235,6 +235,7 @@ void DiagramItem::setGeometry()
     loopBasePath = QPainterPath();
     loopBasePath.arcMoveTo(loopRect,180 + angleOnRect);
     loopBasePath.arcTo(loopRect,180 + angleOnRect,myLoopRotation);
+    loopBasePath.translate(-mywidth/2.,myheight/4.);
 }
 
 //void DiagramItem::paintLabel()
@@ -388,6 +389,7 @@ QPointF DiagramItem::connectionPoint(Arrow *arrow) const
 
 DiagramItem::Side DiagramItem::preferredSide (const Arrow *arrow)const
 {
+    if(arrow->getStartItem()==arrow->getEndItem())return Right;
     const DiagramItem* otherItem=0;
     qreal halfwidth = mywidth/2.;
     qreal halfheight = myheight/2.;
@@ -413,9 +415,9 @@ QPointF DiagramItem::alternativeConnectionPoint(Arrow *arrow) const
     // Determine how many arrows of the type Line
     // connect arrow's startItem to endItem or viceversa.
     // Determine the index of this arrow within that set of arrows.
-    if (arrow->getArrowType() != Arrow::Line)
+/*    if (arrow->getArrowType() != Arrow::Line)
         return QPointF(0,0);
-    DiagramItem* startItem = arrow->getStartItem();
+*/    DiagramItem* startItem = arrow->getStartItem();
     DiagramItem* endItem = arrow->getEndItem();
     const DiagramItem* otherItem=0;
     if(this==arrow->getStartItem()) otherItem=arrow->getEndItem();
@@ -424,37 +426,41 @@ QPointF DiagramItem::alternativeConnectionPoint(Arrow *arrow) const
 
     int arrowCount = 0;
     int arrowIndex = 1;
-    if (!( (startItem == this && endItem != this) ||
-           (startItem != this && endItem == this) )) // this should be either start or end, not both
-        return QPointF(0,0);
     foreach (Arrow * other, arrowList())
     {
-            if ( //(this == other->getEndItem() || this == other->getStartItem() ) &&
-                 other->getArrowType()== Arrow::Line && preferredSide(other)==incoming)
+            if ( preferredSide(other)==incoming)
             {
                 arrowCount++;
-                if(arrow==other) continue;
+                if(arrow==other)
+                {
+                    continue;
+
+                }
                 auto ooItem=(other->getStartItem()==this)?other->getEndItem():other->getStartItem();
+                if(ooItem == otherItem)
+                {
+                    if( (void*)arrow<(void*)other )
+                    {
+                        arrowIndex++;
+                    }
+                    continue;
+                }
                 switch(incoming)
                 {
                 case(Top):
-                    if ( other->cotangent() < arrow->cotangent() ||
-                            (ooItem == otherItem && arrow<other ) ) // break tie arbitrarily
+                    if ( other->cotangent() < arrow->cotangent() )
                         arrowIndex++;
                     break;
                 case(Bottom):
-                    if ( other->cotangent() > arrow->cotangent() ||
-                            (ooItem == otherItem && arrow<other ) ) // break tie arbitrarily
+                    if ( other->cotangent() > arrow->cotangent() )
                         arrowIndex++;
                     break;
                 case(Left):
-                    if ( other->tangent() < arrow->tangent() ||
-                            (ooItem == otherItem && arrow<other ) ) //break tie arbitrarily
+                    if ( other->tangent() < arrow->tangent() )
                         arrowIndex++;
                     break;
                 case(Right):
-                    if ( other->tangent() > arrow->tangent() ||
-                            (ooItem == otherItem && arrow<other ) ) //break tie arbitrarily
+                    if ( other->tangent() > arrow->tangent() )
                         arrowIndex++;
                     break;
                 }
@@ -514,6 +520,7 @@ QPointF DiagramItem::alternativeConnectionPoint(Arrow *arrow) const
 
 QPainterPath DiagramItem::loopPath(Arrow *arrow) const
 {
+    return loopBasePath.translated(alternativeConnectionPoint(arrow));
     // Use only with arrows of type SelfLoop.
     // similarly to connectionPoint, compute arrowCount and arrowIndex
     if (arrow->getArrowType() != Arrow::SelfLoop)

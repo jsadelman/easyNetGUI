@@ -217,11 +217,13 @@ void Arrow::updatePen()
 
 qreal Arrow::tangent()const
 {
+    if(m_endItem==m_startItem) return 0;
     return (m_endItem->pos().y() - m_startItem->pos().y()) /
             (m_endItem->pos().x() - m_startItem->pos().x());
 }
 qreal Arrow::cotangent()const
 {
+    if(m_endItem==m_startItem) return 0;
     return (m_endItem->pos().x() - m_startItem->pos().x()) /
             (m_endItem->pos().y() - m_startItem->pos().y());
 }
