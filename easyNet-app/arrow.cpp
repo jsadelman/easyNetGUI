@@ -16,8 +16,8 @@ Arrow::Arrow():m_startItem(0),m_endItem(0),m_head(0),m_line(0),m_arrowType(Arrow
     setFlag(QGraphicsItem::ItemIsSelectable);
 
 }
-QPointF Arrow::startPoint(){return m_startItem?(m_startItem->connectionPoint(this)+m_startItem->center()):m_altStartPt;}
-QPointF Arrow::endPoint(){return m_endItem?(m_endItem->connectionPoint(this)+m_endItem->center()):m_altEndPt;}
+QPointF Arrow::startPoint(){return m_startItem?(m_startItem->alternativeConnectionPoint(this)+m_startItem->center()):m_altStartPt;}
+QPointF Arrow::endPoint(){return m_endItem?(m_endItem->alternativeConnectionPoint(this)+m_endItem->center()):m_altEndPt;}
 
 void Arrow::setArrowType(Arrow::ArrowType typ)
 {
@@ -213,6 +213,12 @@ void Arrow::updatePen()
     }
     };
 
+}
+
+qreal Arrow::tangent()const
+{
+    return (m_endItem->pos().y() - m_startItem->pos().y()) /
+            (m_endItem->pos().x() - m_startItem->pos().x());
 }
 
 QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)

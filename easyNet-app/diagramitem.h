@@ -88,6 +88,7 @@ public:
     int type() const { return Type;}
     QPointF center() const {return scenePos(); }
     QPointF  connectionPoint(Arrow *arrow) const;
+    QPointF  alternativeConnectionPoint(Arrow *arrow) const;
     QPainterPath  loopPath(Arrow *arrow) const;
     qreal loopRotation() const {return myLoopRotation;}
     QString name() const {return myName;}
@@ -100,7 +101,9 @@ public:
     virtual void paintLabel(QPainter *painter);
     void updatePosition();
     QSet<DiagramItem*>neighbours()const{return m_neighbours;}
+    enum Side{Unset,Top,Bottom,Left,Right};
 
+    DiagramItem::Side preferredSide(const Arrow *arrow)const;
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
@@ -134,7 +137,8 @@ protected:
     QColor myColor;
     int penWidth;
     QSet<DiagramItem*>m_neighbours;
-
+    mutable QMap<Arrow*,Side> sides;
+    mutable QMap<Arrow*,int> indices;
 };
 //! [0]
 

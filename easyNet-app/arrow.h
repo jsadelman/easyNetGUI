@@ -36,6 +36,8 @@ public:
     QPointF startPoint();
     QPointF endPoint();
     void updatePen();
+    qreal tangent()const;
+
 protected:
     virtual QAction *buildAndExecContextMenu(
             QGraphicsSceneMouseEvent *event, QMenu& menu);

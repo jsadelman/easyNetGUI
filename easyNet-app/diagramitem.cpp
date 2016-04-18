@@ -115,7 +115,7 @@ void DiagramItem::setGeometry()
         // these properties will be exposed
         //qreal mywidth = 150;
         //qreal myheight = 100;
-        dockingLineProportion = .6;
+        dockingLineProportion = 1;
         loopDiameterProportion = 0.3;
         qreal halfwidth = mywidth/2;
         qreal halfheight = myheight/2;
@@ -381,6 +381,123 @@ QPointF DiagramItem::connectionPoint(Arrow *arrow) const
                 QPointF rel=QPointF((otherItem->center().x()>center().x())?halfwidth:-halfwidth,0);
                 return verticalDockingLine.pointAt(relativePointLocation)+rel;
             }
+        }
+    }
+
+}
+
+DiagramItem::Side DiagramItem::preferredSide (const Arrow *arrow)const
+{
+    const DiagramItem* otherItem=0;
+    qreal halfwidth = mywidth/2.;
+    qreal halfheight = myheight/2.;
+    if(this==arrow->getStartItem()) otherItem=arrow->getEndItem();
+    if(this==arrow->getEndItem()) otherItem=arrow->getStartItem();
+    if (::fabs( arrow->tangent() ) > (halfheight/halfwidth))
+    { //steep
+        return (otherItem->center().y()>center().y())?Top:Bottom;
+    }
+    else
+    { //shallow
+        return (otherItem->center().x()>center().x())?Right:Left;
+    }
+
+}
+
+QPointF DiagramItem::alternativeConnectionPoint(Arrow *arrow) const
+{
+    qreal halfwidth = mywidth/2.;
+    qreal halfheight = myheight/2.;
+    // Use for Line type only. For SelfLoop use loopPath() instead.
+
+    // Determine how many arrows of the type Line
+    // connect arrow's startItem to endItem or viceversa.
+    // Determine the index of this arrow within that set of arrows.
+    if (arrow->getArrowType() != Arrow::Line)
+        return QPointF(0,0);
+    DiagramItem* startItem = arrow->getStartItem();
+    DiagramItem* endItem = arrow->getEndItem();
+    const DiagramItem* otherItem=0;
+    if(this==arrow->getStartItem()) otherItem=arrow->getEndItem();
+    if(this==arrow->getEndItem()) otherItem=arrow->getStartItem();
+    Side incoming=preferredSide(arrow),old=sides[arrow];
+
+    int arrowCount = 0;
+    int arrowIndex = 1;
+    if (!( (startItem == this && endItem != this) ||
+           (startItem != this && endItem == this) )) // this should be either start or end, not both
+        return QPointF(0,0);
+    foreach (Arrow * other, arrowList())
+    {
+            if ( //(this == other->getEndItem() || this == other->getStartItem() ) &&
+                 other->getArrowType()== Arrow::Line && preferredSide(other)==incoming)
+            {
+                arrowCount++;
+                auto ooItem=(other->getStartItem()==this)?other->getEndItem():other->getStartItem();
+                switch(incoming)
+                {
+                case(Top):
+                case(Bottom):
+                    if ( ooItem->x() < otherItem->x() ||
+                            (ooItem->x() == otherItem->x() && arrow<other ) ) // break tie arbitrarily
+                        arrowIndex++;
+                    break;
+                case(Left):
+                case(Right):
+                    if ( ooItem->y() > otherItem->y() ||
+                            (ooItem->y() == otherItem->y() && arrow<other ) ) //break tie arbitrarily
+                        arrowIndex++;
+                    break;
+                }
+            }
+    }
+    int oldindex=indices[arrow];
+    if(incoming!=old||arrowIndex!=oldindex)
+        {
+            sides.insert(arrow,incoming);
+            indices.insert(arrow,arrowIndex);
+            foreach(Arrow *other,arrowList())
+            {
+                auto pso=preferredSide(other);
+                if(other!=arrow&&(pso==incoming||pso==old))
+                {
+                    other->updatePosition();
+                }
+            }
+        }
+    qreal relativePointLocation = (qreal)(arrowIndex)/(qreal)(arrowCount+1);
+
+
+    if (!startItem)
+            return incomingArrowsDockingLine.pointAt(relativePointLocation);
+    else if (!endItem)
+            return outgoingArrowsDockingLine.pointAt(relativePointLocation);
+    else
+    {
+            // use vertical or horizontal docking line depending on arrow's angle
+        switch(incoming)
+        {
+            case Top:
+                        {
+                            QPointF rel=QPointF(0,halfheight);
+                            return horizontalDockingLine.pointAt(relativePointLocation)+rel;
+                        }
+            case Bottom:
+                        {
+                            QPointF rel=QPointF(0,-halfheight);
+                            return horizontalDockingLine.pointAt(relativePointLocation)+rel;
+                        }
+            case Right:
+            {
+                QPointF rel=QPointF(halfwidth,0);
+                return verticalDockingLine.pointAt(relativePointLocation)+rel;
+            }
+            case Left:
+            {
+                QPointF rel=QPointF(-halfwidth,0);
+                return verticalDockingLine.pointAt(relativePointLocation)+rel;
+            }
+
         }
     }
 
