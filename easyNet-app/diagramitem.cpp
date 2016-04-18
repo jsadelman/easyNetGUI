@@ -433,19 +433,28 @@ QPointF DiagramItem::alternativeConnectionPoint(Arrow *arrow) const
                  other->getArrowType()== Arrow::Line && preferredSide(other)==incoming)
             {
                 arrowCount++;
+                if(arrow==other) continue;
                 auto ooItem=(other->getStartItem()==this)?other->getEndItem():other->getStartItem();
                 switch(incoming)
                 {
                 case(Top):
+                    if ( other->cotangent() < arrow->cotangent() ||
+                            (ooItem == otherItem && arrow<other ) ) // break tie arbitrarily
+                        arrowIndex++;
+                    break;
                 case(Bottom):
-                    if ( ooItem->x() < otherItem->x() ||
-                            (ooItem->x() == otherItem->x() && arrow<other ) ) // break tie arbitrarily
+                    if ( other->cotangent() > arrow->cotangent() ||
+                            (ooItem == otherItem && arrow<other ) ) // break tie arbitrarily
                         arrowIndex++;
                     break;
                 case(Left):
+                    if ( other->tangent() < arrow->tangent() ||
+                            (ooItem == otherItem && arrow<other ) ) //break tie arbitrarily
+                        arrowIndex++;
+                    break;
                 case(Right):
-                    if ( ooItem->y() > otherItem->y() ||
-                            (ooItem->y() == otherItem->y() && arrow<other ) ) //break tie arbitrarily
+                    if ( other->tangent() > arrow->tangent() ||
+                            (ooItem == otherItem && arrow<other ) ) //break tie arbitrarily
                         arrowIndex++;
                     break;
                 }

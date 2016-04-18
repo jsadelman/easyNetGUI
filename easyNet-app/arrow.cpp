@@ -220,6 +220,11 @@ qreal Arrow::tangent()const
     return (m_endItem->pos().y() - m_startItem->pos().y()) /
             (m_endItem->pos().x() - m_startItem->pos().x());
 }
+qreal Arrow::cotangent()const
+{
+    return (m_endItem->pos().x() - m_startItem->pos().x()) /
+            (m_endItem->pos().y() - m_startItem->pos().y());
+}
 
 QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
 {

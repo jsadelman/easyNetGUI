@@ -37,6 +37,7 @@ public:
     QPointF endPoint();
     void updatePen();
     qreal tangent()const;
+    qreal cotangent()const;
 
 protected:
     virtual QAction *buildAndExecContextMenu(
