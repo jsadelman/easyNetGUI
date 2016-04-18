@@ -394,8 +394,11 @@ QPainterPath DiagramItem::loopPath(Arrow *arrow) const
         return QPainterPath();
     int arrowCount = 0;
     int arrowIndex = 0; // starts from 1, initialised to 0 to make compiler happy
+    QSet<Arrow*>ArrowSeen;
     foreach (Arrow * other, arrowList())
     {
+        if(ArrowSeen.contains(other)) continue;
+        ArrowSeen << other;
         if ( this == other->getStartItem() && this == other->getEndItem() )
         {
             arrowCount++;
@@ -419,7 +422,8 @@ QPainterPath DiagramItem::loopPath(Arrow *arrow) const
         // (that's where 0.75 comes from)
         qreal relativePointLocation = (qreal)(arrowIndex-1)/(qreal)(arrowCount-1);
         //qreal relativeLocationFirstPoint = 0.5 * ((1-dockingLineProportion)/2 + relativePointLocation * dockingLineProportion);
-        qreal relativeLocationFirstPoint = (0.5 - 0.75*loopDiameterProportion) + relativePointLocation * loopDiameterProportion/2;
+        qreal relativeLocationFirstPoint = (0.5 - 0.75*loopDiameterProportion) +
+                relativePointLocation * loopDiameterProportion/2;
         return loopBasePath.translated(relativeLocationFirstPoint*selfLoopDockingSide.dx(),
                                        relativeLocationFirstPoint*selfLoopDockingSide.dy());
     }

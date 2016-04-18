@@ -270,7 +270,6 @@ void DiagramScene::alignSelection(DiagramScene::Alignment al)
       qreal coord=(al==DiagramScene::Horizontal)?item->x():item->y();
       qreal xchange=(al==DiagramScene::Horizontal)?average-coord:0;
       qreal ychange=(al==DiagramScene::Horizontal)?0:average-coord;
-      qDebug()<<"moving "<<xchange<<" "<<ychange;
       item->moveBy(xchange,ychange);
   }
   updateConnectorsForLayout();
