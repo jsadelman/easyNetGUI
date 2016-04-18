@@ -75,7 +75,6 @@ void Box::setLabelPointSize(int labelPointSize)
 
 void Box::read(const QJsonObject &json, qreal boxWidth)
 {
-    qDebug()<<json;
     m_name = json["name"].toString();
     m_lazyNutType = json["lazyNutType"].toString();
     QPointF position(json["x"].toDouble(),json["y"].toDouble());

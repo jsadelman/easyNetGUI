@@ -16,8 +16,10 @@ public slots:
     void fitVisible(bool);
     void loadLayout();
     void saveLayout();
-    void zoomChanged();
     DiagramScene* canvas(){return qobject_cast<DiagramScene*>(scene());}
+signals:
+    void zoomChanged();
+    void canvasViewResized();
 private:
 //    void fitVisible(bool computeBoundingRect);
     void read(const QJsonObject &json);

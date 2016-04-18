@@ -198,28 +198,25 @@ void DiagramScene::read(const QJsonObject &json)
 {
     qreal boxWidth = json["boxWidth"].toDouble();
     QJsonArray itemArray = json["QGraphicsItems"].toArray();
-    qDebug()<<itemArray;
+
     for (int itemIndex = 0; itemIndex < itemArray.size(); ++itemIndex)
     {
         QJsonObject itemObject = itemArray[itemIndex].toObject();
         QString name = itemObject["name"].toString();
         if (itemHash.contains(name))
         {
-            qDebug()<<"reading "<<name<<"\n";
             Box * box = dynamic_cast<Box*>(itemHash.value(name));
             if (box)
                 box->read(itemObject, boxWidth);
         }
     }
     QJsonArray itemArray2 = json["diagramItems"].toArray();
-    qDebug()<<itemArray2;
     for (int itemIndex = 0; itemIndex < itemArray2.size(); ++itemIndex)
     {
         QJsonObject itemObject = itemArray2[itemIndex].toObject();
         QString name = itemObject["name"].toString();
         if (itemHash.contains(name))
         {
-            qDebug()<<"reading "<<name<<"\n";
             Box * box = dynamic_cast<Box*>(itemHash.value(name));
             if (box)
                 box->read(itemObject, boxWidth);

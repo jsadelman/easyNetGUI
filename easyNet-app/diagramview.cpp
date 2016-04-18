@@ -96,7 +96,3 @@ void DiagramView::saveLayout()
     }
 }
 
-void DiagramView::zoomChanged()
-{
-
-}
