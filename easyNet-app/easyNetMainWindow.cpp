@@ -648,7 +648,9 @@ void MainWindow::runScript()
 void MainWindow::loadModel(QString fileName,bool complete)
 {
     if (fileName.isEmpty())
+    {
         return;
+    }
 #ifdef WIN32
     if (!SessionManager::instance()->currentModel().isEmpty())
     {
@@ -656,6 +658,7 @@ void MainWindow::loadModel(QString fileName,bool complete)
                     QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
                     QStringList({fileName}),
                     qApp->applicationDirPath());
+        diagramPanel->useFake(modelTabIdx,false);
         return;
     }
 #endif
@@ -717,7 +720,7 @@ void MainWindow::loadModel()
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
 //    diagramPanel->hide();
-    diagramPanel->useFake(modelTabIdx,true);
+    if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
     loadModel(fileName,true);
 }
 void MainWindow::loadModelUnconfigured()
@@ -726,7 +729,7 @@ void MainWindow::loadModelUnconfigured()
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
-    diagramPanel->hide();
+    if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
     loadModel(fileName,false);
 }
 void MainWindow::modelConfigNeeded()
