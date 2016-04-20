@@ -78,6 +78,8 @@ QString CommandLog::getHistory(int shift, QString text)
         if (history.count() && historyIndex)
         {
             historyIndex--;
+            if (historyIndex >= history.size())
+                historyIndex = history.size() - 1;
             return(history[historyIndex]);
         }
         return("");
@@ -88,6 +90,8 @@ QString CommandLog::getHistory(int shift, QString text)
         {
             if (historyIndex < (history.size() - 1))
                 historyIndex++;
+            if (historyIndex >= history.size())
+                historyIndex = history.size() - 1;
             return(history[historyIndex]);
         }
     }
