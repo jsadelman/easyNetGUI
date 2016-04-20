@@ -42,10 +42,15 @@ void DataViewer::setUi()
         eNerror << "invalid Ui_DataViewer object";
         return;
     }
-    ui->setupUi(this);
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(ui);
-    setLayout(layout);
+    qDebug()<<(ui->setup?"Y":"N");
+//    if(!ui->setup)
+    {
+      ui->setupUi(this);
+      QVBoxLayout *mlayout = new QVBoxLayout;
+      mlayout->addWidget(ui);
+      setLayout(mlayout);
+     }
+
     enableActions(false);
 }
 

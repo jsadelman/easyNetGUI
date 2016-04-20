@@ -43,6 +43,7 @@ public:
     QAction *copyAct;
     QAction *destroyAct;
     QAction *settingsAct;
+    bool setup;
 
 //    QAction *infoAct;
 

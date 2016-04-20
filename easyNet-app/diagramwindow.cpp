@@ -48,16 +48,16 @@ void DiagramWindow::initArrangement()
 {
 
     fitVisibleAct->setChecked(true);
-    connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
+    connect(diagramSceneTabWidget->diagramSceneAt(0), SIGNAL(animationFinished()),
             this, SLOT(toFitVisible()));
 
-    if (QFileInfo(diagramSceneTabWidget->currentDiagramScene()->layoutFile()).exists())
+    if (QFileInfo(diagramSceneTabWidget->diagramSceneAt(0)->layoutFile()).exists())
     {
         loadLayout();
     }
     else
     {
-        diagramSceneTabWidget->currentDiagramScene()->initShapePlacement();
+        diagramSceneTabWidget->diagramSceneAt(0)->initShapePlacement();
     }
 }
 

@@ -100,7 +100,7 @@ void MainWindow::build()
     /* INITIAL DISPLAY AT STARTUP */
 //    introDock->raise();
 //    introPanel->setCurrentIndex(infoTabIdx); // start on Intro tab, to welcome user
-    diagramDock->raise();
+    //diagramDock->raise();
     diagramPanel->setCurrentIndex(modelTabIdx);
     diagramSceneTabChanged(modelTabIdx);
     diagramWindow->ToggleControlsDock(); // hide layout controls
@@ -125,6 +125,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::constructForms()
 {
+expertWindow=new QMainWindow;
+
     /* CONSTRUCT TABWIDGETS */
 
     introPanel = new QTabWidget;
@@ -198,9 +200,7 @@ void MainWindow::constructForms()
     connect(paramDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             paramViewer, SLOT(addItem(QString)));
 
-    ui_plotViewer = new Ui_DataTabsViewer;
-    ui_plotViewer->setUsePrettyNames(true);
-    plotViewer = new PlotViewer(ui_plotViewer, this);
+    plotViewer = new PlotViewer(ui_dataframeResultsViewer , this);
     plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
 
     ui_testViewer = new Ui_DataTabsViewer;
@@ -263,9 +263,9 @@ void MainWindow::constructForms()
 //    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
     dfTabIdx = explorerPanel->addTab(dataframeViewer, tr("Dataframes"));
 
-    plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
+   outputTablesTabIdx= plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
 //    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
-    outputTablesTabIdx = resultsPanel->addTab(dataframeResultsViewer, tr("Tables"));
+//    plotTabIdx=outputTablesTabIdx = resultsPanel->addTab(dataframeResultsViewer, tr("Results"));
 
 
     // perhaps use this code for detachable tabs?
@@ -432,25 +432,31 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
 //     viewMenu->addAction(introDock->toggleViewAction());
 ////     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-     codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
-     codePanelDock->setWidget(lazynutPanel);
-     addDockWidget(Qt::LeftDockWidgetArea, codePanelDock);
-     viewMenu->addAction(codePanelDock->toggleViewAction());
-     codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+expertWindow->hide();
+        expertWindow->setCentralWidget(lazynutPanel);
+//     codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
+ //    codePanelDock->setWidget(lazynutPanel);
+//     expertTabWidget->addTab(lazynutPanel,"Code");
+
+
+     //viewMenu->addAction(codePanelDock->toggleViewAction());
+  //   codePanelDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
  //    codePanelDock->hide(); // initially, don't show codePanelDock
 
      methodsDock = new QDockWidget(tr("Method"), this);
      methodsDock->setWidget(methodsPanel);
-     addDockWidget(Qt::LeftDockWidgetArea, methodsDock);
+     this->addDockWidget(Qt::LeftDockWidgetArea, methodsDock);
      viewMenu->addAction(methodsDock->toggleViewAction());
      methodsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
 
-     diagramDock = new QDockWidget(tr("Architecture"), this);
-     diagramDock->setWidget(diagramWindow);
-     addDockWidget(Qt::RightDockWidgetArea, diagramDock);
-     viewMenu->addAction(diagramDock->toggleViewAction());
-     diagramDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+//     diagramDock = new QDockWidget(tr("Architecture"), this);
+//     diagramDock->setWidget(diagramWindow);
+//     addDockWidget(Qt::RightDockWidgetArea, diagramDock);
+//     viewMenu->addAction(diagramDock->toggleViewAction());
+//     diagramDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+
+     methodsPanel->addTab(diagramWindow,"Model");
 
      explorerDock = new QDockWidget("Explorer",this);
      explorerDock->setWidget(explorerPanel);
@@ -465,8 +471,8 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
      resultsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
 //     tabifyDockWidget(introDock, codePanelDock);
-     tabifyDockWidget(codePanelDock, methodsDock);
-     tabifyDockWidget(diagramDock, explorerDock);
+     //tabifyDockWidget(codePanelDock, methodsDock);
+     //tabifyDockWidget(diagramDock, explorerDock);
      tabifyDockWidget(explorerDock, resultsDock);
 }
 
@@ -1044,9 +1050,9 @@ void MainWindow::loadScript()
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
-            codePanelDock->raise();
+            //codePanelDock->raise();
             lazynutPanel->setCurrentIndex(scriptTabIdx); // show scripts tab
-            codePanelDock->show();
+            //codePanelDock->show();
         }
  //   }
 }
@@ -1070,7 +1076,7 @@ void MainWindow::runTest()
 
 void MainWindow::afterTestsCompleted()
 {
-    codePanelDock->raise();
+    //codePanelDock->raise();
     lazynutPanel->setCurrentIndex(testsTabIdx);
     qDebug() << "trying to change display";
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));

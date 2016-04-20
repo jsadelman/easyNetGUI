@@ -229,9 +229,9 @@ public:
     DiagramSceneTabWidget *diagramPanel;
     DiagramWindow *diagramWindow;
 //    QDockWidget* introDock;
-    QDockWidget* codePanelDock;
+    //QDockWidget* codePanelDock;
     QDockWidget *methodsDock;
-    QDockWidget *diagramDock;
+    //QDockWidget *diagramDock;
     QDockWidget *explorerDock;
     QDockWidget *resultsDock;
     FloatingDialogWindow* modelSettingsDialog;
@@ -275,7 +275,7 @@ public:
 //    PlotSettingsWindow      *plotSettingsWindow;
     SettingsWidget      *dataViewSettingsWidget;
 //    PlotViewer_old      *plotViewer;
-    Ui_DataTabsViewer *ui_plotViewer;
+
     PlotViewerDispatcher *plotViewerDispatcher;
     PlotViewer      *plotViewer;
 //    TableEditor     *stimSetForm;
@@ -410,6 +410,10 @@ public:
     bool trialComboEventSwitch = false;
     QTime loadModelTimer;
 
+    // Waiting to be broken off
+
+    QMainWindow* expertWindow;
+    QTabWidget* expertTabWidget;
 
 //    enum runMode {RunSingle, RunAll};
 

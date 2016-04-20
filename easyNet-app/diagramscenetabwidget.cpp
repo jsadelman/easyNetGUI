@@ -55,11 +55,19 @@ DiagramView *DiagramSceneTabWidget::currentDiagramView()
 
 DiagramScene *DiagramSceneTabWidget::diagramSceneAt(int index)
 {
+    if(held.contains(index))
+    {
+        return qobject_cast<DiagramScene*>(qobject_cast<DiagramView*>(held[index])->scene());
+    }
     return qobject_cast<DiagramScene*>(diagramViewAt(index)->scene());
 }
 
 DiagramView *DiagramSceneTabWidget::diagramViewAt(int index)
 {
+    if(held.contains(index))
+    {
+        return qobject_cast<DiagramView*>(held[index]);
+    }
     return qobject_cast<DiagramView*>(widget(index));
 }
 

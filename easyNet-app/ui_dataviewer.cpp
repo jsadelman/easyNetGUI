@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 
 Ui_DataViewer::Ui_DataViewer()
-    : QMainWindow(), m_usePrettyNames(false)
+    : QMainWindow(), m_usePrettyNames(false), setup(false)
 {
     mainWidget = new WidgetFwdResizeEvent;
     mainLayout = new QVBoxLayout;
@@ -50,7 +50,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
             displayPrettyName(name);
         });
     }
-    createViewer();
+    if(!setup)     createViewer();
     createActions();
     createToolBars();
 
@@ -74,6 +74,8 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
 //    setDispatchModeAutoAct->setChecked(true);
 //    setDispatchModeAutoAct->setVisible(false); // will be set visible if the host viewer has a dispatcher
 //    setDispatchModeOverrideActGroup->setVisible(false);
+
+    setup=true;
 }
 
 
