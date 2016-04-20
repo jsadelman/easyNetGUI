@@ -43,7 +43,6 @@ bool InputCmdLine::eventFilter(QObject* obj, QEvent *event)
             }
             else if(keyEvent->key() == Qt::Key_Down)
             {
-//                qDebug() << "lineEdit -> Qt::Key_Down";
                 emit historyKey(1, text());
                 return true;
             }
