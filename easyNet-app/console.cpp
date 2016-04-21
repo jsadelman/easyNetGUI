@@ -96,6 +96,6 @@ void Console::coreDump()
 
 void Console::setConsoleFontSize(int size)
 {
-    textEdit->setFont(QFont("Courier",size));
-    inputCmdLine->setFont(QFont("Courier",size));
+    textEdit->setFont(QFont("Courier",size*.6));
+    inputCmdLine->setFont(QFont("Courier",size*.6));
 }

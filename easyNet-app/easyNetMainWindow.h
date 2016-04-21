@@ -99,6 +99,7 @@ public slots:
     void showModelSettings();
     void showParameterSettings();
     void setStopButtonIcon(bool state);
+    void displayExpertWindow();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -312,6 +313,7 @@ public:
     QPushButton     * modelButton;
     QToolButton     * addonButton;
     QToolButton     * stopButton;
+    QToolButton     * expertButton;
 
     QWidget         *spacer;
     QAction         *stopAct;
@@ -399,7 +401,7 @@ public:
     QAction         *assistantAct;
     QAction         *setQuietModeAct;
     QAction         *debugModeAct;
-
+    QAction         *expertShow;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QAction *saveAct;
@@ -414,7 +416,8 @@ public:
 
     QMainWindow* expertWindow;
     QTabWidget* expertTabWidget;
-
+    QHBoxLayout *expertLayout;
+    QWidget *expertGWidget;
 //    enum runMode {RunSingle, RunAll};
 
 

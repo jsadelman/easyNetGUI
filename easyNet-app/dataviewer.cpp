@@ -31,8 +31,8 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
 
 DataViewer::~DataViewer()
 {
-    delete ui;
-    delete dispatcher;
+    //delete ui;
+    //delete dispatcher;
 }
 
 void DataViewer::setUi()

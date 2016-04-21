@@ -136,10 +136,12 @@ expertWindow=new QMainWindow;
 
     lazynutPanel = new QTabWidget;
     methodsPanel = new QTabWidget;
-    explorerPanel = new QTabWidget;
+    //explorerPanel = new QTabWidget;
     resultsPanel = new QTabWidget;
     diagramPanel = new DiagramSceneTabWidget(this);
     lazynutPanel->setMovable(true);
+    diagramWindow = new DiagramWindow(diagramPanel, this);
+    methodsPanel->addTab(diagramWindow,"Model");
 
     /* CONSTRUCT ALL THE INDIVIDUAL FORMS */
 
@@ -211,7 +213,6 @@ expertWindow=new QMainWindow;
     connect(testFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             testViewer, SLOT(addItem(QString)));
 
-    diagramWindow = new DiagramWindow(diagramPanel, this);
     trialEditor = new TrialEditor(this);
 
     modelSettingsDisplay = new ModelSettingsDisplay(this);
@@ -259,9 +260,9 @@ expertWindow=new QMainWindow;
     lazynutPanel->addTab(debugLog, tr("Debug log"));
 
 //    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
-    explorerTabIdx = explorerPanel->addTab(objExplorer, tr("Objects"));
+    explorerTabIdx = lazynutPanel->addTab(objExplorer, tr("Explorer"));
 //    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
-    dfTabIdx = explorerPanel->addTab(dataframeViewer, tr("Dataframes"));
+    dfTabIdx = lazynutPanel->addTab(dataframeViewer, tr("All Dataframes"));
 
    outputTablesTabIdx= plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
 //    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
@@ -289,7 +290,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
 
     connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
-    connect(explorerPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+ //   connect(explorerPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
 //    connect(methodsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
 
     connect(resultsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
@@ -374,15 +375,22 @@ void MainWindow::connectSignalsAndSlots()
     });
 
     connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
-
+connect(expertShow,SIGNAL(triggered()),this,SLOT(displayExpertWindow()));
 }
 
 void MainWindow::showExplorer()
 {
-    explorerDock->show();
+/*    explorerDock->show();
     explorerDock->setFocus();
     explorerDock->raise();
     explorerPanel->setCurrentIndex(explorerTabIdx);
+*/
+  expertWindow->show();
+  expertWindow->setFocus();
+  expertWindow->raise();
+  lazynutPanel->setCurrentIndex(explorerTabIdx);
+
+
 }
 
 //void MainWindow::showPlotSettings()
@@ -433,7 +441,11 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
 ////     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
 expertWindow->hide();
-        expertWindow->setCentralWidget(lazynutPanel);
+expertLayout=new QHBoxLayout;
+expertLayout->addWidget(lazynutPanel);
+expertGWidget=new WidgetFwdResizeEvent;
+expertGWidget->setLayout(expertLayout);
+        expertWindow->setCentralWidget(expertGWidget);
 //     codePanelDock = new QDockWidget(tr("lazyNut Code"),this);
  //    codePanelDock->setWidget(lazynutPanel);
 //     expertTabWidget->addTab(lazynutPanel,"Code");
@@ -456,14 +468,14 @@ expertWindow->hide();
 //     viewMenu->addAction(diagramDock->toggleViewAction());
 //     diagramDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
-     methodsPanel->addTab(diagramWindow,"Model");
 
-     explorerDock = new QDockWidget("Explorer",this);
-     explorerDock->setWidget(explorerPanel);
-     addDockWidget(Qt::RightDockWidgetArea, explorerDock);
-     viewMenu->addAction(explorerDock->toggleViewAction());
-     explorerDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 
+//     explorerDock = new QDockWidget("Explorer",this);
+//     explorerDock->setWidget(explorerPanel);
+//     addDockWidget(Qt::RightDockWidgetArea, explorerDock);
+//     viewMenu->addAction(explorerDock->toggleViewAction());
+//     explorerDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+//explorerTabIdx=lazynutPanel->addTab("Explorer" );
      resultsDock = new QDockWidget(tr("Results"), this);
      resultsDock->setWidget(resultsPanel);
      addDockWidget(Qt::RightDockWidgetArea, resultsDock);
@@ -473,14 +485,19 @@ expertWindow->hide();
 //     tabifyDockWidget(introDock, codePanelDock);
      //tabifyDockWidget(codePanelDock, methodsDock);
      //tabifyDockWidget(diagramDock, explorerDock);
-     tabifyDockWidget(explorerDock, resultsDock);
+  //   tabifyDockWidget(explorerDock, resultsDock);
 }
 
+void MainWindow::displayExpertWindow()
+{
+     expertWindow->show();
+     expertWindow->resize(expertWindow->size());
+}
 
 void MainWindow::initialiseToolBar()
 {
-//    QIcon *newpix = new QIcon(":/images/zebra_64x64.png");
-//    QAction *newa = new QAction(newpix, "&New", this);
+    QIcon newpix(":/images/zebra_64x64.png");
+    expertShow = new QAction(newpix, "E&xpert", this);
     toolbar = addToolBar("main toolbar");
 //    QLabel* modelBoxLabel = new QLabel("Model: ");
     modelButton = new QPushButton("Model:");
@@ -564,8 +581,17 @@ void MainWindow::initialiseToolBar()
     stopButton->setIconSize(QSize(40, 40));
     setStopButtonIcon(false);
     stopButton->show();
+            expertButton=new QToolButton(this);
+            expertButton->setAutoRaise(true);
+            expertButton->setDefaultAction(expertShow);
+            expertButton->setIconSize(QSize(40,40));
+
+
     toolbar->addWidget(stopButton);
     toolbar->addSeparator();
+
+            toolbar->addWidget(expertButton);
+            toolbar->addSeparator();
 
     toolbar->addWidget(spacer);
     toolbar->addSeparator();
@@ -861,19 +887,19 @@ void MainWindow::loadStimulusSet()
 void MainWindow::importDataFrame()
 {
     dataframeViewer->open();
-    explorerDock->raise();
-    explorerPanel->setCurrentIndex(dfTabIdx);
+//    explorerDock->raise();
+//    explorerPanel->setCurrentIndex(dfTabIdx);
 }
 
 
 void MainWindow::updateDFComboBox()
 {
     //show new dataframe;
-    explorerDock->raise();
-    explorerPanel->setCurrentIndex(dfTabIdx);
+//    explorerDock->raise();
+  //  explorerPanel->setCurrentIndex(dfTabIdx);
 //    dataframesWindow->selectTable(df_name_for_updating_combobox);
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),
-                                              this,SLOT(updateDFComboBox()));
+//    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),
+//                                              this,SLOT(updateDFComboBox()));
 }
 
 void MainWindow::currentStimulusChanged(QString stim)
