@@ -102,14 +102,18 @@ void TrialWidget::update(QString trialName)
 void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
 {
     QStringList argList;
-    defs.clear();
+//    defs.clear();
     XMLelement arg = XMLelement(*domDoc)["arguments"].firstChild();
     while (!arg.isNull())
     {
         argList.append(arg.label());
-        defs[arg.label()]=(arg.value());
+        defs.insert(arg.label(), defs.keys().contains(arg.label()) && (arg.value().isNull() || arg.value() == "NULL") ?
+                    defs[arg.label()] : arg.value());
+//        defs[arg.label()]=(arg.value());
         arg = arg.nextSibling();
     }
+    foreach(QString label, defs.keys().toSet().subtract(argList.toSet()))
+        defs.remove(label);
     if (argList.size())
         buildComboBoxesTest(argList);
 
@@ -117,6 +121,9 @@ void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
 
 void TrialWidget::buildComboBoxesTest(QStringList args)
 {
+    // save defs
+    foreach(QString label, argumentMap.keys())
+        defs[label] = argumentMap[label]->currentText();
     // first delete existing labels/boxes/button
     clearLayout(layout);
 
