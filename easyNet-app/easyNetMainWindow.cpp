@@ -137,7 +137,7 @@ expertWindow=new QMainWindow;
     lazynutPanel = new QTabWidget;
     methodsPanel = new QTabWidget;
     //explorerPanel = new QTabWidget;
-    resultsPanel = new QTabWidget;
+ //   resultsPanel = new QTabWidget;
     diagramPanel = new DiagramSceneTabWidget(this);
     lazynutPanel->setMovable(true);
     diagramWindow = new DiagramWindow(diagramPanel, this);
@@ -264,7 +264,7 @@ expertWindow=new QMainWindow;
 //    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
     dfTabIdx = lazynutPanel->addTab(dataframeViewer, tr("All Dataframes"));
 
-   outputTablesTabIdx= plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
+//   outputTablesTabIdx= plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
 //    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
 //    plotTabIdx=outputTablesTabIdx = resultsPanel->addTab(dataframeResultsViewer, tr("Results"));
 
@@ -289,7 +289,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
     connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
 
-    connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
+//    connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
  //   connect(explorerPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
 //    connect(methodsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
 
@@ -408,7 +408,7 @@ void MainWindow::showExplorer()
 void MainWindow::showPlotViewer()
 {
     resultsDock->raise();
-    resultsPanel->setCurrentIndex(plotTabIdx);
+//    resultsPanel->setCurrentIndex(plotTabIdx);
 }
 
 
@@ -477,7 +477,7 @@ expertGWidget->setLayout(expertLayout);
 //     explorerDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 //explorerTabIdx=lazynutPanel->addTab("Explorer" );
      resultsDock = new QDockWidget(tr("Results"), this);
-     resultsDock->setWidget(resultsPanel);
+     resultsDock->setWidget(plotViewer);
      addDockWidget(Qt::RightDockWidgetArea, resultsDock);
      viewMenu->addAction(resultsDock->toggleViewAction());
      resultsDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
@@ -1149,7 +1149,7 @@ void MainWindow::showResultsViewer(QString name)
 {
     QString type = SessionManager::instance()->descriptionCache->type(name);
     resultsDock->raise();
-    if (type == "dataframe")
+/*    if (type == "dataframe")
     {
         resultsPanel->setCurrentWidget(dataframeResultsViewer);
     }
@@ -1157,6 +1157,7 @@ void MainWindow::showResultsViewer(QString name)
     {
         resultsPanel->setCurrentWidget(plotViewer);
     }
+*/
 }
 
 

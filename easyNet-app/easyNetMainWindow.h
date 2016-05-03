@@ -225,7 +225,7 @@ public:
     QTabWidget *methodsPanel;
     QTabWidget *introPanel;
     QTabWidget *lazynutPanel;
-    QTabWidget *resultsPanel;
+//    QTabWidget *resultsPanel;
     QTabWidget *explorerPanel;
     DiagramSceneTabWidget *diagramPanel;
     DiagramWindow *diagramWindow;

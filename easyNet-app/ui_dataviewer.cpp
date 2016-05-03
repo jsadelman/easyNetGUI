@@ -147,7 +147,7 @@ void Ui_DataViewer::createToolBars(DataViewer*dv)
     dispatchToolBar[dv]->hide();
 //    dispatchToolBar->addActions(setDispatchModeOverrideActs);
 //    dispatchToolBar->addAction(setDispatchModeAutoAct);
-
+   setToolBars(dv);
 }
 
 void Ui_DataViewer::setToolBars(DataViewer*dv)
