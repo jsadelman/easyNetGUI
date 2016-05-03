@@ -59,6 +59,7 @@ public:
     QMap<DataViewer*,QToolBar*> fileToolBar;
     QMap<DataViewer*,QToolBar*>editToolBar;
     QMap<DataViewer*,QToolBar*>dispatchToolBar;
+    QMap<DataViewer*,QList<QAction*> > actionSet;
     WidgetFwdResizeEvent *mainWidget;
 //    QToolBar *infoToolBar;
 

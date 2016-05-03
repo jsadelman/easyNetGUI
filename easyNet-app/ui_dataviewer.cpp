@@ -131,6 +131,7 @@ void Ui_DataViewer::createActions()
 
 void Ui_DataViewer::createToolBars(DataViewer*dv)
 {
+    actionSet[dv]={saveAct,copyAct,destroyAct,settingsAct};
     fileToolBar[dv] = addToolBar(tr("File"));
     fileToolBar[dv]->addAction(openAct);
     fileToolBar[dv]->addAction(saveAct);

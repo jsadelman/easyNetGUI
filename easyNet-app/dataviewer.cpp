@@ -87,7 +87,6 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
 //            ui->setCurrentItem(name);
         }
         m_items.append(name);
-        if(m_items.size()==1)ui->setCurrentItem(name);
     }
 }
 
@@ -260,7 +259,7 @@ void DataViewer::dispatch()
 void DataViewer::setCurrentItem(QString name)
 {
     qDebug() << name <<" " << "!";
-    if (name.isEmpty() || name == "<select an item>"  || ! m_items.contains(name))
+    if (name.isEmpty() || name == "<select an item>"  || ! contains(name))
         enableActions(false);
     else
     {
@@ -277,11 +276,13 @@ void DataViewer::enableActions(bool enable)
 {
     if (!ui)
         return;
-    ui->saveAct->setEnabled(enable);
+    for(auto x: ui->actionSet[this])
+        x->setEnabled(enable);
+/*    ui->saveAct->setEnabled(enable);
     ui->copyAct->setEnabled(enable);
     ui->destroyAct->setEnabled(enable);
     ui->settingsAct->setEnabled(enable);
-
+*/
 }
 
 //void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
