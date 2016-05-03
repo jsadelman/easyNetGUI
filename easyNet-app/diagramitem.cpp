@@ -599,7 +599,7 @@ void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
     }
     m_pen.setColor(
                 isSelected()?
-                    Qt::yellow:
+                    Qt::blue:
                     Qt::black);
 
     m_pen.setWidth(penWidth);
