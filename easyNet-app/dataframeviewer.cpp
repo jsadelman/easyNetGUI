@@ -250,15 +250,16 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
 
     ui->setCurrentItem(name);
     enableActions(true);
-    limitedGet(name, maxFirstDisplayCells);
+//    limitedGet(name, maxFirstDisplayCells);
 }
 
 void DataframeViewer::askGetEntireDataframe()
 {
-    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
+//    if (!dataframeExceedsCellLimit(ui->currentItemName(), maxDisplayCells))
         getEntireDataframe();
-    else
-    {
+        return;
+//    else
+//    {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setText("Large dataframe");
@@ -277,7 +278,7 @@ void DataframeViewer::askGetEntireDataframe()
             getEntireDataframe();
         else
             return;
-    }
+//    }
 }
 
 void DataframeViewer::getEntireDataframe()

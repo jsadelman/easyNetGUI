@@ -34,7 +34,7 @@ DebugLog::DebugLog(QWidget *parent)
     findDialog->hideExtendedOptions();
     connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
             this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
-    connect(SessionManager::instance(), SIGNAL(lazyNutCrash()), this, SLOT(autoSave()));
+//    connect(SessionManager::instance(), SIGNAL(lazyNutCrash()), this, SLOT(autoSave()));
 
 }
 

@@ -27,7 +27,9 @@ public:
     void pause();
     void stop();
     bool isPaused() const {return paused;}
-    void clear() {queue.clear();}
+    void clear();
+    void clearCurrent() {delete ptr(currentJob);}
+    void forceFree();
     //bool isStopped() const {return stopped;}
 
 
@@ -37,16 +39,15 @@ protected:
     QMutex mutex;
     bool busy;
     bool paused;
+    Job currentJob;
     //bool stopped;
-//    Job* currentJob;
-
 };
 
 // http://stackoverflow.com/questions/8752837/undefined-reference-to-template-class-constructor
 
 template <class Job>
 JobQueue<Job>::JobQueue()
-    : paused(false), busy(false)
+    : paused(false), busy(false), currentJob(nullptr) // probably incorrect in case of ref
 {
 }
 
@@ -72,7 +73,17 @@ void JobQueue<Job>::freeToRun()
     if (busy)
         mutex.unlock();
     busy = false;
+    currentJob = nullptr;
     tryRunNext();
+}
+
+template <class Job>
+void JobQueue<Job>::forceFree()
+{
+    if (busy)
+        mutex.unlock();
+    busy = false;
+//    clearCurrent();
 }
 
 template <class Job>
@@ -81,7 +92,8 @@ void JobQueue<Job>::tryRunNext()
     if(!queue.isEmpty() && !paused && mutex.tryLock())
     {
         busy = true;
-        ptr(queue.dequeue())->run();
+        currentJob = queue.dequeue();
+        ptr(currentJob)->run();
     }
 }
 
@@ -109,6 +121,15 @@ void JobQueue<Job>::pause()
             tryRunNext();
     }
 }
+
+template <class Job>
+void JobQueue<Job>::clear()
+{
+    while (!queue.isEmpty())
+        delete ptr(queue.dequeue());
+}
+
+
 
 template <class Job>
 void JobQueue<Job>::stop()

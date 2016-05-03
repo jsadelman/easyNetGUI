@@ -34,8 +34,8 @@ class SessionManager: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString currentModel READ currentModel WRITE setCurrentModel NOTIFY currentModelChanged)
-    Q_PROPERTY(QString currentTrial READ currentTrial WRITE setCurrentTrial)
-    Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet)
+    Q_PROPERTY(QString currentTrial READ currentTrial WRITE setCurrentTrial NOTIFY currentTrialChanged)
+    Q_PROPERTY(QString currentSet READ currentSet WRITE setCurrentSet NOTIFY currentSetChanged)
     Q_PROPERTY(QString easyNetHome READ easyNetHome WRITE setEasyNetHome NOTIFY easyNetHomeChanged)
     Q_PROPERTY(QString easyNetDataHome READ easyNetDataHome WRITE setEasyNetDataHome NOTIFY easyNetDataHomeChanged)
 
@@ -131,24 +131,28 @@ signals:
     void updateObjectCatalogue(QDomDocument*);
     void updateDiagramScene();
     void currentModelChanged(QString);
+     void currentTrialChanged(QString);
+      void currentSetChanged(QString);
 
-    void lazyNutCrash();
+    void lazyNutFinished(bool);
     void easyNetDataHomeChanged();
     void easyNetHomeChanged();
+
+    void resetExecuted();
 
 public slots:
 
     bool isReady();
     bool isOn();
     void killLazyNut();
+    void reset();
     void oobStop();
-    void clearJobQueue();
     void runCmd(QString cmd, unsigned int logMode = 0);
     void runCmd(QStringList cmd, unsigned int logMode = 0);
     void restartLazyNut();
     void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
-    void setCurrentTrial(QString s) {m_currentTrial = s;}
-    void setCurrentSet(QString s) {m_currentSet = s;}
+    void setCurrentTrial(QString s) {m_currentTrial = s; emit currentTrialChanged(m_currentTrial);}
+    void setCurrentSet(QString s)   {m_currentSet = s;   emit currentSetChanged(m_currentSet);}
     void setPrettyName(QString name, QString prettyName);
     void destroyObject(QString name);
     void setPlotFlags(QString name, int flags);
@@ -169,7 +173,7 @@ private slots:
 //    void macroStarted();
 //    void macroEnded();
 
-    void sendLazyNutCrash(int, QProcess::ExitStatus);
+//    void sendLazyNutFinishedStatus(int, QProcess::ExitStatus);
 
 private:
 
@@ -207,6 +211,7 @@ private:
     QMap <QString, int> m_plotFlags;
     QStringList m_enabledObservers;
     bool        m_suspendingObservers;
+    bool        killingLazyNut;
 
     ObjectNameValidator *validator;
     QStringList m_extraNamedItems;
