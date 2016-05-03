@@ -56,13 +56,14 @@ public:
 //    QMap<int, QString> dispatchModeName;
 //    QMap<int, QString> dispatchModeIconName;
 
-    QToolBar *fileToolBar;
-    QToolBar *editToolBar;
-    QToolBar *dispatchToolBar;
+    QMap<DataViewer*,QToolBar*> fileToolBar;
+    QMap<DataViewer*,QToolBar*>editToolBar;
+    QMap<DataViewer*,QToolBar*>dispatchToolBar;
     WidgetFwdResizeEvent *mainWidget;
 //    QToolBar *infoToolBar;
 
 
+    void setToolBars(DataViewer *dv);
 public slots:
     virtual void addView(QString name, QWidget *view)=0;
     virtual QWidget *takeView(QString name)=0;
@@ -78,7 +79,7 @@ protected:
 
 
     virtual void createActions();
-    virtual void createToolBars();
+    virtual void createToolBars(DataViewer*);
     virtual void createViewer()=0;
     virtual void displayPrettyName(QString name)=0;
     QMap<QString, QWidget *> viewMap;
@@ -87,7 +88,9 @@ protected:
     bool m_usePrettyNames;
     QMap<QString, QString> prettyName;
     QVBoxLayout *mainLayout;
-
+    QToolBar* currentFileToolBar;
+    QToolBar* currentEditToolBar;
+    QToolBar* currentDispatchToolBar;
 
 };
 

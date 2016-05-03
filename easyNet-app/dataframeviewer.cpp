@@ -425,7 +425,7 @@ void DataframeViewer::addExtraActions()
     getAllAct->setToolTip("Get the entire dataframe");
     getAllAct->setVisible(true);
     getAllAct->setEnabled(false);
-    ui->editToolBar->addAction(getAllAct);
+    ui->editToolBar[this]->addAction(getAllAct);
     connect(getAllAct, SIGNAL(triggered()), this, SLOT(askGetEntireDataframe()));
 
     findAct = new QAction(QIcon(":/images/magnifying-glass-2x.png"), tr("&Find"), this);
@@ -433,14 +433,14 @@ void DataframeViewer::addExtraActions()
     findAct->setToolTip(tr("Find text in this table"));
     findAct->setVisible(true);
     findAct->setEnabled(false);
-    ui->editToolBar->addAction(findAct);
+    ui->editToolBar[this]->addAction(findAct);
     connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
 
     copyDFAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy to new dataframe"), this);
     copyDFAct->setStatusTip(tr("Copy contents to a new dataframe"));
     copyDFAct->setVisible(true);
     copyDFAct->setEnabled(false);
-    ui->editToolBar->addAction(copyDFAct);
+    ui->editToolBar[this]->addAction(copyDFAct);
     connect(copyDFAct, SIGNAL(triggered()), this, SLOT(copyDataframe()));
 
     plotButton = new QToolButton(this);
@@ -460,7 +460,7 @@ void DataframeViewer::addExtraActions()
         plotMenu->addAction(plotAct);
     }
     plotButton->setMenu(plotMenu);
-    ui->editToolBar->addWidget(plotButton);
+    ui->editToolBar[this]->addWidget(plotButton);
 
     dataframeViewButton = new QToolButton(this);
     dataframeViewButton->setIcon(QIcon(":/images/formula.png"));
@@ -478,7 +478,7 @@ void DataframeViewer::addExtraActions()
         dataframeViewMenu->addAction(dataframeViewAct);
     }
     dataframeViewButton->setMenu(dataframeViewMenu);
-    ui->editToolBar->addWidget(dataframeViewButton);
+    ui->editToolBar[this]->addWidget(dataframeViewButton);
 
 }
 

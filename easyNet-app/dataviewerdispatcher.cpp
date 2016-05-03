@@ -66,7 +66,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     preferencesAct = new QAction(QIcon(":/images/setting.png"), "Preferences", this);
     preferencesAct->setToolTip("Show preferences for this viewer");
     connect(preferencesAct, SIGNAL(triggered()), this, SLOT(showPreferences()));
-    hostDataViewer->ui->dispatchToolBar->addAction(preferencesAct);
+    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(preferencesAct);
 
 }
 
@@ -191,7 +191,7 @@ void DataViewerDispatcher::createHistoryWidget()
     historyAct->setToolTip("show/hide history");
     connect(historyAct, SIGNAL(triggered(bool)), historyWidget, SLOT(setVisible(bool)));
     historyWidget->setVisible(false);
-    hostDataViewer->ui->dispatchToolBar->addAction(historyAct);
+    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(historyAct);
 }
 
 
@@ -215,7 +215,7 @@ void DataViewerDispatcher::createInfoWidget()
     infoAct->setToolTip("show/hide trial run info");
     connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(showInfo(bool)));
     infoDock->setVisible(false);
-    hostDataViewer->ui->dispatchToolBar->addAction(infoAct);
+    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(infoAct);
 }
 
 void DataViewerDispatcher::destroySelectedItems()

@@ -42,7 +42,7 @@ void DataViewer::setUi()
         eNerror << "invalid Ui_DataViewer object";
         return;
     }
-    qDebug()<<(ui->setup?"Y":"N");
+//    qDebug()<<(ui->setup?"Y":"N");
 //    if(!ui->setup)
     {
       ui->setupUi(this);
@@ -87,6 +87,7 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
 //            ui->setCurrentItem(name);
         }
         m_items.append(name);
+        if(m_items.size()==1)ui->setCurrentItem(name);
     }
 }
 
@@ -258,13 +259,16 @@ void DataViewer::dispatch()
 
 void DataViewer::setCurrentItem(QString name)
 {
-    if (name.isEmpty() || name == "<select an item>")
+    qDebug() << name <<" " << "!";
+    if (name.isEmpty() || name == "<select an item>"  || ! m_items.contains(name))
         enableActions(false);
     else
     {
+        qDebug() <<" gotcha";
         enableActions(true);
         if (isLazy())
             setNameInFilter(name);
+        ui->setToolBars(this);
     }
     emit currentItemChanged(name);
 }

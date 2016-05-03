@@ -294,7 +294,7 @@ void MainWindow::connectSignalsAndSlots()
 //    connect(methodsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
 
     connect(resultsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
-    connect(explorerDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
+//   connect(explorerDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
 //    connect(methodsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
     // cannot apply this to methodsPanel/Dock because methodsPanel sits in the same Dock as dataViewSettingsWidget
 

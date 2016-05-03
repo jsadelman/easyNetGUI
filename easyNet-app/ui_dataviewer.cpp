@@ -16,7 +16,9 @@
 #include <QVBoxLayout>
 
 Ui_DataViewer::Ui_DataViewer()
-    : QMainWindow(), m_usePrettyNames(false), setup(false)
+    : QMainWindow(), m_usePrettyNames(false), setup(false), currentFileToolBar(0),
+  currentEditToolBar(0),
+  currentDispatchToolBar(0)
 {
     mainWidget = new WidgetFwdResizeEvent;
     mainLayout = new QVBoxLayout;
@@ -52,7 +54,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     }
     if(!setup)     createViewer();
     createActions();
-    createToolBars();
+    createToolBars(dataViewer);
 
 //    connect(setDispatchModeOverrideMapper, SIGNAL(mapped(int)),
 //            dataViewer, SLOT(setDispatchModeOverride(int)));
@@ -127,20 +129,35 @@ void Ui_DataViewer::createActions()
 
 }
 
-void Ui_DataViewer::createToolBars()
+void Ui_DataViewer::createToolBars(DataViewer*dv)
 {
-    fileToolBar = addToolBar(tr("File"));
-    fileToolBar->addAction(openAct);
-    fileToolBar->addAction(saveAct);
+    fileToolBar[dv] = addToolBar(tr("File"));
+    fileToolBar[dv]->addAction(openAct);
+    fileToolBar[dv]->addAction(saveAct);
+    fileToolBar[dv]->hide();
 
-    editToolBar = addToolBar(tr("Edit"));
-    editToolBar->addAction(copyAct);
-    editToolBar->addAction(destroyAct);
-    editToolBar->addAction(settingsAct);
+    editToolBar[dv] = addToolBar(tr("Edit"));
+    editToolBar[dv]->addAction(copyAct);
+    editToolBar[dv]->addAction(destroyAct);
+    editToolBar[dv]->addAction(settingsAct);
+    editToolBar[dv]->hide();
 
-    dispatchToolBar = addToolBar(tr("Dispatch Mode"));
+    dispatchToolBar[dv] = addToolBar(tr("Dispatch Mode"));
+    dispatchToolBar[dv]->hide();
 //    dispatchToolBar->addActions(setDispatchModeOverrideActs);
 //    dispatchToolBar->addAction(setDispatchModeAutoAct);
 
 }
 
+void Ui_DataViewer::setToolBars(DataViewer*dv)
+{
+    if(currentDispatchToolBar) currentDispatchToolBar->hide();
+    if(currentEditToolBar) currentEditToolBar->hide();
+    if(currentFileToolBar) currentFileToolBar->hide();
+    currentDispatchToolBar=dispatchToolBar[dv];
+    currentEditToolBar=editToolBar[dv];
+    currentFileToolBar=fileToolBar[dv];
+    currentDispatchToolBar->show();
+    currentEditToolBar->show();
+    currentFileToolBar->show();
+}

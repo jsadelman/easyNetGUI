@@ -516,7 +516,7 @@ void PlotViewer::addExtraActions()
     fullScreenAct = new QAction(QIcon(":/images/Full_screen_view.png"), "Full Screen", this);
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
     fullScreenAct->setEnabled(false);
-    ui->editToolBar->addAction(fullScreenAct);
+    ui->editToolBar[this]->addAction(fullScreenAct);
 }
 
 
