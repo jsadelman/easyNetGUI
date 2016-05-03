@@ -2,10 +2,20 @@
 #include "settingsxml.h"
 #include "lazynutjob.h"
 #include "sessionmanager.h"
+#include "objectcachefilter.h"
+
 
 ModelSettingsDisplay::ModelSettingsDisplay(QWidget *parent)
     : QScrollArea(parent), m_command(""), m_name("")
 {
+    modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), modelFilter, SLOT(setName(QString)));
+    connect(modelFilter, &ObjectCacheFilter::objectDestroyed, [=]()
+    {
+        delete takeWidget();
+        m_name.clear();
+    });
+    connect(modelFilter, SIGNAL(objectModified(QString)), this, SLOT(buildForm(QString)));
 }
 
 void ModelSettingsDisplay::buildForm(QString name)

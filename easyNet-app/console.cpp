@@ -34,7 +34,7 @@ Console::Console(QWidget *parent)
     createStatusBar();
     statusBar()->show();
 
-    connect(SessionManager::instance(), SIGNAL(lazyNutCrash()), this, SLOT(coreDump()));
+//    connect(SessionManager::instance(), SIGNAL(lazyNutCrash()), this, SLOT(coreDump()));
 
 }
 

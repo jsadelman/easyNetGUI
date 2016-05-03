@@ -37,7 +37,9 @@ TrialWidget::TrialWidget(QWidget *parent)
     layout3 = new QVBoxLayout;
 
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    trialFilter->setType("trial");
+    connect(SessionManager::instance(), SIGNAL(currentTrialChanged(QString)), trialFilter, SLOT(setName(QString)));
+    connect(trialFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(buildComboBoxesTest()));
+
     // cosmetics used in tabs names in TableWindow
     connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
     {
@@ -49,8 +51,8 @@ TrialWidget::TrialWidget(QWidget *parent)
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
             this,SLOT(buildComboBoxes(QDomDocument*)));
-    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
-            this,SIGNAL(trialDescriptionUpdated(QDomDocument*)));
+//    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
+//            this,SIGNAL(trialDescriptionUpdated(QDomDocument*)));
 
     modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
@@ -72,7 +74,7 @@ TrialWidget::TrialWidget(QWidget *parent)
     hideSetComboBoxAction->setStatusTip(tr("Hide"));
     connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
 
-    buildComboBoxesTest(QStringList());
+    buildComboBoxesTest();
 
     disableObserversMsg = new QMessageBox(
                 QMessageBox::Question,
