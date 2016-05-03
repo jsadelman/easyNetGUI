@@ -54,11 +54,11 @@ SessionManager::SessionManager()
       #if defined(__linux__)
       lazyNutExt("sh"),
       binDir("bin-linux"),
-      oobBaseName("")
+      oobBaseName(""),
       #elif defined(__APPLE__)
       lazyNutExt("sh"),
       binDir("bin-mac"),
-      oobBaseName("lazyNut_oob")
+      oobBaseName("lazyNut_oob"),
       #elif defined(_WIN32)
       lazyNutExt("bat"),
       binDir("bin"),
