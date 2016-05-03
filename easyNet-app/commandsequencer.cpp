@@ -82,7 +82,8 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
   while( (newoffset=lazyNutOutput.indexOf('\n',offset)) >= 0 )
   {
       int cr_adj=0;
-      if(lazyNutOutput[newoffset-1]=='\r') cr_adj=1;
+      if(lazyNutOutput[newoffset-1]=='\r') {qDebug()<<"CR"; cr_adj=1;}
+
       lazyNutIncompleteLine+=lazyNutOutput.midRef(offset,newoffset-offset-cr_adj);
       lazyNutLines.append(QString());
       lazyNutLines.back().swap(lazyNutIncompleteLine);
@@ -114,16 +115,21 @@ void CommandSequencer::processLazyNutLine()
     }
     else if(line.startsWith("ANSWER: SVG file of "))
     {
+        int spoff=line.indexOf(' ',20);
+        QStringRef bc=line.midRef(20,spoff-20);
+        qDebug()<<bc;
+        bytesPending=bc.toInt();
         svgMode=true;
     }
     else if(svgMode)
     {
-        if(line.startsWith("ANSWER: Done."))
+        if(currentAnswer.length()<bytesPending)
+            currentAnswer+=line+'\n';
+
+        if(currentAnswer.length()>=bytesPending)
             svgMode=false;
-        else
-            currentAnswer+=line;
     }
-    else if(getAnswer && line.startsWith("ANSWER: ")) // standard ANSWER case
+    else if(getAnswer && bytesPending==0 && line.startsWith("ANSWER: ")) // standard ANSWER case
     {
         currentAnswer+=line.midRef(8);
     }
@@ -131,6 +137,7 @@ void CommandSequencer::processLazyNutLine()
     {
         beginLine=lazyNutLines.size()-1;
         currentCmd=commandList.first();
+        qDebug()<<currentCmd;
     }
     else if(beginLine>=0 && line.startsWith("END:"))
     {
@@ -144,6 +151,10 @@ void CommandSequencer::processLazyNutLine()
         {
             if(getAnswer)
             {
+                if(bytesPending>0&&currentAnswer.length()>bytesPending)
+                {
+                    currentAnswer.truncate(bytesPending);
+                }
                 emit answerReady(currentAnswer,currentCmd);
                 currentAnswer.clear();
             }
@@ -151,6 +162,7 @@ void CommandSequencer::processLazyNutLine()
             lazyNutLines.clear();
             beginLine=-1;
             timeMode=false;
+            bytesPending=0;
             emit commandExecuted(currentCmd,timeString);
             commandList.removeFirst();
             currentCmd.clear();

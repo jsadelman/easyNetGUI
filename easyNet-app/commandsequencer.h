@@ -73,6 +73,7 @@ private:
     int beginLine;
     QString currentAnswer,currentCmd;
     bool timeMode,svgMode;
+    int bytesPending;
 };
 
 #endif // COMMANDSEQUENCER_H
