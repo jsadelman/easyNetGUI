@@ -62,18 +62,17 @@ private:
     bool on;
     LazyNut* lazyNut;
     QStringList commandList;
-    QString lazyNutBuffer;
+//    QString lazyNutBuffer;
+    QStringList lazyNutLines;
+    QString lazyNutIncompleteLine;
     int baseOffset;
-    QRegExp beginRex;
     QRegExp emptyLineRex;
-    QRegExp errorRex,rRex;
-    QRegExp answerRex;
-    QRegExp dotsRex;
-    QRegExp eNelementsRex;
-    QRegExp xmlStartRex;
-    QRegExp svgRex;
-    QRegExp answerDoneRex;
 
+    void processLazyNutLine();
+    int dotcount;
+    int beginLine;
+    QString currentAnswer,currentCmd;
+    bool timeMode,svgMode;
 };
 
 #endif // COMMANDSEQUENCER_H

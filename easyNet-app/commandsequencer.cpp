@@ -5,7 +5,7 @@
 
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
-    : lazyNut(lazyNut), ready(true), logMode(0), QObject(parent)
+    : lazyNut(lazyNut), ready(true), logMode(0), QObject(parent),dotcount(0),beginLine(-1),timeMode(false),svgMode(false)
 {
     initProcessLazyNutOutput();
 //    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
@@ -14,19 +14,8 @@ CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
 
 void CommandSequencer::initProcessLazyNutOutput()
 {
-    beginRex = QRegExp("BEGIN: ([^\\r\\n]+)");
     emptyLineRex = QRegExp("^[\\s\\t]*$");
-    errorRex = QRegExp("ERROR: ([^\\r\\n]*)"); //(?=\\n)
-    rRex = QRegExp("\\bR: ([^\\r\\n]*)"); //(?=\\n)
-//    answerRex = QRegExp("ANSWER: ([^\\r\\n]*)");//(?=\\n)
-    answerRex = QRegExp("(ANSWER: [^\\n]*\\n)+");
-    dotsRex = QRegExp("ANSWER: (\\.+)");
-
-    eNelementsRex = QRegExp("<eNelements>");
-    xmlStartRex = QRegExp("<(\\w+)");
-    svgRex = QRegExp("SVG file of (\\d+) bytes:[ \\r\\n]*");
-    answerDoneRex = QRegExp("ANSWER: Done");
-    lazyNutBuffer.clear();
+    lazyNutLines.clear();
     baseOffset = 0;
 }
 
@@ -73,7 +62,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         emit commandSent(cmd);
         if (echoInterpreter(cmd) || logMode & ECHO_INTERPRETER)
             emit logCommand(cmd);
-//        qDebug() << cmd;
+
         lazyNut->sendCommand(cmd);
     }
 }
@@ -85,101 +74,101 @@ void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int
 
 void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
 {
-    lazyNutBuffer.append(lazyNutOutput);
-    if (commandList.isEmpty())
+  if (commandList.isEmpty() || echoInterpreter(commandList.first()) || (logMode & ECHO_INTERPRETER))
+    emit userLazyNutOutputReady(lazyNutOutput);
+  if(commandList.isEmpty()) return;
+
+  int offset=0,newoffset=0;
+  while( (newoffset=lazyNutOutput.indexOf('\n',offset)) >= 0 )
+  {
+      int cr_adj=0;
+      if(lazyNutOutput[newoffset-1]=='\r') cr_adj=1;
+      lazyNutIncompleteLine+=lazyNutOutput.midRef(offset,newoffset-offset-cr_adj);
+      lazyNutLines.append(QString());
+      lazyNutLines.back().swap(lazyNutIncompleteLine);
+      processLazyNutLine();
+      offset=newoffset+1;
+  }
+  lazyNutIncompleteLine+=lazyNutOutput.midRef(offset);
+
+  // Dots typically occur on an incomplete line, at least in quiet mode.
+  if(lazyNutIncompleteLine.startsWith("ANSWER: ."))
+  {
+      int totDots=dotcount;
+      for(int i=8;lazyNutIncompleteLine[i]=='.';++i)
+          totDots++;
+      emit dotsCount(totDots);
+  }
+}
+
+void CommandSequencer::processLazyNutLine()
+{
+    const QString& line=lazyNutLines.back();
+
+    // Consider special ANSWER cases first
+    if(line.startsWith("ANSWER: ."))
     {
-         emit userLazyNutOutputReady(lazyNutOutput);
-        lazyNutBuffer.clear();
-        return; // startup header or empty job (no-op) or other spontaneous lazyNut output, or error
+        for(int i=8;line[i]=='.';++i)
+            dotcount++;
+        emit dotsCount(dotcount);
     }
-    QString currentCmd, beginContent, timeString;
-    int beginOffset, endOffset;
-    while (true)
+    else if(line.startsWith("ANSWER: SVG file of "))
     {
-        auto drbaseOffset=baseOffset;
-        int dotcount=0,newoff;
-        while ((drbaseOffset<lazyNutBuffer.length())&& ((newoff=dotsRex.indexIn(lazyNutBuffer,drbaseOffset)) > 0))
+        svgMode=true;
+    }
+    else if(svgMode)
+    {
+        if(line.startsWith("ANSWER: Done."))
+            svgMode=false;
+        else
+            currentAnswer+=line;
+    }
+    else if(getAnswer && line.startsWith("ANSWER: ")) // standard ANSWER case
+    {
+        currentAnswer+=line.midRef(8);
+    }
+    else if(beginLine<0 && line.startsWith("BEGIN: "))
+    {
+        beginLine=lazyNutLines.size()-1;
+        currentCmd=commandList.first();
+    }
+    else if(beginLine>=0 && line.startsWith("END:"))
+    {
+        dotcount=0;
+        timeMode=true;
+    }
+    else if(timeMode && line.startsWith("INFO: "))
+    {
+        int pos;
+        if((pos=line.lastIndexOf(" took"))>=0)
         {
-            dotcount+=dotsRex.cap(1).length();
-            drbaseOffset=newoff+dotsRex.matchedLength();
-        }
-        if(dotcount>0) emit dotsCount(dotcount);
-        currentCmd = commandList.first();
-        beginOffset = beginRex.indexIn(lazyNutBuffer,baseOffset);
-        beginContent = beginRex.cap(1);
-//        QRegExp endRex(QString("END: %1[^\\r\\n]*").arg(QRegExp::escape(lineNumber)));
-        QRegExp endRex(QString("END: %1[^\\r\\n]*\\r?\\nINFO:[^\\r\\n]*took ([^\\r\\n]*)\\r?\\n").arg(QRegExp::escape(beginContent)));
-        endOffset = endRex.indexIn(lazyNutBuffer,beginOffset);
-        if (!(baseOffset <= beginOffset && beginOffset < endOffset))
-        {
-            if (echoInterpreter(currentCmd) || (logMode & ECHO_INTERPRETER))
-                emit userLazyNutOutputReady(lazyNutOutput);
-            return;
-        }
-        timeString = endRex.cap(1);
-        int outputOffset = lazyNutBuffer.indexOf(lazyNutOutput);
-        if (echoInterpreter(currentCmd) || (logMode & ECHO_INTERPRETER))
-        {
-            emit userLazyNutOutputReady(lazyNutOutput.left(endOffset + endRex.matchedLength() - outputOffset));
-        }
-        lazyNutOutput.remove(0, endOffset + endRex.matchedLength() - outputOffset);
-
-        // extract ERROR lines
-        int errorOffset = errorRex.indexIn(lazyNutBuffer,beginOffset);
-        QStringList errorList = QStringList();
-        while (beginOffset < errorOffset && errorOffset < endOffset)
-        {
-            errorList << errorRex.cap(0);
-            errorOffset = errorRex.indexIn(lazyNutBuffer,errorOffset+1);
-        }
-        if (!errorList.isEmpty())
-        {
-//            clearCommandList();
-            emit cmdError(currentCmd,errorList);
-        }
-
-        // extract R lines
-        int rOffset = rRex.indexIn(lazyNutBuffer,beginOffset);
-        QStringList rList = QStringList();
-        while (beginOffset < rOffset && rOffset < endOffset)
-        {
-            rList << rRex.cap(0);
-            rOffset = rRex.indexIn(lazyNutBuffer,rOffset+1);
-        }
-        if (!rList.isEmpty())
-            emit cmdR(currentCmd,rList);
-
-        if (getAnswer)
-        {
-            int answerOffset = answerRex.indexIn(lazyNutBuffer,beginOffset);
-            if (beginOffset < answerOffset && answerOffset < endOffset)
+            if(getAnswer)
             {
-                QString answer = answerRex.cap(0);
-                if (svgRex.indexIn(answer) > -1)
-                {
-                    int svgStart = answerOffset + answerRex.matchedLength();
-                    int svgEnd = lazyNutBuffer.indexOf("ANSWER: Done.");
-                    answer = lazyNutBuffer.mid(svgStart, svgEnd - svgStart);
-                }
-                answer = answer.remove("ANSWER: ");
-//                qDebug() << currentCmd;
-//                qDebug() << answer;
-                emit answerReady(answer, currentCmd);
+                emit answerReady(currentAnswer,currentCmd);
+                currentAnswer.clear();
+            }
+            QString timeString=line.mid(pos+6);  // actually catch time
+            lazyNutLines.clear();
+            beginLine=-1;
+            timeMode=false;
+            emit commandExecuted(currentCmd,timeString);
+            commandList.removeFirst();
+            currentCmd.clear();
+            if(commandList.isEmpty())
+            {
+              ready = true;
+              emit isReady(ready);
+              emit jobExecuted();
             }
         }
-        emit commandExecuted(commandList.first(),timeString);
-        commandList.removeFirst();
-        baseOffset = endOffset + endRex.matchedLength();
-        if (commandList.isEmpty())
-        {
-            baseOffset = 0;
-            lazyNutBuffer.clear();
-            ready = true;
-            emit isReady(ready);
-//            qDebug() << " emit commandsExecuted();";
-            emit jobExecuted();
-            return;
-        }
+    }
+    else if(line.startsWith("R: "))
+    {
+        emit cmdR(currentCmd,{currentCmd,line.mid(3),""});
+    }
+    else if(line.startsWith("ERROR: "))
+    {
+        emit cmdError(currentCmd,{currentCmd,line.mid(7),""});
     }
 }
 
