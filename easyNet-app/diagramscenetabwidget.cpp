@@ -82,8 +82,8 @@ void DiagramSceneTabWidget::useFake(int idx, bool yn)
     {
       held.insert(idx,widget(idx));
       QString lab=tabText(idx);
-      removeTab(idx);
       insertTab(idx,new DiagramView(emptyScene),lab);
+      removeTab(idx+1);
       setCurrentIndex(idx);
     }
     else
@@ -92,8 +92,8 @@ void DiagramSceneTabWidget::useFake(int idx, bool yn)
         QString lab=tabText(idx);
         QWidget* todel=widget(idx);
         QWidget* returned=held[idx];
-        removeTab(idx);
         insertTab(idx,returned,lab);
+        removeTab(idx+1);
         delete todel;
         setCurrentIndex(idx);
         held.remove(idx);

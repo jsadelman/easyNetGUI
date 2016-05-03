@@ -239,10 +239,10 @@ expertWindow=new QMainWindow;
     /* ADD TABS */
 //    infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+    //    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
-    conversionPage = diagramPanel->widget(conversionTabIdx);
+//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+//    conversionPage = diagramPanel->widget(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
@@ -415,11 +415,11 @@ void MainWindow::showPlotViewer()
 void MainWindow::diagramSceneTabChanged(int index)
 {
      modelScene->goToSleep();
-     conversionScene->goToSleep();
+//     conversionScene->goToSleep();
     if (index == modelTabIdx)
          modelScene->wakeUp();
-    else if (index == conversionTabIdx)
-         conversionScene->wakeUp();
+//    else if (index == conversionTabIdx)
+//         conversionScene->wakeUp();
 }
 
 
@@ -657,13 +657,13 @@ void MainWindow::setDebugMode(bool isDebugMode)
     m_debugMode = isDebugMode;
     if (isDebugMode)
     {
-        diagramPanel->insertTab(conversionTabIdx, conversionPage, "Conversions");
+//        diagramPanel->insertTab(conversionTabIdx, conversionPage, "Conversions");
         SessionManager::instance()->runCmd(QString("loglevel debug"));
         setQuietMode(false);
     }
     else
     {
-        diagramPanel->removeTab(conversionTabIdx);
+//        diagramPanel->removeTab(conversionTabIdx);
         SessionManager::instance()->runCmd(QString("loglevel info"));
         setQuietMode(true);
     }
