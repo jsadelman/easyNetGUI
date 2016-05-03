@@ -1,5 +1,6 @@
 #include "diagramwindow.h"
-#include "diagramscenetabwidget.h"
+#include "diagramSceneStackedWidget.h"
+#include "diagramscenestackedwidget.h"
 #include "diagramscene.h"
 #include "diagramview.h"
 
@@ -11,14 +12,16 @@
 
 
 
-DiagramWindow::DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent)
-    : diagramSceneTabWidget(diagramSceneTabWidget), QMainWindow(parent)
+//DiagramWindow::DiagramWindow(diagramSceneStackedWidget *diagramSceneStackedWidget, QWidget *parent)
+//    : diagramSceneStackedWidget(diagramSceneStackedWidget), QMainWindow(parent)
+DiagramWindow::DiagramWindow(DiagramSceneStackedWidget *diagramSceneStackedWidget, QWidget *parent)
+    : diagramSceneStackedWidget(diagramSceneStackedWidget), QMainWindow(parent)
 {
 
-    setCentralWidget(diagramSceneTabWidget);
+    setCentralWidget(diagramSceneStackedWidget);
     createMenus();
-    connect(diagramSceneTabWidget, SIGNAL(initArrangement()), this, SLOT(initArrangement()));
-    connect(diagramSceneTabWidget, SIGNAL(zoomChanged()), this, SLOT(restoreZoom()));
+    connect(diagramSceneStackedWidget, SIGNAL(initArrangement()), this, SLOT(initArrangement()));
+    connect(diagramSceneStackedWidget, SIGNAL(zoomChanged()), this, SLOT(restoreZoom()));
 }
 
 
@@ -26,19 +29,19 @@ void DiagramWindow::rearrange(bool ignoreEdges)
 {
 
     if (fitVisibleAct->isChecked())
-        connect(diagramSceneTabWidget->currentDiagramScene(), SIGNAL(animationFinished()),
+        connect(diagramSceneStackedWidget->currentDiagramScene(), SIGNAL(animationFinished()),
                 this, SLOT(toFitVisible()));
 #if 0
-    diagramSceneTabWidget->currentCanvas()->layout()->runDirect(true, ignoreEdges);
-    diagramSceneTabWidget->currentDiagramScene()->processLayoutUpdateEvent();
+    diagramSceneStackedWidget->currentCanvas()->layout()->runDirect(true, ignoreEdges);
+    diagramSceneStackedWidget->currentDiagramScene()->processLayoutUpdateEvent();
 #endif
-    diagramSceneTabWidget->currentDiagramScene()->initShapePlacement();
+    diagramSceneStackedWidget->currentDiagramScene()->initShapePlacement();
 }
 
 void DiagramWindow::arrange(bool ignoreEdges)
 {
 #if 0
-    diagramSceneTabWidget->currentCanvas()->layout()->clearFixedList();
+    diagramSceneStackedWidget->currentCanvas()->layout()->clearFixedList();
 #endif
     rearrange(ignoreEdges);
 
@@ -48,16 +51,16 @@ void DiagramWindow::initArrangement()
 {
 
     fitVisibleAct->setChecked(true);
-    connect(diagramSceneTabWidget->diagramSceneAt(0), SIGNAL(animationFinished()),
+    connect(diagramSceneStackedWidget->diagramSceneAt(0), SIGNAL(animationFinished()),
             this, SLOT(toFitVisible()));
 
-    if (QFileInfo(diagramSceneTabWidget->diagramSceneAt(0)->layoutFile()).exists())
+    if (QFileInfo(diagramSceneStackedWidget->diagramSceneAt(0)->layoutFile()).exists())
     {
         loadLayout();
     }
     else
     {
-        diagramSceneTabWidget->diagramSceneAt(0)->initShapePlacement();
+        diagramSceneStackedWidget->diagramSceneAt(0)->initShapePlacement();
     }
 }
 
@@ -67,10 +70,10 @@ void DiagramWindow::sceneScaleChanged(const QString &scale)
     if (getScaleRex.indexIn(scale) != -1)
     {
         double newScale = getScaleRex.cap(1).toDouble() / 100.0;
-        double oldScale = diagramSceneTabWidget->currentCanvasView()->transform().m11();
+        double oldScale = diagramSceneStackedWidget->currentCanvasView()->transform().m11();
         if (qAbs(newScale - oldScale) >= 0.01)
         {
-            DiagramView *view = diagramSceneTabWidget->currentDiagramView();
+            DiagramView *view = diagramSceneStackedWidget->currentDiagramView();
             QMatrix oldMatrix = view->matrix();
             view->resetMatrix();
             view->translate(oldMatrix.dx(), oldMatrix.dy());
@@ -84,18 +87,18 @@ void DiagramWindow::fitVisible(bool on)
 {
     if (on)
     {
-        connect(diagramSceneTabWidget->currentDiagramView(), SIGNAL(canvasViewResized()),
-                diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
-        diagramSceneTabWidget->currentDiagramView()->fitVisible();
+        connect(diagramSceneStackedWidget->currentDiagramView(), SIGNAL(canvasViewResized()),
+                diagramSceneStackedWidget->currentDiagramView(), SLOT(fitVisible()));
+        diagramSceneStackedWidget->currentDiagramView()->fitVisible();
     }
     else
-        disconnect(diagramSceneTabWidget->currentDiagramView(), SIGNAL(canvasViewResized()),
-                diagramSceneTabWidget->currentDiagramView(), SLOT(fitVisible()));
+        disconnect(diagramSceneStackedWidget->currentDiagramView(), SIGNAL(canvasViewResized()),
+                diagramSceneStackedWidget->currentDiagramView(), SLOT(fitVisible()));
 }
 
 void DiagramWindow::restoreZoom()
 {
-    QGraphicsView *view = diagramSceneTabWidget->currentCanvasView();
+    QGraphicsView *view = diagramSceneStackedWidget->currentCanvasView();
     double m11 = view->transform().m11();
     QString zoomText;
     zoomText.setNum((int)(100 * m11)).append("\%");
@@ -104,9 +107,9 @@ void DiagramWindow::restoreZoom()
 
 void DiagramWindow::restoreProperties()
 {
-    idealEdgeLengthModifierSpinBox->setValue(diagramSceneTabWidget->currentCanvas()->property("idealEdgeLengthModifier").toDouble());
-    shapeNonOverlapPaddingSpinBox->setValue(diagramSceneTabWidget->currentCanvas()->property("shapeNonOverlapPadding").toInt());
-    flowSeparationModifierSpinBox->setValue(diagramSceneTabWidget->currentCanvas()->property("flowSeparationModifier").toDouble());
+    idealEdgeLengthModifierSpinBox->setValue(diagramSceneStackedWidget->currentCanvas()->property("idealEdgeLengthModifier").toDouble());
+    shapeNonOverlapPaddingSpinBox->setValue(diagramSceneStackedWidget->currentCanvas()->property("shapeNonOverlapPadding").toInt());
+    flowSeparationModifierSpinBox->setValue(diagramSceneStackedWidget->currentCanvas()->property("flowSeparationModifier").toDouble());
 }
 
 void DiagramWindow::restore()
@@ -117,26 +120,26 @@ void DiagramWindow::restore()
 
 void DiagramWindow::deleteSelection()
 {
-    diagramSceneTabWidget->currentCanvas()->deleteSelection();
+    diagramSceneStackedWidget->currentCanvas()->deleteSelection();
 }
 
 void DiagramWindow::alignSelection(DiagramScene::Alignment alignType)
 {
-//    if (!diagramSceneTabWidget->currentCanvas()->selectedItems().isEmpty())
+//    if (!diagramSceneStackedWidget->currentCanvas()->selectedItems().isEmpty())
 #if 0
-    if (diagramSceneTabWidget->currentDiagramScene()->validForAlignment(
-                diagramSceneTabWidget->currentCanvas()->selectedItems()))
+    if (diagramSceneStackedWidget->currentDiagramScene()->validForAlignment(
+                diagramSceneStackedWidget->currentCanvas()->selectedItems()))
 #endif
     {
-        diagramSceneTabWidget->currentCanvas()->alignSelection(alignType);
+        diagramSceneStackedWidget->currentCanvas()->alignSelection(alignType);
     }
 }
 
 
 void DiagramWindow::toFitVisible()
 {
-    diagramSceneTabWidget->currentDiagramView()->fitVisible();
-        disconnect(diagramSceneTabWidget->currentCanvas(), SIGNAL(animationFinished()),
+    diagramSceneStackedWidget->currentDiagramView()->fitVisible();
+        disconnect(diagramSceneStackedWidget->currentCanvas(), SIGNAL(animationFinished()),
                    this, SLOT(toFitVisible()));
 }
 
@@ -149,13 +152,13 @@ void DiagramWindow::setZoom()
 void DiagramWindow::loadLayout()
 {
     fitVisibleAct->setChecked(false);
-    diagramSceneTabWidget->currentDiagramView()->loadLayout();
+    diagramSceneStackedWidget->currentDiagramView()->loadLayout();
     fitVisibleAct->setChecked(true);
 }
 
 void DiagramWindow::saveLayout()
 {
-    diagramSceneTabWidget->currentDiagramView()->saveLayout();
+    diagramSceneStackedWidget->currentDiagramView()->saveLayout();
 }
 
 void DiagramWindow::createMenus()
@@ -189,13 +192,13 @@ void DiagramWindow::createMenus()
     layoutModeBox->setLayout(layoutModeVboxLayout);
 
     connect(organicButton, &QRadioButton::toggled, [=](){
-        diagramSceneTabWidget->currentCanvas()->setProperty("layoutMode", Canvas::OrganicLayout);
+        diagramSceneStackedWidget->currentCanvas()->setProperty("layoutMode", Canvas::OrganicLayout);
     });
     connect(flowButton, &QRadioButton::toggled, [=](){
-        diagramSceneTabWidget->currentCanvas()->setProperty("layoutMode", Canvas::FlowLayout);
+        diagramSceneStackedWidget->currentCanvas()->setProperty("layoutMode", Canvas::FlowLayout);
     });
     connect(layeredButton, &QRadioButton::toggled, [=](){
-        diagramSceneTabWidget->currentCanvas()->setProperty("layoutMode", Canvas::LayeredLayout);
+        diagramSceneStackedWidget->currentCanvas()->setProperty("layoutMode", Canvas::LayeredLayout);
     });
 
     organicButton->setChecked(true);
@@ -300,8 +303,8 @@ void DiagramWindow::createMenus()
      connect(sceneScaleCombo->lineEdit(), SIGNAL(returnPressed()),
              this, SLOT(setZoom()));
 
-//     for (int i = 0; i < diagramSceneTabWidget->count(); ++i)
-//         connect(diagramSceneTabWidget->diagramViewAt(i), SIGNAL(zoomChanged()),
+//     for (int i = 0; i < diagramSceneStackedWidget->count(); ++i)
+//         connect(diagramSceneStackedWidget->diagramViewAt(i), SIGNAL(zoomChanged()),
 //                 this, SLOT(restoreZoom()));
 
 #if 0
@@ -327,15 +330,15 @@ void DiagramWindow::createMenus()
     propertiesBox->setLayout(propertiesLayout);
 
     connect(idealEdgeLengthModifierSpinBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=](double value){
-        diagramSceneTabWidget->currentCanvas()->setProperty("idealEdgeLengthModifier", value);
+        diagramSceneStackedWidget->currentCanvas()->setProperty("idealEdgeLengthModifier", value);
     });
     connect(shapeNonOverlapPaddingSpinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=](int value){
-        diagramSceneTabWidget->currentCanvas()->setProperty("shapeNonOverlapPadding", value);
+        diagramSceneStackedWidget->currentCanvas()->setProperty("shapeNonOverlapPadding", value);
     });
     connect(flowSeparationModifierSpinBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=](double value){
-        diagramSceneTabWidget->currentCanvas()->setProperty("flowSeparationModifier", value);
+        diagramSceneStackedWidget->currentCanvas()->setProperty("flowSeparationModifier", value);
     });
-    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restoreProperties()));
+    connect(diagramSceneStackedWidget, SIGNAL(currentChanged(int)), this, SLOT(restoreProperties()));
 
     restoreProperties();
 #endif
@@ -367,7 +370,7 @@ void DiagramWindow::createMenus()
     diagramToolBar->addAction(horizAlign);
 //    diagramToolBar->addWidget(vertCentreButton);
 //    diagramToolBar->addWidget(horiCentreButton);
-//    diagramSceneTabWidget->addEditToolBarActions(diagramToolBar);
+//    diagramSceneStackedWidget->addEditToolBarActions(diagramToolBar);
     diagramToolBar->addAction(arrangeAct);
 //    diagramToolBar->addWidget(arrangeActButton);
 //    diagramToolBar->addWidget(deleteAlignmentButton);
@@ -393,7 +396,7 @@ void DiagramWindow::createMenus()
     connect(showButton, SIGNAL(clicked()), this, SLOT(ToggleControlsDock()));
     addDockWidget(Qt::LeftDockWidgetArea, controlsDock);
 
-    connect(diagramSceneTabWidget, SIGNAL(currentChanged(int)), this, SLOT(restore()));
+    connect(diagramSceneStackedWidget, SIGNAL(currentChanged(int)), this, SLOT(restore()));
 
     hidden=false;
     controlsDock->hide();

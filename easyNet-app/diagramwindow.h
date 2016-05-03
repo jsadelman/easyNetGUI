@@ -5,6 +5,7 @@
 #include <QTabBar>
 #include "diagramscene.h"
 class DiagramSceneTabWidget;
+class DiagramSceneStackedWidget;
 class QComboBox;
 class QSpinBox;
 class QDoubleSpinBox;
@@ -18,7 +19,8 @@ class DiagramWindow
 {
     Q_OBJECT
 public:
-    DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent = 0);
+//    DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent = 0);
+    DiagramWindow(DiagramSceneStackedWidget *diagramSceneStackedWidget, QWidget *parent = 0);
 
 public slots:
     void rearrange(bool ignoreEdges = false);
@@ -47,7 +49,8 @@ private slots:
     void horizAlignSlot();
 private:
     void createMenus();
-    DiagramSceneTabWidget *diagramSceneTabWidget;
+//    DiagramSceneTabWidget *diagramSceneTabWidget;
+    DiagramSceneStackedWidget *diagramSceneStackedWidget;
     QComboBox *sceneScaleCombo;
     QDoubleSpinBox *idealEdgeLengthModifierSpinBox;
     QSpinBox *shapeNonOverlapPaddingSpinBox;

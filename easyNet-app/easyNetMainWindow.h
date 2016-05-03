@@ -45,6 +45,7 @@ class ModelSettingsDisplay;
 class Console;
 class DebugLog;
 class DiagramSceneTabWidget;
+class DiagramSceneStackedWidget;
 class DiagramScene;
 class DiagramWindow;
 //class TableWindow;
@@ -227,7 +228,8 @@ public:
     QTabWidget *lazynutPanel;
 //    QTabWidget *resultsPanel;
     QTabWidget *explorerPanel;
-    DiagramSceneTabWidget *diagramPanel;
+//    DiagramSceneTabWidget *diagramPanel;
+    DiagramSceneStackedWidget *diagramPanel;
     DiagramWindow *diagramWindow;
 //    QDockWidget* introDock;
     //QDockWidget* codePanelDock;
@@ -271,8 +273,8 @@ public:
 //    DesignWindow    *designWindow;
 //    DesignWindow    *conversionWindow;
     DiagramScene    *modelScene;
-    DiagramScene    *conversionScene;
-    QWidget         *conversionPage;
+//    DiagramScene    *conversionScene;
+//    QWidget         *conversionPage;
 //    PlotSettingsWindow      *plotSettingsWindow;
     SettingsWidget      *dataViewSettingsWidget;
 //    PlotViewer_old      *plotViewer;
@@ -336,7 +338,7 @@ public:
     int             plotSettingsTabIdx;
     int             dataViewSettingsTabIdx;
     int             modelTabIdx;
-    int             conversionTabIdx;
+//    int             conversionTabIdx;
     int             scriptTabIdx;
     int             outputTablesTabIdx;
     int             trialFormTabIdx;

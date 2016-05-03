@@ -48,6 +48,7 @@
 #include "plotviewer.h"
 #include "plotviewerdispatcher.h"
 #include "diagramscenetabwidget.h"
+#include "diagramscenestackedwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"
 #include "enumclasses.h"
@@ -138,7 +139,8 @@ expertWindow=new QMainWindow;
     methodsPanel = new QTabWidget;
     //explorerPanel = new QTabWidget;
  //   resultsPanel = new QTabWidget;
-    diagramPanel = new DiagramSceneTabWidget(this);
+//    diagramPanel = new DiagramSceneTabWidget(this);
+    diagramPanel = new DiagramSceneStackedWidget(this);
     lazynutPanel->setMovable(true);
     diagramWindow = new DiagramWindow(diagramPanel, this);
     methodsPanel->addTab(diagramWindow,"Model");
@@ -238,9 +240,15 @@ expertWindow=new QMainWindow;
 
     /* ADD TABS */
 //    infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
+
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-    //    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
+    // testing!!!
+//    modelTabIdx = newDiagramScene(tr("Model"), "layer", "connection");
+//    modelScene = diagramSceneAt(modelTabIdx);
+    diagramPanel->hide(); // replace with QStackedWidget instead
+
+    //    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
 //    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
 //    conversionPage = diagramPanel->widget(conversionTabIdx);
 
