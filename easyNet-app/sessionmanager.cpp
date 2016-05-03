@@ -147,7 +147,7 @@ void SessionManager::startLazyNut()
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     connect(lazyNut,  static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&LazyNut::finished), [=](int code, QProcess::ExitStatus status)
     {
-        emit lazyNutFinished(!(killingLazyNut || status == QProcess::NormalExit));
+        emit lazyNutFinished(!(killingLazyNut || (status == QProcess::NormalExit && lazyNut->exitCode()==0) ));
         killingLazyNut = false;
     });
 
