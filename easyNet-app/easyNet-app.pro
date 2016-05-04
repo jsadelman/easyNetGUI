@@ -77,6 +77,7 @@ SOURCES +=  \
     debuglog.cpp \
 #    plotviewer_old.cpp \
     diagramscenetabwidget.cpp \
+    diagramscenestackedwidget.cpp \
     diagramwindow.cpp \
     diagramview.cpp \
     box.cpp \
@@ -176,6 +177,7 @@ HEADERS  += \
     debuglog.h \
 #    plotviewer_old.h \
     diagramscenetabwidget.h \
+    diagramscenestackedwidget.h \
     diagramwindow.h \
     diagramview.h \
     box.h \
