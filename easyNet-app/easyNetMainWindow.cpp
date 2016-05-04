@@ -95,18 +95,12 @@ void MainWindow::build()
     QWidget *dummyWidget = new QWidget;
     dummyWidget->hide();
     setCentralWidget(dummyWidget);
-//    setCentralWidget(introPanel);
-//    setCentralWidget(infoWindow);
-//    infoWindow->hide();
     connectSignalsAndSlots();
 
     /* INITIAL DISPLAY AT STARTUP */
-//    introDock->raise();
-//    introPanel->setCurrentIndex(infoTabIdx); // start on Intro tab, to welcome user
     //diagramDock->raise();
     diagramPanel->setCurrentIndex(modelTabIdx);
     diagramSceneTabChanged(modelTabIdx);
-    diagramWindow->ToggleControlsDock(); // hide layout controls
     setQuietMode(true);
 
     #ifdef WIN32
@@ -352,6 +346,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(plotViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(diagramWindow,SIGNAL(showModelSettingsSignal()), this,SLOT(showModelSettings()));
     connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
+    connect(diagramWindow, SIGNAL(loadModelSignal()), this, SLOT(loadModel()));
 
 
     connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),

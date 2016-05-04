@@ -247,14 +247,14 @@ QStringList TrialWidget::getArguments()
 
 void TrialWidget::runTrial()
 {
-    if (SessionManager::instance()->currentTrial().isEmpty())
-    {
-        MainWindow::instance()->msgBox("Choose which type of trial to run");
-        return;
-    }
     if (SessionManager::instance()->currentModel().isEmpty())
     {
         QMessageBox::warning(this, "Help", "Choose which model to run");
+        return;
+    }
+    if (SessionManager::instance()->currentTrial().isEmpty())
+    {
+        QMessageBox::warning(this, "Help", "Choose which type of trial to run");
         return;
     }
     qDebug() << trialRunMode;

@@ -117,7 +117,8 @@ SOURCES +=  \
     xmldisplay.cpp \
     modelsettingsdisplay.cpp \
     settingswidget.cpp \
-    floatingdialogwindow.cpp
+    floatingdialogwindow.cpp \
+    diagramscenestackedwidget.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -217,7 +218,8 @@ HEADERS  += \
     xmldisplay.h \
     modelsettingsdisplay.h \
     settingswidget.h \
-    floatingdialogwindow.h
+    floatingdialogwindow.h \
+    diagramscenestackedwidget.h
 
 
 RESOURCES   =	diagramscene.qrc \
@@ -232,7 +234,9 @@ DISTFILES += \
     images/image001.jpg \
     images/clipboard.png \
     images/plot_settings.png \
-    images/refresh.png
+    images/refresh.png \
+    images/faint.zeb.png \
+    images/faint.zeb2.png
 
 
 CONFIG += c++11

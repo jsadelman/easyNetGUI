@@ -27,8 +27,8 @@ public slots:
     void arrange(bool ignoreEdges = false);
     void initArrangement();
 
-    void ToggleControlsDock();
 signals:
+    void loadModelSignal();
     void showModelSettingsSignal();
     void showParameterSettingsSignal();
 private slots:
@@ -56,6 +56,7 @@ private:
     QSpinBox *shapeNonOverlapPaddingSpinBox;
     QDoubleSpinBox *flowSeparationModifierSpinBox;
 //    QRadioButton *fitVisibleButton;
+    QAction* loadModelAct;
     QAction* modelSettingsAct;
     QAction* parameterSettingsAct;
     QAction* fitVisibleAct;
@@ -63,8 +64,6 @@ private:
     QPushButton *saveLayoutButton;
     QPushButton *deleteAlignmentButton;
     QPushButton *arrangeActButton;
-    QDockWidget *controlsDock;
-    QToolBar *diagramToolBar;
     QToolBar *diagramTopToolBar;
     bool hidden;
 

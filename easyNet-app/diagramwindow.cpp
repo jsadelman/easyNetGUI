@@ -24,7 +24,6 @@ DiagramWindow::DiagramWindow(DiagramSceneStackedWidget *diagramSceneStackedWidge
     connect(diagramSceneStackedWidget, SIGNAL(zoomChanged()), this, SLOT(restoreZoom()));
 }
 
-
 void DiagramWindow::rearrange(bool ignoreEdges)
 {
 
@@ -210,8 +209,13 @@ void DiagramWindow::createMenus()
 
 //    addDockWidget(Qt::LeftDockWidgetArea, layoutDock);
 
+//    loadModelAct = new QAction(QIcon(":/images/layers-2x.png"), tr("&Load model"), this);
+    loadModelAct = new QAction(QIcon(":/images/open.png"), tr("&Load model"), this);
+    loadModelAct->setShortcuts(QKeySequence::Open);
+    loadModelAct->setStatusTip(tr("Load a previously specified model"));
+    connect(loadModelAct, SIGNAL(triggered()), this, SIGNAL(loadModelSignal()));
 
-    modelSettingsAct = new QAction(QIcon(":/images/list-4x.png"),tr("Model Load-Time Settings"), this);
+    modelSettingsAct = new QAction(QIcon(":/images/list-4x.png"),tr("Model Settings"), this);
     modelSettingsAct->setStatusTip(tr("Display model settings"));
     connect(modelSettingsAct,SIGNAL(triggered()), this,SIGNAL(showModelSettingsSignal()));
 
@@ -229,7 +233,7 @@ void DiagramWindow::createMenus()
     arrangeAct->setStatusTip(tr("Auto-arrange network layout"));
     connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
 
-    QAction* loadLayoutAct = new QAction(QIcon(":/images/open.png"), tr("Load layout"), this);
+    QAction* loadLayoutAct = new QAction(QIcon(":/images/layers-2x.png"), tr("Load layout"), this);
     loadLayoutAct->setStatusTip(tr("Reload layout"));
     connect(loadLayoutAct, SIGNAL(triggered()), this, SLOT(loadLayout()));
 
@@ -245,43 +249,6 @@ void DiagramWindow::createMenus()
     horizAlign->setStatusTip(tr("Horizontally align the middle of selected layers"));
     connect(vertAlign,SIGNAL(triggered()),this,SLOT(vertAlignSlot()));
     connect(horizAlign,SIGNAL(triggered()),this,SLOT(horizAlignSlot()));
-
-
-//    QGroupBox * alignmentBox = new QGroupBox("Alignment");
-//    QPushButton *vertLeftButton = new QPushButton("Left");
-//    QToolButton *vertCentreButton = new QToolButton("Centre"));
-//    QPushButton *vertRightButton = new QPushButton("Right");
-//    QPushButton *horiTopButton = new QPushButton("Top");
-//    QToolButton *horiCentreButton = new QToolButton("Middle");
-//    QPushButton *horiBottomButton = new QPushButton("Bottom");
-
-//    QGridLayout *alignmentLayout = new QGridLayout;
-//    alignmentLayout->addWidget(vertLeftButton, 0, 0);
-//    alignmentLayout->addWidget(vertCentreButton, 1, 0);
-//    alignmentLayout->addWidget(vertRightButton, 2, 0);
-//    alignmentLayout->addWidget(horiTopButton, 3, 0);
-//    alignmentLayout->addWidget(horiCentreButton, 4, 0);
-//    alignmentLayout->addWidget(horiBottomButton, 5, 0);
-//    alignmentLayout->addStretch();
-//    alignmentBox->setLayout(alignmentLayout);
-
-//    QSignalMapper *alignSignalMapper = new QSignalMapper(this);
-////    alignSignalMapper->setMapping(vertLeftButton, (int) dunnart::ALIGN_LEFT);
-//    alignSignalMapper->setMapping(vertCentreButton, (int) dunnart::ALIGN_CENTER);
-////    alignSignalMapper->setMapping(vertRightButton, (int) dunnart::ALIGN_RIGHT);
-////    alignSignalMapper->setMapping(horiTopButton, (int) dunnart::ALIGN_TOP);
-//    alignSignalMapper->setMapping(horiCentreButton, (int) dunnart::ALIGN_MIDDLE);
-////    alignSignalMapper->setMapping(horiBottomButton, (int) dunnart::ALIGN_BOTTOM);
-
-////    connect(vertLeftButton, SIGNAL(clicked()), alignSignalMapper, SLOT(map()));
-//    connect(vertCentreButton, SIGNAL(clicked()), alignSignalMapper, SLOT(map()));
-////    connect(vertRightButton, SIGNAL(clicked()), alignSignalMapper, SLOT(map()));
-////    connect(horiTopButton, SIGNAL(clicked()), alignSignalMapper, SLOT(map()));
-//    connect(horiCentreButton, SIGNAL(clicked()), alignSignalMapper, SLOT(map()));
-////    connect(horiBottomButton, SIGNAL(clicked()), alignSignalMapper, SLOT(map()));
-
-//    connect(alignSignalMapper, SIGNAL(mapped(int)),
-//            this, SLOT(alignSelection(int)));
 
     // ZOOM
     sceneScaleCombo = new QComboBox;
@@ -346,73 +313,25 @@ void DiagramWindow::createMenus()
     diagramTopToolBar = new QToolBar("Details");
     addToolBar(Qt::TopToolBarArea,diagramTopToolBar);
     diagramTopToolBar->setMovable(false);
+    diagramTopToolBar->addAction(loadModelAct);
     diagramTopToolBar->addAction(modelSettingsAct);
     diagramTopToolBar->addAction(parameterSettingsAct);
     diagramTopToolBar->addSeparator();
 
-    diagramToolBar = new QToolBar("Layout");
-    addToolBar(Qt::LeftToolBarArea,diagramToolBar);
-    diagramToolBar->setMovable(false);
-    QToolButton* hideButton = new QToolButton();
-    hideButton->setArrowType(Qt::LeftArrow);
-    diagramToolBar->addWidget(hideButton);
-    diagramToolBar->addSeparator();
-
-    //    diagramToolBar->addWidget(fitVisibleButton);
-//    sceneScaleCombo->setMinimumWidth();
-//    sceneScaleCombo->setMaximumWidth(60);
-//    sceneScaleCombo->setMinimumHeight(40);
-//    sceneScaleCombo->setMaximumHeight(40);
-    diagramToolBar->addWidget(sceneScaleCombo);
-    diagramToolBar->addAction(fitVisibleAct);
-//    diagramToolBar->addWidget(alignmentBox);
-    diagramToolBar->addAction(vertAlign);
-    diagramToolBar->addAction(horizAlign);
-//    diagramToolBar->addWidget(vertCentreButton);
-//    diagramToolBar->addWidget(horiCentreButton);
-//    diagramSceneStackedWidget->addEditToolBarActions(diagramToolBar);
-    diagramToolBar->addAction(arrangeAct);
-//    diagramToolBar->addWidget(arrangeActButton);
-//    diagramToolBar->addWidget(deleteAlignmentButton);
-//    diagramToolBar->addWidget(propertiesBox);
     QWidget* empty = new QWidget();
     empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    diagramToolBar->addWidget(empty);
-    diagramToolBar->addSeparator();
-    diagramToolBar->addAction(loadLayoutAct);
-    diagramToolBar->addAction(saveLayoutAct);
-
-    // to the right of the diagramToolBar is a narrow qdockwidget containing
-    // the toolbutton that toggles whether the diagramToolBar is visible
-    QToolButton* showButton = new QToolButton();
-    showButton->setArrowType(Qt::RightArrow);
-    controlsDock = new QDockWidget("");
-//    controlsDock->setWidget(controlsWidget);
-    controlsDock->setTitleBarWidget(showButton);
-    int defaultWidth = 15;
-    controlsDock->setMinimumWidth(defaultWidth);
-    controlsDock->setMaximumWidth(defaultWidth);
-    connect(hideButton, SIGNAL(clicked()), this, SLOT(ToggleControlsDock()));
-    connect(showButton, SIGNAL(clicked()), this, SLOT(ToggleControlsDock()));
-    addDockWidget(Qt::LeftDockWidgetArea, controlsDock);
+    diagramTopToolBar->addWidget(empty);
+    diagramTopToolBar->addWidget(sceneScaleCombo);
+    diagramTopToolBar->addAction(fitVisibleAct);
+    diagramTopToolBar->addAction(vertAlign);
+    diagramTopToolBar->addAction(horizAlign);
+    diagramTopToolBar->addAction(arrangeAct);
+    diagramTopToolBar->addSeparator();
+    diagramTopToolBar->addAction(loadLayoutAct);
+    diagramTopToolBar->addAction(saveLayoutAct);
 
     connect(diagramSceneStackedWidget, SIGNAL(currentChanged(int)), this, SLOT(restore()));
 
-    hidden=false;
-    controlsDock->hide();
-//    ToggleControlsDock();
-    diagramToolBar->toggleViewAction()->setChecked(false);
-    diagramToolBar->toggleViewAction()->trigger();
-}
-
-void DiagramWindow::ToggleControlsDock()
-{
-    if (hidden)
-        controlsDock->hide();
-    else
-        controlsDock->show();
-    hidden = !hidden;
-    diagramToolBar->toggleViewAction()->trigger();
 }
 
 void DiagramWindow::vertAlignSlot()
