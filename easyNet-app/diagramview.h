@@ -24,6 +24,7 @@ private:
 //    void fitVisible(bool computeBoundingRect);
     void read(const QJsonObject &json);
     void write(QJsonObject &json);
+
 };
 
 #endif // DIAGRAMVIEW_H

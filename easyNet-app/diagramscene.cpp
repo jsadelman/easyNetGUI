@@ -65,7 +65,7 @@
 #include <QDomDocument>
 #include <QDebug>
 #include <QUndoStack>
-
+#include <QPainter>
 
 Q_DECLARE_METATYPE(QDomDocument*)
 
@@ -82,6 +82,12 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
 //    myItemColor = Qt::white;
 //    myTextColor = Qt::black;
 //    myLineColor = Qt::black;
+
+    zebimage = new QImage();
+    zebimage->load(":/images/faint.zeb.3.png");
+//    zebimage->load(":/images/zebra.png");
+
+
 
     setNewModelLoaded(false);
 
@@ -132,11 +138,18 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     // default state is wake up
     wakeUp();
     QPixmap zebpix(150,200);
+
     zebpix.load(":/images/zebra.png");
-    zeb = addPixmap(zebpix);
-    zeb->setScale(.25);
-    zeb->setPos(-300,-500);
+
 }
+
+void DiagramScene::drawBackground(QPainter *painter, const QRectF &rect)
+{
+    painter->save();
+    painter->drawImage(rect, *zebimage);
+    painter->restore();
+}
+
 // This implementation of the connected component algorithm is adapted from:
 // https://breakingcode.wordpress.com/2013/04/08/finding-connected-components-in-a-graph/
 QList<QSet<DiagramItem *> > DiagramScene::connectedComponents()

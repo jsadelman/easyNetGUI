@@ -64,6 +64,7 @@ class ObjectUpdater;
 class QDomDocument;
 class QUndoStack;
 class Box;
+class QPainter;
 
 QT_END_NAMESPACE
 
@@ -158,6 +159,7 @@ private slots:
 //    void enableObserverClicked();
 //    void disableObserverClicked();
 //    void lesionClicked();
+    virtual void drawBackground(QPainter *painter, const QRectF &rect);
 private:
     void render();
 //    bool isItemChange(int type);
@@ -217,6 +219,7 @@ private:
     qreal jitter;
     QUndoStack* m_undoStack;
     QGraphicsItem *zeb;
+    QImage *zebimage;
 
     friend class DiagramWindow; // dunnart::Canvas has lots of friends, this is the same idea.
 };

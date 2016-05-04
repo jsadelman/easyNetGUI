@@ -141,6 +141,7 @@ expertWindow=new QMainWindow;
  //   resultsPanel = new QTabWidget;
 //    diagramPanel = new DiagramSceneTabWidget(this);
     diagramPanel = new DiagramSceneStackedWidget(this);
+
     lazynutPanel->setMovable(true);
     diagramWindow = new DiagramWindow(diagramPanel, this);
     methodsPanel->addTab(diagramWindow,"Model");
@@ -243,10 +244,8 @@ expertWindow=new QMainWindow;
 
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-    // testing!!!
-//    modelTabIdx = newDiagramScene(tr("Model"), "layer", "connection");
-//    modelScene = diagramSceneAt(modelTabIdx);
-    diagramPanel->hide(); // replace with QStackedWidget instead
+//    diagramPanel->hide();
+    diagramPanel->show();
 
     //    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
 //    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
@@ -762,6 +761,7 @@ void MainWindow::loadModel()
 //    diagramPanel->hide();
     if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
     loadModel(fileName,true);
+
 }
 void MainWindow::loadModelUnconfigured()
 {
@@ -824,7 +824,7 @@ void MainWindow::afterModelStaged()
 
 void MainWindow::initialLayout()
 {
-    qDebug()<<"init";
+    qDebug()<<"initialLayout";
     diagramPanel->show();
     diagramPanel->useFake(modelTabIdx,false);
     disconnect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));

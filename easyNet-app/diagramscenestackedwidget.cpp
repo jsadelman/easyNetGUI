@@ -21,6 +21,8 @@ DiagramSceneStackedWidget::DiagramSceneStackedWidget(QMainWindow *window)
 //        emit currentDiagramSceneChanged(qobject_cast<DiagramScene*>(canvas));
 //    });
     emptyScene=new DiagramScene("nul","nul");
+
+
 }
 
 int DiagramSceneStackedWidget::newDiagramScene(QString title, QString boxType, QString arrowType)
