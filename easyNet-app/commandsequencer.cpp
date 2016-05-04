@@ -82,7 +82,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
   while( (newoffset=lazyNutOutput.indexOf('\n',offset)) >= 0 )
   {
       int cr_adj=0;
-      if(lazyNutOutput[newoffset-1]=='\r') {qDebug()<<"CR"; cr_adj=1;}
+      if(lazyNutOutput[newoffset-1]=='\r') { cr_adj=1;}
 
       lazyNutIncompleteLine+=lazyNutOutput.midRef(offset,newoffset-offset-cr_adj);
       lazyNutLines.append(QString());
