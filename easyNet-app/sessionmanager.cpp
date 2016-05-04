@@ -54,11 +54,11 @@ SessionManager::SessionManager()
       #if defined(__linux__)
       lazyNutExt("sh"),
       binDir("bin-linux"),
-      oobBaseName("")
+      oobBaseName(""),
       #elif defined(__APPLE__)
       lazyNutExt("sh"),
       binDir("bin-mac"),
-      oobBaseName("lazyNut_oob")
+      oobBaseName("lazyNut_oob"),
       #elif defined(_WIN32)
       lazyNutExt("bat"),
       binDir("bin"),
@@ -147,7 +147,7 @@ void SessionManager::startLazyNut()
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
     connect(lazyNut,  static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&LazyNut::finished), [=](int code, QProcess::ExitStatus status)
     {
-        emit lazyNutFinished(!(killingLazyNut || status == QProcess::NormalExit));
+        emit lazyNutFinished(!(killingLazyNut || (status == QProcess::NormalExit && lazyNut->exitCode()==0) ));
         killingLazyNut = false;
     });
 
