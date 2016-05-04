@@ -503,7 +503,8 @@ void MainWindow::displayExpertWindow()
 
 void MainWindow::initialiseToolBar()
 {
-    QIcon newpix(":/images/zebra_64x64.png");
+//    QIcon newpix(":/images/zebra_64x64.png");
+    QIcon newpix(":/images/expert.mode.jpg");
     expertShow = new QAction(newpix, "E&xpert", this);
     toolbar = addToolBar("main toolbar");
 //    QLabel* modelBoxLabel = new QLabel("Model: ");
@@ -1112,6 +1113,7 @@ void MainWindow::afterTestsCompleted()
 {
     //codePanelDock->raise();
     lazynutPanel->setCurrentIndex(testsTabIdx);
+    displayExpertWindow();
     qDebug() << "trying to change display";
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
 

@@ -178,5 +178,6 @@
         <file>images/faint.zeb.png</file>
         <file>images/faint.zeb2.png</file>
         <file>images/faint.zeb.3.png</file>
+        <file>images/expert.mode.jpg</file>
     </qresource>
 </RCC>
