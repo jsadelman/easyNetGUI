@@ -347,6 +347,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(diagramWindow,SIGNAL(showModelSettingsSignal()), this,SLOT(showModelSettings()));
     connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
     connect(diagramWindow, SIGNAL(loadModelSignal()), this, SLOT(loadModel()));
+    connect(trialEditor, SIGNAL(loadTrialSignal()), this, SLOT(loadTrial()));
 
 
     connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
@@ -494,8 +495,10 @@ expertGWidget->setLayout(expertLayout);
 
 void MainWindow::displayExpertWindow()
 {
-     expertWindow->show();
-     expertWindow->resize(expertWindow->size());
+    expertWindow->raise();
+    expertWindow->show();
+    expertWindow->activateWindow();
+    expertWindow->resize(expertWindow->size());
 }
 
 void MainWindow::initialiseToolBar()
@@ -586,10 +589,10 @@ void MainWindow::initialiseToolBar()
     stopButton->setIconSize(QSize(40, 40));
     setStopButtonIcon(false);
     stopButton->show();
-            expertButton=new QToolButton(this);
-            expertButton->setAutoRaise(true);
-            expertButton->setDefaultAction(expertShow);
-            expertButton->setIconSize(QSize(40,40));
+    expertButton=new QToolButton(this);
+    expertButton->setAutoRaise(true);
+    expertButton->setDefaultAction(expertShow);
+    expertButton->setIconSize(QSize(40,40));
 
 
     toolbar->addWidget(stopButton);

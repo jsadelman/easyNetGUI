@@ -14,7 +14,7 @@ DEPENDPATH =  .. .
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = easyNet3
+TARGET = easyNet
 TEMPLATE = app
 
 
@@ -118,8 +118,7 @@ SOURCES +=  \
     xmldisplay.cpp \
     modelsettingsdisplay.cpp \
     settingswidget.cpp \
-    floatingdialogwindow.cpp \
-    diagramscenestackedwidget.cpp
+    floatingdialogwindow.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -220,9 +219,7 @@ HEADERS  += \
     xmldisplay.h \
     modelsettingsdisplay.h \
     settingswidget.h \
-    floatingdialogwindow.h \
-    diagramscenestackedwidget.h
-
+    floatingdialogwindow.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

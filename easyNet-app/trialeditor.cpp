@@ -5,18 +5,35 @@
 #include "sessionmanager.h"
 
 #include <QDebug>
-#include <QVBoxLayout>
 #include <QLabel>
-
+#include <QToolBar>
 
 TrialEditor::TrialEditor(QWidget *parent)
-    : QScrollArea(parent)
+    : QMainWindow(parent)
 {
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
             this,SLOT(buildForm(QDomDocument*)));
+
+    trialToolBar = new QToolBar;
+    QAction* loadTrialAct = new QAction(QIcon(":/images/open.png"), tr("Load trial"), this);
+    loadTrialAct->setStatusTip(tr("Load trial"));
+    connect(loadTrialAct, SIGNAL(triggered()), this, SIGNAL(loadTrialSignal()));
+
+    trialToolBar->addAction(loadTrialAct);
+    addToolBar(trialToolBar);
+
+    dummy = new QWidget;
+
+    scrollArea = new QScrollArea;
+    setCentralWidget(scrollArea);
+    scrollArea->setWidget(dummy);
+//    scrollArea->setWidget(form);
+
+
+
 }
 
 TrialEditor::~TrialEditor()
@@ -33,6 +50,8 @@ void TrialEditor::buildForm(QDomDocument *domDoc)
 {
     form = new TrialXML(domDoc->documentElement());
     form->build();
-    setWidget(form);
+    scrollArea->setWidget(form);
+
 }
+
 
