@@ -14,6 +14,8 @@
 #include <QFontMetrics>
 #include <QFont>
 #include <QDialog>
+#include <QListWidget>
+#include <QListWidgetItem>
 
 
 #include <iostream>
@@ -755,6 +757,31 @@ void MainWindow::loadModel(QString fileName,bool complete)
 
 void MainWindow::loadModel()
 {
+    QHBoxLayout* h_layout = new QHBoxLayout;
+//    h_layout->setMargin( 0 );
+    modelChooser  = new QListWidget;
+    modelChooser->setFlow(QListView::TopToBottom);
+    modelChooser->setViewMode(QListView::IconMode);
+    modelChooser->setMovement(QListView::Static);
+    modelChooser->resize(QSize(800,670));
+
+    QListWidgetItem* lwi;
+    QStringList modelList = QStringList() << "ia" << "bia" << "drc"
+                                          << "cdpplus" << "SCM" << "rpm-ia"
+                                          << "ltrs" << "PMSP_3_recurrent" << "custom";
+    foreach (QString modelName,modelList)
+            modelChooser->addItem(lwi = new QListWidgetItem(QIcon(
+                                  ":/images/"+modelName+".png"), modelName));
+
+    modelChooser->setIconSize(QSize(250,250));
+    modelChooser->show();
+    h_layout->addWidget(modelChooser, 0, Qt::AlignHCenter);
+
+    connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
+            this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
+
+    return;
+
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
@@ -764,6 +791,29 @@ void MainWindow::loadModel()
     loadModel(fileName,true);
 
 }
+
+void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
+{
+    if (item->text()=="custom")
+    {
+        // bring up file dialog
+        QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
+                                                        SessionManager::instance()->defaultLocation("modelsDir"),
+                                                        tr("easyNet Model Files (*.eNm)"));
+    //    diagramPanel->hide();
+        if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
+        loadModel(fileName,true);
+
+    }
+    else
+    {
+        diagramPanel->useFake(modelTabIdx,true);
+        loadModel(SessionManager::instance()->defaultLocation("modelsDir")+"/"+item->text()+".eNm",true);
+    }
+
+    modelChooser->hide();
+}
+
 void MainWindow::loadModelUnconfigured()
 {
     // bring up file dialog

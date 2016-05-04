@@ -176,6 +176,7 @@ private slots:
     void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
     void showResultsViewer(QString name);
 
+    void modelChooserItemClicked(QListWidgetItem *item);
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -241,8 +242,7 @@ public:
     FloatingDialogWindow* paramSettingsDialog;
     FloatingDialogWindow* dataViewSettingsDialog;
 
-    QListWidget* customerList;
-    QListWidget* paragraphsList;
+    QListWidget* modelChooser;
 
     Console        *lazyNutConsole;
     ObjExplorer      *objExplorer;

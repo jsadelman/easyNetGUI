@@ -179,5 +179,14 @@
         <file>images/faint.zeb2.png</file>
         <file>images/faint.zeb.3.png</file>
         <file>images/expert.mode.jpg</file>
+        <file>images/drc.png</file>
+        <file>images/ia.png</file>
+        <file>images/custom.png</file>
+        <file>images/SCM.png</file>
+        <file>images/cdpplus.png</file>
+        <file>images/bia.png</file>
+        <file>images/rpm-ia.png</file>
+        <file>images/PMSP_3_recurrent.png</file>
+        <file>images/ltrs.png</file>
     </qresource>
 </RCC>
