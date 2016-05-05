@@ -147,6 +147,7 @@ private slots:
 //    void showDocumentation();
 
     void lazyNutNotRunning();
+    void setLazyNutFinished(bool crashed);
 //    void requestVersion();
     void displayVersion(QString version);
 

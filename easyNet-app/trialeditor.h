@@ -24,6 +24,7 @@ public slots:
     void setTrialName(QString name);
 signals:
     void loadTrialSignal();
+
 private slots:
     void buildForm(QDomDocument* domDoc);
 

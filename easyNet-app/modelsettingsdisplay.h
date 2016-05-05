@@ -5,6 +5,8 @@
 #include <QDomDocument>
 
 class SettingsXML;
+class ObjectCacheFilter;
+
 
 class ModelSettingsDisplay: public QScrollArea
 {
@@ -21,6 +23,7 @@ private:
     SettingsXML *form;
     QString m_command;
     QString m_name;
+     ObjectCacheFilter* modelFilter;
 
 };
 

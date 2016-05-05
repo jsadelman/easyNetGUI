@@ -24,7 +24,7 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
     : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false),
-      maxRows(80), maxCols(20), maxFirstDisplayCells(10000), maxDisplayCells(50000)
+      maxRows(80), maxCols(20), maxFirstDisplayCells(3000), maxDisplayCells(10000)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
@@ -120,9 +120,19 @@ void DataframeViewer::copy()
     {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText("Large dataframe");
-        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
-                                  "Do you want to copy it to clipboard anyway or rather save it to file?").arg(maxDisplayCells));
+        if (!SessionManager::instance()->descriptionCache->getDomDoc(ui->currentItemName()))
+        {
+            // this should not happen
+            msgBox.setText("Unknown size dataframe");
+            msgBox.setInformativeText(QString("The size of the requested dataframe cannot be determined.\n"
+                                      "Do you want to copy it to clipboard anyway or rather save it to file?").arg(maxDisplayCells));
+        }
+        else
+        {
+            msgBox.setText("Large dataframe");
+            msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                              "Do you want to copy it to clipboard anyway or rather save it to file?").arg(maxDisplayCells));
+        }
         msgBox.setStandardButtons( QMessageBox::Save | QMessageBox::Cancel);
         QPushButton *fullCopyButton = msgBox.addButton(tr("Full copy"), QMessageBox::RejectRole);
         msgBox.setDefaultButton(QMessageBox::Save);
@@ -261,9 +271,19 @@ void DataframeViewer::askGetEntireDataframe()
     {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText("Large dataframe");
-        msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
-                                  "Do you want to load it anyway or rather load up to %1 cells?").arg(maxDisplayCells));
+        if (!SessionManager::instance()->descriptionCache->getDomDoc(ui->currentItemName()))
+        {
+            // this should not happen
+            msgBox.setText("Unknown size dataframe");
+            msgBox.setInformativeText(QString("The size of the requested dataframe cannot be determined.\n"
+                                      "Do you want to load it entirely or rather load up to %1 cells?").arg(maxDisplayCells));
+        }
+        else
+        {
+            msgBox.setText("Large dataframe");
+            msgBox.setInformativeText(QString("The requested dataframe contains more than %1 cells.\n"
+                                              "Do you want to load it anyway or rather load up to %1 cells?").arg(maxDisplayCells));
+        }
         msgBox.setStandardButtons(QMessageBox::Cancel);
         QPushButton *limitedLoadButton = msgBox.addButton(tr("Limited load"), QMessageBox::AcceptRole);
         QPushButton *fullLoadButton = msgBox.addButton(tr("Full load"), QMessageBox::RejectRole);
@@ -501,7 +521,7 @@ bool DataframeViewer::dataframeExceedsCellLimit(QString name, int maxCells)
         return true;
     QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
     if (!description)
-        return false;
+        return true;
     int rows = XMLelement(*description)["rows"]().toInt();
     int cols = XMLelement(*description)["columns"]().toInt();
     return rows * cols > maxCells;

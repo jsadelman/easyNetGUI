@@ -104,7 +104,6 @@ void DataViewer::initiateDestroyItem(QString name)
     }
     else
     {
-        emit itemRemoved(name);
         if (SessionManager::instance()->exists(name))
         {
             SessionManager::instance()->destroyObject(name);
@@ -129,6 +128,7 @@ void DataViewer::destroyItem(QString name)
     destroyItem_impl(name);
     removeView(name);
     m_items.removeAll(name);
+    emit itemRemoved(name);
 }
 
 

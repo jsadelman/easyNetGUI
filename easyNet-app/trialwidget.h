@@ -38,7 +38,7 @@ public:
 public slots:
     QStringList getArguments();
 signals:
-    void trialDescriptionUpdated(QDomDocument*);
+//    void trialDescriptionUpdated(QDomDocument*);
     void aboutToRunTrial(QSharedPointer<QDomDocument>);
     void trialRunModeChanged(int);
 
@@ -46,7 +46,7 @@ private slots:
     void runTrial();
     void update(QString trialName);
     void buildComboBoxes(QDomDocument* domDoc);
-    void buildComboBoxesTest(QStringList args);
+    void buildComboBoxesTest(QStringList args = QStringList());
     void setRunButtonIcon();
     void hideSetComboBox();
     void showSetComboBox();
