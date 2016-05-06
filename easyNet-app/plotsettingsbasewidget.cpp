@@ -167,8 +167,8 @@ void PlotSettingsBaseWidget::createLevelsListModel()
             cmdElement = cmdElement.nextSiblingElement("object");
         }
         levelsCmdObjectWatcher->setNameList(objectsInCmd);
-//        connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
-//                this, SLOT(getLevels()));
+        connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
+                this, SLOT(getLevels()));
         connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
         {
              static_cast<StringListModel *>(static_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel())->updateList(QStringList());
