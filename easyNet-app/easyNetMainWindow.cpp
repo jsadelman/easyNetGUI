@@ -125,17 +125,14 @@ void MainWindow::constructForms()
 expertWindow=new QMainWindow;
 
     /* CONSTRUCT TABWIDGETS */
-
+/*
     introPanel = new QTabWidget;
     introPanel->setMovable(true);
     introPanel->setTabsClosable(true);
-
+*/
 
     lazynutPanel = new QTabWidget;
     methodsPanel = new QTabWidget;
-    //explorerPanel = new QTabWidget;
- //   resultsPanel = new QTabWidget;
-//    diagramPanel = new DiagramSceneTabWidget(this);
     diagramPanel = new DiagramSceneStackedWidget(this);
 
     lazynutPanel->setMovable(true);
@@ -146,8 +143,6 @@ expertWindow=new QMainWindow;
 
     lazyNutConsole = new Console(this);
 
-//    plotSettingsWindow = new PlotSettingsWindow(this);
-    dataViewSettingsWidget = new SettingsWidget(this);
     objExplorer = new ObjExplorer(SessionManager::instance()->descriptionCache,this);
     scriptEdit = new ScriptEditor(SessionManager::instance()->defaultLocation("scriptsDir"), this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
@@ -225,6 +220,7 @@ expertWindow=new QMainWindow;
     paramSettingsDialog->setCentralWidget(paramViewer);
 //    paramSettingsDialog->hide();
 
+    dataViewSettingsWidget = new SettingsWidget(this);
     dataViewSettingsDialog = new FloatingDialogWindow(this);
     dataViewSettingsDialog->setCentralWidget(dataViewSettingsWidget);
 
@@ -440,6 +436,9 @@ void MainWindow::setParam(QString paramDataFrame, QString newParamValue)
 //     addDockWidget(Qt::LeftDockWidgetArea, introDock);
 //     viewMenu->addAction(introDock->toggleViewAction());
 ////     introDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
+
+expertWindow->resize(QApplication::primaryScreen()->availableGeometry().size()*.8);
+expertWindow->move(0,0);expertWindow->setWindowState(Qt::WindowMaximized);
 
 expertWindow->hide();
 expertLayout=new QHBoxLayout;
