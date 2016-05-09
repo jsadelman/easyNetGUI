@@ -25,6 +25,7 @@ PlotSettingsBaseWidget::PlotSettingsBaseWidget(QDomElement& settingsElement, boo
       levelsListModel(nullptr),
       levelsCmdObjectWatcher(nullptr),
       editDisplayWidget(nullptr),
+      descriptionUpdater(nullptr),
       currentValue(),
       QFrame(parent)
 {
