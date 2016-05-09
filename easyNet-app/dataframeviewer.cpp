@@ -258,7 +258,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     view->horizontalHeader()->show();
     view->resizeColumnsToContents();
 
-    ui->setCurrentItem(name);
+//    ui->setCurrentItem(name);
     enableActions(true);
     limitedGet(name, maxFirstDisplayCells);
 }

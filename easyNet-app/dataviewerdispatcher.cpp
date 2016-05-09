@@ -254,7 +254,7 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
             if (checked == Qt::Checked)
             {
                 hostDataViewer->addView(name);
-                hostDataViewer->ui->setCurrentItem(name);
+                //hostDataViewer->ui->setCurrentItem(name);
             }
             else
             {
