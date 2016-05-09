@@ -132,6 +132,13 @@ void PlotSettingsBaseWidget::createLevelsListModel()
 {
     delete levelsCmdObjectWatcher;
     levelsCmdObjectWatcher = nullptr;
+    levelsDescriptionElement.clear();
+    objectsInCmd.clear();
+    if(descriptionUpdater)
+    {
+        delete descriptionUpdater;
+        descriptionUpdater = nullptr;
+    }
     QSortFilterProxyModel *proxy = qobject_cast<QSortFilterProxyModel *>(levelsListModel);
     if (proxy)
         delete proxy->sourceModel();
@@ -159,20 +166,46 @@ void PlotSettingsBaseWidget::createLevelsListModel()
         levelsListModel = new QSortFilterProxyModel(this);
         static_cast<QSortFilterProxyModel *>(levelsListModel)->setSourceModel(stringListModel);
         levelsCmdObjectWatcher = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-        QStringList objectsInCmd;
+
         QDomElement cmdElement = levelsElement.firstChildElement("object");
         while (!cmdElement.isNull())
         {
             objectsInCmd.append(XMLAccessor::value(cmdElement));
             cmdElement = cmdElement.nextSiblingElement("object");
         }
-        levelsCmdObjectWatcher->setNameList(objectsInCmd);
-        connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
-                this, SLOT(getLevels()));
-        connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
+        bool descrel=false;
+        cmdElement = levelsElement.firstChildElement();
+        if(cmdElement.tagName()=="object")
         {
-             static_cast<StringListModel *>(static_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel())->updateList(QStringList());
-        });
+            cmdElement = cmdElement.nextSiblingElement();
+            if(XMLAccessor::value(cmdElement)=="get_description_element")
+            {
+                descrel=true;
+                cmdElement = cmdElement.nextSiblingElement();
+                levelsDescriptionElement = XMLAccessor::value(cmdElement);
+            }
+        }
+        levelsCmdObjectWatcher->setNameList(objectsInCmd);
+        if(!descrel)
+        {
+            connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
+                this, SLOT(getLevels()));
+            connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
+            {
+                 static_cast<StringListModel *>(static_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel())->updateList(QStringList());
+            });
+        }
+        else
+        {
+            descriptionUpdater = new ObjectUpdater(this);
+            descriptionUpdater->setProxyModel(levelsCmdObjectWatcher);
+            descriptionUpdater->setCommand("description");
+
+            connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
+                    this, SLOT(getLevelsFromDescription(QDomDocument*,QString)));
+//            connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)), this, SLOT(getLevelsDescriptionReady(QString)));
+            descriptionUpdater->wakeUpUpdate();
+        }
     }
     else
         return;
@@ -347,6 +380,12 @@ void PlotSettingsBaseWidget::emitValueChanged()
 
 void PlotSettingsBaseWidget::getLevels()
 {
+    if(levelsDescriptionElement.length()>0)
+    {
+        for(auto x:objectsInCmd)
+          descriptionUpdater->requestObject(x);
+        return;
+    }
     // check that all object fields in the levels command have been filled
     QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
     QDomElement cmdToken = levelsElement.firstChildElement("object");
@@ -364,6 +403,27 @@ void PlotSettingsBaseWidget::getLevels()
                            SLOT(updateList(QStringList)), AnswerFormatterType::ListOfValues);
     job->appendEndOfJobReceiver(this, SIGNAL(levelsReady()));
     SessionManager::instance()->submitJobs(job);
+}
+
+void PlotSettingsBaseWidget::getLevelsDescriptionReady(QString name)
+{
+    getLevelsFromDescription(SessionManager::instance()->descriptionCache->getDomDoc(name),name);
+}
+
+void PlotSettingsBaseWidget::getLevelsFromDescription(QDomDocument *desc, QString)
+{
+    QStringList levels;
+    if(!desc) return;
+    QDomElement level = desc->documentElement();
+    level = XMLAccessor::childElement(level,levelsDescriptionElement).firstChildElement();
+    while(!level.isNull())
+    {
+        levels.append(XMLAccessor::value(level));
+        level=level.nextSiblingElement();
+    }
+    qobject_cast<StringListModel*>(qobject_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel())
+             ->updateList(levels);
+    emit levelsReady();
 }
 
 

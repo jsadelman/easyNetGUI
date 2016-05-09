@@ -9,6 +9,7 @@
 
 #include "xmlelement.h"
 #include "xmlaccessor.h"
+#include "objectupdater.h"
 
 class QDomDocument;
 class QHBoxLayout;
@@ -68,6 +69,8 @@ protected slots:
     virtual void setRawEditModeOff();
 
     void getLevels();
+    void getLevelsDescriptionReady(QString);
+    void getLevelsFromDescription(QDomDocument*,QString);
 
 protected:
 
@@ -94,7 +97,9 @@ protected:
     QString currentValue;
     QAbstractItemModel *levelsListModel;
     ObjectCacheFilter *levelsCmdObjectWatcher;
-
+            QStringList objectsInCmd;
+    ObjectUpdater *descriptionUpdater;
+    QString levelsDescriptionElement;
     QVBoxLayout *vboxLayout;
     QGridLayout *gridLayout;
     QLabel *nameLabel;
