@@ -477,6 +477,7 @@ expertGWidget->setLayout(expertLayout);
 //     explorerDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable);
 //explorerTabIdx=lazynutPanel->addTab("Explorer" );
      resultsDock = new QDockWidget(tr("Results"), this);
+     dataframeResultsViewer->hide();
      resultsDock->setWidget(plotViewer);
      addDockWidget(Qt::RightDockWidgetArea, resultsDock);
      viewMenu->addAction(resultsDock->toggleViewAction());
