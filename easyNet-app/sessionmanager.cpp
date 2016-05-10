@@ -42,7 +42,7 @@ SessionManager *SessionManager::instance()
 SessionManager::SessionManager()
     : lazyNutHeaderBuffer(""),
       lazyNutOutput(""),
-      OOBrex("OOB secret: (\\w+)(?=\\r?\\n)"),
+      OOBrex("OOB secret: (\\w+)\\r?\\n"),
       m_plotFlags(),
       m_suspendingObservers(false),
       killingLazyNut(false),
