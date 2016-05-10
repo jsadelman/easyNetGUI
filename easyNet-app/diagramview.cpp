@@ -13,6 +13,7 @@ DiagramView::DiagramView(DiagramScene *scene) : QGraphicsView(scene)
 {
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    setDragMode(QGraphicsView::RubberBandDrag);
 
 }
 

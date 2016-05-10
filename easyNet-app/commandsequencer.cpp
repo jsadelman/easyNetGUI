@@ -137,7 +137,7 @@ void CommandSequencer::processLazyNutLine()
     {
         beginLine=lazyNutLines.size()-1;
         currentCmd=commandList.first();
-        qDebug()<<currentCmd;
+//        qDebug()<<currentCmd;
     }
     else if(beginLine>=0 && line.startsWith("END:"))
     {

@@ -110,7 +110,6 @@ void Ui_DataViewer::createActions()
 //    setDispatchModeAutoAct->setToolTip("Override default page behaviour");
 //    setDispatchModeAutoAct->setCheckable(true);
 
-    qDebug() << "Defining openAct" << this;
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
 //    openAct->setShortcuts(QKeySequence::Open);
     // shortcuts don't work  here due to ambiguity across the different ui_dataviewer instances

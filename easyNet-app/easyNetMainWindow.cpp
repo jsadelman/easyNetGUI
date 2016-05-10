@@ -774,17 +774,6 @@ void MainWindow::loadModel()
 
     connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
             this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
-
-    return;
-
-    // bring up file dialog
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
-                                                    SessionManager::instance()->defaultLocation("modelsDir"),
-                                                    tr("easyNet Model Files (*.eNm)"));
-//    diagramPanel->hide();
-    if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
-    loadModel(fileName,true);
-
 }
 
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
@@ -846,6 +835,8 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 
 void MainWindow::afterModelConfig()
 {
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
+    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
     modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
     connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
     SessionManager::instance()->runCmd(QString("%1%2 stage").arg(quietMode).arg(SessionManager::instance()->currentModel()));
@@ -856,8 +847,7 @@ void MainWindow::afterModelConfig()
     qDebug() << "Time taken to config model:" << QString::number(loadModelTimer.elapsed()) << "ms";
     commandLog->addText(QString("## Time taken to config model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
 
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
+
 }
 
 void MainWindow::afterModelStaged()
