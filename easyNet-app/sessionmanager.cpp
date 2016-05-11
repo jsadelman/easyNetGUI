@@ -42,7 +42,7 @@ SessionManager *SessionManager::instance()
 SessionManager::SessionManager()
     : lazyNutHeaderBuffer(""),
       lazyNutOutput(""),
-      OOBrex("OOB secret: (\\w+)(?=\\r?\\n)"),
+      OOBrex("OOB secret: (\\w+)\\r?\\n"),
       m_plotFlags(),
       m_suspendingObservers(false),
       killingLazyNut(false),
@@ -499,6 +499,7 @@ void SessionManager::getOOB(const QString &lazyNutOutput)
         OOBsecret = OOBrex.cap(1);
         QString lazyNutIntro=lazyNutHeaderBuffer.left(lazyNutHeaderBuffer.indexOf(OOBrex)+OOBrex.matchedLength())+"\n";
 //
+
         lazyNutHeaderBuffer=lazyNutHeaderBuffer.mid(lazyNutHeaderBuffer.indexOf(OOBsecret) + OOBsecret.length());
         disconnect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
         connect(lazyNut, SIGNAL(outputReady(QString)), commandSequencer, SLOT(processLazyNutOutput(QString)));

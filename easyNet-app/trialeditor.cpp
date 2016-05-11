@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QLabel>
 #include <QToolBar>
+#include <QAction>
 
 TrialEditor::TrialEditor(QWidget *parent)
     : QMainWindow(parent)

@@ -5,7 +5,8 @@
 
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
-    : lazyNut(lazyNut), ready(true), logMode(0), QObject(parent),dotcount(0),beginLine(-1),timeMode(false),svgMode(false)
+    : lazyNut(lazyNut), ready(true), logMode(0), QObject(parent),dotcount(0),beginLine(-1),timeMode(false),svgMode(false),
+      bytesPending(0)
 {
     initProcessLazyNutOutput();
 //    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(processLazyNutOutput(QString)));
@@ -74,6 +75,7 @@ void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int
 
 void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
 {
+
   if (commandList.isEmpty() || echoInterpreter(commandList.first()) || (logMode & ECHO_INTERPRETER))
     emit userLazyNutOutputReady(lazyNutOutput);
   if(commandList.isEmpty()) return;
@@ -117,7 +119,7 @@ void CommandSequencer::processLazyNutLine()
     {
         int spoff=line.indexOf(' ',20);
         QStringRef bc=line.midRef(20,spoff-20);
-        qDebug()<<bc;
+
         bytesPending=bc.toInt();
         svgMode=true;
     }
@@ -137,7 +139,6 @@ void CommandSequencer::processLazyNutLine()
     {
         beginLine=lazyNutLines.size()-1;
         currentCmd=commandList.first();
-//        qDebug()<<currentCmd;
     }
     else if(beginLine>=0 && line.startsWith("END:"))
     {
