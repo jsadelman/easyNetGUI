@@ -57,6 +57,7 @@ class QTime;
 class SettingsWidget;
 class FloatingDialogWindow;
 
+
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -211,6 +212,7 @@ private:
     //void loadModel(QString fileName);
     //void loadModelUnconfigured(QString fileName);
     void loadModel(QString fileName,bool complete);
+
 
     bool m_debugMode;
 public:

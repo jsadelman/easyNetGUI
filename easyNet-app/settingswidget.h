@@ -48,6 +48,7 @@ protected slots:
     void setCurrentSettings(QDomDocument *settingsList) {currentSettings = settingsList;}
     void setCurrentPlotName(QString name) {currentName = name;}
     void removeForm(QString name);
+    void emitDataViewCreated();
 
 protected:
 //    void createActions();

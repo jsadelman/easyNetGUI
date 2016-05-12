@@ -62,14 +62,22 @@ QMap<QString, QString> SettingsWidget::getSettings(QString name)
 
 void SettingsWidget::sendSettings(QString name, bool force)
 {
-    PlotSettingsForm *form = formMap.value(name.isEmpty() ? currentName : name, nullptr);
+    name = name.isEmpty() ? currentName : name;
+    PlotSettingsForm *form = formMap.value(name, nullptr);
     if (form)
     {
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = form->getSettingsCmdList(force);
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
-                << SessionManager::instance()->recentlyModifiedJob();
+                << SessionManager::instance()->updateObjectCacheJobs();
+        if (force)
+        {
+            QMap<QString, QVariant> jobData;
+            jobData.insert("name", name);
+            jobs.last()->data = jobData;
+            jobs.last()->appendEndOfJobReceiver(this, SLOT(emitDataViewCreated()));
+        }
         SessionManager::instance()->submitJobs(jobs);
     }
 }
@@ -94,8 +102,8 @@ void SettingsWidget::newForm(QString name, QString dataViewType, QString rScript
     jobData.insert("isBackup", isBackup);
     job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-            << job
-            << SessionManager::instance()->recentlyCreatedJob();
+            << job;
+//            << SessionManager::instance()->updateObjectCacheJobs();
     jobs.last()->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
     jobs.last()->data = jobData;
     SessionManager::instance()->submitJobs(jobs);
@@ -198,7 +206,7 @@ void SettingsWidget::buildSettingsForm()
 
     buildSettingsForm(name, currentSettings, completeDefaultSettings);
     descriptionFilter->addName(name);
-    emit dataViewCreated(name, isBackup);
+//    emit dataViewCreated(name, isBackup);
 }
 
 void SettingsWidget::rebuildForm()
@@ -250,6 +258,30 @@ void SettingsWidget::removeForm(QString name)
     formMap.remove(name);
     typeMap.remove(name);
     descriptionFilter->removeName(name);
+}
+
+void SettingsWidget::emitDataViewCreated()
+{
+    LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+    if (!job)
+    {
+        eNerror << "cannot extract LazyNutJob from sender";
+        return;
+    }
+    QMap<QString, QVariant> jobData = job->data.toMap();
+    if (!jobData.contains("name"))
+    {
+        eNerror << "LazyNutJob->data does not contain name entry";
+        return;
+    }
+    QString name = jobData.value("name").toString();
+    if (name.isEmpty())
+    {
+        eNerror << "LazyNutJob->data contains an empty name entry";
+        return;
+    }
+    qDebug() << Q_FUNC_INFO << name;
+    emit dataViewCreated(name, false);
 }
 
 //void SettingsWidget::createActions()

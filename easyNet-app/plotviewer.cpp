@@ -116,6 +116,7 @@ void PlotViewer::sendPlotCmd(QString name)
         eNerror << "name is empty or does not exist:" << name;
         return;
     }
+
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList({QString("%1 get %2").arg(name).arg(fullScreen ? fullScreenAspectRatio : plotAspectRatio)});
     job->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)), AnswerFormatterType::SVG);
@@ -446,7 +447,7 @@ void PlotViewer::restartTimer()
 QWidget *PlotViewer::makeView(QString name)
 {
     plotIsActive[name] = SessionManager::instance()->exists(name);
-    plotIsUpToDate[name] = !plotIsActive[name];
+    plotIsUpToDate[name] = true; // !plotIsActive[name];
 //    plotSourceModified[name] = false;
 //    if (plotIsActive[name])
 //        updateDependencies(descriptionFilter->getDomDoc(name), name);
@@ -495,6 +496,7 @@ void PlotViewer::updateActivePlots()
         }
         else
         {
+//            plotIsUpToDate[name] = true;
             sendPlotCmd(name);
         }
     }

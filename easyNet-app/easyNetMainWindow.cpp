@@ -111,7 +111,6 @@ void MainWindow::build()
     SessionManager::instance()->startLazyNut();
 
 
-
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -749,6 +748,7 @@ void MainWindow::loadModel(QString fileName,bool complete)
     #endif
 
 }
+
 
 void MainWindow::loadModel()
 {

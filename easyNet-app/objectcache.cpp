@@ -164,7 +164,7 @@ bool ObjectCache::create(const QString &name, const QString &type, const QString
     LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type, subtype);
     cache.insert(0, elem);
     endInsertRows();
-    emit dataChanged(index(0,0), index(0,columnCount()-1));
+//    emit dataChanged(index(0,0), index(0,columnCount()-1));
     return true;
 }
 
@@ -286,6 +286,7 @@ bool ObjectCache::create(QDomDocument *domDoc)
     while (!elem.isNull())
     {
         // currently recently_created does not provide subtype
+
         success *= create(elem(), elem["type"](), elem["subtype"]());
         elem = elem.nextSibling();
     }
@@ -305,8 +306,9 @@ bool ObjectCache::invalidateCache(QStringList names)
 {
     bool success = true;
     foreach (QString name, names)
+    {
         success *= invalidateCache(name);
-
+    }
     return success;
 }
 
