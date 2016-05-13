@@ -116,13 +116,12 @@ void PlotViewer::sendPlotCmd(QString name)
         eNerror << "name is empty or does not exist:" << name;
         return;
     }
-
+    plotLastRatio[name] = fullScreen ? fullScreenAspectRatio : plotAspectRatio;
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList({QString("%1 get %2").arg(name).arg(fullScreen ? fullScreenAspectRatio : plotAspectRatio)});
+    job->cmdList = QStringList({QString("%1 get %2").arg(name).arg(plotLastRatio[name])});
     job->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)), AnswerFormatterType::SVG);
     SessionManager::instance()->submitJobs(job);
 }
-
 
 void PlotViewer::updateAllActivePlots()
 {
@@ -176,6 +175,7 @@ void PlotViewer::destroyItem_impl(QString name)
     plotIsActive.remove(name);
     plotByteArray.remove(name);
     plotIsUpToDate.remove(name);
+    plotLastRatio.remove(name);
 //    plotSourceModified.remove(name);
 //    plotDependencies.remove(name);
 }
@@ -324,7 +324,13 @@ void PlotViewer::setCurrentItem(QString name)
 {
     DataViewer::setCurrentItem(name);
 //    emit setPlotSettings(name);
-    updateActivePlots();
+    if (!plotLastRatio.contains(name) || plotLastRatio.value(name, 0) == plotAspectRatio)
+        displaySVG(plotByteArray.value(name, QByteArray()), name);
+    else
+    {
+        plotIsUpToDate[name] = false;
+        updateActivePlots();
+    }
 //    if (infoVisible)
     //        showInfo(svg);
 }
@@ -447,7 +453,7 @@ void PlotViewer::restartTimer()
 QWidget *PlotViewer::makeView(QString name)
 {
     plotIsActive[name] = SessionManager::instance()->exists(name);
-    plotIsUpToDate[name] = true; // !plotIsActive[name];
+    plotIsUpToDate[name] = true;
 //    plotSourceModified[name] = false;
 //    if (plotIsActive[name])
 //        updateDependencies(descriptionFilter->getDomDoc(name), name);

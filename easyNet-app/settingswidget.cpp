@@ -69,8 +69,12 @@ void SettingsWidget::sendSettings(QString name, bool force)
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = form->getSettingsCmdList(force);
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                << job
-                << SessionManager::instance()->updateObjectCacheJobs();
+                << job;
+        if (force)
+            jobs << SessionManager::instance()->updateObjectCacheJobs();
+        else
+            jobs << SessionManager::instance()->recentlyModifiedJob();
+
         if (force)
         {
             QMap<QString, QVariant> jobData;
@@ -280,7 +284,6 @@ void SettingsWidget::emitDataViewCreated()
         eNerror << "LazyNutJob->data contains an empty name entry";
         return;
     }
-    qDebug() << Q_FUNC_INFO << name;
     emit dataViewCreated(name, false);
 }
 
@@ -317,11 +320,6 @@ void SettingsWidget::buildWidget()
 //    applyButton->setIcon(QIcon(":/images/media-play-8x.png"));
 //    applyButton->setIconSize(QSize(40, 40));
     connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
-    connect(applyButton, &QPushButton::clicked, [=]()
-    {
-        if (!currentName.isEmpty())
-            sendSettings();
-    });
 
     QVBoxLayout *buttonsLayout = new QVBoxLayout;
     buttonsLayout->addWidget(applyButton);

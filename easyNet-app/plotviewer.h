@@ -95,6 +95,7 @@ protected:
 //    QMultiMap <QString, QString> plotDependencies;
 //    QMap <QString, bool> plotSourceModified;
     QMap <QString, QByteArray> plotByteArray;
+     QMap <QString, double> plotLastRatio;
 
 
 //    QAction *       settingsAct;
