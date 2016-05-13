@@ -324,8 +324,10 @@ void PlotViewer::setCurrentItem(QString name)
 {
     DataViewer::setCurrentItem(name);
 //    emit setPlotSettings(name);
-    if (!plotLastRatio.contains(name) || plotLastRatio.value(name, 0) == plotAspectRatio)
+    if (plotIsUpToDate.value(name) && plotLastRatio.value(name, plotAspectRatio) == plotAspectRatio)
+    {
         displaySVG(plotByteArray.value(name, QByteArray()), name);
+    }
     else
     {
         plotIsUpToDate[name] = false;
@@ -358,6 +360,7 @@ void PlotViewer::setCurrentItem(QString name)
 
 void PlotViewer::checkDependencies(QString name)
 {
+
     foreach(QString plot, items())
     {
         if (SessionManager::instance()->dependencies(plot).contains(name))
@@ -502,7 +505,7 @@ void PlotViewer::updateActivePlots()
         }
         else
         {
-//            plotIsUpToDate[name] = true;
+            plotIsUpToDate[name] = true;
             sendPlotCmd(name);
         }
     }
