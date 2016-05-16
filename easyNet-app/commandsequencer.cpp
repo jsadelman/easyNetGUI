@@ -98,7 +98,8 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
   if(lazyNutIncompleteLine.startsWith("ANSWER: ."))
   {
       int totDots=dotcount;
-      for(int i=8;lazyNutIncompleteLine[i]=='.';++i)
+      int length = lazyNutIncompleteLine.length();
+      for(int i=8; i < length && lazyNutIncompleteLine[i]=='.';++i)
           totDots++;
       emit dotsCount(totDots);
   }
@@ -111,7 +112,8 @@ void CommandSequencer::processLazyNutLine()
     // Consider special ANSWER cases first
     if(line.startsWith("ANSWER: ."))
     {
-        for(int i=8;line[i]=='.';++i)
+        int length = line.length();
+        for(int i=8; i < length && line[i]=='.';++i)
             dotcount++;
         emit dotsCount(dotcount);
     }
