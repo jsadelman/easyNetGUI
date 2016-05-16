@@ -138,8 +138,8 @@ void PlotViewer::updateAllActivePlots()
 
 void PlotViewer::addRequestedItem(QString name, bool isBackup)
 {
-    if (SessionManager::instance()->descriptionCache->type(name) == "xfile")
-        addItem(name, isBackup);
+//    if (SessionManager::instance()->descriptionCache->type(name) == "xfile")
+//        addItem(name, isBackup);
 }
 
 void PlotViewer::snapshot(QString name)

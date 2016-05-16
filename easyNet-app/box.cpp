@@ -255,7 +255,8 @@ QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &me
                 {
                     QMap<QString,QString> settings;
                     settings["df"] = plotData.value("dataframe").toString();
-                    emit createDataViewRequested(   plotData.value("rplotName").toString(),
+                    //emit createDataViewRequested
+                    SessionManager::instance()->createDataView(plotData.value("rplotName").toString(),
                                                     "rplot",
                                                     plotData.value("plotType").toString().append(".R"),
                                                     settings,

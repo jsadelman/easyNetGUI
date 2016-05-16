@@ -139,6 +139,52 @@ void SettingsWidget::setForm(QString name)
         typeEdit->setText(typeMap.value(name));
         formScrollArea->setWidget(formMap.value(name));
     }
+    else if (!visibleRegion().isEmpty())
+        createNewForm(name);
+}
+
+void SettingsWidget::createNewForm(QString name)
+{
+    if (name.isEmpty())
+    {
+        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+        if (!job)
+        {
+            eNerror << "cannot extract LazyNutJob from sender";
+            return;
+        }
+        name = SessionManager::instance()->getDataFromJob(job, "name").toString();
+        if (name.isEmpty())
+        {
+            eNerror << "LazyNutJob->data contains an empty name entry";
+            return;
+        }
+    }
+    if (!SessionManager::instance()->exists(name))
+    {
+        eNerror << "object" << name << "does not exist";
+        return;
+    }
+    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    if (!description)
+    {
+        eNerror << "object" << name << "does not have a description";
+        return;
+    }
+    QString subtype = XMLelement(*description)["subtype"]();
+    if (!(subtype == "dataframe_view" || subtype == "rplot"))
+    {
+        eNerror << "object" << name << "is not of subtype rplot or dataframe_view";
+        return;
+    }
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({QString("xml %1 list_settings").arg(name)});
+    QMap<QString, QVariant> jobData;
+    jobData.insert("name", name);
+    job->setAnswerReceiver(this, SLOT(setCurrentSettings(QDomDocument*)), AnswerFormatterType::XML);
+    job->appendEndOfJobReceiver(this, SLOT(buildSettingsForm()));
+    job->data = jobData;
+    SessionManager::instance()->submitJobs(job);
 }
 
 void SettingsWidget::buildSettingsForm(QString name, QDomDocument *domDoc, QMap<QString, QString> defaultSettings)
@@ -206,7 +252,6 @@ void SettingsWidget::buildSettingsForm()
     }
     foreach(QString setting, defaultSettings.keys())
         completeDefaultSettings[setting] = defaultSettings[setting];
-
 
     buildSettingsForm(name, currentSettings, completeDefaultSettings);
     descriptionFilter->addName(name);

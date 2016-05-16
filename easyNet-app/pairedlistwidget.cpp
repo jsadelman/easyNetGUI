@@ -25,6 +25,7 @@ void PairedListWidget::setValue(QStringList selectedList)
     moveSelected(selectedView, false);
     foreach (QString val, selectedList)
     {
+
         QModelIndexList matchList = selectFromListModel->match(
                     selectFromListModel->index(0,0),
                     Qt::DisplayRole,

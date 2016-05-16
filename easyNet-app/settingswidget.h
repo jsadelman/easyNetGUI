@@ -32,6 +32,7 @@ public slots:
     void sendSettings(QString name = QString(), bool force = false);
     void newForm(QString name, QString dataViewType, QString rScript, QMap <QString,QString> defaultSettings, bool isBackup = false); // old newRPlot
     void setForm(QString name); // old setPlotSettings
+    void createNewForm(QString name="");
 
 signals:
     void dataViewCreated(QString, bool); // old newRPlotCreated

@@ -160,6 +160,7 @@ public slots:
     void suspendObservers(bool suspending) {m_suspendingObservers = suspending;}
     void setCopyRequested(QString original);
     void clearCopyRequested(QString original = "");
+    void createDataView(QString name, QString subtype, QString Type, QMap<QString,QString> settings=QMap<QString,QString>(), bool isBackup=false, bool popUpSettings=false);
 
 
 private slots:

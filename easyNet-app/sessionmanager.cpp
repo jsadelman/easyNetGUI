@@ -297,6 +297,42 @@ void SessionManager::clearCopyRequested(QString original)
     m_requestedCopies.removeAll(original);
 }
 
+void SessionManager::createDataView(QString name, QString subtype, QString Type, QMap<QString, QString> settings, bool isBackup, bool popUpSettings)
+{
+    Q_UNUSED(isBackup)
+    if (!(subtype == "dataframe_view" || subtype == "rplot"))
+    {
+        eNerror << "invalid subtype:" << subtype;
+        return;
+    }
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList = QStringList({
+                                QString("create %1 %2").arg(subtype).arg(name),
+                                QString("%1 set_type %2").arg(name).arg(Type),
+                                });
+    QMapIterator<QString, QString> settings_it(settings);
+    while (settings_it.hasNext())
+    {
+        settings_it.next();
+        job->cmdList << QString("%1 %2 %3 %4")
+                        .arg(name)
+                        .arg(SessionManager::instance()->exists(settings_it.value()) ? "setting_object" : "setting")
+                        .arg(settings_it.key())
+                        .arg(settings_it.value());
+    }
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCacheJobs();
+    if (popUpSettings)
+    {
+        QMap<QString, QVariant> jobData;
+        jobData.insert("name", name);
+        jobs.last()->data = jobData;
+        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(setFormAndShow()));
+    }
+    SessionManager::instance()->submitJobs(jobs);
+}
+
 
 bool SessionManager::isAnyTrialPlot(QString name)
 {

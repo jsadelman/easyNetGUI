@@ -195,8 +195,13 @@ expertWindow=new QMainWindow;
     connect(paramDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             paramViewer, SLOT(addItem(QString)));
 
+
     plotViewer = new PlotViewer(ui_dataframeResultsViewer , this);
     plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
+    plotDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    plotDescriptionFilter->setType("xfile");
+    connect(plotDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            plotViewer, SLOT(addItem(QString)));
 
     ui_testViewer = new Ui_DataTabsViewer;
     testViewer = new DataframeViewer(ui_testViewer, this);
@@ -272,6 +277,10 @@ void MainWindow::connectSignalsAndSlots()
 
     // synch between DataViewers and dataViewSettingsWidget
     connect(plotViewer,SIGNAL(showSettingsRequested()),this,SLOT(showDataViewSettings()));
+    connect(plotViewer, &PlotViewer::showSettingsRequested, [=]()
+    {
+       setFormAndShow(plotViewer->currentItemName());
+    });
     connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
@@ -1734,4 +1743,25 @@ void MainWindow::showDataViewSettings()
     dataViewSettingsDialog->showNormal();
     dataViewSettingsDialog->raise();
 
+}
+
+void MainWindow::setFormAndShow(QString name)
+{
+    if (name.isEmpty())
+    {
+        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+        if (!job)
+        {
+            eNerror << "cannot extract LazyNutJob from sender";
+            return;
+        }
+        name = SessionManager::instance()->getDataFromJob(job, "name").toString();
+        if (name.isEmpty())
+        {
+            eNerror << "LazyNutJob->data contains an empty name entry";
+            return;
+        }
+    }
+    showDataViewSettings();
+    dataViewSettingsWidget->setForm(name);
 }

@@ -199,13 +199,12 @@ void PlotSettingsBaseWidget::createLevelsListModel()
         else
         {
             descriptionUpdater = new ObjectUpdater(this);
-            descriptionUpdater->setProxyModel(levelsCmdObjectWatcher);
             descriptionUpdater->setCommand("description");
-
             connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
                     this, SLOT(getLevelsFromDescription(QDomDocument*,QString)));
+            descriptionUpdater->setProxyModel(levelsCmdObjectWatcher);
+
 //            connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)), this, SLOT(getLevelsDescriptionReady(QString)));
-            descriptionUpdater->wakeUpUpdate();
         }
     }
     else
@@ -239,7 +238,9 @@ void PlotSettingsBaseWidget::setValue(QString val)
         break;
     }
     case WidgetEditMode:
+    {
         setWidgetValue(raw2widgetValue(val));
+    }
     }
 }
 
@@ -368,7 +369,6 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 void PlotSettingsBaseWidget::emitValueChanged()
 {
     QString newValue = getValue();
-//    qDebug() << Q_FUNC_INFO << name() << currentValue << newValue;
 //    if (currentValue != newValue)
 //    {
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
@@ -384,7 +384,9 @@ void PlotSettingsBaseWidget::getLevels()
     if(levelsDescriptionElement.length()>0)
     {
         for(auto x:objectsInCmd)
+        {
           descriptionUpdater->requestObject(x);
+        }
         return;
     }
     // check that all object fields in the levels command have been filled
@@ -665,7 +667,7 @@ void PlotSettingsMultipleChoiceWidget::buildEditWidget()
 
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
     currentValue = value();
-    currentValue = currentValue.isEmpty() ? XMLAccessor::value(valueElement) : currentValue;
+    currentValue = (currentValue.isEmpty() || currentValue == "c()") ? XMLAccessor::value(valueElement) : currentValue;
     setWidgetValue(raw2widgetValue(currentValue));
     updateEditDisplayWidget();
 
@@ -735,7 +737,10 @@ QVariant PlotSettingsMultipleChoiceWidget::raw2widgetValue(QString val)
 
     QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
     if ((XMLAccessor::value(typeElement)) == "factor" && useRFormat)
+    {
         return val.remove(QRegExp("^\\s*c\\(|\\)\\s*$|\"")).simplified().split(QRegExp("\\s*,\\s*")); // |^\\s*NULL\\s*$
+    }
+
 
     return BracketedParser::parse(val);
 }

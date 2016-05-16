@@ -170,6 +170,7 @@ private slots:
     void showMostRecentError();
 //    void showPlotSettings();
     void showDataViewSettings();
+    void setFormAndShow(QString name = "");
     void updateDFComboBox();
     void runTest();
     void afterTestsCompleted();
@@ -326,6 +327,7 @@ public:
     ObjectCacheFilter* trialListFilter;
     ObjectCacheFilter *dataframeDescriptionFilter;
     ObjectCacheFilter *paramDescriptionFilter;
+    ObjectCacheFilter *plotDescriptionFilter;
     ObjectCacheFilter *testFilter;
     QAction         *runAllTrialMsgAct;
     int              m_trialListLength;
