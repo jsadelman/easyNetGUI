@@ -288,11 +288,11 @@ QString PlotSettingsBaseWidget::settingMethod()
 void PlotSettingsBaseWidget::updateWidget(QDomElement &xml)
 {
     settingsElement = xml;
-    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
-    if (!levelsListModel || levelsElement.isNull())
-    {
+//    QDomElement levelsElement = XMLAccessor::childElement(settingsElement, "levels");
+//    if (!levelsListModel || levelsElement.isNull())
+//    {
         createLevelsListModel();
-    }
+//    }
 }
 
 
