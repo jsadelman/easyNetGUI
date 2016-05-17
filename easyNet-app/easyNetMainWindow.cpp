@@ -169,8 +169,10 @@ expertWindow=new QMainWindow;
     ui_dataframeResultsViewer = new Ui_DataTabsViewer;
     ui_dataframeResultsViewer->setUsePrettyNames(true);
     dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
+    dataframeResultsViewer->setName("Dataframes");
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
     dataframeResultsViewer->setDefaultDir(SessionManager::instance()->defaultLocation("dfDir"));
+
 
     ui_dataframeViewer = new Ui_DataComboViewer;
     dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
@@ -197,6 +199,7 @@ expertWindow=new QMainWindow;
 
 
     plotViewer = new PlotViewer(ui_dataframeResultsViewer , this);
+    plotViewer->setName("Plots");
     plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
     plotDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     plotDescriptionFilter->setType("xfile");

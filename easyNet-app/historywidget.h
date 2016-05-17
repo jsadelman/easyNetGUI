@@ -13,7 +13,7 @@ class HistoryWidget : public QDockWidget
     Q_OBJECT
     friend class DataViewerDispatcher;
 public:
-    HistoryWidget(QWidget* parent = 0);
+    HistoryWidget(QWidget* parent = 0, QString windowTitle = "History");
     void setModel(HistoryTreeModel *model);
 
 signals:
@@ -24,6 +24,7 @@ private:
     QTreeView *view;
     QAction *selectAllAct;
     QAction *clearSelectionAct;
+    QString windowTitle;
 };
 
 #endif // HISTORYWIDGET_H

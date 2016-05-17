@@ -167,7 +167,7 @@ void DataViewerDispatcher::setTrialRunMode(int mode)
 void DataViewerDispatcher::createHistoryWidget()
 {
     historyModel = new HistoryTreeModel(this);
-    historyWidget = new HistoryWidget(hostDataViewer->ui);
+    historyWidget = new HistoryWidget(hostDataViewer->ui, QString("%1 History").arg(hostDataViewer->name()));
     historyWidget->setModel(historyModel);
     historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
@@ -180,10 +180,10 @@ void DataViewerDispatcher::createHistoryWidget()
     {
         historyWidget->view->setCurrentIndex(historyModel->viewIndex(name));
     });
-    connect(historyWidget, &HistoryWidget::clicked, [=](QString name)
-    {
-        showInfo(true, name);
-    });
+//    connect(historyWidget, &HistoryWidget::clicked, [=](QString name)
+//    {
+//        showInfo(true, name);
+//    });
 
     historyAct = historyWidget->toggleViewAction();
     historyAct->setIcon(QIcon(":/images/History.png"));
@@ -215,7 +215,7 @@ void DataViewerDispatcher::createInfoWidget()
     infoAct->setToolTip("show/hide trial run info");
     connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(showInfo(bool)));
     infoDock->setVisible(false);
-    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(infoAct);
+//    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(infoAct);
 }
 
 void DataViewerDispatcher::destroySelectedItems()

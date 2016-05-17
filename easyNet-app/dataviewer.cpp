@@ -15,7 +15,7 @@
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
-    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false),
+    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), m_name(""),
       lastOpenDir(""), defaultOpenDir(""), lastSaveDir(""), defaultSaveDir("")
 {
     setUi();

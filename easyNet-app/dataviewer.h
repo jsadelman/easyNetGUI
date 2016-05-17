@@ -18,6 +18,7 @@ class DataViewer : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(bool lazy READ isLazy WRITE setLazy NOTIFY lazyChanged)
+    Q_PROPERTY(QString name READ name WRITE setName)
     friend class DataViewerDispatcher;
 public:
     DataViewer(Ui_DataViewer *ui, QWidget * parent = 0);
@@ -33,6 +34,9 @@ public:
     void removeView(QString name);
     QString currentItemName();
     QStringList items() {return m_items;}
+    QString name() {return m_name;}
+    void setName(QString txt) {m_name = txt;}
+
 
 public slots:
     void addItem(QString name="", bool isBackup=false);
@@ -88,6 +92,7 @@ protected:
     bool m_lazy;
     QMap<QString, bool> isBackupMap;
     QStringList m_items;
+    QString m_name;
 };
 
 #endif // DATAVIEWER_H

@@ -7,8 +7,8 @@
 #include <QDebug>
 #include <QTreeView>
 
-HistoryWidget::HistoryWidget(QWidget *parent)
-    : QDockWidget(parent)
+HistoryWidget::HistoryWidget(QWidget *parent, QString windowTitle)
+    : QDockWidget(parent), windowTitle(windowTitle)
 {
     buildWidget();
 }
@@ -28,7 +28,7 @@ void HistoryWidget::buildWidget()
     layout->addWidget(view);
     mainWidget->setLayout(layout);
     setWidget(mainWidget);
-    setWindowTitle("History");
+    setWindowTitle(windowTitle);
 
     connect(view, &QTreeView::clicked, [=](const QModelIndex & index)
     {
