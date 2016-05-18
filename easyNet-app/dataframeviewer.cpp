@@ -105,6 +105,7 @@ void DataframeViewer::save()
                         "CSV (*.csv)");
     if (!fileName.isEmpty())
     {
+        fileName = QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName);
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({QString("%1 save_csv %2").arg(ui->currentItemName()).arg(fileName)});
         SessionManager::instance()->submitJobs(job);

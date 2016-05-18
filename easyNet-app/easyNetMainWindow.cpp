@@ -743,8 +743,9 @@ void MainWindow::loadModel(QString fileName,bool complete)
       connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
 
 //    runScript();
-
-    SessionManager::instance()->runCmd(quietMode+QString("include ")+fileName);
+    SessionManager::instance()->runCmd(QString("%1 include %2")
+                                       .arg(quietMode)
+                                       .arg(QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName)));
 
     //        SessionManager::instance()->setCurrentModel(currentModel);
     // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
