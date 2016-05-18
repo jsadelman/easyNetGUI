@@ -54,7 +54,6 @@
 #include "diagramscene.h"
 #include "diagramwindow.h"
 #include "enumclasses.h"
-#include "tablewindow.h"
 #include "dataframeviewer.h"
 #include "dataframeviewerdispatcher.h"
 #include "ui_datatabsviewer.h"

@@ -7,7 +7,6 @@
 #include "easyNetMainWindow.h"
 #include "lazynutjob.h"
 #include "plotviewer.h"
-#include "tablewindow.h"
 #include "xmlaccessor.h"
 #include "dataframeviewer.h"
 #include "enumclasses.h"

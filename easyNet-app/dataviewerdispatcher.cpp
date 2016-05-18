@@ -61,7 +61,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     dispatchModeText.insert(Dispatch_Overwrite, "overwrite");
 
     createHistoryWidget();
-    createInfoWidget();
+//    createInfoWidget();
 
     preferencesAct = new QAction(QIcon(":/images/setting.png"), "Preferences", this);
     preferencesAct->setToolTip("Show preferences for this viewer");
@@ -169,8 +169,8 @@ void DataViewerDispatcher::createHistoryWidget()
     historyModel = new HistoryTreeModel(this);
     historyWidget = new HistoryWidget(hostDataViewer->ui, QString("%1 History").arg(hostDataViewer->name()));
     historyWidget->setModel(historyModel);
-    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
+//    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+//    hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
     connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
     connect(historyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -185,13 +185,12 @@ void DataViewerDispatcher::createHistoryWidget()
 //        showInfo(true, name);
 //    });
 
-    historyAct = historyWidget->toggleViewAction();
-    historyAct->setIcon(QIcon(":/images/History.png"));
-    historyAct->setText("History");
-    historyAct->setToolTip("show/hide history");
-    connect(historyAct, SIGNAL(triggered(bool)), historyWidget, SLOT(setVisible(bool)));
-    historyWidget->setVisible(false);
-    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(historyAct);
+
+//    connect(hostDataViewer->ui->historyAct, SIGNAL(triggered(bool)), historyWidget, SLOT(setVisible(bool)));
+//    hostDataViewer->ui->historyToolBar->show();
+//    historyWidget->setVisible(false);
+    hostDataViewer->ui->addHistoryWidget(historyWidget);
+
 }
 
 
@@ -284,7 +283,8 @@ void DataViewerDispatcher::updateHistory(QString name)
 
 void DataViewerDispatcher::showInfo(bool show, QString name)
 {
-//    qDebug() << Q_FUNC_INFO << show << name;
+//  deactivated
+    return;
     QVBoxLayout *infoLayout;
     QWidget *infoWidget = infoScroll->takeWidget();
     if (infoWidget)

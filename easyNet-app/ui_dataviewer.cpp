@@ -14,6 +14,7 @@
 #include <QDebug>
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <QDockWidget>
 
 Ui_DataViewer::Ui_DataViewer()
     : QMainWindow(), m_usePrettyNames(false), setup(false), currentFileToolBar(0),
@@ -80,6 +81,36 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
     setup=true;
 }
 
+void Ui_DataViewer::addHistoryWidget(QDockWidget *historyWidget)
+{
+    if (!historyAct)
+    {
+        eNerror << "cannot add a history widget before historyAct is created";
+        return;
+    }
+    if (!historyWidget)
+    {
+        eNerror << "not a valid history widget";
+        return;
+    }
+    connect(historyAct, SIGNAL(triggered(bool)), historyWidget, SLOT(setVisible(bool)));
+    connect(historyAct, SIGNAL(triggered(bool)), this, SLOT(update()));
+    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    historyToolBar->show();
+    historyWidget->setVisible(false);
+    historyWidgets.append(historyWidget);
+    if (historyWidget == historyWidgets.first())
+    {
+        addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
+    }
+    else
+    {
+        splitDockWidget(historyWidgets.at(historyWidgets.indexOf(historyWidget) -1), historyWidget, Qt::Vertical);
+    }
+
+
+}
+
 
 void Ui_DataViewer::createActions()
 {
@@ -126,10 +157,23 @@ void Ui_DataViewer::createActions()
     settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
     settingsAct->setToolTip(tr("Show settings form"));
 
+    if(!setup)
+    {
+        historyAct = new QAction(QIcon(":/images/History.png"), tr("History"), this);
+        historyAct->setToolTip("show/hide history");
+        historyAct->setCheckable(true);
+    }
+
 }
 
 void Ui_DataViewer::createToolBars(DataViewer*dv)
 {
+    if(!setup)
+    {
+        historyToolBar = addToolBar(tr("History"));
+        historyToolBar->addAction(historyAct);
+        historyToolBar->hide();
+    }
     actionSet[dv]={saveAct,copyAct,destroyAct,settingsAct};
     fileToolBar[dv] = addToolBar(tr("File"));
     fileToolBar[dv]->addAction(openAct);
@@ -144,6 +188,7 @@ void Ui_DataViewer::createToolBars(DataViewer*dv)
 
     dispatchToolBar[dv] = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar[dv]->hide();
+
 //    dispatchToolBar->addActions(setDispatchModeOverrideActs);
 //    dispatchToolBar->addAction(setDispatchModeAutoAct);
    setToolBars(dv);

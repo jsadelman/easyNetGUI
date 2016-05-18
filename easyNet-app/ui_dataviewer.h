@@ -37,12 +37,14 @@ public:
     QWidget *view(QString name) {return viewMap.value(name, nullptr);}
     bool usePrettyNames() {return m_usePrettyNames;}
     void setUsePrettyNames(bool prettyNamesEnabled) {m_usePrettyNames = prettyNamesEnabled; emit usePrettyNamesChanged(prettyNamesEnabled);}
+    void addHistoryWidget(QDockWidget *historyWidget);
 
     QAction *openAct;
     QAction *saveAct;
     QAction *copyAct;
     QAction *destroyAct;
     QAction *settingsAct;
+    QAction *historyAct;
     bool setup;
 
 //    QAction *infoAct;
@@ -58,7 +60,8 @@ public:
 
     QMap<DataViewer*,QToolBar*> fileToolBar;
     QMap<DataViewer*,QToolBar*>editToolBar;
-    QMap<DataViewer*,QToolBar*>dispatchToolBar;
+    QMap<DataViewer*,QToolBar*> dispatchToolBar;
+    QToolBar *historyToolBar;
     QMap<DataViewer*,QList<QAction*> > actionSet;
     WidgetFwdResizeEvent *mainWidget;
 //    QToolBar *infoToolBar;
@@ -92,6 +95,7 @@ protected:
     QToolBar* currentFileToolBar;
     QToolBar* currentEditToolBar;
     QToolBar* currentDispatchToolBar;
+    QList<QDockWidget *> historyWidgets;
 
 };
 
