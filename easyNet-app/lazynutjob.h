@@ -37,13 +37,13 @@ public slots:
 
 signals:
 //    void runCommands(QStringList, bool, unsigned int);
-    void cmdError(QString, QStringList);
+    void cmdError(QString, QString);
     void finished();
 
 private slots:
     void finish();
     void formatAnswer(QString answer, QString cmd);
-    void sendCmdError(QString cmd, QStringList errorList);
+    void sendCmdError(QString cmd, QString error);
 
 
 private:

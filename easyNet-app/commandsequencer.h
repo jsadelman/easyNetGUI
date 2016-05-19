@@ -46,7 +46,7 @@ signals:
     // states
     void isReady(bool);
     // errors
-    void cmdError(QString,QStringList);
+    void cmdError(QString,QString);
     void cmdR(QString,QStringList);
 
     void dotsCount(int);

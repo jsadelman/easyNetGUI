@@ -23,11 +23,12 @@ public:
 public slots:
     void setConsoleFontSize(int size);
     void addText(QString txt);
+    void coreDump(QString fileName="");
+
 signals:
     void historyKey(int dir, QString text);
 private slots:
     void showHistory(QString line);
-    void coreDump();
 private:
     int currentLine;
     InputCmdLine* inputCmdLine;

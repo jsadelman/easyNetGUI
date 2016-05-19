@@ -142,10 +142,11 @@ SessionManager::SessionManager()
 void SessionManager::startLazyNut()
 {
     delete lazyNut;
+    killingLazyNut = false;
     lazyNut = new LazyNut(this);
     connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
     connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
-    connect(lazyNut,  static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&LazyNut::finished), [=](int code, QProcess::ExitStatus status)
+    connect(lazyNut,  static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&LazyNut::finished), [=](int /*code*/, QProcess::ExitStatus status)
     {
         emit lazyNutFinished(!(killingLazyNut || (status == QProcess::NormalExit && lazyNut->exitCode()==0) ));
         killingLazyNut = false;
@@ -575,10 +576,10 @@ void SessionManager::startCommandSequencer()
     connect(commandSequencer, &CommandSequencer::cmdError, [=]()
     {
         jobQueue->clear();
-        submitJobs(updateObjectCacheJobs());
+//        submitJobs(updateObjectCacheJobs());
     });
-    connect(commandSequencer, SIGNAL(cmdError(QString,QStringList)),
-            this, SIGNAL(cmdError(QString,QStringList)));
+    connect(commandSequencer, SIGNAL(cmdError(QString,QString)),
+            this, SIGNAL(cmdError(QString,QString)));
     connect(commandSequencer, SIGNAL(cmdR(QString,QStringList)),
             this, SIGNAL(cmdR(QString,QStringList)));
     connect(commandSequencer, SIGNAL(commandExecuted(QString,QString)),

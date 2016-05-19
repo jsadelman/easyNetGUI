@@ -113,8 +113,12 @@ void MainWindow::build()
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), m_debugMode(false), m_trialListLength(0)
+    : QMainWindow(parent),
+      m_debugMode(false),
+      m_trialListLength(0),
+      settingsDialog(nullptr)
 {
+    errors.clear();
 }
 
 
@@ -370,11 +374,15 @@ void MainWindow::connectSignalsAndSlots()
 //    connect(stopAct, SIGNAL(triggered()), debugLog, SLOT(skipRemainingCommands()));
 //    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
 //             debugLog, SLOT(skipRemainingCommands()));
-    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
+    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString cmd, QString error)
     {
-       foreach(QString error, errorList)
-           errorLog->addText(error);
+        errorLog->addText(QString("COMMAND: %1\nERROR: %2\n").arg(cmd).arg(error));
     });
+    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QString)),
+            this, SLOT(storeErrorMsg(QString,QString)));
+
+
+
     connect(SessionManager::instance(), &SessionManager::cmdR, [=](QString /*cmd*/, QStringList rList)
     {
        foreach(QString fb, rList)
@@ -810,6 +818,58 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
     modelChooser->hide();
 }
 
+void MainWindow::popUpErrorMsg()
+{
+    disconnect(SessionManager::instance(), SIGNAL(jobExecuted()), this, SLOT(popUpErrorMsg()));
+
+    QString errorText("The last command(s) triggered error(s).\n"
+                      "Would you like to save the simulator logs?");
+    QFontMetrics fm(QApplication::font("QMessageBox"));
+    int iconHeight = fm.height();
+    QString errorInfo = QString("<p>Note: a detailed log of commands and errors can always be retrieved from the Expert window "
+                      "(<img src=':/images/expert.mode.jpg' height=%1> button).</p>").arg(iconHeight);
+    QString errorLog;
+    QPair<QString, QString> errorPair;
+    foreach (errorPair, errors)
+    {
+        errorLog.append(QString("COMMAND: %1\nERROR: %2\n\n").arg(errorPair.first).arg(errorPair.second));
+    }
+    QMessageBox msgBox(QMessageBox::Critical,
+                       "Simulation Engine Error",
+                       errorText,
+                       QMessageBox::Yes | QMessageBox::No);
+    msgBox.setInformativeText(errorInfo);
+    msgBox.setDetailedText(errorLog);
+    msgBox.setDefaultButton(QMessageBox::No);
+    int answer = msgBox.exec();
+//    int answer = ScrollMessageBox::critical(this, "Simulation Engine Error", errorText,
+//                                QDialogButtonBox::Yes | QDialogButtonBox::No, QDialogButtonBox::No);
+    if (answer == QMessageBox::Yes)
+        coreDump();
+    errors.clear();
+    SessionManager::instance()->submitJobs(SessionManager::instance()->updateObjectCacheJobs());
+}
+
+void MainWindow::storeErrorMsg(QString cmd, QString error)
+{
+    errors.append(qMakePair(cmd, error));
+    connect(SessionManager::instance(), SIGNAL(jobExecuted()), this, SLOT(popUpErrorMsg()), Qt::UniqueConnection);
+}
+
+void MainWindow::coreDump()
+{
+    QString logDir = SessionManager::instance()->defaultLocation("outputDir");
+    QString timeStamp = QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
+    QString consoleLogName = QString("console.%1.log").arg(timeStamp);
+    QString debugLogName = QString("debug.%1.log").arg(timeStamp);
+    lazyNutConsole->coreDump(QString("%1/%2").arg(logDir).arg(consoleLogName));
+    debugLog->saveLogToFile(QString("%1/%2").arg(logDir).arg(debugLogName));
+    QString infoText = QString("<p>The following log files:<br/><tt>%1</tt><br/><tt>%2</tt><br/>"
+                        "have been saved into folder:<br/><tt>%3</tt>")
+            .arg(consoleLogName).arg(debugLogName).arg(logDir);
+    QMessageBox::information(this, "Simulator logs saved", infoText);
+}
+
 void MainWindow::loadModelUnconfigured()
 {
     // bring up file dialog
@@ -1232,45 +1292,47 @@ void MainWindow::getVersion()
 
 void MainWindow::viewSettings()
 {
-//    QSettings settings("easyNet", "GUI");
-//    QStringList keys = settings.allKeys();
-//    QString details = keys.join("\n");
-
-//    QVector <QLineEdit*> editList;
-
-//    QGroupBox *groupBox = new QGroupBox(tr("Settings"));
-//    QFormLayout *formLayout = new QFormLayout;
-//    foreach (QString key, keys)
-//    {
-//        editList.push_back(new QLineEdit(settings.value(key).toString()));
-//        formLayout->addRow(key, editList.back());
-//    }
-//    groupBox->setLayout(formLayout);
-//    groupBox->show();
-
-    settingsDialog = new QDialog;
-    settingsDialog->setAttribute(Qt::WA_DeleteOnClose);
-    QFormLayout *dialogLayout = new QFormLayout;
-    foreach(QString env, QStringList({"easyNetHome", "easyNetDataHome"}))
+    if (!settingsDialog)
     {
-        QLineEdit *lineEdit = new QLineEdit(SessionManager::instance()->easyNetDir(env), settingsDialog);
-        lineEdit->setReadOnly(true);
-        int pixelsWide = qApp->fontMetrics().width(lineEdit->text()) + 10;
-        lineEdit->setMinimumWidth(pixelsWide);
-        QPushButton *changeButton = new QPushButton("Change", settingsDialog);
-        connect(changeButton, &QPushButton::clicked, [=]() {
-            setNewEasyNetDir(env);
-            settingsDialog->done(0);
-            viewSettings();
-        });
-        QHBoxLayout *lineLayout = new QHBoxLayout;
-        lineLayout->addWidget(lineEdit);
-        lineLayout->addWidget(changeButton);
-        dialogLayout->addRow(env, lineLayout);
+        settingsDialog = new QDialog;
+        QFormLayout *dialogLayout = new QFormLayout;
+        foreach(QString env, QStringList({"easyNetHome", "easyNetDataHome"}))
+        {
+            settingsDialogLineEdits[env] = new QLineEdit(SessionManager::instance()->easyNetDir(env), settingsDialog);
+            settingsDialogLineEdits[env]->setReadOnly(true);
+
+            QPushButton *changeButton = new QPushButton("Change", settingsDialog);
+            connect(changeButton, &QPushButton::clicked, [=]() {
+                setNewEasyNetDir(env);
+                updateSettings(env);
+            });
+            QHBoxLayout *lineLayout = new QHBoxLayout;
+            lineLayout->addWidget(settingsDialogLineEdits[env]);
+            lineLayout->addWidget(changeButton);
+            dialogLayout->addRow(env, lineLayout);
+        }
+        settingsDialog->setLayout(dialogLayout);
+        updateSettings();
     }
-    settingsDialog->setLayout(dialogLayout);
-    settingsDialog->adjustSize();
+
     settingsDialog->exec();
+}
+
+void MainWindow::updateSettings(QString env)
+{
+    if (!settingsDialog)
+        return;
+    QStringList envList = env.isEmpty() ? settingsDialogLineEdits.keys() : QStringList({env});
+    foreach(QString env, envList)
+    {
+        QLineEdit *le = settingsDialogLineEdits.value(env);
+        if (!le)
+            continue;
+        le->setText(SessionManager::instance()->easyNetDir(env));
+        int pixelsWide = qApp->fontMetrics().width(le->text()) + 10;
+        le->setMinimumWidth(pixelsWide);
+    }
+    settingsDialog->adjustSize();
 }
 
 void MainWindow::setNewEasyNetHome()
@@ -1335,15 +1397,36 @@ void MainWindow::lazyNutNotRunning()
 void MainWindow::setLazyNutFinished(bool crashed)
 {
     lazyNutStatusWidget->setCurrentWidget(offLabel);
-    if (crashed)
+    if (!crashed)
     {
-        int res = QMessageBox::critical(this, "Simulation engine crash",
-                QString("The simulation engine has crashed.\n"
-                        "Do you want to restart immediately?\nNote that after restart your current dataframes and plots will be lost"),
-                              QMessageBox::Yes |  QMessageBox::Cancel);
-        if (res == QMessageBox::Yes )
-            SessionManager::instance()->restartLazyNut();
+        return;
     }
+
+    QString errorText("<p>The simulation engine has crashed. "
+                      "There are two actions you may want to carry out before restart:"
+                      "<ul>"
+                      "<li>manually save plots or dataframes, since they will be lost after restart</li>"
+                      "<li>automatically save the simulator logs for debugging purpose</li>"
+                      "</ul><p/>");
+    QFontMetrics fm(QApplication::font("QMessageBox"));
+    int iconHeight = fm.height();
+    QString errorInfo = QString("<p>Note: you can manually restart the simulator engine by selecting 'Restart simulation engine' in File menu.<br/>"
+                                "Note: a detailed log of commands and errors can always be retrieved from the Expert window "
+                      "(<img src=':/images/expert.mode.jpg' height=%1> button).</p>").arg(iconHeight);
+    QMessageBox msgBox(QMessageBox::Critical,
+                       "Simulation Engine Crash",
+                       errorText);
+    msgBox.setInformativeText(errorInfo);
+    QPushButton *saveButton = msgBox.addButton("Save logs", QMessageBox::RejectRole);
+    QPushButton *saveAndRestartButton = msgBox.addButton("Save logs and restart", QMessageBox::AcceptRole);
+    QPushButton *RestartButton = msgBox.addButton("Restart", QMessageBox::AcceptRole);
+    QPushButton *cancelButton = msgBox.addButton("Cancel", QMessageBox::RejectRole);
+    msgBox.setDefaultButton(cancelButton);
+    msgBox.exec();
+    if (msgBox.clickedButton() == saveAndRestartButton || msgBox.clickedButton() == saveButton)
+        coreDump();
+    if (msgBox.clickedButton() == saveAndRestartButton || msgBox.clickedButton() == RestartButton)
+        SessionManager::instance()->restartLazyNut();
 }
 
 void MainWindow::displayVersion(QString version)
@@ -1646,10 +1729,9 @@ void MainWindow::createStatusBar()
     connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
             this, SLOT(showCmdOnStatusBar(QString)));
 
-    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QStringList errorList)
+    connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QString error)
     {
-       if (!errorList.isEmpty())
-           statusBar()->showMessage(errorList.last(), 4000);
+        statusBar()->showMessage(error, 4000);
     });
     connect(statusBar(), &QStatusBar::messageChanged, [=](QString msg)
     {

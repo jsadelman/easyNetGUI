@@ -70,11 +70,11 @@ void ObjectUpdater::requestObjects(QModelIndex parent, int first, int last)
     requestObjects(first, last);
 }
 
-void ObjectUpdater::errorHandler(QString cmd, QStringList errorList)
+void ObjectUpdater::errorHandler(QString cmd, QString error)
 {
-    eNerror << cmd << errorList;
+    eNerror << cmd << error;
     QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
-    if (errorList.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
+    if (error.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
     {
         objectCache->destroy(nameInCmd);
     }
@@ -123,7 +123,7 @@ void ObjectUpdater::requestObject(QString name, QString command)
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({QString("xml %1 %2").arg(name).arg(command.isEmpty() ? m_command : command)});
         job->setAnswerReceiver(objectCache, SLOT(setDomDocAndValidCache(QDomDocument*, QString)), AnswerFormatterType::XML);
-        job->appendErrorReceiver(this, SLOT(errorHandler(QString, QStringList)));
+        job->appendErrorReceiver(this, SLOT(errorHandler(QString, QString)));
         SessionManager::instance()->submitJobs(job);
     }
     else if (!objectCache->isInvalid(name) && !objectCache->isPending(name))

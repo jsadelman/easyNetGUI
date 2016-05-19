@@ -183,7 +183,7 @@ void CommandSequencer::processLazyNutLine()
     }
     else if(line.startsWith("ERROR: "))
     {
-        emit cmdError(currentCmd,{currentCmd,line.mid(7),""});
+        emit cmdError(currentCmd,line.mid(7));
     }
 }
 

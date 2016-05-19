@@ -32,7 +32,7 @@ public slots:
 private slots:
     void requestObjects(QModelIndex top, QModelIndex bottom);
     void requestObjects(QModelIndex parent, int first, int last);
-    void errorHandler(QString cmd, QStringList errorList);
+    void errorHandler(QString cmd, QString error);
 
 private:
     void requestObjects(int first, int last);

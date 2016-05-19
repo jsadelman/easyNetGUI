@@ -140,6 +140,7 @@ private slots:
 
 
     void viewSettings();
+    void updateSettings(QString env="");
     void setNewEasyNetHome();
     void setNewEasyNetDataHome();
 
@@ -178,8 +179,11 @@ private slots:
     void switchFormInSettingsWidget(bool visible);
     void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
     void showResultsViewer(QString name);
-
     void modelChooserItemClicked(QListWidgetItem *item);
+    void popUpErrorMsg();
+    void storeErrorMsg(QString cmd, QString error);
+    void coreDump();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -226,6 +230,8 @@ public:
 
     QStringList     modelList;
     QStringList     trialList;
+
+    QList<QPair<QString, QString> > errors;
 
 //    QTextEdit *textEdit12;
     QTabWidget *methodsPanel;
@@ -313,6 +319,7 @@ public:
     TrialEditor     *trialEditor;
     ModelSettingsDisplay *modelSettingsDisplay;
     QDialog *settingsDialog;
+    QMap<QString, QLineEdit *> settingsDialogLineEdits;
 
 
     QPushButton     * trialButton;

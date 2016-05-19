@@ -117,7 +117,7 @@ SOURCES +=  \
     xmldisplay.cpp \
     modelsettingsdisplay.cpp \
     settingswidget.cpp \
-    floatingdialogwindow.cpp
+    floatingdialogwindow.cpp \
 
 HEADERS  += \
     treeitem.h \
@@ -217,7 +217,7 @@ HEADERS  += \
     xmldisplay.h \
     modelsettingsdisplay.h \
     settingswidget.h \
-    floatingdialogwindow.h
+    floatingdialogwindow.h \
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

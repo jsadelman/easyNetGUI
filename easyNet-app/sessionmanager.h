@@ -108,7 +108,7 @@ signals:
     void lazyNutStarted();
     void isReady(bool);
     void isPaused(bool);
-    void cmdError(QString,QStringList);
+    void cmdError(QString,QString);
     void cmdR(QString,QStringList);
     void commandExecuted(QString, QString);
     void jobExecuted();

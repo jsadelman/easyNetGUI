@@ -80,12 +80,14 @@ void Console::showHistory(QString line)
 
 }
 
-void Console::coreDump()
+void Console::coreDump(QString fileName)
 {
-    QSettings settings("easyNet", "GUI");
-    QString logDir = SessionManager::instance()->defaultLocation("outputDir");
-    QString timeStamp = QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
-    QString fileName = QString("%1/core_dump.%2.log").arg(logDir).arg(timeStamp);
+    if (fileName.isEmpty())
+    {
+        QString logDir = SessionManager::instance()->defaultLocation("outputDir");
+        QString timeStamp = QDateTime::currentDateTime().toString("yyyy.MM.dd.hh.mm.ss");
+        fileName = QString("%1/core_dump.%2.log").arg(logDir).arg(timeStamp);
+    }
     QFile file(fileName);
     file.open(QIODevice::WriteOnly);
 

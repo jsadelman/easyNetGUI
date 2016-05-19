@@ -24,6 +24,8 @@ class DebugLog : public QMainWindow
 public:
     explicit DebugLog(QWidget *parent = 0);
     ~DebugLog();
+    void saveLogToFile(QString fileName);
+
 
 private slots:
     void addRowToTable(QString cmd, QString time="");
@@ -41,7 +43,6 @@ private:
     void init(const QString &tableName, QWidget *parent);
     void setViewToStringList();
     QString defaultLogFileName();
-    void saveLogToFile(QString fileName);
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

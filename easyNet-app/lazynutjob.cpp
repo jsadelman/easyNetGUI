@@ -41,11 +41,11 @@ void LazyNutJob::run()
     }
     if (!errorReceiverList.isEmpty())
     {
-        connect(SessionManager::instance()->commandSequencer,SIGNAL(cmdError(QString, QStringList)),
-                this, SLOT(sendCmdError(QString, QStringList)));
+        connect(SessionManager::instance()->commandSequencer,SIGNAL(cmdError(QString, QString)),
+                this, SLOT(sendCmdError(QString, QString)));
         for (int i = 0; i < errorReceiverList.length(); ++i)
         {
-            connect(this, SIGNAL(cmdError(QString, QStringList)),
+            connect(this, SIGNAL(cmdError(QString, QString)),
                     errorReceiverList.at(i), errorSlotList.at(i));
         }
     }
@@ -88,9 +88,9 @@ void LazyNutJob::formatAnswer(QString answer, QString cmd)
         answerFormatter->formatAnswer(answer, cmd);
 }
 
-void LazyNutJob::sendCmdError(QString cmd, QStringList errorList)
+void LazyNutJob::sendCmdError(QString cmd, QString error)
 {
     if (active())
-        emit cmdError(cmd, errorList);
+        emit cmdError(cmd, error);
 }
 
