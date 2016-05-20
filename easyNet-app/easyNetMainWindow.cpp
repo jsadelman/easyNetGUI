@@ -371,9 +371,17 @@ void MainWindow::connectSignalsAndSlots()
             debugLog, SLOT(updateCmd(QString,QString)));
     connect(SessionManager::instance(), SIGNAL(resetExecuted()),
             debugLog, SLOT(skipRemainingCommands()));
-//    connect(stopAct, SIGNAL(triggered()), debugLog, SLOT(skipRemainingCommands()));
-//    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QStringList)),
-//             debugLog, SLOT(skipRemainingCommands()));
+    connect(SessionManager::instance(), &SessionManager::resetExecuted, [=]()
+    {
+        // clean up History etc
+        commandLog->clear();
+        errorLog->clear();
+        rLog->clear();
+        debugLog->clear();
+
+
+    });
+
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString cmd, QString error)
     {
         errorLog->addText(QString("COMMAND: %1\nERROR: %2\n").arg(cmd).arg(error));

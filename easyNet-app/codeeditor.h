@@ -68,6 +68,7 @@ public:
 public slots:
     QStringList getSelectedText(); // added
     QStringList getAllText(); // added
+    void highlightCurrentLine();
 
     QStringList getCurrentLine();
 protected:
@@ -76,7 +77,6 @@ protected:
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
-    void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
 
 

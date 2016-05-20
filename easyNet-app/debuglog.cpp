@@ -229,6 +229,14 @@ void DebugLog::save()
     }
 }
 
+void DebugLog::clear()
+{
+    if (!model)
+        return;
+    model->removeRows(0, model->rowCount());
+    lastExecCmdRow = -1;
+}
+
 void DebugLog::saveLogToFile(QString fileName)
 {
     QFile file(fileName);

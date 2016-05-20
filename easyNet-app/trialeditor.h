@@ -22,6 +22,7 @@ public:
 
 public slots:
     void setTrialName(QString name);
+
 signals:
     void loadTrialSignal();
 
@@ -35,7 +36,6 @@ private:
     QVBoxLayout *layout;
     QToolBar* trialToolBar;
     QScrollArea* scrollArea;
-    QWidget* dummy;
 };
 
 #endif // TRIALEDITOR_H

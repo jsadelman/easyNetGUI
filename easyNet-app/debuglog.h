@@ -25,7 +25,7 @@ public:
     explicit DebugLog(QWidget *parent = 0);
     ~DebugLog();
     void saveLogToFile(QString fileName);
-
+    void clear();
 
 private slots:
     void addRowToTable(QString cmd, QString time="");
@@ -36,6 +36,7 @@ private slots:
     void save();
     void autoSave() {saveLogToFile(defaultLogFileName());}
     void skipRemainingCommands() {skippingRemainingCommands = true;}
+
 
 private:
     void createToolBars();

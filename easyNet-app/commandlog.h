@@ -26,9 +26,11 @@ public:
     ~CommandLog();
 public slots:
     QString getHistory(int shift, QString text);
-
+    virtual void clear();
     void addText(QString txt);
 private:
+    void init();
+
     int currentLine;
     int historyIndex;
     int tabIdx;

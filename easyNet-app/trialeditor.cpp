@@ -10,13 +10,13 @@
 #include <QAction>
 
 TrialEditor::TrialEditor(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), form(nullptr)
 {
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
-    connect(SessionManager::instance(), SIGNAL(currentTrialChanged(QString)), trialFilter, SLOT(setName(QString)));
-    connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
+    connect(SessionManager::instance(), SIGNAL(currentTrialChanged(QString)), this, SLOT(setTrialName(QString)));
+    connect(trialDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*, QString)),
             this,SLOT(buildForm(QDomDocument*)));
 
     trialToolBar = new QToolBar;
@@ -27,15 +27,8 @@ TrialEditor::TrialEditor(QWidget *parent)
     trialToolBar->addAction(loadTrialAct);
     addToolBar(trialToolBar);
 
-    dummy = new QWidget;
-
     scrollArea = new QScrollArea;
     setCentralWidget(scrollArea);
-    scrollArea->setWidget(dummy);
-//    scrollArea->setWidget(form);
-
-
-
 }
 
 TrialEditor::~TrialEditor()
@@ -44,16 +37,16 @@ TrialEditor::~TrialEditor()
 
 void TrialEditor::setTrialName(QString name)
 {
-//    if (!name.isEmpty())
-        trialFilter->setName(name);
+    trialFilter->setName(name);
+    if (name.isEmpty())
+        delete scrollArea->takeWidget();
 }
 
 void TrialEditor::buildForm(QDomDocument *domDoc)
 {
-    form = new TrialXML(domDoc->documentElement());
+    form = new TrialXML(domDoc->documentElement(), this);
     form->build();
     scrollArea->setWidget(form);
-
 }
 
 

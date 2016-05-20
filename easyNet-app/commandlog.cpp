@@ -21,13 +21,8 @@ CommandLog::CommandLog(QWidget *parent, bool inclNewAct)
         editToolBar->removeAction(cutAct);
         editToolBar->removeAction(pasteAct);
     }
-    historyIndex=0;
-    tabIdx=0;
-    lastWordCopy="";
-    remainderCopy="";
+    init();
 
-    cmdList = QStringList() << "list" << "of"
-                            << "commands" << "here";
     objectListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     objectListFilter->setAllPassFilter();
 //    objectListFilter->setTypeList(QStringList() << "layer" << "connection"
@@ -51,6 +46,19 @@ void CommandLog::addText(QString txt)
     textEdit->appendPlainText(txt);
     textEdit->moveCursor(QTextCursor::End);
     currentLine = 1+textEdit->document()->blockCount();
+}
+
+void CommandLog::init()
+{
+    history.clear();
+    historyIndex=0;
+    tabIdx=0;
+    lastWordCopy="";
+    remainderCopy="";
+    currentLine = 1;
+
+    cmdList = QStringList() << "list" << "of"
+                            << "commands" << "here";
 }
 
 
@@ -183,4 +191,11 @@ QString CommandLog::getHistory(int shift, QString text)
     }
     return("");
 
+}
+
+
+void CommandLog::clear()
+{
+    EditWindow::clear();
+    init();
 }

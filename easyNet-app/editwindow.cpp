@@ -12,29 +12,30 @@
 #include "finddialog.h"
 
 EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
-    : QMainWindow(parent), isReadOnly(isReadOnly)
+    : QMainWindow(parent), isReadOnly(isReadOnly), textEdit(nullptr)
 
 {
-//    textEdit = new QPlainTextEdit;
+    filenameLabel = new QLabel("");
+    startDir="";
     textEdit = new CodeEditor(this);
     textEdit->setReadOnly(isReadOnly);
     setCentralWidget(textEdit);
-    textEdit->setReadOnly(isReadOnly);
-    startDir="";
-
-    //cutAllowed = a_cutAllowed;
-    //pasteAllowed = a_pasteAllowed;
-    createActions();
-//    createMenus();
-    createToolBars();
-//    createStatusBar();
-
-//    readSettings();
-
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
-
     setCurrentFile("Untitled");
+    createActions();
+    createToolBars();
+
+//    textEdit = new CodeEditor(this);
+//    textEdit->setReadOnly(isReadOnly);
+//    setCentralWidget(textEdit);
+
+
+
+//    connect(textEdit->document(), SIGNAL(contentsChanged()),
+//            this, SLOT(documentWasModified()));
+
+//    setCurrentFile("Untitled");
     setUnifiedTitleAndToolBarOnMac(true);
 
     findDialog = new FindDialog;
@@ -178,7 +179,6 @@ void EditWindow::createActions()
 void EditWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
-    filenameLabel = new QLabel("Untitled");
     fileToolBar->addWidget(filenameLabel);
     if (newAct)
         fileToolBar->addAction(newAct);
@@ -336,4 +336,11 @@ void EditWindow::setFilenameLabel(QString filename)
 {
     QString name = QString("<P><b>") + filename + QString("<\b>");
     filenameLabel->setText(name);
+}
+
+
+void EditWindow::clear()
+{
+    textEdit->clear();
+    textEdit->highlightCurrentLine();
 }

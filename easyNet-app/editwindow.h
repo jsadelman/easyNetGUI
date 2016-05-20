@@ -50,6 +50,7 @@ public slots:
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void findBackward(const QString &str, QFlags<QTextDocument::FindFlag> flags );
     void setFilenameLabel(QString filename);
+    virtual void clear();
 signals:
     void runCmdRequested(QStringList);
 
