@@ -74,7 +74,7 @@ void DiagramView::loadLayout()
 {
 //    if (!objectFilter->isAllValid())
 //        return;
-        QString layoutFile = qobject_cast<DiagramScene*>(canvas())->property("layoutFile").toString();
+        QString layoutFile = qobject_cast<DiagramScene*>(canvas())->layoutFile();
         QFile savedLayoutFile(layoutFile);
         if (savedLayoutFile.open(QIODevice::ReadOnly))
         {
@@ -89,7 +89,7 @@ void DiagramView::saveLayout()
 //    if (!objectFilter->isAllValid())        // temp fix!!!
 //            return;
 
-    QString layoutFile = qobject_cast<DiagramScene*>(canvas())->property("layoutFile").toString();
+    QString layoutFile = qobject_cast<DiagramScene*>(canvas())->layoutFile();
     QFile savedLayoutFile(layoutFile);
     if (savedLayoutFile.open(QIODevice::WriteOnly))
     {

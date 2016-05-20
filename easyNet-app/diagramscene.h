@@ -74,9 +74,6 @@ class DiagramScene : public QGraphicsScene
     Q_OBJECT
     Q_PROPERTY(QString boxType READ boxType)
     Q_PROPERTY(QString arrowType READ arrowType)
-    Q_PROPERTY(QString baseName READ baseName WRITE setBaseName)
-    Q_PROPERTY(QString layoutFile READ layoutFile WRITE setLayoutFile)
-
     Q_PROPERTY(bool newModelLoaded READ newModelLoaded WRITE setNewModelLoaded)
 
 public:
@@ -85,6 +82,7 @@ public:
     explicit DiagramScene(QString box_type, QString arrow_type);
     QString boxType() {return m_boxType;}
     QString arrowType() {return m_arrowType;}
+    QString layoutFile() {return m_layoutFile;}
 //    void setObjCatalogue(ObjectCache *catalogue);
 //    QFont font() const { return myFont; }
 //    QColor textColor() const { return myTextColor; }
@@ -96,10 +94,6 @@ public:
 //    void setFont(const QFont &font);
     void read(const QJsonObject &json);
     void write(QJsonObject &json);
-    QString baseName() {return m_baseName;}
-    void setBaseName(QString baseName);
-    QString layoutFile() {return m_layoutFile;}
-    void setLayoutFile(QString layoutFile) {m_layoutFile = layoutFile;}
     bool newModelLoaded() {return m_newModelLoaded;}
     void setNewModelLoaded(bool isNew) {m_newModelLoaded = isNew;}
     bool validForAlignment(QList<Box *> items);
@@ -152,7 +146,7 @@ private slots:
     void positionObject(QString name, QString type, QString subtype, QDomDocument* domDoc);
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
-
+    void setLayoutFile(QDomDocument* domDoc);
     void setAnalyzedLocations(QDomDocument*);
 
     void syncToObjCatalogue();
@@ -166,10 +160,10 @@ private:
 
     bool awake;
 
-    ObjectCache *objectCatalogue;
     QHash<QString, QGraphicsItem*> itemHash;
-//    ObjectCatalogueFilter *objectFilter;
-    ObjectUpdater *descriptionUpdater;
+    ObjectCacheFilter *modelFilter;
+    ObjectUpdater *modelDescriptionUpdater;
+
     ObjectCacheFilter *boxFilter;
     ObjectCacheFilter *arrowFilter;
     ObjectUpdater *arrowDescriptionUpdater;
@@ -186,7 +180,6 @@ private:
     QString m_boxType;
     QString m_arrowType;
     QStringList connections;
-    QString m_baseName;
     QString m_layoutFile;
 
     bool m_newModelLoaded;

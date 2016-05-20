@@ -71,7 +71,7 @@ Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
 DiagramScene::DiagramScene(QString box_type, QString arrow_type)
-    : m_boxType(box_type), m_arrowType(arrow_type), awake(false)
+    : m_boxType(box_type), m_arrowType(arrow_type), awake(false), m_layoutFile("")
 {
     selectedObject = "";
 //    myItemMenu = itemMenu;
@@ -114,10 +114,16 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     itemOffset = QPointF(0,50) ; // 150);
     arrowOffset = QPointF(50,0);
 
+    modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
+            modelFilter, SLOT(setName(QString)));
+    modelDescriptionUpdater = new ObjectUpdater(this);
+    modelDescriptionUpdater->setProxyModel(modelFilter);
+    connect(modelDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
+            this, SLOT(setLayoutFile(QDomDocument*)));
+
     boxFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     boxFilter->setType(m_boxType);
-
-
 
     arrowFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     arrowFilter->setType(m_arrowType);
@@ -259,11 +265,6 @@ void DiagramScene::write(QJsonObject &json)
     json["boxWidth"] = boxWidth;
 }
 
-void DiagramScene::setBaseName(QString baseName)
-{
-    m_baseName = baseName;
-    m_layoutFile = m_baseName.append(QString(".%1.json").arg(m_boxType));
-}
 
 bool DiagramScene::validForAlignment(QList<Box *> items)
 {
@@ -502,6 +503,21 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
     // HACK to allow visualisation of ocnversions and representations even when missing 'ghost' objects are present
     if ((boxFilter->isAllValid() && arrowFilter->isAllValid()) || boxType() == "representation")
         render();
+}
+
+void DiagramScene::setLayoutFile(QDomDocument *domDoc)
+{
+    // temporarily, only layer plots are considered
+    if (domDoc && m_boxType == "layer")
+    {
+        m_layoutFile = XMLelement(*domDoc)["hints"]["json"]();
+        if (m_layoutFile.isEmpty())
+            m_layoutFile = QString("%1/Models/%2.layer.json")
+                    .arg(SessionManager::instance()->easyNetDataHome())
+                    .arg(SessionManager::instance()->currentModel());
+        if (QFileInfo(m_layoutFile).isRelative())
+            m_layoutFile.prepend(SessionManager::instance()->easyNetDataHome()+"/");
+    }
 }
 
 

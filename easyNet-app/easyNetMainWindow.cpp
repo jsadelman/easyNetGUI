@@ -734,8 +734,8 @@ void MainWindow::loadModel(QString fileName,bool complete)
 //    loadFile(fileName);
 
     // the /path/basename is used by DiagramScene objects to load JSON files
-    QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-    modelScene->setBaseName(base);
+//    QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+//    modelScene->setBaseName(base);
 //    conversionScene->setBaseName(base);
     setWindowTitle(QFileInfo(fileName).completeBaseName());
 
