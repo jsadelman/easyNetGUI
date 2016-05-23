@@ -27,6 +27,7 @@ class LazyNut;
 class CommandSequencer;
 class ObjectCache;
 class ObjectCacheFilter;
+class ObjectUpdater;
 class ObjectNameValidator;
 
 
@@ -93,6 +94,7 @@ public:
     void removeFromExtraNamedItems(QString name);
     QStringList extraNamedItems();
     bool isCopyRequested(QString original);
+    bool isModelStageCompleted() {return m_isModelStageUpdated;}
 
 
 
@@ -170,6 +172,8 @@ private slots:
     void startCommandSequencer();
     void lazyNutProcessError(int error);
     void setDefaultLocations();
+    void updateModelStageCompleted(QDomDocument* domDoc);
+
 
 //    void macroStarted();
 //    void macroEnded();
@@ -213,12 +217,16 @@ private:
     QStringList m_enabledObservers;
     bool        m_suspendingObservers;
     bool        killingLazyNut;
+    bool        m_isModelStageUpdated;
 
     ObjectNameValidator *validator;
     QStringList m_extraNamedItems;
     QStringList m_requestedNames;
     QStringList m_requestedCopies;
     ObjectCacheFilter *objectListFilter;
+
+    ObjectCacheFilter *modelFilter;
+    ObjectUpdater *modelDescriptionUpdater;
 
 
 };

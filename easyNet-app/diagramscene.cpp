@@ -71,7 +71,8 @@ Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
 DiagramScene::DiagramScene(QString box_type, QString arrow_type)
-    : m_boxType(box_type), m_arrowType(arrow_type), awake(false), m_layoutFile("")
+    : m_boxType(box_type), m_arrowType(arrow_type), awake(false), m_layoutFile(""),
+      m_newModelLoaded(false)
 {
     selectedObject = "";
 //    myItemMenu = itemMenu;
@@ -117,10 +118,22 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type)
     modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
             modelFilter, SLOT(setName(QString)));
+    connect(modelFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            this, SLOT(goToSleep()));
     modelDescriptionUpdater = new ObjectUpdater(this);
     modelDescriptionUpdater->setProxyModel(modelFilter);
     connect(modelDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(setLayoutFile(QDomDocument*)));
+    connect(modelDescriptionUpdater, &ObjectUpdater::objectUpdated, [=]()
+    {
+        if (!awake && SessionManager::instance()->isModelStageCompleted())
+        {
+            setNewModelLoaded(true);
+            wakeUp();
+        }
+    });
+
+
 
     boxFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     boxFilter->setType(m_boxType);
@@ -500,7 +513,7 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
 {
     // wait until all descriptions of recently_* objects have arrived
     renderList.append(domDoc);
-    // HACK to allow visualisation of ocnversions and representations even when missing 'ghost' objects are present
+    // HACK to allow visualisation of conversions and representations even when missing 'ghost' objects are present
     if ((boxFilter->isAllValid() && arrowFilter->isAllValid()) || boxType() == "representation")
         render();
 }

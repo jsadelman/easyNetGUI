@@ -2,16 +2,17 @@
 #include "commandsequencer.h"
 #include "jobqueue.h"
 #include "lazynut.h"
-
 #include "lazynutjob.h"
 #include "lazynutjobparam.h"
 #include "answerformatter.h"
 #include "answerformatterfactory.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
+#include "objectupdater.h"
 #include "easyNetMainWindow.h"
 #include "objectnamevalidator.h"
 #include "xmlelement.h"
+#include <algorithm>
 
 
 
@@ -46,6 +47,7 @@ SessionManager::SessionManager()
       m_plotFlags(),
       m_suspendingObservers(false),
       killingLazyNut(false),
+      m_isModelStageUpdated(false),
       m_easyNetHome(""),
       m_easyNetDataHome(""),
       m_currentModel(""),
@@ -86,6 +88,17 @@ SessionManager::SessionManager()
             dataframeCache,  SLOT(invalidateCache(QStringList)));
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             dataframeCache,  SLOT(destroy(QStringList)));
+
+    modelFilter = new ObjectCacheFilter(descriptionCache, this);
+    connect(this, SIGNAL(currentModelChanged(QString)),
+            modelFilter, SLOT(setName(QString)));
+    modelDescriptionUpdater = new ObjectUpdater(this);
+    modelDescriptionUpdater->setProxyModel(modelFilter);
+    connect(modelDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
+            this, SLOT(updateModelStageCompleted(QDomDocument*)));
+
+
+
 
     connect(this, SIGNAL(easyNetHomeChanged()), this, SLOT(setDefaultLocations()));
     connect(this, SIGNAL(easyNetDataHomeChanged()), this, SLOT(setDefaultLocations()));
@@ -613,6 +626,16 @@ void SessionManager::setDefaultLocations()
     m_defaultLocation["rPlotsDir"]    =   QString("%1/%2/R-library/plots").arg(easyNetHome()).arg(binDir);
     m_defaultLocation["outputDir"]    =   QString("%1/Output_files").arg(easyNetHome());
     m_defaultLocation["rDataframeViewsDir"]    =   QString("%1/%2/R-library/dataframe_views").arg(easyNetHome()).arg(binDir);
+}
+
+void SessionManager::updateModelStageCompleted(QDomDocument *domDoc)
+{
+    QList<int> scriptList;
+    foreach(QString s, XMLelement(*domDoc)["scripts"].listLabels())
+        scriptList << s.toInt();
+
+    m_isModelStageUpdated = !scriptList.isEmpty() &&
+            XMLelement(*domDoc)["staging"]().toInt() > *std::max_element(scriptList.begin(), scriptList.end());
 }
 
 

@@ -220,6 +220,8 @@ private:
 
 
     bool m_debugMode;
+    void buildModelChooser();
+
 public:
 
 
@@ -253,6 +255,7 @@ public:
     FloatingDialogWindow* dataViewSettingsDialog;
 
     QListWidget* modelChooser;
+    QHBoxLayout *modelChooserLayout;
 
     Console        *lazyNutConsole;
     ObjExplorer      *objExplorer;

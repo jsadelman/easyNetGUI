@@ -116,7 +116,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       m_debugMode(false),
       m_trialListLength(0),
-      settingsDialog(nullptr)
+      settingsDialog(nullptr),
+      modelChooser(nullptr),
+      modelChooserLayout(nullptr)
 {
     errors.clear();
 }
@@ -437,10 +439,10 @@ void MainWindow::showPlotViewer()
 
 void MainWindow::diagramSceneTabChanged(int index)
 {
-     modelScene->goToSleep();
+//     modelScene->goToSleep();
 //     conversionScene->goToSleep();
-    if (index == modelTabIdx)
-         modelScene->wakeUp();
+//    if (index == modelTabIdx)
+//         modelScene->wakeUp();
 //    else if (index == conversionTabIdx)
 //         conversionScene->wakeUp();
 }
@@ -754,9 +756,9 @@ void MainWindow::loadModel(QString fileName,bool complete)
     // note: this synch is wrong, yet it works fine if one loads just one model while
     // no other jobs run. In general commandsCompleted() might be sent from a previous job.
     if(complete)
-      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
+      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()), Qt::UniqueConnection);
     else
-      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
+      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()), Qt::UniqueConnection);
 
 //    runScript();
     SessionManager::instance()->runCmd(QString("%1 include %2")
@@ -778,30 +780,48 @@ void MainWindow::loadModel(QString fileName,bool complete)
 }
 
 
-void MainWindow::loadModel()
+void MainWindow::buildModelChooser()
 {
-    QHBoxLayout* h_layout = new QHBoxLayout;
-//    h_layout->setMargin( 0 );
+    delete modelChooserLayout;
+    delete modelChooser;
+
+    modelChooserLayout = new QHBoxLayout;
     modelChooser  = new QListWidget;
     modelChooser->setFlow(QListView::TopToBottom);
     modelChooser->setViewMode(QListView::IconMode);
     modelChooser->setMovement(QListView::Static);
     modelChooser->resize(QSize(800,670));
 
-    QListWidgetItem* lwi;
     QStringList modelList = QStringList() << "ia" << "bia" << "drc"
                                           << "cdpplus" << "SCM" << "rpm-ia"
                                           << "ltrs" << "PMSP_3_recurrent" << "custom";
     foreach (QString modelName,modelList)
-            modelChooser->addItem(lwi = new QListWidgetItem(QIcon(
+            modelChooser->addItem(new QListWidgetItem(QIcon(
                                   ":/images/"+modelName+".png"), modelName));
 
     modelChooser->setIconSize(QSize(250,250));
     modelChooser->show();
-    h_layout->addWidget(modelChooser, 0, Qt::AlignHCenter);
-
+//    modelDialog = new QDialog(this);
+    modelChooserLayout->addWidget(modelChooser, 0, Qt::AlignHCenter);
+//    dialogLayout->addWidget(modelChooser);
+//    modelDialog->setLayout(dialogLayout);
     connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
             this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
+//    connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
+//            modelDialog, SLOT(accept()));
+
+
+}
+
+void MainWindow::loadModel()
+{
+//    if (!modelChooser)
+        buildModelChooser();
+//    else
+//        modelChooser->show();
+//    modelDialog->show();
+//    modelDialog->raise();
+//    modelDialog->activateWindow();
 }
 
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
@@ -822,7 +842,7 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
         diagramPanel->useFake(modelTabIdx,true);
         loadModel(SessionManager::instance()->defaultLocation("modelsDir")+"/"+item->text()+".eNm",true);
     }
-
+    modelChooser->setCurrentItem(nullptr);
     modelChooser->hide();
 }
 
@@ -918,12 +938,12 @@ void MainWindow::afterModelConfig()
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
     disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
     modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
-    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
+    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()), Qt::UniqueConnection);
     SessionManager::instance()->runCmd(QString("%1%2 stage").arg(quietMode).arg(SessionManager::instance()->currentModel()));
-    modelScene->setNewModelLoaded(true);
+//    modelScene->setNewModelLoaded(true);
 //    conversionScene->setNewModelLoaded(true);
     diagramSceneTabChanged(diagramPanel->currentIndex());
-    modelScene->wakeUp();
+//    modelScene->wakeUp();
     qDebug() << "Time taken to config model:" << QString::number(loadModelTimer.elapsed()) << "ms";
     commandLog->addText(QString("## Time taken to config model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
 
