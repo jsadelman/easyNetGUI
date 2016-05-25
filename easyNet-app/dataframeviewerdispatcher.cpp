@@ -70,12 +70,13 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
             SessionManager::instance()->setCopyRequested(trialRunInfo.results);
             QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(trialRunInfo.results));
             job->cmdList << QString("%1 copy %2").arg(trialRunInfo.results).arg(backupDf);
+            job->cmdList << QString("%1 add_hint show 0").arg(backupDf);
             job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
             QMap<QString, QVariant> jobData;
             jobData.insert("original", trialRunInfo.results);
             jobData.insert("name", backupDf);
             jobData.insert("isBackup", true);
-            jobs << SessionManager::instance()->recentlyCreatedJob();
+            jobs << SessionManager::instance()->updateObjectCacheJobs();
             jobs.last()->data = jobData;
             jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
             jobs.last()->appendEndOfJobReceiver(SessionManager::instance(), SLOT(clearCopyRequested()));

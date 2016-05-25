@@ -23,14 +23,14 @@ Ui_DataComboViewer::~Ui_DataComboViewer()
 
 QString Ui_DataComboViewer::currentItemName()
 {
-    if (m_usePrettyNames)
+    if (usePrettyNames())
         return comboBox->currentData().toString();
     return comboBox->currentText();
 }
 
 void Ui_DataComboViewer::setCurrentItem(QString name)
 {
-    comboBox->setCurrentIndex(m_usePrettyNames ?
+    comboBox->setCurrentIndex(usePrettyNames() ?
                                   comboBox->findData(name) :
                                   comboBox->findText(name));
 }
@@ -44,7 +44,7 @@ void Ui_DataComboViewer::addView(QString name, QWidget *view)
 {
     stackedWidget->addWidget(view);
     viewMap[name] = view;
-    if (m_usePrettyNames)
+    if (usePrettyNames())
     {
         if (SessionManager::instance()->exists(name))
         {
@@ -66,10 +66,10 @@ void Ui_DataComboViewer::addView(QString name, QWidget *view)
 
 QWidget *Ui_DataComboViewer::takeView(QString name)
 {
-    comboBox->removeItem(m_usePrettyNames ?
+    comboBox->removeItem(usePrettyNames() ?
                              comboBox->findData(name) :
                              comboBox->findText(name));
-    if (m_usePrettyNames)
+    if (usePrettyNames())
         itemDescriptionFilter->removeName(name);
     QWidget *view = viewMap.value(name, nullptr);
     viewMap.remove(name);
@@ -83,7 +83,7 @@ void Ui_DataComboViewer::createViewer()
     widget->setLayout(layout);
     comboBox = new QComboBox(this);
     comboBox->setEditable(false);
-    if (!m_usePrettyNames)
+    if (!usePrettyNames())
         comboBox->setInsertPolicy(QComboBox::InsertAlphabetically);
     stackedWidget = new QStackedWidget(this);
     layout->addWidget(comboBox);
@@ -93,7 +93,7 @@ void Ui_DataComboViewer::createViewer()
     connect(comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
         [=](int index)
     {
-        QString name = m_usePrettyNames ? comboBox->itemData(index).toString() : comboBox->itemText(index);
+        QString name = usePrettyNames() ? comboBox->itemData(index).toString() : comboBox->itemText(index);
         stackedWidget->setCurrentWidget(viewMap.value(name));
         emit currentItemChanged(name);
     });

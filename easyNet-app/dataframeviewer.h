@@ -70,6 +70,8 @@ protected:
     bool dataframeExceedsCellLimit(QString name, int maxCells);
     void limitedGet(QString name, int maxCells);
     void doCopy();
+    void sendNewDataViewRequest(QAction *action, QString subtype);
+
 
 
     QMap<QString, DataFrameModel*> modelMap;

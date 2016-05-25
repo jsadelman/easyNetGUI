@@ -378,37 +378,38 @@ void DataframeViewer::setParameter(QString name, QString key_val)
 
 void DataframeViewer::sendNewPlotRequest()
 {
-    QAction *plotAct = qobject_cast<QAction *>(sender());
-    if (!plotAct)
-        eNerror << "invalid sender action for this method";
-    else
-    {
-        QString plotType = plotAct->text();
-        QString suffix = plotType;
-        suffix.remove(QRegExp("\\.R$"));
-        QMap<QString,QString> settings;
-        settings["df"] = ui->currentItemName();
-        QString plotName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
-        emit createDataViewRequested(plotName, "rplot", plotType, settings);
-    }
+    sendNewDataViewRequest(qobject_cast<QAction*>(sender()), "rplot");
 }
 
 void DataframeViewer::sendNewDataframeViewRequest()
 {
-    QAction *dataframeViewAct = qobject_cast<QAction *>(sender());
-    if (!dataframeViewAct)
-        eNerror << "invalid sender action for this method";
-    else
+    sendNewDataViewRequest(qobject_cast<QAction*>(sender()), "dataframe_view");
+}
+
+void DataframeViewer::sendNewDataViewRequest(QAction *action, QString subtype)
+{
+    if (!action)
     {
-        QString dataframeViewScript = dataframeViewAct->text();
-        QString suffix = dataframeViewScript;
-        suffix.remove(QRegExp("\\.R$"));
-        QMap<QString,QString> settings;
-        settings["df"] = ui->currentItemName();
-        QString dataframeViewName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
-        requestedDataframeViews.append(dataframeViewName);
-        emit createDataViewRequested(dataframeViewName, "dataframe_view", dataframeViewScript, settings);
+        eNerror << "invalid QAction argument";
+        return;
     }
+    if (action->text().isEmpty())
+    {
+        eNerror << "QAction does not contain text, while it should contain an R script name";
+        return;
+    }
+    if (!(subtype == "dataframe_view" || subtype == "rplot"))
+    {
+        eNerror << "invalid subtype:" << subtype;
+        return;
+    }
+    QString dataViewScript = action->text();
+    QString suffix = dataViewScript;
+    suffix.remove(QRegExp("\\.R$"));
+    QMap<QString,QString> settings;
+    settings["df"] = ui->currentItemName();
+    QString dataViewName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
+    SessionManager::instance()->createDataView(dataViewName, subtype, dataViewScript, settings, false, true);
 }
 
 void DataframeViewer::addItem_impl(QString name)
@@ -477,7 +478,7 @@ void DataframeViewer::addExtraActions()
     {
         QAction *plotAct = new QAction(plotType, this);
         connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
-        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
+//        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
         plotMenu->addAction(plotAct);
     }
     plotButton->setMenu(plotMenu);
@@ -495,7 +496,7 @@ void DataframeViewer::addExtraActions()
     {
         QAction *dataframeViewAct = new QAction(dataframeViewScript, this);
         connect(dataframeViewAct, SIGNAL(triggered()), this, SLOT(sendNewDataframeViewRequest()));
-        connect(dataframeViewAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
+//        connect(dataframeViewAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
         dataframeViewMenu->addAction(dataframeViewAct);
     }
     dataframeViewButton->setMenu(dataframeViewMenu);

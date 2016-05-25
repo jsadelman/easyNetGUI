@@ -95,7 +95,7 @@ public:
     QStringList extraNamedItems();
     bool isCopyRequested(QString original);
     bool isModelStageCompleted() {return m_isModelStageUpdated;}
-
+    QDomDocument *description(QString name);
 
 
     ObjectCache *descriptionCache;
@@ -173,7 +173,7 @@ private slots:
     void lazyNutProcessError(int error);
     void setDefaultLocations();
     void updateModelStageCompleted(QDomDocument* domDoc);
-
+    void setShowHint(QDomDocument*description, QString name);
 
 //    void macroStarted();
 //    void macroEnded();

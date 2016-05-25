@@ -49,7 +49,6 @@ public:
     bool copyDfActive() {return m_copyDfActive;}
     void setCopyDfActive(bool active) {m_copyDfActive = active;}
 
-    QAction *historyAct;
     QAction *infoAct;
     QAction *preferencesAct;
 //    int dispatchModeOverride;

@@ -96,10 +96,6 @@ SessionManager::SessionManager()
     modelDescriptionUpdater->setProxyModel(modelFilter);
     connect(modelDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(updateModelStageCompleted(QDomDocument*)));
-
-
-
-
     connect(this, SIGNAL(easyNetHomeChanged()), this, SLOT(setDefaultLocations()));
     connect(this, SIGNAL(easyNetDataHomeChanged()), this, SLOT(setDefaultLocations()));
 
@@ -321,8 +317,9 @@ void SessionManager::createDataView(QString name, QString subtype, QString Type,
     }
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList({
-                                QString("create %1 %2").arg(subtype).arg(name),
-                                QString("%1 set_type %2").arg(name).arg(Type),
+                                   QString("create %1 %2").arg(subtype).arg(name),
+                                   QString("%1 set_type %2").arg(name).arg(Type),
+                                   QString("%1 add_hint show %2").arg(name).arg(isBackup ? "0" : "1"),
                                 });
     QMapIterator<QString, QString> settings_it(settings);
     while (settings_it.hasNext())
@@ -387,6 +384,11 @@ QStringList SessionManager::extraNamedItems()
 bool SessionManager::isCopyRequested(QString original)
 {
     return m_requestedCopies.contains(original);
+}
+
+QDomDocument *SessionManager::description(QString name)
+{
+    return descriptionCache->getDomDoc(name);
 }
 
 
@@ -636,6 +638,35 @@ void SessionManager::updateModelStageCompleted(QDomDocument *domDoc)
 
     m_isModelStageUpdated = !scriptList.isEmpty() &&
             XMLelement(*domDoc)["staging"]().toInt() > *std::max_element(scriptList.begin(), scriptList.end());
+}
+
+void SessionManager::setShowHint(QDomDocument *description, QString name)
+{
+    if (!exists(name))
+    {
+        eNerror << QString("observer %1 does not exist").arg(name);
+        return;
+    }
+    if (!description)
+    {
+        eNerror << QString("observer %1 does not have a description").arg(name);
+        return;
+    }
+    QString cmd;
+
+    if (!XMLelement(*description)["hints"].listLabels().contains("show"))
+        cmd = QString("%1 add_hint show 1").arg(name);
+    else if (XMLelement(*description)["hints"]["show"]() != "1")
+        cmd = QString("%1 change_hint show 1").arg(name);
+    if (!cmd.isEmpty())
+    {
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList << cmd;
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+                << job
+                << SessionManager::instance()->recentlyModifiedJob();
+        SessionManager::instance()->submitJobs(jobs);
+    }
 }
 
 

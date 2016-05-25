@@ -39,7 +39,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
         return;
     }
     setParent(dataViewer);
-    if (m_usePrettyNames)
+    if (usePrettyNames())
     {
         itemDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
         itemDescriptionUpdater = new ObjectUpdater(this);

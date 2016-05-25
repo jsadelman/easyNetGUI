@@ -175,16 +175,18 @@ expertWindow=new QMainWindow;
     ui_dataframeResultsViewer->setUsePrettyNames(true);
     dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
     dataframeResultsViewer->setName("Dataframes");
+    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    dataframeDescriptionFilter->setType("dataframe");
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
     dataframeResultsViewer->setDefaultDir(SessionManager::instance()->defaultLocation("dfDir"));
-
+    connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            dataframeResultsViewer, SLOT(addItem(QString)));
 
     ui_dataframeViewer = new Ui_DataComboViewer;
     dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
     dataframeViewer->setLazy(true);
     dataframeViewer->setDefaultDir(SessionManager::instance()->defaultLocation("dfDir"));
-    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    dataframeDescriptionFilter->setType("dataframe");
+
     connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             dataframeViewer, SLOT(addItem(QString)));
 
@@ -356,12 +358,12 @@ void MainWindow::connectSignalsAndSlots()
     connect(trialEditor, SIGNAL(loadTrialSignal()), this, SLOT(loadTrial()));
 
 
-    connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
-            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
-    connect(stimSetViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
-            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
-    connect(dataframeViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
-            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+//    connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+//            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+//    connect(stimSetViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+//            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
+//    connect(dataframeViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
+//            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
 
     connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
 

@@ -1,6 +1,10 @@
 #include "historytreemodel.h"
 #include "treeitem.h"
 #include "enumclasses.h"
+#include "sessionmanager.h"
+#include "xmlelement.h"
+
+#include <QDomDocument>
 
 
 HistoryTreeModel::HistoryTreeModel(QObject *parent)
@@ -149,6 +153,9 @@ bool HistoryTreeModel::appendView(QString view, QString trial, bool inView)
         eNerror << "cannot set view" << view;
         return false;
     }
+    QDomDocument *description = SessionManager::instance()->description(view);
+    if (description && XMLelement(*description)["hints"]["show"]() == "1")
+        inView = true;
     if (!setData(index(rowCount(trialIdx)-1, 0, trialIdx), inView ? QVariant(Qt::Checked) : QVariant(Qt::Unchecked), Qt::CheckStateRole))
     {
         eNerror << "cannot set check value for view" << view;
@@ -157,15 +164,19 @@ bool HistoryTreeModel::appendView(QString view, QString trial, bool inView)
     return true;
 }
 
-bool HistoryTreeModel::removeView(QString view, QString trial)
+bool HistoryTreeModel::removeView(QString view, QString tr)
 {
-    QModelIndex index = viewIndex(view, trial);
+    if (tr.isEmpty())
+        tr = trial(view);
+
+    QModelIndex index = viewIndex(view, tr);
+
     if (!index.isValid())
     {
-        eNwarning << QString("attempt to remove view %1 from trial %2, which is not contained in this model").arg(view).arg(trial);
+        eNwarning << QString("attempt to remove view %1 from trial %2, which is not contained in this model").arg(view).arg(tr);
         return false;
     }
-    QModelIndex trialIdx = trialIndex(trial);
+    QModelIndex trialIdx = trialIndex(tr);
     bool success = removeRows(index.row(), 1, trialIdx);
     if (rowCount(trialIdx) == 0)
         success &= removeRows(trialIdx.row(), 1);

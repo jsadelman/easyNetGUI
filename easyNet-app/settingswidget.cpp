@@ -165,16 +165,10 @@ void SettingsWidget::createNewForm(QString name)
         eNerror << "object" << name << "does not exist";
         return;
     }
-    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
-    if (!description)
-    {
-        eNerror << "object" << name << "does not have a description";
-        return;
-    }
-    QString subtype = XMLelement(*description)["subtype"]();
+    QString subtype = SessionManager::instance()->descriptionCache->subtype(name);
     if (!(subtype == "dataframe_view" || subtype == "rplot"))
     {
-        eNerror << "object" << name << "is not of subtype rplot or dataframe_view";
+//        eNerror << "object" << name << "is not of subtype rplot or dataframe_view";
         return;
     }
     LazyNutJob *job = new LazyNutJob;

@@ -78,7 +78,12 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         addItem_impl(name);
         if (dispatcher)
         {
-            dispatcher->addToHistory(name, !isBackupMap.value(name, false));
+            // temporary, until lazynut will add show = 1 hint to all trial default_observers
+            QRegExp rex("\\(([^ ]+) default_observer\\)");
+            bool show = (rex.indexIn(name) > -1) &&
+                    SessionManager::instance()->descriptionCache->subtype(rex.cap(1)) == "trial";
+
+            dispatcher->addToHistory(name, show); //, !isBackupMap.value(name, false));
             isBackupMap.remove(name);
         }
         else
@@ -326,7 +331,7 @@ void DataViewer::setTrialRunMode(int mode)
 
 void DataViewer::destroySelectedItems()
 {
-    if (dispatcher && dispatcher->historyAct->isChecked())
+    if (dispatcher && ui->historyAct->isChecked())
         dispatcher->destroySelectedItems();
     else
         initiateDestroyItem(ui->currentItemName());

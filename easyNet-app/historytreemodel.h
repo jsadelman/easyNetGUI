@@ -28,7 +28,7 @@ public:
     bool appendTrial(QString trial);
     bool removeTrial(QString trial);
     bool appendView(QString view, QString trial, bool inView=false);
-    bool removeView(QString view, QString trial);
+    bool removeView(QString view, QString trial="");
     bool setInView(QString view, QString trial, bool inView);
 
     QModelIndex trialIndex(QString trial);

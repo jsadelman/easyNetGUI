@@ -100,7 +100,7 @@ DataViewerDispatcher::~DataViewerDispatcher()
 QString DataViewerDispatcher::trial(QString name)
 {
     QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
-    return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).trial : no_trial;
+    return info.isEmpty() ? no_trial : TrialRunInfo(info.last()).trial  ;
 }
 
 QString DataViewerDispatcher::runMode(QString name)
@@ -135,7 +135,7 @@ void DataViewerDispatcher::addToHistory(QString name, bool inView)
 
 void DataViewerDispatcher::removeFromHistory(QString name)
 {
-    historyModel->removeView(name, trial(name));
+    historyModel->removeView(name);
     SessionManager::instance()->removeTrialRunInfo(name);
 }
 
@@ -275,7 +275,8 @@ void DataViewerDispatcher::updateHistory(QString name)
     disconnect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
     historyModel->removeView(name, historyModel->trial(name));
-    historyModel->appendView(name, newTrial, isInView);
+    historyModel->appendView(name, newTrial);
+    historyModel->setInView(name, newTrial, isInView);
     connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
 }

@@ -33,7 +33,7 @@ QWidget *Ui_DataTabsViewer::currentView()
 void Ui_DataTabsViewer::addView(QString name, QWidget *view)
 {
     viewMap[name] = view;
-    if (m_usePrettyNames && SessionManager::instance()->exists(name))
+    if (usePrettyNames() && SessionManager::instance()->exists(name))
     {
         itemDescriptionFilter->addName(name);
         tabWidget->insertTab(0, view, ""); // the (pretty) name on the tab will be set later
@@ -48,7 +48,7 @@ QWidget *Ui_DataTabsViewer::takeView(QString name)
     QWidget *view = viewMap.value(name, nullptr);
     tabWidget->removeTab(tabWidget->indexOf(view));
     viewMap.remove(name);
-    if (m_usePrettyNames)
+    if (usePrettyNames())
         itemDescriptionFilter->removeName(name);
     return view;
 }
