@@ -76,16 +76,16 @@ SessionManager::SessionManager()
     descriptionCache = new ObjectCache(this);
     connect(this, SIGNAL(recentlyCreated(QDomDocument*)),
             descriptionCache, SLOT(create(QDomDocument*)));
-    connect(this,  SIGNAL(recentlyModified(QStringList)),
-            descriptionCache,  SLOT(invalidateCache(QStringList)));
+    connect(this,  SIGNAL(recentlyModified(QDomDocument*)),
+            descriptionCache,  SLOT(modify(QDomDocument*)));
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             descriptionCache,  SLOT(destroy(QStringList)));
 
     dataframeCache = new ObjectCache(this);
     connect(this, SIGNAL(recentlyCreated(QDomDocument*)),
             dataframeCache, SLOT(create(QDomDocument*)));
-    connect(this,  SIGNAL(recentlyModified(QStringList)),
-            dataframeCache,  SLOT(invalidateCache(QStringList)));
+    connect(this,  SIGNAL(recentlyModified(QDomDocument*)),
+            dataframeCache,  SLOT(modify(QDomDocument*)));
     connect(this, SIGNAL(recentlyDestroyed(QStringList)),
             dataframeCache,  SLOT(destroy(QStringList)));
 
@@ -427,7 +427,7 @@ LazyNutJob *SessionManager::recentlyModifiedJob()
 {
     LazyNutJob *job = new LazyNutJob();
     job->cmdList = QStringList({"xml recently_modified", "clear_recently_modified"});
-    job->setAnswerReceiver(this, SIGNAL(recentlyModified(QStringList)), AnswerFormatterType::ListOfValues);
+    job->setAnswerReceiver(this, SIGNAL(recentlyModified(QDomDocument*)), AnswerFormatterType::XML);
     return job;
 }
 

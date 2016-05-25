@@ -285,8 +285,6 @@ bool ObjectCache::create(QDomDocument *domDoc)
     XMLelement elem = XMLelement(*domDoc).firstChild();
     while (!elem.isNull())
     {
-        // currently recently_created does not provide subtype
-
         success *= create(elem(), elem["type"](), elem["subtype"]());
         elem = elem.nextSibling();
     }
@@ -310,6 +308,25 @@ bool ObjectCache::invalidateCache(QStringList names)
         success *= invalidateCache(name);
     }
     return success;
+}
+
+bool ObjectCache::modify(QDomDocument *domDoc)
+{
+    bool success = true;
+    XMLelement elem = XMLelement(*domDoc).firstChild();
+    while (!elem.isNull())
+    {
+        success *= invalidateCache(elem());
+        if (!elem["subtype"]().isEmpty())
+            success *= changeSubtype(elem(), elem["subtype"]());
+        elem = elem.nextSibling();
+    }
+    return success;
+}
+
+bool ObjectCache::changeSubtype(const QString &name, const QString &subtype)
+{
+    return setData(index(rowFromName(name), SubtypeCol), subtype);
 }
 
 QString ObjectCache::nameFromCmd(QString cmd)

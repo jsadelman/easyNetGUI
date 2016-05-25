@@ -40,6 +40,8 @@ public slots:
     bool setPending(const QString& name, bool pending);
     bool invalidateCache(const QString& name);
     bool invalidateCache(QStringList names);
+    bool modify(QDomDocument* domDoc);
+    bool changeSubtype(const QString& name, const QString& subtype);
 
 
 private:

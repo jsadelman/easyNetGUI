@@ -207,7 +207,7 @@ expertWindow=new QMainWindow;
     plotViewer->setName("Plots");
     plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
     plotDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    plotDescriptionFilter->setType("xfile");
+    plotDescriptionFilter->setSubtype("rplot");
     connect(plotDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             plotViewer, SLOT(addItem(QString)));
 

@@ -122,7 +122,7 @@ signals:
     void lazyNutMacroFinished();
 
     void recentlyCreated(QDomDocument*);
-    void recentlyModified(QStringList);
+    void recentlyModified(QDomDocument*);
     void recentlyDestroyed(QStringList);
     void commandsCompleted();
 
