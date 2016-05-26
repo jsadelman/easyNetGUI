@@ -699,6 +699,7 @@ void SessionManager::killLazyNut()
 void SessionManager::reset()
 {
     descriptionCache->clear();
+    dataframeCache->clear();
     jobQueue->clear();
     jobQueue->forceFree();
     emit resetExecuted();

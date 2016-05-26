@@ -73,11 +73,11 @@ void ObjectUpdater::requestObjects(QModelIndex parent, int first, int last)
 void ObjectUpdater::errorHandler(QString cmd, QString error)
 {
     eNerror << cmd << error;
-    QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
-    if (error.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
-    {
-        objectCache->destroy(nameInCmd);
-    }
+//    QString nameInCmd = cmd.remove(QRegExp("^\\s*xml\\s*|\\s*description\\s*$"));
+//    if (error.contains(QString("ERROR: Object %1 does not exist.").arg(nameInCmd)))
+//    {
+//        objectCache->destroy(nameInCmd);
+//    }
 }
 
 void ObjectUpdater::requestObjects(int first, int last)

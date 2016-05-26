@@ -37,9 +37,19 @@ TrialWidget::TrialWidget(QWidget *parent)
 
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentTrialChanged(QString)), trialFilter, SLOT(setName(QString)));
-    connect(trialFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(buildComboBoxesTest()));
+    connect(SessionManager::instance(), &SessionManager::currentTrialChanged, [=] (QString name)
+    {
+        if (name.isEmpty())
+            buildComboBoxesTest(); // a hack to clear the layout when all trials are gone, e.g. restart lazynut
+    });
 
-    // cosmetics used in tabs names in TableWindow
+//    connect(trialFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(buildComboBoxesTest()));
+//    connect(trialFilter, &ObjectCacheFilter::objectDestroyed, [=](QString name)
+//    {
+//        qDebug() << Q_FUNC_INFO << name << trialFilter;
+//    });
+
+    // cosmetics used in tabs names in TableWindow, will be taken care of in trial scripts
     connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
     {
         QString df = QString("(%1 default_observer)").arg(name);
@@ -113,6 +123,7 @@ void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
     }
     foreach(QString label, defs.keys().toSet().subtract(argList.toSet()))
         defs.remove(label);
+
     if (argList.size())
         buildComboBoxesTest(argList);
 

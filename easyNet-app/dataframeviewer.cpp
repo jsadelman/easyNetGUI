@@ -82,7 +82,8 @@ void DataframeViewer::open()
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({
                             QString("create %1 %2").arg(dataframeType).arg(dfName),
-                            QString("%1 add_hint show 1"  ).arg(dfName),
+                            QString("%1 add_hint show %2"  ).arg(dfName)
+                                       .arg(stimulusSet() || parametersTable() ? "0" : "1"),
                             QString("%1 %2 %3").arg(dfName).arg(loadCmd).arg(fileName)});
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job

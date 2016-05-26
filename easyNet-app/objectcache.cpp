@@ -130,6 +130,7 @@ Qt::ItemFlags ObjectCache::flags(const QModelIndex &index) const
 bool ObjectCache::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent);
+    Q_ASSERT(count <=1); // since the for loop is wrong, need to be fixed.
     if (row < 0 || row >= cache.count() || row+count > cache.count())
         return false;
 
@@ -158,7 +159,10 @@ void ObjectCache::clear()
 bool ObjectCache::create(const QString &name, const QString &type, const QString &subtype)
 {
     if (rowFromName(name) >= 0) // name exists already
+    {
+        qDebug()  << "name exists already:" << name;
         return false;
+    }
 
     beginInsertRows(QModelIndex(), 0, 0);
     LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type, subtype);
@@ -170,7 +174,10 @@ bool ObjectCache::create(const QString &name, const QString &type, const QString
 
 bool ObjectCache::destroy(const QString &name)
 {
-    return removeRow(rowFromName(name));
+    int row = rowFromName(name);
+    if (row > -1 && row < rowCount())
+        return removeRow(row);
+    return false;
 }
 
 
@@ -196,7 +203,7 @@ bool ObjectCache::invalidateCache(const QString &name)
         // this can happen any time an object is listed both in recently_created and recently_modified
         // then the latter tries to invalidate cache of an object that is not yet in the cache,
         // since the XML has not beed received yet from lazyNut.
-        //qDebug() << "WARNING: ObjectCache::invalidateCache no row corresponding to" << name;
+//        qDebug() << "WARNING: ObjectCache::invalidateCache no row corresponding to" << name;
         return false;
     }
     // FIRST set pending, THEN invalid, since only the latter triggers signals to filters
