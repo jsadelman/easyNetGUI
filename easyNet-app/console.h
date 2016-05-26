@@ -27,6 +27,7 @@ public slots:
 
 signals:
     void historyKey(int dir, QString text);
+    void coreDumpRequested();
 private slots:
     void showHistory(QString line);
 private:

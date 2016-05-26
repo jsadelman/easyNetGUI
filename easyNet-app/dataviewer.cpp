@@ -20,7 +20,6 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
 {
     setUi();
     descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-//    descriptionFilter->setAllPassFilter(); // may be specialised by derived classes
     connect(descriptionFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(destroyItem(QString)));
     descriptionUpdater = new ObjectUpdater(this);
     descriptionUpdater->setCommand("description");
@@ -125,7 +124,7 @@ void DataViewer::destroyItem(QString name)
 {
     if (!contains(name))
     {
-        eNwarning << QString("attempt to delete non-existing item %1").arg(name) << sender()->metaObject()->className();
+        eNwarning << QString("attempt to delete item %1 that does not belong to this viewer").arg(name);
         return;
     }
     if (dispatcher)
@@ -144,18 +143,6 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
     {
         eNerror << "invalid DataViewerDispatcher object";
         return;
-    }
-    if (ui)
-    {
-//        ui->setDispatchModeAutoAct->setVisible(true);
-//        setDispatchModeAuto(true);
-//        connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), dispatcher, SLOT(updateInfo(QDomDocument*,QString)));
-//        connect(descriptionUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*,QString name)
-//        {
-//            dispatcher->updateHistory(name);
-//        });
-//        ui->setDispatchModeAutoAct->setEnabled(enable);
-//        dispatcher->historyAct->setEnabled(enable);
     }
 }
 
@@ -214,7 +201,6 @@ void DataViewer::addItem(QString name, bool isBackup)
         eNerror << "name is empty";
         return;
     }
-
     if (SessionManager::instance()->exists(name))
     {
         isBackupMap[name] = isBackup;
@@ -307,27 +293,6 @@ void DataViewer::setTrialRunMode(int mode)
     if (dispatcher)
         dispatcher->setTrialRunMode(mode);
 }
-
-//void DataViewer::setDispatchModeOverride(int mode)
-//{
-//    if (dispatcher)
-//    {
-//        dispatcher->dispatchModeOverride = mode;
-//    }
-//}
-
-//void DataViewer::setDispatchModeAuto(bool isAuto)
-//{
-//    if (dispatcher)
-//    {
-//        dispatcher->dispatchModeAuto = isAuto;
-//        ui->setDispatchModeOverrideActGroup->setVisible(!isAuto);
-//        if (isAuto)
-//            dispatcher->dispatchModeOverride = -1;
-//        else
-//            dispatcher->restoreOverrideDefaultValue();
-//    }
-//}
 
 void DataViewer::destroySelectedItems()
 {

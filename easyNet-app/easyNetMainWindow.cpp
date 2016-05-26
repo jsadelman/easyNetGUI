@@ -182,13 +182,13 @@ expertWindow=new QMainWindow;
     connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             dataframeResultsViewer, SLOT(addItem(QString)));
 
-    ui_dataframeViewer = new Ui_DataComboViewer;
-    dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
-    dataframeViewer->setLazy(true);
-    dataframeViewer->setDefaultDir(SessionManager::instance()->defaultLocation("dfDir"));
+//    ui_dataframeViewer = new Ui_DataComboViewer;
+//    dataframeViewer = new DataframeViewer(ui_dataframeViewer, this);
+//    dataframeViewer->setLazy(true);
+//    dataframeViewer->setDefaultDir(SessionManager::instance()->defaultLocation("dfDir"));
 
-    connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
-            dataframeViewer, SLOT(addItem(QString)));
+//    connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+//            dataframeViewer, SLOT(addItem(QString)));
 
 
 //    dataframesWindow = new TableEditor(SessionManager::instance()->descriptionCache,"Dataframes",this);
@@ -269,7 +269,7 @@ expertWindow=new QMainWindow;
 //    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
     explorerTabIdx = lazynutPanel->addTab(objExplorer, tr("Explorer"));
 //    dfTabIdx = explorerPanel->addTab(dataframesWindow, tr("Dataframes"));
-    dfTabIdx = lazynutPanel->addTab(dataframeViewer, tr("All Dataframes"));
+//    dfTabIdx = lazynutPanel->addTab(dataframeViewer, tr("All Dataframes"));
 
 //   outputTablesTabIdx= plotTabIdx = resultsPanel->addTab(plotViewer, tr("Plots"));
 //    outputTablesTabIdx = resultsPanel->addTab(tableWindow, tr("Tables"));
@@ -292,12 +292,12 @@ void MainWindow::connectSignalsAndSlots()
        setFormAndShow(plotViewer->currentItemName());
     });
     connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
-    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+//    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
 
     connect(plotViewer,SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
     connect(dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
-    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+//    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
     connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
 
 //    connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
@@ -319,6 +319,8 @@ void MainWindow::connectSignalsAndSlots()
             this,SLOT(processHistoryKey(int, QString)));
     connect(this,SIGNAL(showHistory(QString)),
             lazyNutConsole,SLOT(showHistory(QString)));
+    connect(lazyNutConsole, SIGNAL(coreDumpRequested()),
+            this, SLOT(coreDump()));
 //    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
 //            trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
@@ -335,22 +337,22 @@ void MainWindow::connectSignalsAndSlots()
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
 //     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
 //             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
-     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-             dataframeViewer, SLOT(addRequestedItem(QString,bool)));
-     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-             dataframeResultsViewer, SLOT(addRequestedItem(QString,bool)));
-     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-             stimSetViewer, SLOT(addRequestedItem(QString,bool)));
-     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-             plotViewer, SLOT(addRequestedItem(QString,bool)));
-     connect(plotViewer, SIGNAL(addDataframeRequested(QString,bool)), dataframeResultsViewer, SLOT(addItem(QString,bool)));
+//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+//             dataframeViewer, SLOT(addRequestedItem(QString,bool)));
+//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+//             dataframeResultsViewer, SLOT(addRequestedItem(QString,bool)));
+//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+//             stimSetViewer, SLOT(addRequestedItem(QString,bool)));
+//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
+//             plotViewer, SLOT(addRequestedItem(QString,bool)));
+//     connect(plotViewer, SIGNAL(addDataframeRequested(QString,bool)), dataframeResultsViewer, SLOT(addItem(QString,bool)));
 
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
 
     connect(dataframeResultsViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(stimSetViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
-    connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
+//    connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(plotViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(diagramWindow,SIGNAL(showModelSettingsSignal()), this,SLOT(showModelSettings()));
     connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
@@ -1030,7 +1032,7 @@ void MainWindow::loadStimulusSet()
 
 void MainWindow::importDataFrame()
 {
-    dataframeViewer->open();
+    dataframeResultsViewer->open();
 //    explorerDock->raise();
 //    explorerPanel->setCurrentIndex(dfTabIdx);
 }
@@ -1238,21 +1240,21 @@ void MainWindow::runTest()
         if (!fileName.isEmpty())
         {
             loadFile(fileName);
-            connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
+//            connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
             runScript();
         }
  //   }
 }
 
-void MainWindow::afterTestsCompleted()
-{
-    //codePanelDock->raise();
-    lazynutPanel->setCurrentIndex(testsTabIdx);
-    displayExpertWindow();
-    qDebug() << "trying to change display";
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
+//void MainWindow::afterTestsCompleted()
+//{
+//    //codePanelDock->raise();
+//    lazynutPanel->setCurrentIndex(testsTabIdx);
+//    displayExpertWindow();
+//    qDebug() << "trying to change display";
+//    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterTestsCompleted()));
 
-}
+//}
 
 void MainWindow::setFormInSettingsWidget(QString name)
 {

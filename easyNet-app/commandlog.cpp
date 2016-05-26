@@ -12,15 +12,15 @@
 #include <QDebug>
 
 CommandLog::CommandLog(QWidget *parent, bool inclNewAct)
-    : EditWindow(parent, true)
+    : EditWindow(parent, inclNewAct)
 {
-    if (!inclNewAct) fileToolBar->removeAction(newAct);
-    fileToolBar->removeAction(openAct);
-    if (!isReadOnly)
-    {
-        editToolBar->removeAction(cutAct);
-        editToolBar->removeAction(pasteAct);
-    }
+//    if (!inclNewAct) fileToolBar->removeAction(newAct);
+//    fileToolBar->removeAction(openAct);
+//    if (!isReadOnly)
+//    {
+//        editToolBar->removeAction(cutAct);
+//        editToolBar->removeAction(pasteAct);
+//    }
     init();
 
     objectListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);

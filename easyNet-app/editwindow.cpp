@@ -12,7 +12,8 @@
 #include "finddialog.h"
 
 EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
-    : QMainWindow(parent), isReadOnly(isReadOnly), textEdit(nullptr)
+    : QMainWindow(parent), isReadOnly(isReadOnly), textEdit(nullptr),
+      newAct(nullptr), openAct(nullptr), cutAct(nullptr), pasteAct(nullptr)
 
 {
     filenameLabel = new QLabel("");
@@ -22,7 +23,7 @@ EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
     setCentralWidget(textEdit);
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
-    setCurrentFile("Untitled");
+    setCurrentFile("");
     createActions();
     createToolBars();
 
@@ -112,6 +113,8 @@ void EditWindow::documentWasModified()
 
 void EditWindow::createActions()
 {
+    if (!isReadOnly)
+    {
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setToolTip(tr("Create a new file"));
@@ -123,7 +126,7 @@ void EditWindow::createActions()
 //    openAct->setShortcutContext(Qt::WidgetShortcut);
     openAct->setToolTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
-
+    }
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
@@ -180,9 +183,9 @@ void EditWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addWidget(filenameLabel);
-    if (newAct)
+    if (!isReadOnly)
         fileToolBar->addAction(newAct);
-    if (openAct)
+    if (!isReadOnly)
         fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
     fileToolBar->addAction(saveAsAct);
@@ -270,7 +273,7 @@ void EditWindow::setCurrentFile(const QString &fileName)
 
     QString shownName = curFile;
     if (curFile.isEmpty())
-        shownName = "Untitled";
+        shownName = isReadOnly ? "" : "Untitled";
     setWindowFilePath(shownName);
     setWindowTitle(strippedName(shownName));
     setFilenameLabel(strippedName(shownName));

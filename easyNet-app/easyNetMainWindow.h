@@ -174,7 +174,7 @@ private slots:
     void setFormAndShow(QString name = "");
     void updateDFComboBox();
     void runTest();
-    void afterTestsCompleted();
+//    void afterTestsCompleted();
     void setFormInSettingsWidget(QString name);
     void switchFormInSettingsWidget(bool visible);
     void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
@@ -298,8 +298,8 @@ public:
     DataframeViewer *stimSetViewer;
     Ui_DataTabsViewer *ui_stimSetViewer;
 //    TableEditor     *dataframesWindow;
-    DataframeViewer *dataframeViewer;
-    Ui_DataComboViewer *ui_dataframeViewer;
+//    DataframeViewer *dataframeViewer;
+//    Ui_DataComboViewer *ui_dataframeViewer;
     DataframeViewer *testViewer;
     Ui_DataTabsViewer *ui_testViewer;
 

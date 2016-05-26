@@ -13,16 +13,16 @@
 #include <QDateTime>
 
 Console::Console(QWidget *parent)
-    : EditWindow(parent)
+    : EditWindow(parent, true)
 {
-    fileToolBar->removeAction(newAct);
-    fileToolBar->removeAction(openAct);
-    editToolBar->removeAction(cutAct);
-    editToolBar->removeAction(pasteAct);
+//    fileToolBar->removeAction(newAct);
+//    fileToolBar->removeAction(openAct);
+//    editToolBar->removeAction(cutAct);
+//    editToolBar->removeAction(pasteAct);
 
     coreDumpAct = new QAction(QIcon(":/images/log.png"), tr("Core Dump"), this);
-    coreDumpAct->setStatusTip(tr("Save the content of the console to file"));
-    connect(coreDumpAct, SIGNAL(triggered()), this, SLOT(coreDump()));
+    coreDumpAct->setStatusTip(tr("Log simulator state to file"));
+    connect(coreDumpAct, SIGNAL(triggered()), this, SIGNAL(coreDumpRequested()));
     fileToolBar->addAction(coreDumpAct);
 
     setStyleSheet("QToolBar {background-color : gray; color : black}");
@@ -98,6 +98,7 @@ void Console::coreDump(QString fileName)
 
 void Console::setConsoleFontSize(int size)
 {
-    textEdit->setFont(QFont("Courier",size*.6));
-    inputCmdLine->setFont(QFont("Courier",size*.6));
+    int jamesMiniaturisationFactor = 1; // 0.6
+    textEdit->setFont(QFont("Courier",size * jamesMiniaturisationFactor));
+    inputCmdLine->setFont(QFont("Courier",size * jamesMiniaturisationFactor));
 }
