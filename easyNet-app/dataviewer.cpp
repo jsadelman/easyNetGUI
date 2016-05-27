@@ -5,6 +5,7 @@
 #include "dataviewerdispatcher.h"
 #include "objectcachefilter.h"
 #include "objectupdater.h"
+#include "xmlelement.h"
 
 
 #include <QAction>
@@ -161,6 +162,11 @@ void DataViewer::addView(QString name)
     ui->addView(name, makeView(name));
     if (!isLazy())
         addNameToFilter(name);
+    QDomDocument *description = SessionManager::instance()->description(name);
+    if (!dispatcher || (description && XMLelement(*description)["hints"]["show"]() == "1"))
+        ui->setCurrentItem(name);
+
+
 }
 
 void DataViewer::removeView(QString name)

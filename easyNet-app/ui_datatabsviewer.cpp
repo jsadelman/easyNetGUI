@@ -22,7 +22,7 @@ QString Ui_DataTabsViewer::currentItemName()
 
 void Ui_DataTabsViewer::setCurrentItem(QString name)
 {
-    tabWidget->setCurrentWidget(viewMap.value(name));
+    tabWidget->setCurrentWidget(viewMap.value(name, nullptr));
 }
 
 QWidget *Ui_DataTabsViewer::currentView()
