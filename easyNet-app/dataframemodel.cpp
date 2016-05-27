@@ -40,7 +40,9 @@ QVariant DataFrameModel::headerData(int section, Qt::Orientation orientation, in
     }
 
     else if (orientation == Qt::Vertical && role == Qt::DisplayRole)
-        return tBody().childNodes().at(section +1).firstChildElement().text();
+        return QString::number(section + 1);
+//        return tBody().childNodes().at(section +1).firstChildElement().text();
+
 
     return QVariant();
 }

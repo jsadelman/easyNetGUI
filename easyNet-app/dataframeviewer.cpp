@@ -257,7 +257,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     }
     modelMap[name] = dfModel;
     view->setModel(modelMap[name]);
-    view->verticalHeader()->hide();
+    view->verticalHeader()->show();
     view->horizontalHeader()->show();
     view->resizeColumnsToContents();
 
