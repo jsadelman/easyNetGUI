@@ -30,6 +30,7 @@ public:
     bool appendView(QString view, QString trial, bool inView=false);
     bool removeView(QString view, QString trial="");
     bool setInView(QString view, QString trial, bool inView);
+    bool setInView(QString view, bool inView);
 
     QModelIndex trialIndex(QString trial);
     QModelIndex viewIndex(QString view, QString trial);

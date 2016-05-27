@@ -188,6 +188,11 @@ bool HistoryTreeModel::setInView(QString view, QString trial, bool inView)
     return setData(viewIndex(view, trial), inView ? QVariant(Qt::Checked) : QVariant(Qt::Unchecked), Qt::CheckStateRole);
 }
 
+bool HistoryTreeModel::setInView(QString view, bool inView)
+{
+    setInView(view, trial(view), inView);
+}
+
 
 QModelIndex HistoryTreeModel::trialIndex(QString trial)
 {

@@ -6,6 +6,7 @@
 #include "dataframeviewer.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
+#include "historytreemodel.h"
 
 #include <QSharedPointer>
 #include <QDomDocument>
@@ -118,6 +119,9 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
     QString results = TrialRunInfo(info).results;
+    if (!historyModel->isInView(results))
+        historyModel->setInView(results, true);
+
 //    updateHistory(results, info);
     switch(currentDispatchAction)
     {
