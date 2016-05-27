@@ -60,6 +60,8 @@ protected slots:
     void sendPlotCmd();
     void displaySVG(QByteArray byteArray, QString cmd);
     void setPlotByteArray(QByteArray byteArray, QString cmd);
+    void storeCopyByteArray(QByteArray byteArray, QString cmd);
+    void assignStoredCopyByteArray();
     void requestAddDataframe(QString name="", bool isBackup=false);
     void restartTimer();
 
@@ -96,6 +98,7 @@ protected:
 //    QMap <QString, bool> plotSourceModified;
     QMap <QString, QByteArray> plotByteArray;
      QMap <QString, double> plotLastRatio;
+     QByteArray copyByteArray;
 
 
 //    QAction *       settingsAct;

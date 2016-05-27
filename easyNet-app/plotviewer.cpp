@@ -163,7 +163,11 @@ void PlotViewer::snapshot(QString name)
     {
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({QString("%1 get %2").arg(name).arg(plotAspectRatio)});
-        job->setAnswerReceiver(this, SLOT(setPlotByteArray(QByteArray, QString)), AnswerFormatterType::SVG);
+        job->setAnswerReceiver(this, SLOT(storeCopyByteArray(QByteArray,QString)), AnswerFormatterType::SVG);
+        job->appendEndOfJobReceiver(this, SLOT(assignStoredCopyByteArray()));
+        QMap<QString, QVariant> jobData;
+        jobData.insert("name", snapshotName);
+        job->data = jobData;
         SessionManager::instance()->submitJobs(job);
     }
 
@@ -412,6 +416,26 @@ void PlotViewer::setPlotByteArray(QByteArray byteArray, QString cmd)
     byteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
     byteArray.replace (QByteArray("</symbol"),QByteArray("</g     "));
     plotByteArray[name] = byteArray;
+}
+
+void PlotViewer::storeCopyByteArray(QByteArray byteArray, QString cmd)
+{
+    Q_UNUSED(cmd)
+    byteArray.replace (QByteArray("<symbol"),QByteArray("<g     "));
+    byteArray.replace (QByteArray("</symbol"),QByteArray("</g     "));
+    copyByteArray = byteArray;
+}
+
+void PlotViewer::assignStoredCopyByteArray()
+{
+    QVariant v = SessionManager::instance()->getDataFromJob(sender(), "name");
+    if (!v.canConvert<QString>())
+    {
+        eNerror << "cannot retrieve a valid string from name key in sender LazyNut job";
+        return;
+    }
+    QString name = v.value<QString>();
+    plotByteArray[name] = copyByteArray;
 }
 
 void PlotViewer::requestAddDataframe(QString name, bool isBackup)
