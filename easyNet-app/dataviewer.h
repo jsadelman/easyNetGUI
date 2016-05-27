@@ -50,6 +50,7 @@ public slots:
     virtual void copy()=0;
     virtual void destroySelectedItems();
     virtual void snapshot(QString name="")=0;
+    virtual void setCurrentItem(QString name);
 
 
 protected slots:
@@ -58,7 +59,6 @@ protected slots:
     void initiateDestroyItem(QString name);
     virtual void destroyItem(QString name);
     virtual void destroyItem_impl(QString name)=0;
-    virtual void setCurrentItem(QString name);
     virtual void enableActions(bool enable);
 //    void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
     void setTrialRunMode(int mode);

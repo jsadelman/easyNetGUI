@@ -145,6 +145,11 @@ bool DataViewerDispatcher::inHistory(QString name)
     return historyModel->containsView(name);
 }
 
+bool DataViewerDispatcher::isInView(QString name)
+{
+    return historyModel->isInView(name);
+}
+
 void DataViewerDispatcher::setInView(QString name, bool inView)
 {
     historyModel->setInView(name, trial(name), inView);
@@ -253,7 +258,7 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
             if (checked == Qt::Checked)
             {
                 hostDataViewer->addView(name);
-                //hostDataViewer->ui->setCurrentItem(name);
+                hostDataViewer->ui->setCurrentItem(name);
             }
             else
             {

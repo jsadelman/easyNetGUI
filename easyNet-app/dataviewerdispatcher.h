@@ -42,6 +42,7 @@ public:
     void addToHistory(QString name, bool inView=false);
     void removeFromHistory(QString name);
     bool inHistory(QString name);
+    bool isInView(QString name);
     void setInView(QString name, bool inView);
     void setTrialRunMode(int mode);
     bool snapshotActive() {return m_snapshotActive;}

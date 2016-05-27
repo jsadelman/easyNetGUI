@@ -1294,17 +1294,19 @@ void MainWindow::switchFormInSettingsWidget(QTabWidget *panel)
 
 void MainWindow::showResultsViewer(QString name)
 {
-    QString type = SessionManager::instance()->descriptionCache->type(name);
     resultsDock->raise();
-/*    if (type == "dataframe")
+    if (SessionManager::instance()->descriptionCache->type(name) == "dataframe")
     {
-        resultsPanel->setCurrentWidget(dataframeResultsViewer);
+        if (!dataframeResultsDispatcher->isInView(name))
+            dataframeResultsDispatcher->setInView(name, true);
     }
-    else if (type == "xfile")
+    else if (SessionManager::instance()->descriptionCache->subtype(name) == "rplot")
     {
-        resultsPanel->setCurrentWidget(plotViewer);
+        if (!plotViewerDispatcher->isInView(name))
+            plotViewerDispatcher->setInView(name, true);
     }
-*/
+    else
+        return;
 }
 
 

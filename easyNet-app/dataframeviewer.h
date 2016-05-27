@@ -39,11 +39,12 @@ public slots:
     void copyDataframe();
     virtual void addRequestedItem(QString name="", bool isBackup=false);
     virtual void snapshot(QString name="") Q_DECL_OVERRIDE {Q_UNUSED(name)}
+    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
+
 
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
-    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
     void updateDataframe(QDomDocument* domDoc, QString name);
     void askGetEntireDataframe();
     void getEntireDataframe();

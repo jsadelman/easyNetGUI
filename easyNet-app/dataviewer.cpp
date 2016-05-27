@@ -250,12 +250,10 @@ void DataViewer::dispatch()
 
 void DataViewer::setCurrentItem(QString name)
 {
-    qDebug() << name <<" " << "!";
     if (name.isEmpty() || name == "<select an item>"  || ! contains(name))
         enableActions(false);
     else
     {
-        qDebug() <<" gotcha";
         enableActions(true);
         if (isLazy())
             setNameInFilter(name);

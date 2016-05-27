@@ -319,7 +319,7 @@ void SessionManager::createDataView(QString name, QString subtype, QString Type,
     job->cmdList = QStringList({
                                    QString("create %1 %2").arg(subtype).arg(name),
                                    QString("%1 set_type %2").arg(name).arg(Type),
-                                   QString("%1 add_hint show %2").arg(name).arg(isBackup ? "0" : "1"),
+//                                   QString("%1 add_hint show %2").arg(name).arg(isBackup ? "0" : "1"),
                                 });
     QMapIterator<QString, QString> settings_it(settings);
     while (settings_it.hasNext())

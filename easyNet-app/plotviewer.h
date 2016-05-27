@@ -42,6 +42,7 @@ public slots:
     void updateAllActivePlots();
     virtual void addRequestedItem(QString name="", bool isBackup=false);
     virtual void snapshot(QString name="") Q_DECL_OVERRIDE;
+    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
 
@@ -53,7 +54,6 @@ protected slots:
     void setupFullScreen();
 //    void addSourceDataframes(QStringList newDataframes=QStringList());
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
-    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
 //    void updatePlot(QString name, QByteArray byteArray);
 //    void updateDependencies(QDomDocument* domDoc, QString name);
     void checkDependencies(QString name);

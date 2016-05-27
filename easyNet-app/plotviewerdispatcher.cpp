@@ -105,6 +105,8 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
     {
 //        SessionManager::instance()->setTrialRunInfo(plot, info);
         updateHistory(plot);
+        if (!isInView(plot))
+            setInView(plot, true);
 //        host->plotIsUpToDate[plot] = false;
     }
     if (infoIsVisible)
