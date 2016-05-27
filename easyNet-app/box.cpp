@@ -304,11 +304,7 @@ void Box::setupDefaultObserverFilter()
         defaultObserverFilter->setFilterKeyColumn(ObjectCache::NameCol);
         defaultObserverUpdater = new ObjectUpdater(this);
         defaultObserverUpdater->setProxyModel(defaultObserverFilter);
-        for (int row = 0; row < defaultObserverFilter->rowCount(); ++row)
-        {
-            QString observer = defaultObserverFilter->data(defaultObserverFilter->index(row, ObjectCache::NameCol)).toString();
-            defaultObserverUpdater->requestObject(observer);
-        }
+
         connect(defaultObserverUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domDoc, QString observer)
         {
             defaultObservers[observer] = XMLelement(*domDoc)["Enabled"]() == "1";
@@ -320,6 +316,11 @@ void Box::setupDefaultObserverFilter()
             else
                 setFillColour(layerCol);
         });
+        for (int row = 0; row < defaultObserverFilter->rowCount(); ++row)
+        {
+            QString observer = defaultObserverFilter->data(defaultObserverFilter->index(row, ObjectCache::NameCol)).toString();
+            defaultObserverUpdater->requestObject(observer);
+        }
 
         plotFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
         plotFilter->setFilterKeyColumn(ObjectCache::NameCol);
