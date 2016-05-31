@@ -156,11 +156,11 @@ void ObjectCache::clear()
     endRemoveRows();
 }
 
-bool ObjectCache::create(const QString &name, const QString &type, const QString &subtype)
+bool ObjectCache::create(QString name, QString type, QString subtype)
 {
     if (rowFromName(name) >= 0) // name exists already
     {
-        qDebug()  << "name exists already:" << name;
+//        qDebug()  << "name exists already:" << name;
         return false;
     }
 

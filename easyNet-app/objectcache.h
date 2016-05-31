@@ -31,7 +31,7 @@ public:
     bool exists(const QString& name);
 
 public slots:
-    bool create(const QString& name, const QString& type, const QString& subtype=QString());
+    bool create(QString name, QString type=QString(), QString subtype=QString());
     bool create(QDomDocument* domDoc);
     bool destroy(QStringList names);
     bool destroy(const QString& name);

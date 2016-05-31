@@ -45,45 +45,22 @@ class ObjExplorer: public QMainWindow
     Q_OBJECT
 
 public:
-    ObjExplorer(ObjectCache *objectCache, QWidget *parent = 0);
-// should be private:
-
-
-//    QTreeView *objTaxonomyView;
-    //QComboBox *cbox;
-//    ComboBoxDelegate *comboBoxDelegate;
+    ObjExplorer(QWidget *parent = 0);
 
 signals:
-//    void beginObjHashModified();
-//    void endObjHashModified();
     void objectSelected(QString);
     void updateDiagramScene();
-
-public slots:
-//    void setObj(LazyNutObj* obj, LazyNutObjCatalogue *objectCatalogue);
-//    void setObjFromListIndex(QModelIndex index);
-//    void setObjFromObjName(QString name);
-//    void updateLazyNutObjCatalogue(QDomDocument *domDoc);
-//    void setTaxonomyView();
-//    void reloadTaxonomy();
-//    void resetLazyNutObjTableModel();
 
 private slots:
     void queryTypes();
     void initTypes(QStringList types);
     void selectType(QString type);
-    void dispatchObjectRequest(QString name);
-//    void getTaxonomySubtypes();
-//    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
-//    void connectTaxonomyModel();
     void triggerFillList(QAbstractItemModel*,const QModelIndex&at,QString cmd);
 public slots:
     void doFillList(QAbstractItemModel*,QDomDocument*dom,const QModelIndex&at);
-//    void setObjFromProxyTableIndex(QModelIndex index);
 
 
 private:
-    ObjectCache  *objectCache;
     //---------- Type list ---------//
     QListWidget *typeList;
     QString allObjectsString;

@@ -24,8 +24,8 @@
 #include "objectupdater.h"
 #include "domitem.h"
 
-ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
-    : objectCache(objectCache), QMainWindow(parent)
+ObjExplorer::ObjExplorer(QWidget *parent)
+    : QMainWindow(parent)
 {
 
     //---------- Type list ---------//
@@ -90,7 +90,11 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
             objectView->resizeColumnToContents(col);
     });
     connect(objectView, SIGNAL(clicked(QModelIndex)), objectModel, SLOT(sendObjectRequested(QModelIndex)));
-    connect(objectModel, SIGNAL(objectRequested(QString)), this, SLOT(dispatchObjectRequest(QString)));
+    connect(objectModel, &LazyNutObjectModel::objectRequested, [=](QString name)
+    {
+        SessionManager::instance()->descriptionCache->create(name);
+    });
+    connect(objectModel, SIGNAL(objectRequested(QString)), descriptionFilter, SLOT(setName(QString)));
     connect(this, SIGNAL(objectSelected(QString)), descriptionFilter, SLOT(setName(QString)));
 
     //------- splitter ----------//
@@ -127,135 +131,6 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
 
 }
 
-//void ObjExplorer::setObj(LazyNutObj* obj, LazyNutObjCatalogue *objHash)
-//{
-//    delete lazyNutObjModel;
-//    lazyNutObjModel = new LazyNutObjModel(obj,objHash,this);
-//    comboBoxDelegate = new ComboBoxDelegate(objHash,this);
-//    lazyNutObjectView->setModel(lazyNutObjModel);
-
-//    foreach(int row, obj->rowsWithStringList())
-//    {
-//        lazyNutObjectView->setItemDelegateForRow(row,comboBoxDelegate);
-//        lazyNutObjectView->openPersistentEditor(lazyNutObjModel->index(row));
-//    }
-
-//    lazyNutObjectView->resizeRowsToContents();
-
-//    connect(comboBoxDelegate,SIGNAL(activatedDelegateIndex(const QModelIndex&,int)),
-//            lazyNutObjModel, SLOT(getObjFromDescriptionIndex(const QModelIndex,int)));
-//    connect(lazyNutObjectView, SIGNAL(clicked(const QModelIndex&)),
-//            lazyNutObjModel, SLOT(getObjFromDescriptionIndex(const QModelIndex&)));
-//    connect(lazyNutObjTableProxyModel,SIGNAL(getObj(const QModelIndex&)),
-//            lazyNutObjModel, SLOT(getObjFromCatalogueIndex(const QModelIndex&)));
-//    connect(lazyNutObjModel, SIGNAL(showObj(LazyNutObj*, LazyNutObjCatalogue*)),
-//            this, SLOT(setObj(LazyNutObj*, LazyNutObjCatalogue*)));
-
-//    emit (objectSelected(objHash->key(obj)));
-
-//}
-
-//void ObjExplorer::setObjFromListIndex(QModelIndex index)
-//{
-////    setObjFromObjName(lazyNutObjectListModel->data(index,Qt::DisplayRole).toString());
-//    setObjFromObjName(lazyNutObjTableModel->data(index,Qt::DisplayRole).toString());
-
-//}
-
-//void ObjExplorer::setObjFromObjName(QString name)
-//{
-//    AsLazyNutObject *lno = objectCatalogue->value(name);
-//    if (!lno)
-//        return;
-////    if (lazyNutObjectModel)
-////        delete lazyNutObjectModel;
-
-//    objectModel = new LazyNutObjectModel(lno);
-//    QAbstractItemModel *oldModel = objectView->model();
-//    QItemSelectionModel *oldSelectionModel = objectView->selectionModel();
-//    objectView->setModel(objectModel);
-//    if (oldSelectionModel)
-//    {
-////        oldModel->deleteLater();
-//        oldSelectionModel->deleteLater();
-//    }
-//    objectView->expandAll();
-//    objectView->resizeColumnToContents(0);
-//    objectView->resizeColumnToContents(1);
-//    connect(objectView,SIGNAL(clicked(QModelIndex)),
-//            objectModel,SLOT(getObjFromDescriptionIndex(QModelIndex)));
-//    connect(objectModel,SIGNAL(objectRequested(QString)),
-//            this,SLOT(setObjFromObjName(QString)));
-//    emit objectSelected(name);
-//}
-
-//void ObjExplorer::updateLazyNutObjCatalogue(QDomDocument *domDoc)
-//{
-////    qDebug () << domDoc->toString();
-//    AsLazyNutObject *newObj = new AsLazyNutObject(domDoc);
-////    QString name = newObj->name();
-////    lazyNutObjTableModel->sendBeginResetModel();
-//    delete objectCatalogue->value(newObj->name);
-//    objectCatalogue->insert(newObj->name,newObj);
-////    connect(lazyNutObjectView,SIGNAL(clicked(QModelIndex)),
-////            newObj,SLOT(getObjFromDescriptionIndex(QModelIndex)));
-////    connect(newObj,SIGNAL(objectRequested(QString)),
-////            this,SLOT(setObjFromObjName(QString)));
-////    lazyNutObjTableModel->sendEndResetModel();
-//    //emit objCatalogueChanged();
-//}
-
-//void ObjExplorer::createTaxonomy()
-//{
-//    objTaxonomyModel = new TreeModel(QStringList({"type"}));
-
-//    taxListView = new QListView;
-//    taxColumnView = new QColumnView;
-//    taxTreeView = new QTreeView;
-//    taxTreeView->setHeaderHidden(true);
-
-//    taxViewMap["list"] = taxListView;
-//    taxViewMap["column"] = taxColumnView;
-//    taxViewMap["tree"] = taxTreeView;
-
-
-//    taxWidget = new QStackedWidget;
-//    foreach(QString view, taxViewMap.keys())
-//    {
-//        taxWidget->addWidget(taxViewMap[view]);
-//        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setSelectionMode(QAbstractItemView::SingleSelection);
-//        qobject_cast<QAbstractItemView*>(taxViewMap[view])->setEditTriggers(QAbstractItemView::NoEditTriggers);
-//    }
-
-//    createTaxonomyMenu();
-//}
-
-//void ObjExplorer::createTaxonomyMenu()
-//{
-//    taxonomyMenu = menuBar()->addMenu("Taxonomy");
-//    taxonomyMenu->addAction("Reload", this, SLOT(reloadTaxonomy()));
-//    QMenu *taxViewMenu = taxonomyMenu->addMenu("View mode");
-//    foreach(QString view, taxViewMap.keys())
-//       taxViewMenu->addAction(view, this, SLOT(setTaxonomyView()));
-
-//}
-
-//void ObjExplorer::setTaxonomyView()
-//{
-//    taxWidget->setCurrentWidget(taxViewMap.value(qobject_cast<QAction*>(sender())->text()));
-//}
-
-//void ObjExplorer::reloadTaxonomy()
-//{
-//    if (SessionManager::instance()->isOn())
-//        getTypes();
-//}
-
-//void ObjExplorer::resetLazyNutObjTableModel()
-//{
-//    lazyNutObjTableModel->sendBeginResetModel();
-//    lazyNutObjTableModel->sendEndResetModel();
-//}
 
 void ObjExplorer::queryTypes()
 {
@@ -280,22 +155,6 @@ void ObjExplorer::selectType(QString type)
     else
         objectListFilter->setType(type);
 }
-
-void ObjExplorer::dispatchObjectRequest(QString name)
-{
-    if (SessionManager::instance()->exists(name))
-        descriptionFilter->setName(name);
-    else
-    {
-        // objects that do exist but do not appear in recently_*
-        LazyNutJob *job = new LazyNutJob;
-        job->cmdList << QString("xml %1 description").arg(name);
-        job->setAnswerReceiver(objectModel, SLOT(updateDescription(QDomDocument*)), AnswerFormatterType::XML);
-        SessionManager::instance()->submitJobs(job);
-    }
-}
-
-
 
 localListFiller::~localListFiller()
 {

@@ -147,7 +147,7 @@ expertWindow=new QMainWindow;
 
     lazyNutConsole = new Console(this);
 
-    objExplorer = new ObjExplorer(SessionManager::instance()->descriptionCache,this);
+    objExplorer = new ObjExplorer(this);
     scriptEdit = new ScriptEditor(SessionManager::instance()->defaultLocation("scriptsDir"), this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
