@@ -90,7 +90,7 @@ ObjExplorer::ObjExplorer(ObjectCache *objectCache, QWidget *parent)
             objectView->resizeColumnToContents(col);
     });
     connect(objectView, SIGNAL(clicked(QModelIndex)), objectModel, SLOT(sendObjectRequested(QModelIndex)));
-    connect(objectModel, SIGNAL(objectRequested(QString)), descriptionFilter, SLOT(setName(QString)));
+    connect(objectModel, SIGNAL(objectRequested(QString)), this, SLOT(dispatchObjectRequest(QString)));
     connect(this, SIGNAL(objectSelected(QString)), descriptionFilter, SLOT(setName(QString)));
 
     //------- splitter ----------//
@@ -279,6 +279,20 @@ void ObjExplorer::selectType(QString type)
         objectListFilter->setNoFilter();
     else
         objectListFilter->setType(type);
+}
+
+void ObjExplorer::dispatchObjectRequest(QString name)
+{
+    if (SessionManager::instance()->exists(name))
+        descriptionFilter->setName(name);
+    else
+    {
+        // objects that do exist but do not appear in recently_*
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList << QString("xml %1 description").arg(name);
+        job->setAnswerReceiver(objectModel, SLOT(updateDescription(QDomDocument*)), AnswerFormatterType::XML);
+        SessionManager::instance()->submitJobs(job);
+    }
 }
 
 

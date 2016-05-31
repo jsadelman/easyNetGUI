@@ -72,6 +72,7 @@ private slots:
     void queryTypes();
     void initTypes(QStringList types);
     void selectType(QString type);
+    void dispatchObjectRequest(QString name);
 //    void getTaxonomySubtypes();
 //    void setTaxonomySubtypes(QStringList subtypes, QString cmd);
 //    void connectTaxonomyModel();
