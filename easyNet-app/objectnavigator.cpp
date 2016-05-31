@@ -10,7 +10,7 @@
 #include <QTreeView>
 #include <QHeaderView>
 #include <QToolBar>
-
+#include <QAction>
 #include <QDebug>
 
 ObjectNavigator::ObjectNavigator(QWidget *parent)
@@ -58,6 +58,7 @@ void ObjectNavigator::setObject(QString name)
     SessionManager::instance()->descriptionCache->create(name);
     descriptionFilter->setName(name);
     show();
+    raise();
     currentObject = name;
 }
 
