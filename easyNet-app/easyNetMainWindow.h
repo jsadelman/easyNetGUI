@@ -19,6 +19,7 @@ class QDomDocument;
 class PlotViewer;
 class PlotViewerDispatcher;
 class ObjExplorer;
+class ObjectNavigator;
 class DesignWindow;
 class LazyNut;
 class SessionManager;
@@ -259,7 +260,7 @@ public:
 
     Console        *lazyNutConsole;
     ObjExplorer      *objExplorer;
-
+    ObjectNavigator  *objNavigator;
     QDockWidget     *dockWelcome;
     QDockWidget     *dockWebWelcome;
     QDockWidget     *dockEdit;

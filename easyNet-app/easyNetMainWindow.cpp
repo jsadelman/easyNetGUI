@@ -25,6 +25,7 @@
 #include "easyNetMainWindow.h"
 #include "treemodel.h"
 #include "objexplorer.h"
+#include "objectnavigator.h"
 #include "designwindow.h"
 #include "codeeditor.h"
 #include "sessionmanager.h"
@@ -148,6 +149,8 @@ expertWindow=new QMainWindow;
     lazyNutConsole = new Console(this);
 
     objExplorer = new ObjExplorer(this);
+    objNavigator = new ObjectNavigator(this);
+    objNavigator->hide();
     scriptEdit = new ScriptEditor(SessionManager::instance()->defaultLocation("scriptsDir"), this);
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
@@ -325,8 +328,12 @@ void MainWindow::connectSignalsAndSlots()
 //            trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
-    connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-    connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+//    connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
+//    connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
+
+    connect(modelScene,SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
+    connect(objExplorer, SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
+
     connect(modelScene,SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>, bool)),
             dataViewSettingsWidget,SLOT(newForm(QString,QString,QString,QMap<QString,QString>, bool)));
 //    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, bool)),

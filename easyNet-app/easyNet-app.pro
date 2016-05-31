@@ -118,6 +118,8 @@ SOURCES +=  \
     modelsettingsdisplay.cpp \
     settingswidget.cpp \
     floatingdialogwindow.cpp \
+    objectnavigator.cpp \
+    objecttreeview.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -218,6 +220,8 @@ HEADERS  += \
     modelsettingsdisplay.h \
     settingswidget.h \
     floatingdialogwindow.h \
+    objectnavigator.h \
+    objecttreeview.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

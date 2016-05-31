@@ -188,5 +188,7 @@
         <file>images/rpm-ia.png</file>
         <file>images/PMSP_3_recurrent.png</file>
         <file>images/ltrs.png</file>
+        <file>images/Forward.png</file>
+        <file>images/Back.png</file>
     </qresource>
 </RCC>

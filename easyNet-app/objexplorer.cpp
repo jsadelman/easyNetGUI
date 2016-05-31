@@ -1,28 +1,19 @@
-#include <QtWidgets>
-#include <QtGlobal>
-#include <QtDebug>
 #include <QComboBox>
 #include <QStringList>
 #include <QListView>
-#include <QTreeView>
+#include <QListWidget>
 #include <QSplitter>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QItemSelectionModel>
 
 
 #include "objexplorer.h"
-#include "lazynutobject.h"
-#include "lazynutobjectmodel.h"
 #include "sessionmanager.h"
 #include "lazynutjob.h"
-#include "xmlelement.h"
 #include "expandtofillbutton.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
-#include "objectupdater.h"
-#include "domitem.h"
 
 ObjExplorer::ObjExplorer(QWidget *parent)
     : QMainWindow(parent)
@@ -52,50 +43,11 @@ ObjExplorer::ObjExplorer(QWidget *parent)
 
     //--------- Description ----------//
 
-    descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-
     connect(objectListView->selectionModel(), &QItemSelectionModel::currentChanged, [=](const QModelIndex & index)
     {
-        descriptionFilter->setName(objectListFilter->data(index).toString());
+        emit objectSelected(objectListFilter->data(index).toString());
     });
 
-    descriptionFilter->setName("<no name>");
-    descriptionUpdater = new ObjectUpdater(this);
-    descriptionUpdater->setProxyModel(descriptionFilter);
-
-    objectModel = new LazyNutObjectModel(nullptr, this);
-    connect(descriptionFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
-            objectModel, SLOT(setDescription(QString, QString, QString, QDomDocument*)));
-    connect(descriptionFilter, SIGNAL(objectDestroyed(QString)),
-            objectModel, SLOT(removeDescription(QString)));
-    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
-            objectModel, SLOT(updateDescription(QDomDocument*)));
-
-
-
-    objectView = new QTreeView;
-    objectView->setModel(objectModel);
-    objectView->header()->setStretchLastSection(true);
-    objectView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    objectView->setSelectionMode(QAbstractItemView::SingleSelection);
-    expandToFillButton = new ExpandToFillButton(objectView);
-    objectView->setItemDelegateForColumn(1, expandToFillButton);
-    connect(expandToFillButton, SIGNAL(expandToFill(QAbstractItemModel*,const QModelIndex&,QString)),
-              this, SLOT(triggerFillList(QAbstractItemModel*,const QModelIndex&,QString)));
-    connect(objectModel, &QAbstractItemModel::modelReset, [=]()
-    {
-        objectView->expandAll();
-        //objectView->expand(objectModel->index(0,0));
-        for (int col=0; col < objectView->model()->columnCount(); ++col)
-            objectView->resizeColumnToContents(col);
-    });
-    connect(objectView, SIGNAL(clicked(QModelIndex)), objectModel, SLOT(sendObjectRequested(QModelIndex)));
-    connect(objectModel, &LazyNutObjectModel::objectRequested, [=](QString name)
-    {
-        SessionManager::instance()->descriptionCache->create(name);
-    });
-    connect(objectModel, SIGNAL(objectRequested(QString)), descriptionFilter, SLOT(setName(QString)));
-    connect(this, SIGNAL(objectSelected(QString)), descriptionFilter, SLOT(setName(QString)));
 
     //------- splitter ----------//
 
@@ -103,7 +55,7 @@ ObjExplorer::ObjExplorer(QWidget *parent)
     splitter->setOrientation(Qt::Horizontal);
     splitter->addWidget(typeList);
     splitter->addWidget(objectListView);
-    splitter->addWidget(objectView);
+//    splitter->addWidget(objectView);
 
     setWindowTitle(tr("Object Explorer"));
     setCentralWidget(splitter);
@@ -155,24 +107,3 @@ void ObjExplorer::selectType(QString type)
     else
         objectListFilter->setType(type);
 }
-
-localListFiller::~localListFiller()
-{
-}
-
-void ObjExplorer::triggerFillList(QAbstractItemModel*qaim,const QModelIndex&at,QString cmd)
-{
-    auto llf=new localListFiller(qaim,this,at,cmd);
-}
-
-void ObjExplorer::doFillList(QAbstractItemModel*qaim,QDomDocument* dom,const QModelIndex&at)
-{
-    auto lno=dynamic_cast<LazyNutObjectModel*>(qaim);
-    if(!lno) qDebug()<<"failed to find a LazyNutObjectModel";
-    else lno->pokeAdditionalDescription(at,dom);
-}
-
-//void ObjExplorer::setObjFromProxyTableIndex(QModelIndex index)
-//{
-//    setObjFromObjName(lazyNutObjectTableProxy->data(index,Qt::DisplayRole).toString());
-//}
