@@ -391,8 +391,7 @@ void MainWindow::connectSignalsAndSlots()
         errorLog->clear();
         rLog->clear();
         debugLog->clear();
-
-
+        objNavigator->reset();
     });
 
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString cmd, QString error)

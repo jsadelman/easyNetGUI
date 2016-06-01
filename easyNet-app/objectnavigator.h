@@ -28,6 +28,7 @@ public:
 
 public slots:
     void setObject(QString name);
+    void reset();
 
 private slots:
     void forward();

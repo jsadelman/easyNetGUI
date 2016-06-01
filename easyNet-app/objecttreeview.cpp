@@ -42,7 +42,7 @@ void ObjectTreeView::setModel(QAbstractItemModel *_objectModel)
 
 QSize ObjectTreeView::minimumSizeHint() const
 {
-    return QSize(header()->length() + 20, qApp->desktop()->screenGeometry().height()/2 );
+    return QSize(header()->length(), qApp->desktop()->screenGeometry().height()/2 );
 }
 
 void ObjectTreeView::doFillList(QDomDocument *dom)

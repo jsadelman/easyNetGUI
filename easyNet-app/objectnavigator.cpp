@@ -61,6 +61,16 @@ void ObjectNavigator::setObject(QString name)
     currentObject = name;
 }
 
+void ObjectNavigator::reset()
+{
+    backwardStack.clear();
+    forwardStack.clear();
+    backwardAct->setEnabled(false);
+    forwardAct->setEnabled(false);
+    currentObject.clear();
+    descriptionFilter->setNoFilter();
+}
+
 void ObjectNavigator::forward()
 {
     backwardStack.push(currentObject);
