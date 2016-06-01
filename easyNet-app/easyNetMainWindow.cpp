@@ -836,6 +836,7 @@ void MainWindow::loadModel()
 
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
 {
+    bool mode = (QGuiApplication::keyboardModifiers() != Qt::ControlModifier);
     if (item->text()=="custom")
     {
         // bring up file dialog
@@ -844,13 +845,13 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
                                                         tr("easyNet Model Files (*.eNm)"));
     //    diagramPanel->hide();
         if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
-        loadModel(fileName,true);
+        loadModel(fileName,mode);
 
     }
     else
     {
         diagramPanel->useFake(modelTabIdx,true);
-        loadModel(SessionManager::instance()->defaultLocation("modelsDir")+"/"+item->text()+".eNm",true);
+        loadModel(SessionManager::instance()->defaultLocation("modelsDir")+"/"+item->text()+".eNm",mode);
     }
     modelChooser->setCurrentItem(nullptr);
     modelChooser->hide();
