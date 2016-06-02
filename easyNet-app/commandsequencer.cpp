@@ -34,17 +34,18 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
 
     foreach (QString cmd, commands)
     {
+        // make sure a cmd is actually a single line, otherwise chop it in lines
+        // otherwise parsing error will occur (actually a crash)
         // skip empty lines, which do not trigger any response from lazyNut
-        if ((!emptyLineRex.exactMatch(cmd)) && (!cmd.startsWith("#")))
-            commandList.append(cmd);
+        // don't send comments, just are not necessary
+        foreach (QString cmdLine, cmd.split(QRegExp("[\r\n]"),QString::SkipEmptyParts))
+            if (!(cmdLine.startsWith("#") || emptyLineRex.exactMatch(cmdLine)))
+                commandList.append(cmdLine+"\n");
     }
-//    commandList.append(commandsToRun);
-
     if (commandList.size() == 0)
     {
         // the user has selected only empty lines (by mistake)
         // or an empty job was sent
-        // (on purpose, e.g. for terminating a macro from a slot designated as next job slot)
 //        qDebug() << "empty cmdList";
         emit jobExecuted();
         return;
@@ -53,7 +54,6 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
     emit commandsInJob(commandList.size());
     emit isReady(ready);
 
-//    qDebug() << "BUSY" << "first cmd: " << commandList.first();
 
 
     // send cmds to lazyNut without removing them from commandList
