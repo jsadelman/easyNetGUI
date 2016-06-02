@@ -13,6 +13,7 @@
 #include "settingsform.h"
 #include "dataframemergesettingsformdialog.h"
 #include "xmlelement.h"
+#include "parametersproxymodel.h"
 
 
 #include <QSettings>
@@ -28,7 +29,6 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
-//    dataframeUpdater->setCommand("get");
     dataframeUpdater->setCommand(QString("get 1-%1 1-%2").arg(maxRows).arg(maxCols));
     dataframeUpdater->setProxyModel(dataframeFilter);
     connect(dataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
@@ -58,6 +58,11 @@ void DataframeViewer::setParametersTable(bool isParametersTable)
     ui->settingsAct->setVisible(!isParametersTable);
     plotButton->setVisible(!isParametersTable);
     dataframeViewButton->setVisible(!isParametersTable);
+    if (m_parametersTable)
+        dataframeUpdater->setCommand("get");
+    else
+        dataframeUpdater->setCommand(QString("get 1-%1 1-%2").arg(maxRows).arg(maxCols));
+
     emit parametersTableChanged(isParametersTable);
 }
 
@@ -186,8 +191,12 @@ void DataframeViewer::addRequestedItem(QString name, bool isBackup)
 
 void DataframeViewer::destroyItem_impl(QString name)
 {
-        delete modelMap.value(name, nullptr);
-        modelMap.remove(name);
+    delete modelMap.value(name, nullptr);
+    if (parametersTable())
+    {
+        referenceProxyMap.remove(name);
+    }
+    modelMap.remove(name);
 }
 
 void DataframeViewer::enableActions(bool enable)
@@ -226,44 +235,63 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
     dfModel->setName(name);
     if (parametersTable())
+    {
         connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
                 this, SLOT(setParameter(QString,QString)));
+        if (referenceProxyMap.value(name, nullptr))
+            referenceProxyMap.value(name)->setReferenceModel(dfModel);
+    }
 
-    // needs to be changed for splitters
+    bool isNew = !modelMap.value(name, nullptr);
     QTableView *view = qobject_cast<QTableView*>(ui->view(name));
-    if (!modelMap.value(name))
+    if (isNew && view)
     {
         if (dragDropColumns())
         {
-             DataFrameHeader* dragDropHeader = new DataFrameHeader(view);
-             view->setHorizontalHeader(dragDropHeader);
-             dragDropHeader->setTableName(name);
-             connect(dragDropHeader, SIGNAL(columnDropped(QString)),
-                     MainWindow::instance()->trialWidget, SLOT(showSetLabel(QString)));
-             connect(dragDropHeader, SIGNAL(restoreComboBoxText()),
-                     MainWindow::instance()->trialWidget, SLOT(restoreComboBoxText()));
+            DataFrameHeader* dragDropHeader = new DataFrameHeader(view);
+            view->setHorizontalHeader(dragDropHeader);
+            dragDropHeader->setTableName(name);
+            connect(dragDropHeader, SIGNAL(columnDropped(QString)),
+                    MainWindow::instance()->trialWidget, SLOT(showSetLabel(QString)));
+            connect(dragDropHeader, SIGNAL(restoreComboBoxText()),
+                    MainWindow::instance()->trialWidget, SLOT(restoreComboBoxText()));
         }
         if (parametersTable())
             view->setEditTriggers(QAbstractItemView::AllEditTriggers);
         else
             view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     }
-    else
+    else if (!isNew)
     {
         DataFrameModel *oldDFmodel = modelMap.value(name);
-        QItemSelectionModel *m = view->selectionModel();
+        QItemSelectionModel *m = view ? view->selectionModel() : nullptr;
         delete oldDFmodel;
         delete m;
     }
     modelMap[name] = dfModel;
-    view->setModel(modelMap[name]);
-    view->verticalHeader()->show();
-    view->horizontalHeader()->show();
-    view->resizeColumnsToContents();
-
-//    ui->setCurrentItem(name);
-    enableActions(true);
     limitedGet(name, maxFirstDisplayCells);
+    if (view)
+    {
+        if (parametersTable())
+        {
+            ParametersProxyModel *proxy = new ParametersProxyModel(modelMap[name]);
+            proxy->setSourceModel(modelMap[name]);
+            QString ref = reference(name);
+            if (modelMap.value(ref, nullptr))
+                proxy->setReferenceModel(modelMap.value(ref));
+            if (!ref.isEmpty())
+                referenceProxyMap[ref] = proxy;
+            view->setModel(proxy);
+        }
+        else
+        {
+            view->setModel(modelMap[name]);
+        }
+        view->verticalHeader()->show();
+        view->horizontalHeader()->show();
+        view->resizeColumnsToContents();
+    }
+    enableActions(true);
 }
 
 void DataframeViewer::askGetEntireDataframe()
@@ -414,9 +442,27 @@ void DataframeViewer::sendNewDataViewRequest(QAction *action, QString subtype)
     SessionManager::instance()->createDataView(dataViewName, subtype, dataViewScript, settings, false, true);
 }
 
+QString DataframeViewer::reference(QString name)
+{
+    if (parametersTable())
+    {
+        QDomDocument *description = SessionManager::instance()->description(name);
+        if (description && !XMLelement(*description)["history"].listValues().isEmpty())
+            return XMLelement(*description)["history"].listValues().first();
+        return QString();
+    }
+    return QString();
+}
+
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
+    if (parametersTable())
+    {
+        QString ref = reference(name);
+        if (!ref.isEmpty())
+            addItem(ref, true);
+    }
 }
 
 QWidget *DataframeViewer::makeView(QString name)
@@ -427,10 +473,8 @@ QWidget *DataframeViewer::makeView(QString name)
 
 void DataframeViewer::addNameToFilter(QString name)
 {
-    if (SessionManager::instance()->exists(name))
-    {
-        dataframeFilter->addName(name);
-    }
+    SessionManager::instance()->dataframeCache->create(name); // for hidden items
+    dataframeFilter->addName(name);
 }
 
 void DataframeViewer::removeNameFromFilter(QString name)
@@ -440,6 +484,7 @@ void DataframeViewer::removeNameFromFilter(QString name)
 
 void DataframeViewer::setNameInFilter(QString name)
 {
+    SessionManager::instance()->dataframeCache->create(name); // for hidden items
     dataframeFilter->setName(name);
 }
 
@@ -535,7 +580,7 @@ void DataframeViewer::limitedGet(QString name, int maxCells)
 {
     if (maxCells < 1)
         return;
-    QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name);
+    QDomDocument *description = SessionManager::instance()->description(name);
     if (!description)
         return;
     int rows = XMLelement(*description)["rows"]().toInt();

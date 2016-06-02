@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QSharedPointer>
 #include <QMap>
+#include <QSet>
 
 class Ui_DataViewer;
 class DataViewerDispatcher;
@@ -33,13 +34,14 @@ public:
     void addView(QString name);
     void removeView(QString name);
     QString currentItemName();
-    QStringList items() {return m_items;}
+    QStringList items() {return m_items.toList();}
     QString name() {return m_name;}
     void setName(QString txt) {m_name = txt;}
+    bool isHidden(QString name) {return hiddenItems.contains(name);}
 
 
 public slots:
-    void addItem(QString name="", bool isBackup=false);
+    void addItem(QString name="", bool hidden=false);
     virtual void addRequestedItem(QString name="", bool isBackup=false) =0;
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
@@ -90,8 +92,8 @@ protected:
     QString lastSaveDir;
     QString defaultSaveDir;
     bool m_lazy;
-    QMap<QString, bool> isBackupMap;
-    QStringList m_items;
+    QSet<QString> m_items;
+    QSet<QString> hiddenItems;
     QString m_name;
 };
 

@@ -27,6 +27,7 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     descriptionUpdater->setProxyModel(descriptionFilter);
     connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(execAddItem(QDomDocument*,QString)));
     m_items.clear();
+    hiddenItems.clear();
 }
 
 DataViewer::~DataViewer()
@@ -56,7 +57,6 @@ void DataViewer::setUi()
 
 void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
 {
-
     Q_UNUSED(domDoc)
     if (name.isEmpty())
     {
@@ -76,17 +76,20 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
     else
     {
         addItem_impl(name);
+        m_items.insert(name);
+        if (isHidden(name))
+        {
+            addNameToFilter(name); // keep up to date but don't show in view
+            return;
+        }
         if (dispatcher)
         {
             dispatcher->addToHistory(name);
-            isBackupMap.remove(name);
         }
         else
         {
             addView(name);
-//            ui->setCurrentItem(name);
         }
-        m_items.append(name);
     }
 }
 
@@ -127,7 +130,8 @@ void DataViewer::destroyItem(QString name)
         dispatcher->removeFromHistory(name);
     destroyItem_impl(name);
     removeView(name);
-    m_items.removeAll(name);
+    m_items.remove(name);
+    hiddenItems.remove(name);
     emit itemRemoved(name);
 }
 
@@ -144,11 +148,12 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
 
 bool DataViewer::contains(QString name)
 {
-    if (dispatcher)
-        return dispatcher->inHistory(name);
-    if (ui)
-        return ui->contains(name);
-    return false;
+    return m_items.contains(name);
+//    if (dispatcher)
+//        return dispatcher->inHistory(name);
+//    if (ui)
+//        return ui->contains(name);
+//    return false;
 }
 
 void DataViewer::setDefaultDir(QString dir)
@@ -182,7 +187,7 @@ QString DataViewer::currentItemName()
     return ui->currentItemName();
 }
 
-void DataViewer::addItem(QString name, bool isBackup)
+void DataViewer::addItem(QString name, bool hidden)
 {
     if (name.isEmpty())
     {
@@ -193,29 +198,35 @@ void DataViewer::addItem(QString name, bool isBackup)
             return;
         }
         name = v.value<QString>();
-        v = SessionManager::instance()->getDataFromJob(sender(), "isBackup");
+        v = SessionManager::instance()->getDataFromJob(sender(), "hidden");
         if (v.canConvert<bool>())
-            isBackup = v.value<bool>();
+            hidden = v.value<bool>();
     }
     if (name.isEmpty())
     {
         eNerror << "name is empty";
         return;
     }
+    if (contains(name))
+        return;
+
+    if (hidden)
+        hiddenItems.insert(name);
+
     if (SessionManager::instance()->exists(name))
     {
-        isBackupMap[name] = isBackup;
         descriptionFilter->addName(name);
     }
     else if (SessionManager::instance()->extraNamedItems().contains(name))
     {
-        isBackupMap[name] = isBackup;
+        // e.g. plot snapshots do not correspond to any lazynut object
         execAddItem(nullptr, name);
     }
     else
     {
-        eNerror << QString("name %1 is not recognised as valid").arg(name);
-        return;
+        // e.g. (hidden) reference parameter df does not appear in recently_*
+        SessionManager::instance()->descriptionCache->create(name);
+        descriptionFilter->addName(name);
     }
 }
 

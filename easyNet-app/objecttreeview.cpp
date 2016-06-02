@@ -33,7 +33,7 @@ void ObjectTreeView::setModel(QAbstractItemModel *_objectModel)
             expandAll();
             for (int col=0; col < model()->columnCount(); ++col)
                 resizeColumnToContents(col);
-            updateGeometry();
+//            updateGeometry();
         });
     }
     else

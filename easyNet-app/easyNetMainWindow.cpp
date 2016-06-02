@@ -161,6 +161,9 @@ expertWindow=new QMainWindow;
     rLog = new CommandLog(this, true);
 
     debugLog = new DebugLog (this);
+    QTableView *objCacheView = new QTableView(this);
+    objCacheView->setModel(SessionManager::instance()->descriptionCache);
+
 //    welcomeScreen = new QWebView(this);
 //    welcomeScreen->setUrl(QUrl("qrc:///images/Welcome.html"));
 //    stimSetForm = new TableEditor ("Stimuli",this);
@@ -268,6 +271,7 @@ expertWindow=new QMainWindow;
     testsTabIdx = lazynutPanel->addTab(testViewer, tr("Tests"));
     scriptTabIdx = lazynutPanel->addTab(scriptEdit, tr("Script"));
     lazynutPanel->addTab(debugLog, tr("Debug log"));
+    lazynutPanel->addTab(objCacheView, tr("Object Cache"));
 
 //    infoTabIdx = explorerPanel->addTab(infoWindow, tr("Info"));
     explorerTabIdx = lazynutPanel->addTab(objExplorer, tr("Explorer"));
