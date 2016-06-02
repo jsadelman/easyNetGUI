@@ -154,7 +154,7 @@ void PlotViewer::snapshot(QString name)
     QString snapshotName = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(name));
     SessionManager::instance()->addToExtraNamedItems(snapshotName);
     SessionManager::instance()->setTrialRunInfo(snapshotName, SessionManager::instance()->trialRunInfo(name));
-    addItem(snapshotName, true);
+    addItem(snapshotName);
     if (plotIsUpToDate.value(name))
     {
         setPlotByteArray(plotByteArray.value(name), snapshotName);
@@ -199,7 +199,7 @@ void PlotViewer::open()
         QFileInfo fi(fileName);
         QString plotName = SessionManager::instance()->makeValidObjectName(fi.completeBaseName());
         SessionManager::instance()->addToExtraNamedItems(plotName);
-        addItem(plotName, false);
+        addItem(plotName);
         displaySVG(byteArray, plotName);
         lastOpenDir = fi.path();
     }

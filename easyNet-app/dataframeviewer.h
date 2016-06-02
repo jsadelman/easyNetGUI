@@ -8,6 +8,7 @@
 #include <QTextDocument>
 
 class DataFrameModel;
+class ParametersProxyModel;
 class QTableView;
 class ObjectCacheFilter;
 class ObjectUpdater;
@@ -72,10 +73,12 @@ protected:
     void limitedGet(QString name, int maxCells);
     void doCopy();
     void sendNewDataViewRequest(QAction *action, QString subtype);
+    QString reference(QString name);
 
 
 
     QMap<QString, DataFrameModel*> modelMap;
+    QMap<QString, ParametersProxyModel*> referenceProxyMap; // only if parametersTable()
     ObjectCacheFilter *dataframeFilter;
     ObjectUpdater *dataframeUpdater;
     QStringList requestedDataframeViews;
