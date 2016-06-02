@@ -338,7 +338,7 @@ bool ObjectCache::changeSubtype(const QString &name, const QString &subtype)
 
 QString ObjectCache::nameFromCmd(QString cmd)
 {
-    cmd.remove(QRegExp("^\\s*xml\\s+|\\s+description\\s*$|\\s+get.*$"));
+    cmd.remove(QRegExp("^\\s*xml\\s+|\\s+description\\s*$|\\s+get\\s.*$"));
     return cmd.simplified();
 }
 
