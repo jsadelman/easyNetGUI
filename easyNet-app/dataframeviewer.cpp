@@ -274,9 +274,11 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     {
         if (parametersTable())
         {
+            QString ref = reference(name);
+            if (!ref.isEmpty() && !contains(ref))
+                addItem(ref, true);
             ParametersProxyModel *proxy = new ParametersProxyModel(modelMap[name]);
             proxy->setSourceModel(modelMap[name]);
-            QString ref = reference(name);
             if (modelMap.value(ref, nullptr))
                 proxy->setReferenceModel(modelMap.value(ref));
             if (!ref.isEmpty())
@@ -457,12 +459,6 @@ QString DataframeViewer::reference(QString name)
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
-    if (parametersTable())
-    {
-        QString ref = reference(name);
-        if (!ref.isEmpty())
-            addItem(ref, true);
-    }
 }
 
 QWidget *DataframeViewer::makeView(QString name)
