@@ -254,9 +254,18 @@ public:
     FloatingDialogWindow* paramSettingsDialog;
     FloatingDialogWindow* dataViewSettingsDialog;
 
-    QListWidget* modelChooser;
+    QWidget*modelChooser;
+    QListWidget* modelChooserI;
     QHBoxLayout *modelChooserLayout;
-    QMap<QString,QString> modelList;
+    struct modelInfo
+    {
+        QString name;
+        QString eNmFile;
+        QString logo;
+        modelInfo(QString n="",QString m="",QString l=""):name(n),eNmFile(m),logo(l){}
+    };
+    QList<modelInfo> modelList;
+    int fontSize;
 
     Console        *lazyNutConsole;
     ObjExplorer      *objExplorer;

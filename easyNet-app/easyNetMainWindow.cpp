@@ -798,36 +798,50 @@ void MainWindow::buildModelChooser()
 {
     delete modelChooserLayout;
     delete modelChooser;
+    delete modelChooserI;
 
     modelChooserLayout = new QHBoxLayout;
-    modelChooser  = new QListWidget;
-    modelChooser->setFlow(QListView::TopToBottom);
-    modelChooser->setViewMode(QListView::IconMode);
-    modelChooser->setMovement(QListView::Static);
-    modelChooser->resize(QSize(800,670));
+    modelChooserI  = new QListWidget;
+    modelChooser = new QWidget;
+    modelChooserI->setFlow(QListView::LeftToRight);
+    modelChooserI->setViewMode(QListView::IconMode);
+//    modelChooserI->setMovement(QListView::Static);
 
 
-    modelList["IA"]="Models/ia/ia.eNm";
-    modelList["Bilingual IA"]="Models/bia/bia.eNm";
-    modelList["CDP+"]="Models/cdpplus/cdpplus.eNm";
-    modelList["Spatial Coding"]="Models/scm/scm.eNm";
-    modelList["Relative Position"]="Models/rpm-ia/rpm-ia.eNm";
-    modelList["LTRS"]="Models/ltrs/ltrs_regex.eNm";
-    modelList["PMSP (recurrent)"]="Models/pmsp/PMSP_3_recurrent.eNm";
-    modelList["Load from file"]="";
+    modelList << modelInfo("IA","Models/ia/ia.eNm",":images/ia.png");
+    modelList << modelInfo("Bilingual IA","Models/bia/bia.eNm",":images/bia.png");
+    modelList<< modelInfo("CDP+","Models/cdpplus/cdpplus.eNm",":images/cdpplus.png");
+    modelList<< modelInfo("Spatial Coding","Models/scm/SCM.eNm",":images/SCM.png");
+    modelList<< modelInfo("Relative Position","Models/rpm-ia/rpm-ia.eNm",":images/rpm-ia.png");
+    modelList<< modelInfo("LTRS","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
+    modelList<< modelInfo("PMSP (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
+    modelList<< modelInfo("Load from file","Models/",":images/custom.png");
+    modelList<< modelInfo("New","",":images/new.png");
 
 
     for(auto model=modelList.begin();model!=modelList.end();++model)
-            modelChooser->addItem(new QListWidgetItem(QIcon(
-                                  ":/images/"+model.key()+".png"), model.key()));
-
-    modelChooser->setIconSize(QSize(250,250));
+    {
+        QIcon icon(model->logo);
+        modelChooserI->addItem(new QListWidgetItem(icon
+                                  , model->name));
+    }
+    modelChooserI->setIconSize(QSize(250,250-fontSize));
+    modelChooserI->setGridSize(QSize(250,250));
+    modelChooserI->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    modelChooserI->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    modelChooser->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    modelChooserI->setResizeMode(QListView::Adjust);
+    double l=modelList.length();
+    int w=std::ceil(std::sqrt(l));
+    int h=std::ceil(l/w);
+    QSize xx(w*250+80,h*250+60);
+    qDebug()<<xx;
+    modelChooser->resize(xx);
+    modelChooserLayout->addWidget(modelChooserI);
+    modelChooser->setLayout(modelChooserLayout);
     modelChooser->show();
-//    modelDialog = new QDialog(this);
-    modelChooserLayout->addWidget(modelChooser, 0, Qt::AlignHCenter);
-//    dialogLayout->addWidget(modelChooser);
-//    modelDialog->setLayout(dialogLayout);
-    connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
+
+    connect(modelChooserI, SIGNAL(itemClicked(QListWidgetItem*)),
             this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
 //    connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
 //            modelDialog, SLOT(accept()));
@@ -849,8 +863,18 @@ void MainWindow::loadModel()
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
 {
     bool mode = (QGuiApplication::keyboardModifiers() != Qt::ControlModifier);
-    QString eNmFile=modelList[item->text()];
-    if (eNmFile=="")
+    QString eNmFile;
+    for(auto x:modelList)
+    {
+        if(x.name==item->text())
+          eNmFile=x.eNmFile;
+    }
+    if(eNmFile=="")
+    {
+        modelChooser->hide();
+        return;
+    }
+    if (eNmFile.right(1)=="/")
     {
         // bring up file dialog
         QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
@@ -866,7 +890,7 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
         diagramPanel->useFake(modelTabIdx,true);
         loadModel(eNmFile,true);
     }
-    modelChooser->setCurrentItem(nullptr);
+    modelChooserI->setCurrentItem(nullptr);
     modelChooser->hide();
 }
 
@@ -1416,7 +1440,6 @@ void MainWindow::setNewEasyNetDir(QString env)
 
 void MainWindow::setFontSize(const QString & size)
 {
-    int fontSize;
     if (size == "small")
         fontSize = EN_FONT_SMALL;
     else if (size == "medium")
