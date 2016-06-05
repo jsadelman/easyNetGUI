@@ -796,9 +796,9 @@ void MainWindow::loadModel(QString fileName,bool complete)
 
 void MainWindow::buildModelChooser()
 {
+    delete modelChooserI;
     delete modelChooserLayout;
     delete modelChooser;
-    delete modelChooserI;
 
     modelChooserLayout = new QHBoxLayout;
     modelChooserI  = new QListWidget;
@@ -807,7 +807,7 @@ void MainWindow::buildModelChooser()
     modelChooserI->setViewMode(QListView::IconMode);
 //    modelChooserI->setMovement(QListView::Static);
 
-
+    modelList.clear();
     modelList << modelInfo("IA","Models/ia/ia.eNm",":images/ia.png");
     modelList << modelInfo("Bilingual IA","Models/bia/bia.eNm",":images/bia.png");
     modelList<< modelInfo("CDP+","Models/cdpplus/cdpplus.eNm",":images/cdpplus.png");
@@ -871,9 +871,8 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
     }
     if(eNmFile=="")
     {
-        modelChooser->hide();
-        return;
-    }
+        modelChooser->close();
+    }else
     if (eNmFile.right(1)=="/")
     {
         // bring up file dialog
