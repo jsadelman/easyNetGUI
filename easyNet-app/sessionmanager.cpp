@@ -98,6 +98,7 @@ SessionManager::SessionManager()
             this, SLOT(updateModelStageCompleted(QDomDocument*)));
     connect(this, SIGNAL(easyNetHomeChanged()), this, SLOT(setDefaultLocations()));
     connect(this, SIGNAL(easyNetDataHomeChanged()), this, SLOT(setDefaultLocations()));
+    connect(this, SIGNAL(easyNetUserHomeChanged()), this, SLOT(setDefaultLocations()));
 
     m_defaultLocation.clear();
     lazyNutBasename = QString("lazyNut.%1").arg(lazyNutExt);
@@ -161,12 +162,23 @@ void SessionManager::startLazyNut()
         killingLazyNut = false;
     });
 
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QSettings settings("easyNet", "GUI");
     QString easyNetHome = QDir::toNativeSeparators(settings.value("easyNetHome","../..").toString());
     QString easyNetDataHome = QDir::toNativeSeparators(settings.value("easyNetDataHome",easyNetHome).toString());
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    QString enuh=QString(
+            #ifdef _WIN32
+                getenv("USERPROFILE")
+            #else
+                getenv("HOME")
+            #endif
+                )+"/easyNet_files"
+               ;
+    QString easyNetUserHome = QDir::toNativeSeparators(settings.value("easyNetUserHome",
+                                                                      enuh).toString());
     env.insert("EASYNET_HOME", easyNetHome);
     env.insert("EASYNET_DATA_HOME", easyNetDataHome);
+    env.insert("EASYNET_USER_HOME", easyNetUserHome);
     lazyNut->setProcessEnvironment(env);
     lazyNut->setWorkingDirectory(QFileInfo(defaultLocation("lazyNutBat")).absolutePath());
     lazyNut->setProgram(defaultLocation("lazyNutBat"));
@@ -191,6 +203,8 @@ QString SessionManager::easyNetDir(QString env)
         return easyNetHome();
     else if (env == "easyNetDataHome")
         return easyNetDataHome();
+    else if (env == "easyNetUserHome")
+        return easyNetUserHome();
     return QString();
 }
 
@@ -210,12 +224,22 @@ void SessionManager::setEasyNetDataHome(QString dir)
     emit easyNetDataHomeChanged();
 }
 
+void SessionManager::setEasyNetUserHome(QString dir)
+{
+    m_easyNetUserHome = dir;
+    QSettings settings("easyNet", "GUI");
+    settings.setValue("easyNetUserHome", dir);
+    emit easyNetUserHomeChanged();
+}
+
 void SessionManager::setEasyNetDir(QString env, QString dir)
 {
     if (env == "easyNetHome")
         setEasyNetHome(dir);
     else if (env == "easyNetDataHome")
         setEasyNetDataHome(dir);
+    else if (env == "easyNetUserHome")
+        setEasyNetUserHome(dir);
     return;
 }
 
@@ -619,14 +643,14 @@ void SessionManager::lazyNutProcessError(int error)
 void SessionManager::setDefaultLocations()
 {
     m_defaultLocation["lazyNutBat"]   =   QString("%1/%2/nm_files/%3").arg(easyNetHome()).arg(binDir).arg(lazyNutBasename);
-    m_defaultLocation["modelsDir"]    =   QString("%1/Models").arg(easyNetDataHome());
+    m_defaultLocation["modelsDir"]    =   QString("%1/Models").arg(easyNetUserHome());
     m_defaultLocation["scriptsDir"]   =   QString("%1/Scripts").arg(easyNetDataHome());
     m_defaultLocation["testsDir"]     =   QString("%1/Tests").arg(easyNetDataHome());
     m_defaultLocation["trialsDir"]    =   QString("%1/Trials").arg(easyNetDataHome());
     m_defaultLocation["stimDir"]      =   QString("%1/Databases/Stimulus_files").arg(easyNetDataHome());
     m_defaultLocation["dfDir"]        =   QString("%1/Databases").arg(easyNetDataHome());
     m_defaultLocation["rPlotsDir"]    =   QString("%1/%2/R-library/plots").arg(easyNetHome()).arg(binDir);
-    m_defaultLocation["outputDir"]    =   QString("%1/Output_files").arg(easyNetHome());
+    m_defaultLocation["outputDir"]    =   QString("%1/Outputs").arg(easyNetUserHome());
     m_defaultLocation["rDataframeViewsDir"]    =   QString("%1/%2/R-library/dataframe_views").arg(easyNetHome()).arg(binDir);
 }
 

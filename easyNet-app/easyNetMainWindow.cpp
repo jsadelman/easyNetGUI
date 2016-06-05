@@ -1128,7 +1128,7 @@ void MainWindow::loadFile(const QString &fileName)
 void MainWindow::readSettings()
 {
     QSettings settings("easyNet", "GUI");
-    QString easyNetHome, easyNetDataHome;
+    QString easyNetHome, easyNetDataHome,easyNetUserHome;
 
     easyNetHome = settings.value("easyNetHome").toString();
     if(easyNetHome.isEmpty())
@@ -1151,6 +1151,29 @@ void MainWindow::readSettings()
     if (easyNetDataHome.isEmpty() || !dir.exists())
         easyNetDataHome = easyNetHome;
     SessionManager::instance()->setEasyNetDataHome(easyNetDataHome);
+
+    easyNetUserHome = settings.value("easyNetUserHome").toString();
+    if(easyNetUserHome.isEmpty())
+    {
+        if (qEnvironmentVariableIsSet("EASYNET_USER_HOME"))
+            easyNetUserHome = QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_USER_HOME")));
+    }
+    dir.setPath(easyNetUserHome);
+    if (easyNetDataHome.isEmpty() || !dir.exists())
+    {
+        easyNetUserHome=QDir::fromNativeSeparators(QString(
+                #ifdef _WIN32
+                    getenv("USERPROFILE")
+                #else
+                    getenv("HOME")
+                #endif
+                    )+"/easyNet_files"
+                   );
+        SessionManager::instance()->setEasyNetUserHome(easyNetUserHome);
+
+    }
+
+    SessionManager::instance()->setEasyNetUserHome(easyNetUserHome);
 
     settings.beginGroup("mainWindow");
     restoreGeometry(settings.value("geometry").toByteArray());
@@ -1373,7 +1396,7 @@ void MainWindow::viewSettings()
     {
         settingsDialog = new QDialog;
         QFormLayout *dialogLayout = new QFormLayout;
-        foreach(QString env, QStringList({"easyNetHome", "easyNetDataHome"}))
+        foreach(QString env, QStringList({"easyNetHome", "easyNetDataHome", "easyNetUserHome"}))
         {
             settingsDialogLineEdits[env] = new QLineEdit(SessionManager::instance()->easyNetDir(env), settingsDialog);
             settingsDialogLineEdits[env]->setReadOnly(true);
@@ -1419,12 +1442,18 @@ void MainWindow::setNewEasyNetHome()
 
 void MainWindow::setNewEasyNetDataHome()
 {
-   setNewEasyNetDir("easyNetDataHome");
+    setNewEasyNetDir("easyNetDataHome");
 }
+void MainWindow::setNewEasyNetUserHome()
+{
+    setNewEasyNetDir("easyNetUserHome");
+}
+
+
 
 void MainWindow::setNewEasyNetDir(QString env)
 {
-    if (!(env == "easyNetHome" || env == "easyNetDataHome"))
+    if (!(env == "easyNetHome" || env == "easyNetDataHome" || env=="easyNetUserHome"))
         return;
     if (!proceedWithRestartOk())
         return;

@@ -52,6 +52,7 @@ public:
     QString currentSet() {return m_currentSet;}
     QString easyNetHome() {return m_easyNetHome;}
     QString easyNetDataHome() {return m_easyNetDataHome;}
+    QString easyNetUserHome() {return m_easyNetUserHome;}
     QString easyNetDir(QString env);
     QString defaultLocation(QString env) {return m_defaultLocation.value(env, QString());}
 
@@ -102,6 +103,7 @@ public:
     ObjectCache *dataframeCache;
 
 
+    void setEasyNetUserHome(QString dir);
 signals:
 
     // send output to editor
@@ -137,6 +139,7 @@ signals:
       void currentSetChanged(QString);
 
     void lazyNutFinished(bool);
+    void easyNetUserHomeChanged();
     void easyNetDataHomeChanged();
     void easyNetHomeChanged();
 
@@ -190,6 +193,7 @@ private:
     // locations
     QString m_easyNetHome;
     QString m_easyNetDataHome;
+    QString m_easyNetUserHome;
     QMap<QString, QString> m_defaultLocation;
 
     QString         lazyNutExt;

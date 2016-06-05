@@ -144,6 +144,7 @@ private slots:
     void updateSettings(QString env="");
     void setNewEasyNetHome();
     void setNewEasyNetDataHome();
+    void setNewEasyNetUserHome();
 
 //    void showPauseState(bool isPaused);
     void getVersion();
