@@ -231,7 +231,6 @@ public:
     QString         quietMode;
     QString         df_name_for_updating_combobox;
 
-    QStringList     modelList;
     QStringList     trialList;
 
     QList<QPair<QString, QString> > errors;
@@ -257,6 +256,7 @@ public:
 
     QListWidget* modelChooser;
     QHBoxLayout *modelChooserLayout;
+    QMap<QString,QString> modelList;
 
     Console        *lazyNutConsole;
     ObjExplorer      *objExplorer;

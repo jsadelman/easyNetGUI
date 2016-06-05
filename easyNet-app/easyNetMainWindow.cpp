@@ -806,12 +806,20 @@ void MainWindow::buildModelChooser()
     modelChooser->setMovement(QListView::Static);
     modelChooser->resize(QSize(800,670));
 
-    QStringList modelList = QStringList() << "ia" << "bia" << "drc"
-                                          << "cdpplus" << "SCM" << "rpm-ia"
-                                          << "ltrs" << "PMSP_3_recurrent" << "custom";
-    foreach (QString modelName,modelList)
+
+    modelList["IA"]="Models/ia/ia.eNm";
+    modelList["Bilingual IA"]="Models/bia/bia.eNm";
+    modelList["CDP+"]="Models/cdpplus/cdpplus.eNm";
+    modelList["Spatial Coding"]="Models/scm/scm.eNm";
+    modelList["Relative Position"]="Models/rpm-ia/rpm-ia.eNm";
+    modelList["LTRS"]="Models/ltrs/ltrs_regex.eNm";
+    modelList["PMSP (recurrent)"]="Models/pmsp/PMSP_3_recurrent.eNm";
+    modelList["Load from file"]="";
+
+
+    for(auto model=modelList.begin();model!=modelList.end();++model)
             modelChooser->addItem(new QListWidgetItem(QIcon(
-                                  ":/images/"+modelName+".png"), modelName));
+                                  ":/images/"+model.key()+".png"), model.key()));
 
     modelChooser->setIconSize(QSize(250,250));
     modelChooser->show();
@@ -841,7 +849,8 @@ void MainWindow::loadModel()
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
 {
     bool mode = (QGuiApplication::keyboardModifiers() != Qt::ControlModifier);
-    if (item->text()=="custom")
+    QString eNmFile=modelList[item->text()];
+    if (eNmFile=="")
     {
         // bring up file dialog
         QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
@@ -855,7 +864,7 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
     else
     {
         diagramPanel->useFake(modelTabIdx,true);
-        loadModel(SessionManager::instance()->defaultLocation("modelsDir")+"/"+item->text()+".eNm",mode);
+        loadModel(eNmFile,true);
     }
     modelChooser->setCurrentItem(nullptr);
     modelChooser->hide();
