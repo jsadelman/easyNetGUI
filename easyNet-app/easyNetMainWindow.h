@@ -257,7 +257,9 @@ public:
 
     QWidget*modelChooser;
     QListWidget* modelChooserI;
-    QHBoxLayout *modelChooserLayout;
+    QToolBar* mcTaskBar;
+    QAction* mcSetting;
+    QVBoxLayout *modelChooserLayout;
     struct modelInfo
     {
         QString name;

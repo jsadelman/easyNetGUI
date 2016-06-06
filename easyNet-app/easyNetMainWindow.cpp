@@ -119,7 +119,10 @@ MainWindow::MainWindow(QWidget *parent)
       m_trialListLength(0),
       settingsDialog(nullptr),
       modelChooser(nullptr),
-      modelChooserLayout(nullptr)
+      modelChooserLayout(nullptr),
+      modelChooserI(nullptr),
+      mcTaskBar(nullptr),
+      mcSetting(nullptr)
 {
     errors.clear();
 }
@@ -796,13 +799,17 @@ void MainWindow::loadModel(QString fileName,bool complete)
 
 void MainWindow::buildModelChooser()
 {
+    delete mcTaskBar;
     delete modelChooserI;
     delete modelChooserLayout;
     delete modelChooser;
-
-    modelChooserLayout = new QHBoxLayout;
+    modelChooserLayout = new QVBoxLayout;
     modelChooserI  = new QListWidget;
     modelChooser = new QWidget;
+    mcTaskBar=new QToolBar;
+    mcTaskBar->setOrientation(Qt::Horizontal);
+    mcSetting=mcTaskBar->addAction(QIcon(":/images/cog-4x.png"),tr("Model Settings"));
+    mcSetting->setCheckable(true);
     modelChooserI->setFlow(QListView::LeftToRight);
     modelChooserI->setViewMode(QListView::IconMode);
 //    modelChooserI->setMovement(QListView::Static);
@@ -834,9 +841,10 @@ void MainWindow::buildModelChooser()
     double l=modelList.length();
     int w=std::ceil(std::sqrt(l));
     int h=std::ceil(l/w);
-    QSize xx(w*250+80,h*250+60);
+    QSize xx(w*250+80,h*250+60+mcTaskBar->sizeHint().height() );
     qDebug()<<xx;
     modelChooser->resize(xx);
+    modelChooserLayout->addWidget(mcTaskBar);
     modelChooserLayout->addWidget(modelChooserI);
     modelChooser->setLayout(modelChooserLayout);
     modelChooser->show();
@@ -862,7 +870,8 @@ void MainWindow::loadModel()
 
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
 {
-    bool mode = (QGuiApplication::keyboardModifiers() != Qt::ControlModifier);
+    bool mode = (QGuiApplication::keyboardModifiers() != Qt::ControlModifier) &&
+             (!mcSetting->isChecked());
     QString eNmFile;
     for(auto x:modelList)
     {
@@ -887,7 +896,7 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
     else
     {
         diagramPanel->useFake(modelTabIdx,true);
-        loadModel(eNmFile,true);
+        loadModel(eNmFile,mode);
     }
     modelChooserI->setCurrentItem(nullptr);
     modelChooser->hide();
