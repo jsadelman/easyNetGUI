@@ -796,14 +796,16 @@ void MainWindow::loadModel(QString fileName,bool complete)
 
 void MainWindow::buildModelChooser()
 {
+    delete modelChooserI;
     delete modelChooserLayout;
     delete modelChooser;
 
     modelChooserLayout = new QHBoxLayout;
-    modelChooser  = new QListWidget;
-    modelChooser->setFlow(QListView::LeftToRight);
-    modelChooser->setViewMode(QListView::IconMode);
-//    modelChooser->setMovement(QListView::Static);
+    modelChooserI  = new QListWidget;
+    modelChooser = new QWidget;
+    modelChooserI->setFlow(QListView::LeftToRight);
+    modelChooserI->setViewMode(QListView::IconMode);
+//    modelChooserI->setMovement(QListView::Static);
 
     modelList.clear();
     modelList << modelInfo("IA","Models/ia/ia.eNm",":images/ia.png");
@@ -820,27 +822,27 @@ void MainWindow::buildModelChooser()
     for(auto model=modelList.begin();model!=modelList.end();++model)
     {
         QIcon icon(model->logo);
-        modelChooser->addItem(new QListWidgetItem(icon
+        modelChooserI->addItem(new QListWidgetItem(icon
                                   , model->name));
     }
-    modelChooser->setIconSize(QSize(250,250-fontSize));
-    modelChooser->setGridSize(QSize(250,250));
-    modelChooser->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    modelChooserI->setIconSize(QSize(250,250-fontSize));
+    modelChooserI->setGridSize(QSize(250,250));
+    modelChooserI->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    modelChooserI->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     modelChooser->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    modelChooser->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    modelChooser->setResizeMode(QListView::Adjust);
+    modelChooserI->setResizeMode(QListView::Adjust);
     double l=modelList.length();
     int w=std::ceil(std::sqrt(l));
     int h=std::ceil(l/w);
-    QSize xx(w*250+32,h*250+10);
+    QSize xx(w*250+80,h*250+60);
     qDebug()<<xx;
     modelChooser->resize(xx);
-//    modelChooserLayout->addWidget(modelChooser);
-//    modelChooser->setLayout(modelChooserLayout);
+    modelChooserLayout->addWidget(modelChooserI);
+    modelChooser->setLayout(modelChooserLayout);
     modelChooser->show();
 
-    connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
-            this, SLOT(modelChoosertemClicked(QListWidgetItem*)));
+    connect(modelChooserI, SIGNAL(itemClicked(QListWidgetItem*)),
+            this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
 //    connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
 //            modelDialog, SLOT(accept()));
 
@@ -860,7 +862,7 @@ void MainWindow::loadModel()
 
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
 {
-    bool mode = !(QGuiApplication::keyboardModifiers() & Qt::ControlModifier);
+    bool mode = (QGuiApplication::keyboardModifiers() != Qt::ControlModifier);
     QString eNmFile;
     for(auto x:modelList)
     {
@@ -887,7 +889,7 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
         diagramPanel->useFake(modelTabIdx,true);
         loadModel(eNmFile,true);
     }
-    modelChooser->setCurrentItem(nullptr);
+    modelChooserI->setCurrentItem(nullptr);
     modelChooser->hide();
 }
 
