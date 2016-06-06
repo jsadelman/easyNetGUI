@@ -255,8 +255,7 @@ public:
     FloatingDialogWindow* paramSettingsDialog;
     FloatingDialogWindow* dataViewSettingsDialog;
 
-    QWidget*modelChooser;
-    QListWidget* modelChooserI;
+    QListWidget* modelChooser;
     QHBoxLayout *modelChooserLayout;
     struct modelInfo
     {
