@@ -840,7 +840,7 @@ void MainWindow::buildModelChooser()
     modelChooser->show();
 
     connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
-            this, SLOT(modelChoosertemClicked(QListWidgetItem*)));
+            this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
 //    connect(modelChooser, SIGNAL(itemClicked(QListWidgetItem*)),
 //            modelDialog, SLOT(accept()));
 
