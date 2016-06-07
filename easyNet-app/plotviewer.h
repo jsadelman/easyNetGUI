@@ -32,7 +32,6 @@ class PlotViewer: public DataViewer
 public:
     PlotViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     ~PlotViewer();
-//    QString plotType(QString name);
     void sendPlotCmd(QString name);
 
 public slots:
@@ -42,21 +41,15 @@ public slots:
     void updateAllActivePlots();
     virtual void addRequestedItem(QString name="", bool isBackup=false);
     virtual void snapshot(QString name="") Q_DECL_OVERRIDE;
-    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
+    virtual bool setCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
 
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
-//    void dfSourceModified(QString df);
-//    void generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument* domDoc);
     void setupFullScreen();
-//    void addSourceDataframes(QStringList newDataframes=QStringList());
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
-//    void updatePlot(QString name, QByteArray byteArray);
-//    void updateDependencies(QDomDocument* domDoc, QString name);
-    void checkDependencies(QString name);
     void sendPlotCmd();
     void displaySVG(QByteArray byteArray, QString cmd);
     void setPlotByteArray(QByteArray byteArray, QString cmd);
@@ -67,7 +60,6 @@ protected slots:
 
 
 signals:
-//     void resized(QSize);
      void setPlotSettings(QString);
      void removePlotSettings(QString);
      void addDataframeRequested(QString, bool);
@@ -81,27 +73,20 @@ protected:
      void updateActivePlots();
      QSvgWidget *currentSvgWidget();
      void addExtraActions();
-//     QString cloneRPlot(QString name, QString newName=QString());
      void paintEvent(QPaintEvent * event);
      void resizeEvent(QResizeEvent*);
 
     bool            pend;
     double          plotAspectRatio;
     QTimer*         resizeTimer;
-    ObjectCacheFilter *dependenciesFilter;
-    ObjectUpdater     *dependenciesUpdater;
 
-//    ObjectCacheFilter *plotDescriptionFilter;
     QMap <QString, bool> plotIsActive;
     QMap <QString, bool> plotIsUpToDate;
-//    QMultiMap <QString, QString> plotDependencies;
-//    QMap <QString, bool> plotSourceModified;
     QMap <QString, QByteArray> plotByteArray;
      QMap <QString, double> plotLastRatio;
      QByteArray copyByteArray;
 
 
-//    QAction *       settingsAct;
     QAction *       fullScreenAct;
     bool            fullScreen;
     QSize           fullScreenSize;

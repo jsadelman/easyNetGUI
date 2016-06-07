@@ -67,7 +67,7 @@ void SettingsWidget::sendSettings(QString name, bool force)
     if (form)
     {
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList = form->getSettingsCmdList(force);
+        job->cmdList = form->getSettingsCmdList(); // force
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job;
         if (force)
@@ -218,22 +218,7 @@ void SettingsWidget::buildSettingsForm()
     bool isBackup(false);
     if (jobData.contains("isBackup"))
         isBackup = jobData.value("isBackup").toBool();
-//    int flags = 0;
-//    if (jobData.contains("flags"))
-//        flags = jobData.value("flags").toInt();
-//    SessionManager::instance()->setPlotFlags(name, flags);
 
-//    QList<QSharedPointer<QDomDocument> > info;
-//    QVariant v = SessionManager::instance()->getDataFromJob(sender(), "trialRunInfo");
-//    if (v.canConvert<QList<QVariant> >())
-//    {
-//        foreach(QVariant vi, v.toList())
-//        {
-//            if (vi.canConvert<QSharedPointer<QDomDocument> >())
-//                info.append(vi.value<QSharedPointer<QDomDocument> >());
-//        }
-//    }
-    // add values != NULL or "" to defaultSettings
     QMap<QString, QString> completeDefaultSettings;
     QDomElement domElement = currentSettings->documentElement().firstChildElement();
     while (!domElement.isNull())
@@ -326,38 +311,13 @@ void SettingsWidget::emitDataViewCreated()
     emit dataViewCreated(name, false);
 }
 
-//void SettingsWidget::createActions()
-//{
-//    reloadScriptAct = new QAction(this);
-//    reloadScriptAct->setShortcuts(QKeySequence::Refresh);
-//    reloadScriptAct->setToolTip("reload current settings form from R script");
-//    connect(reloadScriptAct, SIGNAL(triggered()), this, SLOT(reloadScript()));
-
-//    applyAct = new QAction(this);
-//    applyAct->setToolTip("apply current settings");
-//    connect(applyAct, &QAction::triggered, this, [=]{
-//        if (!currentName.isEmpty())
-//        {
-//            sendSettings();
-//        }
-//    });
-//}
-
 void SettingsWidget::buildWidget()
 {
     reloadScriptButton = new QPushButton("Reload script",this);
-//    reloadScriptButton->setAutoRaise(true);
-//    reloadScriptButton->setDefaultAction(reloadScriptAct);
-//    reloadScriptButton->setIcon(QIcon(":/images/refresh.png"));
-//    reloadScriptButton->setIconSize(QSize(40, 40));
     connect(reloadScriptButton, SIGNAL(clicked()), this, SLOT(reloadScript()));
     connect(MainWindow::instance(), SIGNAL(debugModeChanged(bool)), reloadScriptButton, SLOT(setVisible(bool)));
 
     applyButton = new QPushButton("Apply", this);
-//    applyButton->setAutoRaise(true);
-//    applyButton->setDefaultAction(applyAct);
-//    applyButton->setIcon(QIcon(":/images/media-play-8x.png"));
-//    applyButton->setIconSize(QSize(40, 40));
     connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
 
     QVBoxLayout *buttonsLayout = new QVBoxLayout;

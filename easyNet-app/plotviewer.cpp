@@ -4,7 +4,6 @@
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "easyNetMainWindow.h"
-//#include "plotsettingswindow.h"
 #include "xmlelement.h"
 #include "lazynutjob.h"
 #include "plotviewerdispatcher.h"
@@ -63,30 +62,10 @@ PlotViewer::PlotViewer(Ui_DataViewer *ui, QWidget *parent)
        if (dispatcher)
            dispatcher->updateInfo(name);
     });
-//    connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(updateDependencies(QDomDocument*,QString)));
 
     resizeTimer = new QTimer(this);
     connect(resizeTimer,SIGNAL(timeout()),this,SLOT(resizeTimeout()));
-    // an ObjectUpdater is used otherwise an ObjectCacheFilter would send three times objectModified after an object is modified,
-    // i.e. invalid true, invalid false, domDoc. In fact, all dataframes are also updated elsewhere.
-    // In the near future it will be possible to setSubtype, thus saving descriptions.
-    dependenciesFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    dependenciesUpdater = new ObjectUpdater(this);
-    dependenciesUpdater->setProxyModel(dependenciesFilter);
-    connect(dependenciesUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*, QString name)
-    {
-        checkDependencies(name);
-    });
-    dependenciesFilter->setType("dataframe");
 
-
-//    plotDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-//    plotDescriptionFilter->setFilterKeyColumn(ObjectCache::NameCol);
-//    plotDescriptionUpdater = new ObjectUpdater(this);
-//    plotDescriptionUpdater->setProxyModel(plotDescriptionFilter);
-//    connect(plotDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString, QDomDocument*)),
-//            this, SLOT(generatePrettyName(QString,QString,QString, QDomDocument*)));
-//    descriptionFilter->setType("xfile");
     addExtraActions();
     fullScreenSvgDialog = new FullScreenSvgDialog(this);
     auto temp=QApplication::desktop()->availableGeometry();
@@ -101,13 +80,6 @@ PlotViewer::~PlotViewer()
 {
 }
 
-//QString PlotViewer::plotType(QString name)
-//{
-//    if (QDomDocument *description = SessionManager::instance()->descriptionCache->getDomDoc(name))
-//        return QFileInfo(XMLelement(*description)["Type"]()).fileName();
-
-//    return QString();
-//}
 
 void PlotViewer::sendPlotCmd(QString name)
 {
@@ -180,8 +152,6 @@ void PlotViewer::destroyItem_impl(QString name)
     plotByteArray.remove(name);
     plotIsUpToDate.remove(name);
     plotLastRatio.remove(name);
-//    plotSourceModified.remove(name);
-//    plotDependencies.remove(name);
 }
 
 void PlotViewer::open()
@@ -235,32 +205,15 @@ void PlotViewer::resizeTimeout()
 {
     resizeTimer->stop();
     QSize size = ui->centralWidget()->size();
-    plotAspectRatio = double(size.width())/size.height();
-    updateAllActivePlots();
+    double ratio = double(size.width())/size.height();
+    if (ratio/plotAspectRatio < 0.9 || ratio/plotAspectRatio > 1.1)
+    {
+        plotAspectRatio = ratio;
+        updateAllActivePlots();
+    }
 }
 
-//void PlotViewer::dfSourceModified(QString df)
-//{
-//    foreach (QString plot, SessionManager::instance()->plotsOfSourceDf(df))
-//    {
-//        if (plotIsActive.value(plot))
-//        {
-////            plotSourceModified[plot] = true;
-//            updateActivePlots();
-//        }
-//    }
-//}
 
-//void PlotViewer::generatePrettyName(QString plotName, QString type, QString subtype, QDomDocument *domDoc)
-//{
-//    Q_UNUSED(type)
-//    Q_UNUSED(subtype)
-//    Q_UNUSED(domDoc)
-//    QString prettyName = plotName;
-//    prettyName.remove(".plot");
-//    prettyName.replace(".", " ");
-//    SessionManager::instance()->setPrettyName(plotName, prettyName);
-//}
 
 void PlotViewer::setupFullScreen()
 {
@@ -280,54 +233,16 @@ void PlotViewer::setupFullScreen()
     fullScreen = false;
 }
 
-//void PlotViewer::addSourceDataframes(QStringList newDataframes)
-//{
-//    if (newDataframes.isEmpty())
-//    {
-//        QVariant dfVariant = SessionManager::instance()->getDataFromJob(sender(), "newDataframes");
-//        if (!dfVariant.canConvert<QStringList>())
-//        {
-//            eNerror << "cannot retrieve a valid string from newDataframes key in sender LazyNut job";
-//            return;
-//        }
-//        newDataframes = dfVariant.toStringList();
-//        if (newDataframes.isEmpty())
-//        {
-//            eNerror << "QStringList from newDataframes key in sender LazyNut job is empty";
-//            return;
-//        }
-//    }
-//    foreach(QString df, newDataframes)
-//    {
-//        if (!SessionManager::instance()->descriptionCache->exists(df))
-//        {
-//            eNerror << QString(" attempt to add a non-existing dataframe %1").arg(df);
-//        }
-//        else
-//        {
-//            sourceDataframeFilter->addName(df);
-//        }
-//    }
-//}
-
 void PlotViewer::enableActions(bool enable)
 {
     DataViewer::enableActions(enable);
-//    if (!ui)
-//        return;
-//    bool active = plotIsActive.value(ui->currentItemName(), false);
     fullScreenAct->setEnabled(enable);
-//    ui->saveAct->setEnabled(enable);
-//    ui->copyAct->setEnabled(enable);
-//    if (dispatcher)
-//        ui->setDispatchModeAutoAct->setEnabled(enable && active);
-
 }
 
-void PlotViewer::setCurrentItem(QString name)
+bool PlotViewer::setCurrentItem(QString name)
 {
-    DataViewer::setCurrentItem(name);
-//    emit setPlotSettings(name);
+    if (!DataViewer::setCurrentItem(name))
+        return false;
     if (plotIsUpToDate.value(name) && plotLastRatio.value(name, plotAspectRatio) == plotAspectRatio)
     {
         displaySVG(plotByteArray.value(name, QByteArray()), name);
@@ -341,39 +256,7 @@ void PlotViewer::setCurrentItem(QString name)
     //        showInfo(svg);
 }
 
-//void PlotViewer::updatePlot(QString name, QByteArray byteArray)
-//{
-//    if (fullScreen)
-//        fullScreenSvgDialog->loadByteArray(byteArray);
-//    else
-//    {
-//        QSvgWidget* svg = qobject_cast<QSvgWidget*>(ui->view(name));
-//        if (svg)
-//        {
-//            plotIsUpToDate[name] = true;
-//            plotByteArray[name] = byteArray;
-//            svg->load(byteArray);
-//            if (name != ui->currentItemName())
-//            {
-//                ui->setCurrentItem(name);
-//                setCurrentItem(name);
-//            }
-//        }
-//    }
-//}
 
-void PlotViewer::checkDependencies(QString name)
-{
-
-    foreach(QString plot, items())
-    {
-        if (SessionManager::instance()->dependencies(plot).contains(name))
-        {
-            plotIsUpToDate[plot] = false;
-            updateActivePlots();
-        }
-    }
-}
 
 void PlotViewer::sendPlotCmd()
 {
@@ -467,24 +350,11 @@ void PlotViewer::restartTimer()
     resizeTimer->start(250);
 }
 
-//void PlotViewer::updateDependencies(QDomDocument *domDoc, QString name)
-//{
-//    plotDependencies.remove(name);
-//    if (!domDoc)
-//        return;
-//    foreach (QString df, XMLelement(*domDoc)["Dependencies"].listValues())
-//        plotDependencies.insert(name, df);
-//}
-
 
 QWidget *PlotViewer::makeView(QString name)
 {
     plotIsActive[name] = SessionManager::instance()->exists(name);
     plotIsUpToDate[name] = true;
-//    plotSourceModified[name] = false;
-//    if (plotIsActive[name])
-//        updateDependencies(descriptionFilter->getDomDoc(name), name);
-
     return new QSvgWidget(this);
 }
 
@@ -492,30 +362,16 @@ QWidget *PlotViewer::makeView(QString name)
 void PlotViewer::addNameToFilter(QString name)
 {
     Q_UNUSED(name)
-//    if (!SessionManager::instance()->exists(name))
-//        return;
-//    plotDescriptionFilter->addName(name);
-//    foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
-//        sourceDataframeFilter->addName(df);
-//    updateActivePlots();
 }
 
 void PlotViewer::setNameInFilter(QString name)
 {
     Q_UNUSED(name)
-
-//    plotDescriptionFilter->setName(name);
-//    foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
-//        sourceDataframeFilter->setName(df);
 }
 
 void PlotViewer::removeNameFromFilter(QString name)
 {
     Q_UNUSED(name)
-
-//    plotDescriptionFilter->removeName(name);
-//    foreach(QString df, SessionManager::instance()->plotSourceDataframes(name))
-//        sourceDataframeFilter->removeName(df);
 }
 
 void PlotViewer::updateActivePlots()
@@ -536,7 +392,6 @@ void PlotViewer::updateActivePlots()
     else if (!plotIsActive.value(name, false) && plotByteArray.contains(name))
     {
         displaySVG(plotByteArray.value(name), name);
-//        currentSvgWidget()->load(plotByteArray.value(name));
     }
 
 }

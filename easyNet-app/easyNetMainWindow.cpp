@@ -110,6 +110,7 @@ void MainWindow::build()
 
     SessionManager::instance()->startLazyNut();
 
+//    loadModel("Models/ia.eNm", true);
 
 }
 
@@ -301,14 +302,20 @@ void MainWindow::connectSignalsAndSlots()
     {
        setFormAndShow(plotViewer->currentItemName());
     });
-    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
+    connect(dataframeResultsViewer, &DataframeViewer::showSettingsRequested, [=]()
+    {
+       setFormAndShow(dataframeResultsViewer->currentItemName());
+    });
+//    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
 //    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
 
-    connect(plotViewer,SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
-    connect(dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+
+
+//    connect(plotViewer,SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(ui_dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
 //    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
-    connect(stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
+    connect(ui_stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
 
 //    connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
  //   connect(explorerPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
@@ -399,6 +406,8 @@ void MainWindow::connectSignalsAndSlots()
         rLog->clear();
         debugLog->clear();
         objNavigator->reset();
+        runAllTrialMsgAct->setVisible(false);
+        stopButton->setIcon(QIcon(":/images/stop-disabled.png"));
     });
 
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString cmd, QString error)
@@ -1333,8 +1342,8 @@ void MainWindow::runTest()
 
 void MainWindow::setFormInSettingsWidget(QString name)
 {
-    QWidget *view = qobject_cast<QWidget *>(sender());
-    if (view && !view->visibleRegion().isEmpty())
+    QWidget *widget = qobject_cast<QWidget *>(sender());
+    if   (widget && !widget->visibleRegion().isEmpty())
     {
         dataViewSettingsWidget->setForm(name);
     }

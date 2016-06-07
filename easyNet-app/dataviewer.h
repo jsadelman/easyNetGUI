@@ -52,7 +52,7 @@ public slots:
     virtual void copy()=0;
     virtual void destroySelectedItems();
     virtual void snapshot(QString name="")=0;
-    virtual void setCurrentItem(QString name);
+    virtual bool setCurrentItem(QString name);
 
 
 protected slots:

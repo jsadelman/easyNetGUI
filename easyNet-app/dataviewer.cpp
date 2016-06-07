@@ -259,10 +259,13 @@ void DataViewer::dispatch()
         dispatcher->dispatch(info);
 }
 
-void DataViewer::setCurrentItem(QString name)
+bool DataViewer::setCurrentItem(QString name)
 {
     if (name.isEmpty() || name == "<select an item>"  || ! contains(name))
+    {
         enableActions(false);
+        return false;
+    }
     else
     {
         enableActions(true);
@@ -271,6 +274,7 @@ void DataViewer::setCurrentItem(QString name)
         ui->setToolBars(this);
     }
     emit currentItemChanged(name);
+    return true;
 }
 
 void DataViewer::enableActions(bool enable)

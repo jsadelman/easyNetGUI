@@ -214,9 +214,10 @@ void DataframeViewer::enableActions(bool enable)
 //    ui->settingsAct->setEnabled(enabled && (subtype == "dataframe_view"));
 }
 
-void DataframeViewer::setCurrentItem(QString name)
+bool DataframeViewer::setCurrentItem(QString name)
 {
-    DataViewer::setCurrentItem(name);
+    if (!DataViewer::setCurrentItem(name))
+        return false;
     if (isLazy())
     {
         dataframeFilter->setName(name);

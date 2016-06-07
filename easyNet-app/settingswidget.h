@@ -52,7 +52,6 @@ protected slots:
     void emitDataViewCreated();
 
 protected:
-//    void createActions();
     void buildWidget();
     void clearForm();
     QString type(QString name);
@@ -64,8 +63,6 @@ protected:
     QDomDocument *currentSettings;
     ObjectCacheFilter *descriptionFilter;
     ObjectUpdater *descriptionUpdater;
-//    QAction *reloadScriptAct;
-//    QAction *applyAct;
     QPushButton *reloadScriptButton;
     QPushButton *applyButton;
     QLineEdit *nameEdit;

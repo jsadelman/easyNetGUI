@@ -72,7 +72,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
             QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(trialRunInfo.results));
             job->cmdList << QString("%1 copy %2").arg(trialRunInfo.results).arg(backupDf);
             job->cmdList << QString("%1 add_hint show 0").arg(backupDf);
-            job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
+//            job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
             QMap<QString, QVariant> jobData;
             jobData.insert("original", trialRunInfo.results);
             jobData.insert("name", backupDf);
@@ -87,7 +87,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     }
     case Dispatch_Overwrite:
     {
-        job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
+//        job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
         if (!host->contains(trialRunInfo.results))
         {
             SessionManager::instance()->setTrialRunInfo(trialRunInfo.results, info);
@@ -114,6 +114,15 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         foreach(LazyNutJob *j, jobs)
             delete j;
     }
+    if (currentDispatchAction == Dispatch_New || currentDispatchAction == Dispatch_Overwrite)
+    {
+        // send clear WITHOUT updating obj cache, otherwise it would clear active dfs and plots
+        // causing errors at (premature) get
+        LazyNutJob *clearJob = new LazyNutJob;
+        clearJob->cmdList << QString("%1 clear").arg(trialRunInfo.results);
+        SessionManager::instance()->submitJobs(clearJob);
+    }
+
 }
 
 void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)

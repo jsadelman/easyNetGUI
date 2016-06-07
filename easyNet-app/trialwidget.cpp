@@ -276,8 +276,6 @@ void TrialWidget::runTrial()
         QMessageBox::warning(this, "Help", "Choose which type of trial to run");
         return;
     }
-    qDebug() << trialRunMode;
-
     if (trialRunMode == TrialRunMode_List && askDisableObserver && !SessionManager::instance()->enabledObservers().isEmpty())
     {
         int answer = disableObserversMsg->exec();

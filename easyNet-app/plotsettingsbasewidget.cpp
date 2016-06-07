@@ -189,8 +189,17 @@ void PlotSettingsBaseWidget::createLevelsListModel()
         levelsCmdObjectWatcher->setNameList(objectsInCmd);
         if(!descrel)
         {
-            connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)),
-                this, SLOT(getLevels()));
+            bool identity = true;
+            QDomElement dependenciesElement = XMLAccessor::childElement(settingsElement, "dependencies");
+            QDomElement depValElement = dependenciesElement.firstChildElement();
+            while (!depValElement.isNull())
+            {
+                identity = identity && XMLelement(depValElement)["type"]() == "identity";
+                depValElement = depValElement.nextSiblingElement();
+            }
+            if (!identity)
+                connect(levelsCmdObjectWatcher, SIGNAL(objectModified(QString)), this, SLOT(getLevels()));
+
             connect(levelsCmdObjectWatcher, &ObjectCacheFilter::objectDestroyed, [=]()
             {
                  static_cast<StringListModel *>(static_cast<QSortFilterProxyModel*>(levelsListModel)->sourceModel())->updateList(QStringList());
@@ -369,14 +378,14 @@ void PlotSettingsBaseWidget::setRawEditModeOff()
 void PlotSettingsBaseWidget::emitValueChanged()
 {
     QString newValue = getValue();
-//    if (currentValue != newValue)
-//    {
+    if (currentValue != newValue)
+    {
         QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
         XMLAccessor::setValue(valueElement, newValue);
         valueSet = true;
         emit valueChanged(currentValue, newValue);
         currentValue = newValue;
-//    }
+    }
 }
 
 void PlotSettingsBaseWidget::getLevels()
@@ -555,14 +564,18 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
     currentValue = XMLAccessor::value(valueElement);
 
     setWidgetValue(raw2widgetValue(currentValue));
-    valueSet = !currentValue.isEmpty();
+     valueSet = !currentValue.isEmpty();
+
+//    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
     connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
             this, SLOT(emitValueChanged()));
+
+
 //    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentTextChanged(QString)),
 //            this, SLOT(emitValueChanged()));
-    connect(static_cast<QComboBox*>(editDisplayWidget),  static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            [=](int index){
-//        qDebug() << "PlotSettingsSingleChoiceWidget index changed" << index;
+    connect(static_cast<QComboBox*>(editDisplayWidget),  static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged),
+            [=](QString txt){
+//        qDebug() << "PlotSettingsSingleChoiceWidget text changed" << txt << name();
     });
 //    qDebug () << Q_FUNC_INFO << name() << currentValue << value();
     gridLayout->addWidget(editDisplayWidget, 0, 1);
@@ -669,6 +682,7 @@ void PlotSettingsMultipleChoiceWidget::buildEditWidget()
     currentValue = value();
     currentValue = (currentValue.isEmpty() || currentValue == "c()") ? XMLAccessor::value(valueElement) : currentValue;
     setWidgetValue(raw2widgetValue(currentValue));
+
     updateEditDisplayWidget();
 
     valueSet = !currentValue.isEmpty();

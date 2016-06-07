@@ -40,7 +40,7 @@ public slots:
     void copyDataframe();
     virtual void addRequestedItem(QString name="", bool isBackup=false);
     virtual void snapshot(QString name="") Q_DECL_OVERRIDE {Q_UNUSED(name)}
-    virtual void setCurrentItem(QString name) Q_DECL_OVERRIDE;
+    virtual bool setCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
 protected slots:
