@@ -15,6 +15,7 @@ class ObjectUpdater;
 class QDomDocument;
 class FindDialog;
 class QToolButton;
+class QMenu;
 
 class DataframeViewer : public DataViewer
 {
@@ -52,8 +53,12 @@ protected slots:
     void showFindDialog();
     void findForward(const QString &str, QFlags<QTextDocument::FindFlag> flags);
     void setParameter(QString name, QString key_val);
+    void buildPlotMenu();
+    void buildDataframeViewMenu();
+    void buildRScriptMenu(QMenu *menu, QString defaultLocation);
     void sendNewPlotRequest();
     void sendNewDataframeViewRequest();
+
 
 signals:
     void dragDropColumnsChanged(bool);
@@ -90,7 +95,9 @@ protected:
     QAction *findAct;
     QAction *copyDFAct;
     QToolButton *plotButton;
+    QMenu *plotMenu;
     QToolButton *dataframeViewButton;
+    QMenu *dataframeViewMenu;
     int maxRows;
     int maxCols;
     int maxFirstDisplayCells;

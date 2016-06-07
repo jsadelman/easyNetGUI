@@ -149,11 +149,6 @@ void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
 bool DataViewer::contains(QString name)
 {
     return m_items.contains(name);
-//    if (dispatcher)
-//        return dispatcher->inHistory(name);
-//    if (ui)
-//        return ui->contains(name);
-//    return false;
 }
 
 void DataViewer::setDefaultDir(QString dir)
@@ -290,17 +285,6 @@ void DataViewer::enableActions(bool enable)
 */
 }
 
-//void DataViewer::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-//{
-//    if (dispatcher)
-//    {
-//        dispatcher->setTrialRunInfo(item, info);
-//    }
-//    else
-//    {
-//        eNerror << "no dispatcher set for this viewer";
-//    }
-//}
 
 void DataViewer::setTrialRunMode(int mode)
 {

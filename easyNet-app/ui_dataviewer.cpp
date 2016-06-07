@@ -6,8 +6,6 @@
 #include "objectupdater.h"
 #include "dataviewer.h"
 
-
-
 #include <QAction>
 #include <QSignalMapper>
 #include <QShortcut>
@@ -107,63 +105,23 @@ void Ui_DataViewer::addHistoryWidget(QDockWidget *historyWidget)
     {
         splitDockWidget(historyWidgets.at(historyWidgets.indexOf(historyWidget) -1), historyWidget, Qt::Vertical);
     }
-
-
 }
-
 
 void Ui_DataViewer::createActions()
 {
-//    dispatchModeName.insert(Dispatch_New, "New Page");
-//    dispatchModeName.insert(Dispatch_Overwrite, "Overwrite");
-//    dispatchModeName.insert(Dispatch_Append, "Append");
-
-//    dispatchModeIconName.insert(Dispatch_New, ":/images/tab_new.png");
-//    dispatchModeIconName.insert(Dispatch_Overwrite, ":/images/overwrite.png");
-//    dispatchModeIconName.insert(Dispatch_Append, ":/images/append.png");
-
-//    setDispatchModeOverrideMapper = new QSignalMapper(this);
-//    setDispatchModeOverrideActGroup = new QActionGroup(this);
-//    for (int mode = 0; mode < MAX_DISPATCH_MODE; ++mode)
-//    {
-//        setDispatchModeOverrideActs.insert(mode, new QAction(
-//                                               QIcon(dispatchModeIconName.value(mode)),
-//                                               dispatchModeName.value(mode),
-//                                               this));
-//        setDispatchModeOverrideActs.at(mode)->setCheckable(true);
-//        setDispatchModeOverrideMapper->setMapping(setDispatchModeOverrideActs.at(mode), mode);
-//        connect(setDispatchModeOverrideActs.at(mode), SIGNAL(triggered()),
-//                setDispatchModeOverrideMapper, SLOT(map()));
-//        setDispatchModeOverrideActGroup->addAction(setDispatchModeOverrideActs.at(mode));
-//    }
-
-//    setDispatchModeAutoAct = new QAction(QIcon(":/images/auto_icon.png"), "Auto", this);
-//    setDispatchModeAutoAct->setToolTip("Override default page behaviour");
-//    setDispatchModeAutoAct->setCheckable(true);
-
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
-//    openAct->setShortcuts(QKeySequence::Open);
-    // shortcuts don't work  here due to ambiguity across the different ui_dataviewer instances
-
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
-//    saveAct->setShortcuts(QKeySequence::Save);
-
     copyAct = new QAction(QIcon(":/images/clipboard.png"), tr("&Copy to clipboard"), this);
-//    copyAct->setShortcuts(QKeySequence::Copy);
-
     destroyAct = new QAction(QIcon(":/images/icon_trash.png"), "delete", this);
     destroyAct->setToolTip("delete current item");
-
     settingsAct = new QAction(QIcon(":/images/plot_settings.png"), tr("&Settings"), this);
     settingsAct->setToolTip(tr("Show settings form"));
-
     if(!setup)
     {
         historyAct = new QAction(QIcon(":/images/History.png"), tr("History"), this);
         historyAct->setToolTip("show/hide history");
         historyAct->setCheckable(true);
     }
-
 }
 
 void Ui_DataViewer::createToolBars(DataViewer*dv)
@@ -188,10 +146,7 @@ void Ui_DataViewer::createToolBars(DataViewer*dv)
 
     dispatchToolBar[dv] = addToolBar(tr("Dispatch Mode"));
     dispatchToolBar[dv]->hide();
-
-//    dispatchToolBar->addActions(setDispatchModeOverrideActs);
-//    dispatchToolBar->addAction(setDispatchModeAutoAct);
-   setToolBars(dv);
+    setToolBars(dv);
 }
 
 void Ui_DataViewer::setToolBars(DataViewer*dv)

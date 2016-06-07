@@ -409,6 +409,30 @@ void DataframeViewer::setParameter(QString name, QString key_val)
     SessionManager::instance()->submitJobs(jobs);
 }
 
+void DataframeViewer::buildPlotMenu()
+{
+    buildRScriptMenu(plotMenu, "rPlotsDir");
+}
+
+void DataframeViewer::buildDataframeViewMenu()
+{
+    buildRScriptMenu(dataframeViewMenu, "rDataframeViewsDir");
+}
+
+void DataframeViewer::buildRScriptMenu(QMenu *menu, QString defaultLocation)
+{
+    foreach(QAction *action, menu->actions())
+        delete action;
+    QDir rScriptsDir(SessionManager::instance()->defaultLocation(defaultLocation));
+    rScriptsDir.setNameFilters(QStringList({"*.R"}));
+    foreach(QString script, rScriptsDir.entryList())
+    {
+        QAction *action = new QAction(script, this);
+        connect(action, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
+        menu->addAction(action);
+    }
+}
+
 void DataframeViewer::sendNewPlotRequest()
 {
     sendNewDataViewRequest(qobject_cast<QAction*>(sender()), "rplot");
@@ -514,17 +538,8 @@ void DataframeViewer::addExtraActions()
     plotButton->setVisible(true);
     plotButton->setEnabled(false);
     plotButton->setPopupMode(QToolButton::InstantPopup);
-    QMenu *plotMenu = new QMenu(plotButton);
-    // temporary: show all available R scripts
-    QDir rPlotsDir(SessionManager::instance()->defaultLocation("rPlotsDir"));
-    rPlotsDir.setNameFilters(QStringList({"*.R"}));
-    foreach(QString plotType, rPlotsDir.entryList())
-    {
-        QAction *plotAct = new QAction(plotType, this);
-        connect(plotAct, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
-//        connect(plotAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
-        plotMenu->addAction(plotAct);
-    }
+    plotMenu = new QMenu(plotButton);
+    connect(plotMenu, SIGNAL(aboutToShow()), this, SLOT(buildPlotMenu()));
     plotButton->setMenu(plotMenu);
     ui->editToolBar[this]->addWidget(plotButton);
 
@@ -533,19 +548,10 @@ void DataframeViewer::addExtraActions()
     dataframeViewButton->setVisible(true);
     dataframeViewButton->setEnabled(false);
     dataframeViewButton->setPopupMode(QToolButton::InstantPopup);
-    QMenu *dataframeViewMenu = new QMenu(dataframeViewButton);
-    QDir rDataframeViewsDir(SessionManager::instance()->defaultLocation("rDataframeViewsDir"));
-    rDataframeViewsDir.setNameFilters(QStringList({"*.R"}));
-    foreach(QString dataframeViewScript, rDataframeViewsDir.entryList())
-    {
-        QAction *dataframeViewAct = new QAction(dataframeViewScript, this);
-        connect(dataframeViewAct, SIGNAL(triggered()), this, SLOT(sendNewDataframeViewRequest()));
-//        connect(dataframeViewAct, SIGNAL(triggered()), MainWindow::instance(), SLOT(showDataViewSettings()));
-        dataframeViewMenu->addAction(dataframeViewAct);
-    }
+    dataframeViewMenu = new QMenu(dataframeViewButton);
+    connect(dataframeViewMenu, SIGNAL(aboutToShow()), this, SLOT(buildDataframeViewMenu()));
     dataframeViewButton->setMenu(dataframeViewMenu);
     ui->editToolBar[this]->addWidget(dataframeViewButton);
-
 }
 
 bool DataframeViewer::partiallyLoaded(QString name)
