@@ -52,6 +52,7 @@ class DiagramWindow;
 //class TableWindow;
 class DataframeViewer;
 class DataframeViewerDispatcher;
+class ParametersViewer;
 class Ui_DataTabsViewer;
 class Ui_DataComboViewer;
 class QTime;
@@ -324,7 +325,7 @@ public:
 
 
 //    TableEditor     *paramEdit;
-    DataframeViewer *paramViewer;
+    ParametersViewer *paramViewer;
     Ui_DataTabsViewer *ui_paramViewer;
     DebugLog        *debugLog;
     QToolBar        *infoToolBar;

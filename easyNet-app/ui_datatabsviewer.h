@@ -16,6 +16,8 @@ public:
     ~Ui_DataTabsViewer();
     virtual QString currentItemName();
     virtual QWidget *currentView() Q_DECL_OVERRIDE;
+    void setTabsClosable(bool closeable) {tabsClosable = closeable;}
+
 
 public slots:
     virtual void addView(QString name, QWidget *view) Q_DECL_OVERRIDE;
@@ -28,6 +30,7 @@ protected:
 
 private:
     QTabWidget *tabWidget;
+    bool tabsClosable;
     bool quiet_tab_change;
 
 };

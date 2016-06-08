@@ -24,8 +24,9 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
-    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false), m_parametersTable(false),
-      maxRows(80), maxCols(20), maxFirstDisplayCells(3000), maxDisplayCells(10000)
+    : DataViewer(ui, parent), m_dragDropColumns(false), m_stimulusSet(false),
+      maxRows(80), maxCols(20), maxFirstDisplayCells(3000), maxDisplayCells(10000),
+      m_showInMainViewer(true)
 {
     dataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
     dataframeUpdater = new ObjectUpdater(this);
@@ -39,10 +40,6 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
             dispatcher->updateInfo(name);
     });
 
-//    dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-//    dataframeDescriptionUpdater = new ObjectUpdater(this);
-//    dataframeDescriptionUpdater->setCommand("description");
-//    dataframeDescriptionUpdater->setProxyModel(dataframeDescriptionFilter);
     findDialog = new FindDialog(this);
     findDialog->hideExtendedOptions();
     connect(findDialog, SIGNAL(findForward(QString, QFlags<QTextDocument::FindFlag>)),
@@ -51,22 +48,6 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
 
     addExtraActions();
 }
-
-void DataframeViewer::setParametersTable(bool isParametersTable)
-{
-    m_parametersTable = isParametersTable;
-    ui->settingsAct->setVisible(!isParametersTable);
-    plotButton->setVisible(!isParametersTable);
-    dataframeViewButton->setVisible(!isParametersTable);
-    if (m_parametersTable)
-        dataframeUpdater->setCommand("get");
-    else
-        dataframeUpdater->setCommand(QString("get 1-%1 1-%2").arg(maxRows).arg(maxCols));
-
-    emit parametersTableChanged(isParametersTable);
-}
-
-
 
 void DataframeViewer::open()
 {
@@ -87,8 +68,7 @@ void DataframeViewer::open()
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({
                             QString("create %1 %2").arg(dataframeType).arg(dfName),
-                            QString("%1 add_hint show %2"  ).arg(dfName)
-                                       .arg(stimulusSet() || parametersTable() ? "0" : "1"),
+                            QString("%1 add_hint show %2").arg(dfName).arg(m_showInMainViewer ? "1" : "0"),
                             QString("%1 %2 %3").arg(dfName).arg(loadCmd).arg(fileName)});
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job
@@ -192,10 +172,6 @@ void DataframeViewer::addRequestedItem(QString name, bool isBackup)
 void DataframeViewer::destroyItem_impl(QString name)
 {
     delete modelMap.value(name, nullptr);
-    if (parametersTable())
-    {
-        referenceProxyMap.remove(name);
-    }
     modelMap.remove(name);
 }
 
@@ -207,11 +183,6 @@ void DataframeViewer::enableActions(bool enable)
     copyDFAct->setEnabled(enable);
     plotButton->setEnabled(enable);
     dataframeViewButton->setEnabled(enable);
-//    QString subtype;
-//    QDomDocument *domDoc = dataframeDescriptionFilter->getDomDoc(ui->currentItemName());
-//    if (domDoc)
-//        subtype = XMLelement(*domDoc)["subtype"]();
-//    ui->settingsAct->setEnabled(enabled && (subtype == "dataframe_view"));
 }
 
 bool DataframeViewer::setCurrentItem(QString name)
@@ -232,17 +203,8 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
         eNerror << QString("attempt to update non-existing dataframe %1").arg(name);
         return;
     }
-
     DataFrameModel *dfModel = new DataFrameModel(domDoc, this);
     dfModel->setName(name);
-    if (parametersTable())
-    {
-        connect(dfModel, SIGNAL(newParamValueSig(QString,QString)),
-                this, SLOT(setParameter(QString,QString)));
-        if (referenceProxyMap.value(name, nullptr))
-            referenceProxyMap.value(name)->setReferenceModel(dfModel);
-    }
-
     bool isNew = !modelMap.value(name, nullptr);
     QTableView *view = qobject_cast<QTableView*>(ui->view(name));
     if (isNew && view)
@@ -257,10 +219,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
             connect(dragDropHeader, SIGNAL(restoreComboBoxText()),
                     MainWindow::instance()->trialWidget, SLOT(restoreComboBoxText()));
         }
-        if (parametersTable())
-            view->setEditTriggers(QAbstractItemView::AllEditTriggers);
-        else
-            view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     }
     else if (!isNew)
     {
@@ -273,23 +232,7 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
     limitedGet(name, maxFirstDisplayCells);
     if (view)
     {
-        if (parametersTable())
-        {
-            QString ref = reference(name);
-            if (!ref.isEmpty() && !contains(ref))
-                addItem(ref, true);
-            ParametersProxyModel *proxy = new ParametersProxyModel(modelMap[name]);
-            proxy->setSourceModel(modelMap[name]);
-            if (modelMap.value(ref, nullptr))
-                proxy->setReferenceModel(modelMap.value(ref));
-            if (!ref.isEmpty())
-                referenceProxyMap[ref] = proxy;
-            view->setModel(proxy);
-        }
-        else
-        {
-            view->setModel(modelMap[name]);
-        }
+        view->setModel(modelMap[name]);
         view->verticalHeader()->show();
         view->horizontalHeader()->show();
         view->resizeColumnsToContents();
@@ -469,18 +412,6 @@ void DataframeViewer::sendNewDataViewRequest(QAction *action, QString subtype)
     SessionManager::instance()->createDataView(dataViewName, subtype, dataViewScript, settings, false, true);
 }
 
-QString DataframeViewer::reference(QString name)
-{
-    if (parametersTable())
-    {
-        QDomDocument *description = SessionManager::instance()->description(name);
-        if (description && !XMLelement(*description)["history"].listValues().isEmpty())
-            return XMLelement(*description)["history"].listValues().first();
-        return QString();
-    }
-    return QString();
-}
-
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
@@ -538,6 +469,7 @@ void DataframeViewer::addExtraActions()
     plotButton->setVisible(true);
     plotButton->setEnabled(false);
     plotButton->setPopupMode(QToolButton::InstantPopup);
+    plotButton->setToolTip("Plot");
     plotMenu = new QMenu(plotButton);
     connect(plotMenu, SIGNAL(aboutToShow()), this, SLOT(buildPlotMenu()));
     plotButton->setMenu(plotMenu);
@@ -548,6 +480,7 @@ void DataframeViewer::addExtraActions()
     dataframeViewButton->setVisible(true);
     dataframeViewButton->setEnabled(false);
     dataframeViewButton->setPopupMode(QToolButton::InstantPopup);
+    dataframeViewButton->setToolTip("Compute");
     dataframeViewMenu = new QMenu(dataframeViewButton);
     connect(dataframeViewMenu, SIGNAL(aboutToShow()), this, SLOT(buildDataframeViewMenu()));
     dataframeViewButton->setMenu(dataframeViewMenu);

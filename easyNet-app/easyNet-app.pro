@@ -120,7 +120,9 @@ SOURCES +=  \
     floatingdialogwindow.cpp \
     objectnavigator.cpp \
     objecttreeview.cpp \
-    parametersproxymodel.cpp
+    parametersproxymodel.cpp \
+    parametersmodel.cpp \
+    parametersviewer.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -223,7 +225,9 @@ HEADERS  += \
     floatingdialogwindow.h \
     objectnavigator.h \
     objecttreeview.h \
-    parametersproxymodel.h
+    parametersproxymodel.h \
+    parametersmodel.h \
+    parametersviewer.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

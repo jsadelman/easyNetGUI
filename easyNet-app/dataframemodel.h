@@ -8,9 +8,6 @@
 #include <QWidget>
 
 class QMimeData;
-class QTableView;
-
-
 
 class DataFrameModel : public QAbstractTableModel
 {
@@ -53,29 +50,17 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
     QStringList rowNames();
     QStringList colNames();
-//    QStringList mimeTypes() const;
-//    QMimeData *mimeData(const QModelIndexList &indexes) const;
     QString name() {return m_name;}
-//    QTableView *view() {return m_view;}
     QString writeTable();
-
-    bool setData(const QModelIndex &index, const QVariant &value, int role) Q_DECL_OVERRIDE;
 
 public slots:
     void setName(QString name) {m_name = name;}
-//    void setView(QTableView *view) {m_view = view;}
-signals:
-    void newParamValueSig (QString,QString);
 
-
-private slots:
-private:
+protected:
     QDomNode tBody() const {return domDoc->firstChild().firstChild();}
     QDomDocument *domDoc;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
     QString m_name;
-//    QTableView *m_view;
-
 };
 
 class DataFrameHeader : public QHeaderView

@@ -57,6 +57,7 @@
 #include "enumclasses.h"
 #include "dataframeviewer.h"
 #include "dataframeviewerdispatcher.h"
+#include "parametersviewer.h"
 #include "ui_datatabsviewer.h"
 #include "ui_datacomboviewer.h"
 #include "settingsform.h"
@@ -176,6 +177,7 @@ expertWindow=new QMainWindow;
     stimSetViewer->setDragDropColumns(true);
     stimSetViewer->setStimulusSet(true);
     stimSetViewer->setDefaultDir(SessionManager::instance()->defaultLocation("stimDir"));
+    stimSetViewer->setShowInMainViewer(false);
 
 //    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
 //    tableWindow = new TableViewer("Tables",this);
@@ -206,8 +208,8 @@ expertWindow=new QMainWindow;
 
 //    paramEdit = new TableEditor ("Parameters",this);
     ui_paramViewer = new Ui_DataTabsViewer;
-    paramViewer = new DataframeViewer(ui_paramViewer, this);
-    paramViewer->setParametersTable(true);
+    ui_paramViewer->setTabsClosable(false);
+    paramViewer = new ParametersViewer(ui_paramViewer, this);
     paramDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     paramDescriptionFilter->setFilterRegExp(QRegExp("^\\(.* parameters\\)$"));
     paramDescriptionFilter->setFilterKeyColumn(ObjectCache::NameCol);

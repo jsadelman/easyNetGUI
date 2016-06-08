@@ -7,7 +7,7 @@
 #include <QVBoxLayout>
 
 Ui_DataTabsViewer::Ui_DataTabsViewer()
-    : Ui_DataViewer(), quiet_tab_change(false)
+    : Ui_DataViewer(), quiet_tab_change(false), tabsClosable(true)
 {
 }
 
@@ -29,6 +29,7 @@ QWidget *Ui_DataTabsViewer::currentView()
 {
     return tabWidget->currentWidget();
 }
+
 
 void Ui_DataTabsViewer::addView(QString name, QWidget *view)
 {
@@ -71,7 +72,7 @@ QWidget *Ui_DataTabsViewer::takeView(QString name)
 void Ui_DataTabsViewer::createViewer()
 {
     tabWidget = new QTabWidget;
-    tabWidget->setTabsClosable(true);
+    tabWidget->setTabsClosable(tabsClosable);
 //    setCentralWidget(tabWidget);
     mainLayout->addWidget(tabWidget);
     connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)

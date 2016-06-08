@@ -7,7 +7,6 @@
 DataFrameModel::DataFrameModel(QDomDocument *domDoc, QObject *parent)
     :domDoc(domDoc), m_name(), QAbstractTableModel(parent)
 {
-//    qDebug() << domDoc->toString();
 }
 
 int DataFrameModel::rowCount(const QModelIndex &parent) const
@@ -77,64 +76,10 @@ QString DataFrameModel::writeTable()
     return output;
 }
 
-bool DataFrameModel::setData(const QModelIndex & index, const QVariant & value, int role)
-{
-    if (index.column() == 0) // can't edit parameter names
-            return false;
-    // check legality
-    bool ok;
-    float fvalue = value.toFloat(&ok);
-    if (!ok) // not a float
-        return false;
-    // NOTE: hack for parameters dataframe only, would not work e.g. for editing a stimulus set
-    if (role == Qt::EditRole)
-    {
-        tBody().childNodes().at(index.row() + 1).childNodes().at(index.column() +1).firstChild().setNodeValue(value.toString());
-        QString newParamValue = tBody().childNodes().at(index.row() + 1).childNodes().at(index.column()).toElement().text() +
-                " " + value.toString();
-        emit newParamValueSig(m_name,newParamValue);
-
-    }
-    return true;
-}
-
-
 Qt::ItemFlags DataFrameModel::flags (const QModelIndex &index) const
 {
-    Qt::ItemFlags defaultFlags = QAbstractTableModel::flags(index);
-    // same criteria as in setData
-    if (index.column() == 0)
-        return defaultFlags;
-
-    return Qt::ItemIsDragEnabled | Qt::ItemIsEditable  | defaultFlags;
-
+    return QAbstractTableModel::flags(index) | Qt::ItemIsDragEnabled;
 }
-
-//QStringList DataFrameModel::mimeTypes() const
-//{
-//    QStringList types;
-//    types << "application/vnd.text.list";
-//    return types;
-//}
-
-//QMimeData* DataFrameModel::mimeData(const QModelIndexList &indexes) const
-//{
-//    QMimeData *mimeData = new QMimeData();
-//    QByteArray encodedData;
-
-//    QDataStream stream(&encodedData, QIODevice::WriteOnly);
-
-//    foreach (const QModelIndex &index, indexes) {
-//        if (index.isValid()) {
-//            QString text = data(index, Qt::DisplayRole).toString();
-//            stream << text;
-//        }
-//    }
-
-//    mimeData->setData("application/vnd.text.list", encodedData);
-//    return mimeData;
-//}
-
 
 DataFrameHeader::DataFrameHeader(QWidget *parent)
     :QHeaderView(Qt::Horizontal, parent)
@@ -152,38 +97,6 @@ void DataFrameHeader::mousePressEvent(QMouseEvent *event)
         text = model()->headerData(index, Qt::Horizontal).toString();
     }
     QHeaderView::mousePressEvent(event );
-
-
-/*
-    //QByteArray itemData;
-    //QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-    //dataStream << QPoint(event->pos() - child->pos());
-    int index;
-    QString text;
-
-    if (event->button() == Qt::LeftButton)
-//        && iconLabel->geometry().contains(event->pos()))
-    {
-        index = logicalIndexAt( event->pos() );
-        text = model()->headerData(index, Qt::Horizontal).toString();
-        QDrag *drag = new QDrag(this);
-        QMimeData *mimeData = new QMimeData;
-
-        mimeData->setText(QString("$")+text);
-        drag->setMimeData(mimeData);
-        Qt::DropAction dropAction = drag->exec();
-        qDebug() << "Initiating drag from headerview" << text;
-        qDebug() << "return from drag->exec is" << dropAction;
-        if (dropAction != Qt::IgnoreAction)
-        {
-            qDebug() << "Emitting column dropped, table name = " << tableName;
-            emit columnDropped(tableName);
-        }
-
-    }
-    else
-        QHeaderView::mousePressEvent(event );
-*/
 }
 
 void DataFrameHeader::mouseMoveEvent(QMouseEvent *event)
@@ -201,15 +114,11 @@ void DataFrameHeader::performDrag()
 {
     QDrag *drag = new QDrag(this);
     QMimeData *mimeData = new QMimeData;
-//    qDebug() << "performDrag, text = " << text;
     mimeData->setText(QString("$%1").arg(text));
-
     drag->setMimeData(mimeData);
-//    qDebug() << "performDrag, mimeData = " << mimeData;
 
     if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
     {
-//        qDebug() << "moved header";
         emit columnDropped(tableName);
     }
     else // may need a condition here to check if there has been a drop already?
@@ -219,5 +128,4 @@ void DataFrameHeader::performDrag()
 void DataFrameHeader::setTableName(QString name)
 {
     tableName = name;
-    qDebug() << "DataFrameHeader: tableName set to " << tableName;
 }

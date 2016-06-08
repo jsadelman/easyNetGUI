@@ -23,15 +23,16 @@ class DataframeViewer : public DataViewer
     friend class DataframeViewerDispatcher;
     Q_PROPERTY(bool dragDropColumns READ dragDropColumns WRITE setDragDropColumns NOTIFY dragDropColumnsChanged)
     Q_PROPERTY(bool stimulusSet READ stimulusSet WRITE setStimulusSet NOTIFY stimulusSetChanged)
-    Q_PROPERTY(bool parametersTable READ parametersTable WRITE setParametersTable NOTIFY parametersTableChanged)
+    Q_PROPERTY(bool showInMainViewer READ showInMainViewer WRITE setShowInMainViewer)
+
 public:
     DataframeViewer(Ui_DataViewer *ui, QWidget * parent = 0);
     bool dragDropColumns() {return m_dragDropColumns;}
     void setDragDropColumns(bool enabled) {m_dragDropColumns = enabled; emit dragDropColumnsChanged(enabled);}
     bool stimulusSet() {return m_stimulusSet;}
     void setStimulusSet(bool isStimulusSet) {m_stimulusSet = isStimulusSet; emit stimulusSetChanged(isStimulusSet);}
-    bool parametersTable() {return m_parametersTable;}
-    void setParametersTable(bool isParametersTable);
+    bool showInMainViewer() {return m_showInMainViewer;}
+    void setShowInMainViewer(bool show)  {m_showInMainViewer = show;}
 
 public slots:
     virtual void dispatch() Q_DECL_OVERRIDE;
@@ -47,7 +48,7 @@ public slots:
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
-    void updateDataframe(QDomDocument* domDoc, QString name);
+    virtual void updateDataframe(QDomDocument* domDoc, QString name);
     void askGetEntireDataframe();
     void getEntireDataframe();
     void showFindDialog();
@@ -58,7 +59,6 @@ protected slots:
     void buildRScriptMenu(QMenu *menu, QString defaultLocation);
     void sendNewPlotRequest();
     void sendNewDataframeViewRequest();
-
 
 signals:
     void dragDropColumnsChanged(bool);
@@ -78,26 +78,26 @@ protected:
     void limitedGet(QString name, int maxCells);
     void doCopy();
     void sendNewDataViewRequest(QAction *action, QString subtype);
-    QString reference(QString name);
 
 
 
     QMap<QString, DataFrameModel*> modelMap;
-    QMap<QString, ParametersProxyModel*> referenceProxyMap; // only if parametersTable()
     ObjectCacheFilter *dataframeFilter;
     ObjectUpdater *dataframeUpdater;
     QStringList requestedDataframeViews;
     bool m_dragDropColumns;
     bool m_stimulusSet;
-    bool m_parametersTable;
     FindDialog*     findDialog;
     QAction *getAllAct;
     QAction *findAct;
     QAction *copyDFAct;
+
     QToolButton *plotButton;
     QMenu *plotMenu;
     QToolButton *dataframeViewButton;
     QMenu *dataframeViewMenu;
+    bool m_showInMainViewer;
+
     int maxRows;
     int maxCols;
     int maxFirstDisplayCells;
