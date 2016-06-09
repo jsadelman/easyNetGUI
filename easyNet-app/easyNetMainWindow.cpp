@@ -21,6 +21,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cmath>
 
 #include "easyNetMainWindow.h"
 #include "treemodel.h"
