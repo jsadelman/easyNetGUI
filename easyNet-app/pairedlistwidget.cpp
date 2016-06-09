@@ -1,8 +1,7 @@
 #include "pairedlistwidget.h"
+#include "hidefromlistmodel.h"
 
-#include "selectfromlistmodel.h"
-#include <QSortFilterProxyModel>
-#include <QListView>
+#include <QListWidget>
 #include <QPushButton>
 #include <QLabel>
 #include <QGridLayout>
@@ -13,30 +12,21 @@ PairedListWidget::PairedListWidget(QAbstractItemModel *listModel, int relevantCo
     : listModel(listModel), relevantColumn(relevantColumn), QFrame(parent)
 {
     if (listModel)
-    {
-        setupModels();
         buildWidget();
-    }
 }
 
 void PairedListWidget::setValue(QStringList selectedList)
 {
-    selectedView->selectAll();
-    moveSelected(selectedView, false);
-    foreach (QString val, selectedList)
-    {
+    notSelectedModel->showAll();
+    selectedWidget->clear();
 
-        QModelIndexList matchList = selectFromListModel->match(
-                    selectFromListModel->index(0,0),
-                    Qt::DisplayRole,
-                    val,
-                    1,
-                    Qt::MatchExactly
-                    );
+    foreach (QString item, selectedList)
+    {
+        QModelIndexList matchList = notSelectedModel->match(notSelectedModel->index(0,0), Qt::DisplayRole, item, 1, Qt::MatchExactly);
         if (!matchList.isEmpty())
         {
-            QModelIndex idx = selectFromListModel->index(matchList.first().row(),1);
-            selectFromListModel->setData(idx,true);
+            notSelectedModel->hideItem(item);
+            selectedWidget->addItem(item);
         }
     }
     emit valueChanged();
@@ -45,69 +35,57 @@ void PairedListWidget::setValue(QStringList selectedList)
 QStringList PairedListWidget::getValue()
 {
     QStringList list;
-    for (int row = 0; row < selectedModel->rowCount(); ++row)
-        list.append(selectedModel->data(selectedModel->index(row, 0)).toString());
+    if (listModel)
+    {
+        for(int row = 0; row < selectedWidget->count(); ++row)
+            list.append(selectedWidget->item(row)->text());
+    }
     return list;
 }
 
 void PairedListWidget::addSelected()
 {
-    if (moveSelected(notSelectedView, true))
-        emit valueChanged();
+    if (notSelectedView->selectionModel()->selectedIndexes().isEmpty())
+        return;
+    while (!notSelectedView->selectionModel()->selectedIndexes().isEmpty())
+    {
+        QString item = notSelectedModel->data(notSelectedView->selectionModel()->selectedIndexes().first()).toString();
+        notSelectedModel->hideItem(item);
+        selectedWidget->addItem(item);
+    }
+    emit valueChanged();
 }
 
 void PairedListWidget::removeSelected()
 {
-    if (moveSelected(selectedView, false))
-        emit valueChanged();
-}
-
-bool PairedListWidget::moveSelected(QListView *fromListView, bool selected)
-{
-    if (fromListView->selectionModel()->selectedIndexes().isEmpty())
-        return false;
-    while (!fromListView->selectionModel()->selectedIndexes().isEmpty())
+    if (selectedWidget->selectedItems().isEmpty())
+        return;
+    while (!selectedWidget->selectedItems().isEmpty())
     {
-        selectFromListModel->setData(
-                    selectFromListModel->index(
-                        qobject_cast<QSortFilterProxyModel*>(fromListView->model())->mapToSource(
-                                fromListView->selectionModel()->selectedIndexes().first()
-                            ).row(),1),
-                    selected);
+        QString item = selectedWidget->selectedItems().first()->text();
+        delete selectedWidget->takeItem(selectedWidget->row(selectedWidget->selectedItems().first()));
+        notSelectedModel->showItem(item);
     }
-    return true;
-}
-
-void PairedListWidget::setupModels()
-{
-    selectFromListModel = new SelectFromListModel(this);
-    selectFromListModel->setSourceModel(listModel);
-    selectFromListModel->setRelevantColumn(relevantColumn);
-    selectedModel = new QSortFilterProxyModel(this);
-    selectedModel->setSourceModel(selectFromListModel);
-    selectedModel->setFilterRegExp("true");
-    selectedModel->setFilterKeyColumn(1);
-    selectedModel->sort(0);
-    notSelectedModel = new QSortFilterProxyModel(this);
-    notSelectedModel->setSourceModel(selectFromListModel);
-    notSelectedModel->setFilterRegExp("false");
-    notSelectedModel->setFilterKeyColumn(1);
-    notSelectedModel->sort(0);
+    emit valueChanged();
 }
 
 void PairedListWidget::buildWidget()
 {
+    notSelectedModel = new HideFromListModel(this);
+    notSelectedModel->setSourceModel(listModel);
+    notSelectedModel->setRelevantColumn(relevantColumn);
+    notSelectedModel->sort(0);
+
     QGridLayout *gridLayout = new QGridLayout;
-    selectedView = new QListView(this);
-    selectedView->setModel(selectedModel);
-    selectedView->setModelColumn(0);
-    selectedView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-//    selectedView->setResizeMode(QListView::Adjust);
     notSelectedView = new QListView(this);
     notSelectedView->setModel(notSelectedModel);
-    notSelectedView->setModelColumn(0);
     notSelectedView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-//    notSelectedView->setResizeMode(QListView::Adjust);
+
+    selectedWidget = new QListWidget(this);
+    selectedWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    selectedWidget->setDragDropMode(QAbstractItemView::InternalMove);
+    connect(selectedWidget->model(), SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SIGNAL(valueChanged()));
+
     searchEdit = new QLineEdit(this);
     connect(searchEdit, &QLineEdit::textEdited, [=](QString text)
     {
@@ -138,14 +116,14 @@ void PairedListWidget::buildWidget()
     removeButton = new QPushButton("<==", this);
     removeButton->setToolTip("Remove from selected factors");
     connect(removeButton, SIGNAL(clicked()), this, SLOT(removeSelected()));
-    connect(selectedView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(removeSelected()));
+    connect(selectedWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(removeSelected()));
     notSelectedLabel = new QLabel("Available factors");
     selectedLabel = new QLabel("Selected factors");
 //    gridLayout->addWidget(notSelectedLabel, 0,0,Qt::AlignHCenter);
     gridLayout->addLayout(searchLayout, 0,0,Qt::AlignHCenter);
     gridLayout->addWidget(selectedLabel, 0,2,Qt::AlignHCenter);
     gridLayout->addWidget(notSelectedView, 1,0,3,1);
-    gridLayout->addWidget(selectedView, 1,2,3,1);
+    gridLayout->addWidget(selectedWidget, 1,2,3,1);
     gridLayout->addWidget(addButton,1,1);
     gridLayout->addWidget(removeButton,2,1);
     setLayout(gridLayout);

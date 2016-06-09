@@ -122,7 +122,8 @@ SOURCES +=  \
     objecttreeview.cpp \
     parametersproxymodel.cpp \
     parametersmodel.cpp \
-    parametersviewer.cpp
+    parametersviewer.cpp \
+    hidefromlistmodel.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -227,7 +228,8 @@ HEADERS  += \
     objecttreeview.h \
     parametersproxymodel.h \
     parametersmodel.h \
-    parametersviewer.h
+    parametersviewer.h \
+    hidefromlistmodel.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

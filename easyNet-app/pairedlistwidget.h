@@ -3,10 +3,10 @@
 
 #include <QFrame>
 
-class SelectFromListModel;
-class QSortFilterProxyModel;
+class HideFromListModel;
 class QAbstractItemModel;
 class QListView;
+class QListWidget;
 class QPushButton;
 class QLabel;
 class QLineEdit;
@@ -33,17 +33,13 @@ private slots:
 
 
 private:
-    bool moveSelected(QListView *fromListView, bool selected);
-    void setupModels();
     void buildWidget();
 
     QAbstractItemModel *listModel;
     int relevantColumn;
-    SelectFromListModel *selectFromListModel;
-    QSortFilterProxyModel *selectedModel;
-    QSortFilterProxyModel *notSelectedModel;
-    QListView *selectedView;
+    HideFromListModel *notSelectedModel;
     QListView *notSelectedView;
+    QListWidget *selectedWidget;
     QLineEdit *searchEdit;
     QPushButton *addButton;
     QPushButton *removeButton;
