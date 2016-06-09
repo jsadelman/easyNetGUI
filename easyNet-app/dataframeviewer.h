@@ -56,9 +56,9 @@ protected slots:
     void setParameter(QString name, QString key_val);
     void buildPlotMenu();
     void buildDataframeViewMenu();
-    void buildRScriptMenu(QMenu *menu, QString defaultLocation);
-    void sendNewPlotRequest();
-    void sendNewDataframeViewRequest();
+    void buildRScriptMenu(QMenu *menu, QString defaultLocation, QString subtype);
+    void sendNewDataViewRequest();
+
 
 signals:
     void dragDropColumnsChanged(bool);
@@ -77,7 +77,6 @@ protected:
     bool dataframeExceedsCellLimit(QString name, int maxCells);
     void limitedGet(QString name, int maxCells);
     void doCopy();
-    void sendNewDataViewRequest(QAction *action, QString subtype);
 
 
 

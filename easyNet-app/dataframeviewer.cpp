@@ -354,15 +354,15 @@ void DataframeViewer::setParameter(QString name, QString key_val)
 
 void DataframeViewer::buildPlotMenu()
 {
-    buildRScriptMenu(plotMenu, "rPlotsDir");
+    buildRScriptMenu(plotMenu, "rPlotsDir", "rplot");
 }
 
 void DataframeViewer::buildDataframeViewMenu()
 {
-    buildRScriptMenu(dataframeViewMenu, "rDataframeViewsDir");
+    buildRScriptMenu(dataframeViewMenu, "rDataframeViewsDir", "dataframe_view");
 }
 
-void DataframeViewer::buildRScriptMenu(QMenu *menu, QString defaultLocation)
+void DataframeViewer::buildRScriptMenu(QMenu *menu, QString defaultLocation, QString subtype)
 {
     foreach(QAction *action, menu->actions())
         delete action;
@@ -371,23 +371,15 @@ void DataframeViewer::buildRScriptMenu(QMenu *menu, QString defaultLocation)
     foreach(QString script, rScriptsDir.entryList())
     {
         QAction *action = new QAction(script, this);
-        connect(action, SIGNAL(triggered()), this, SLOT(sendNewPlotRequest()));
+        action->setData(subtype);
+        connect(action, SIGNAL(triggered()), this, SLOT(sendNewDataViewRequest()));
         menu->addAction(action);
     }
 }
 
-void DataframeViewer::sendNewPlotRequest()
+void DataframeViewer::sendNewDataViewRequest()
 {
-    sendNewDataViewRequest(qobject_cast<QAction*>(sender()), "rplot");
-}
-
-void DataframeViewer::sendNewDataframeViewRequest()
-{
-    sendNewDataViewRequest(qobject_cast<QAction*>(sender()), "dataframe_view");
-}
-
-void DataframeViewer::sendNewDataViewRequest(QAction *action, QString subtype)
-{
+    QAction *action = qobject_cast<QAction*>(sender());
     if (!action)
     {
         eNerror << "invalid QAction argument";
@@ -398,6 +390,7 @@ void DataframeViewer::sendNewDataViewRequest(QAction *action, QString subtype)
         eNerror << "QAction does not contain text, while it should contain an R script name";
         return;
     }
+    QString subtype = action->data().toString();
     if (!(subtype == "dataframe_view" || subtype == "rplot"))
     {
         eNerror << "invalid subtype:" << subtype;
