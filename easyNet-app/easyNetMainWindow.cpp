@@ -870,7 +870,7 @@ void MainWindow::buildModelChooser()
                                   , model->name));
     }
     modelChooserI->setIconSize(QSize(250,250-fontSize));
-//    modelChooserI->setGridSize(QSize(250,250));
+    modelChooserI->setGridSize(QSize(250,250));
     modelChooserI->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     modelChooserI->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     modelChooser->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
