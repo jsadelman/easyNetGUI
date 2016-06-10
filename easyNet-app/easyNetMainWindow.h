@@ -187,6 +187,7 @@ private slots:
     void storeErrorMsg(QString cmd, QString error);
     void coreDump();
 
+    void mcLoadClicked();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -259,7 +260,10 @@ public:
     QWidget*modelChooser;
     QListWidget* modelChooserI;
     QToolBar* mcTaskBar;
-    QAction* mcSetting;
+    QAction* mcNew;
+    QAction* mcLoad;
+    QAction* useDefault;
+    QAction* customise;
     QVBoxLayout *modelChooserLayout;
     struct modelInfo
     {
