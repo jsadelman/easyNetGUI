@@ -79,7 +79,7 @@ class DiagramScene : public QGraphicsScene
 public:
 //    enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
-    explicit DiagramScene(QString box_type, QString arrow_type);
+    explicit DiagramScene(QString box_type, QString arrow_type, QObject *parent = Q_NULLPTR);
     QString boxType() {return m_boxType;}
     QString arrowType() {return m_arrowType;}
     QString layoutFile() {return m_layoutFile;}

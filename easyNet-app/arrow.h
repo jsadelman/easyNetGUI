@@ -38,6 +38,8 @@ public:
     void updatePen();
     qreal tangent()const;
     qreal cotangent()const;
+    virtual QRectF	boundingRect() const Q_DECL_OVERRIDE {return childrenBoundingRect();} // Qt bug
+    virtual QPainterPath shape() const Q_DECL_OVERRIDE;
 
 protected:
     virtual QAction *buildAndExecContextMenu(

@@ -70,8 +70,8 @@
 Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
-DiagramScene::DiagramScene(QString box_type, QString arrow_type)
-    : m_boxType(box_type), m_arrowType(arrow_type), awake(false), m_layoutFile(""),
+DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent)
+    : QGraphicsScene(parent), m_boxType(box_type), m_arrowType(arrow_type), awake(false), m_layoutFile(""),
       m_newModelLoaded(false)
 {
     selectedObject = "";

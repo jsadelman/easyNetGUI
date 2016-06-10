@@ -66,7 +66,6 @@ void Arrow::setArrowType(Arrow::ArrowType typ)
 
     }
     m_arrowType=typ;
-
 }
 
 void Arrow::setNewEndpoint(Arrow::End end, QPointF pt, Box *bx, Arrow::Strategy)
@@ -183,9 +182,8 @@ void Arrow::updatePosition()
         break;
 
     }
-    };
-
-}
+    }
+ }
 
 void Arrow::updatePen()
 {
@@ -226,6 +224,19 @@ qreal Arrow::cotangent()const
     if(m_endItem==m_startItem) return 0;
     return (m_endItem->pos().x() - m_startItem->pos().x()) /
             (m_endItem->pos().y() - m_startItem->pos().y());
+}
+
+QPainterPath Arrow::shape() const
+{
+    if (m_arrowType == Arrow::Line && m_line)
+    {
+        QPainterPath path = m_line->shape();
+        if (m_head)
+            path.addPath(m_head->shape());
+        return path;
+    }
+
+    return QGraphicsItemGroup::shape();
 }
 
 QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
