@@ -834,6 +834,7 @@ void MainWindow::buildModelChooser()
     modelList<< modelInfo("Relative Position","Models/rpm-ia/rpm-ia.eNm",":images/rpm-ia.png");
     modelList<< modelInfo("LTRS","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
     modelList<< modelInfo("PMSP (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
+    modelList<< modelInfo("DRC","Models/drc/drc.eNm",":images/custom.png");
     modelList<< modelInfo("Load from file","Models/",":images/open.png");
     modelList<< modelInfo("New","",":images/new.png");
 
@@ -845,7 +846,7 @@ void MainWindow::buildModelChooser()
                                   , model->name));
     }
     modelChooserI->setIconSize(QSize(250,250-fontSize));
-    modelChooserI->setGridSize(QSize(250,250));
+//    modelChooserI->setGridSize(QSize(250,250));
     modelChooserI->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     modelChooserI->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     modelChooser->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
