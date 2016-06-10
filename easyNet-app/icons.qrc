@@ -191,5 +191,8 @@
         <file>images/Forward.png</file>
         <file>images/Back.png</file>
         <file>images/restore.png</file>
+        <file>images/modelChooserIcon.png</file>
+        <file>images/ellipsis.png</file>
+        <file>images/finalise.png</file>
     </qresource>
 </RCC>

@@ -16,6 +16,7 @@
 #include <QDialog>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QKeySequence>
 
 
 #include <iostream>
@@ -382,6 +383,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(diagramWindow,SIGNAL(showModelSettingsSignal()), this,SLOT(showModelSettings()));
     connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
     connect(diagramWindow, SIGNAL(loadModelSignal()), this, SLOT(loadModel()));
+    connect(diagramWindow, SIGNAL(loadModelFileSignal()), this, SLOT(loadModelFromFileDialog()));
     connect(trialEditor, SIGNAL(loadTrialSignal()), this, SLOT(loadTrial()));
 
 
@@ -821,16 +823,19 @@ void MainWindow::buildModelChooser()
     modelChooser = new QWidget;
     mcTaskBar=new QToolBar;
     mcTaskBar->setOrientation(Qt::Horizontal);
+
     mcNew=mcTaskBar->addAction(QIcon(":/images/new.png"),tr("New Model"));
-    mcNew->setEnabled(false);
+//    mcNew->setEnabled(false);
+    connect(mcNew, SIGNAL(triggered()), this, SLOT(mcNewClicked()));
+
     mcLoad=mcTaskBar->addAction(QIcon(":/images/open.png"),tr("Load from file"));
     mcLoad->setShortcuts(QKeySequence::Open);
     mcLoad->setStatusTip(tr("Load a previously specified model from file"));
     connect(mcLoad, SIGNAL(triggered()), this, SLOT(mcLoadClicked()));
 
     QActionGroup *settingsGroup = new QActionGroup(mcTaskBar);
-    useDefault = new QAction("Default settings", settingsGroup);
-    customise = new QAction("Customised", settingsGroup);
+    useDefault = new QAction("Use default settings", settingsGroup);
+    customise = new QAction("Customise", settingsGroup);
     useDefault->setCheckable(true);
     customise->setCheckable(true);
     useDefault->setChecked(true);
@@ -916,16 +921,7 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
         modelChooser->close();
     }else
     if (eNmFile.right(1)=="/")
-    {
-        // bring up file dialog
-        QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
-                                                        SessionManager::instance()->defaultLocation("modelsDir"),
-                                                        tr("easyNet Model Files (*.eNm)"));
-    //    diagramPanel->hide();
-        if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
-        loadModel(fileName,mode);
-
-    }
+        loadModelFromFileDialog(mode);
     else
     {
         diagramPanel->useFake(modelTabIdx,true);
@@ -936,10 +932,23 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
     show(); // can show main window now
 }
 
+void MainWindow::mcNewClicked()
+{
+    modelChooser->hide();
+    show(); // can show main window now
+}
+
 void MainWindow::mcLoadClicked()
 {
     bool mode = (QGuiApplication::keyboardModifiers() != Qt::ControlModifier) &&
              (useDefault->isChecked());
+    loadModelFromFileDialog(mode);
+    modelChooser->hide();
+    show(); // can show main window now
+}
+
+void MainWindow::loadModelFromFileDialog(bool mode)
+{
     // bring up file dialog
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
@@ -947,9 +956,11 @@ void MainWindow::mcLoadClicked()
 //    diagramPanel->hide();
     if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
     loadModel(fileName,mode);
-    modelChooser->hide();
-    show(); // can show main window now
+}
 
+void MainWindow::loadModelFromFileDialog(void)
+{
+    loadModelFromFileDialog(true);
 }
 
 void MainWindow::popUpErrorMsg()
@@ -1006,13 +1017,9 @@ void MainWindow::coreDump()
 
 void MainWindow::loadModelUnconfigured()
 {
-    // bring up file dialog
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Load model"),
-                                                    SessionManager::instance()->defaultLocation("modelsDir"),
-                                                    tr("easyNet Model Files (*.eNm)"));
-    if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
-    loadModel(fileName,false);
+    loadModelFromFileDialog(false);
 }
+
 void MainWindow::modelConfigNeeded()
 {
     LazyNutJob *job = new LazyNutJob;
@@ -1616,20 +1623,26 @@ void MainWindow::createActions()
 //    newLogAct->setStatusTip(tr("Create a new file"));
     connect(newLogAct, SIGNAL(triggered()), this, SLOT(newLogFile()));
 
-    loadModelAct = new QAction(QIcon(":/images/layers-2x.png"), tr("&Load model"), this);
+    loadModelAct = new QAction(QIcon(":/images/modelChooserIcon.png"), tr("&Load model from selector"), this);
 //    loadModelAct->setShortcuts(QKeySequence::Open);
-    loadModelAct->setStatusTip(tr("Load a previously specified model"));
+    loadModelAct->setStatusTip(tr("Load a previously specified model from selector"));
     connect(loadModelAct, SIGNAL(triggered()), this, SLOT(loadModel()));
 
-    loadModelUAct = new QAction(tr("Partially load model for configuration"), this);
-//    loadModelAct->setShortcuts(QKeySequence::Open);
+    loadModelFileAct = new QAction(QIcon(":/images/open.png"), tr("&Load model from file dialog"), this);
+//    loadModelFileAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_J));
+    loadModelFileAct->setStatusTip(tr("Load a previously specified model from file dialog"));
+    connect(loadModelFileAct, SIGNAL(triggered()), this, SLOT(loadModelFromFileDialog()));
+
+    loadModelUAct = new QAction(QIcon(":/images/ellipsis.png"),tr("Partially load model for configuration"), this);
+//    loadModelUAct->setShortcut(QKeySequence(tr("Ctrl+.")));
     loadModelUAct->setStatusTip(tr("Load a previously specified model, pausing to allow settings to be changed"));
     connect(loadModelUAct, SIGNAL(triggered()), this, SLOT(loadModelUnconfigured()));
 
-    modelFinalizeAct = new QAction(tr("Finalize configured model"), this);
+    modelFinalizeAct = new QAction(QIcon(":/images/finalise.png"),tr("Finalize configured model"), this);
 //    loadModelAct->setShortcuts(QKeySequence::Open);
     modelFinalizeAct->setStatusTip(tr("Finish loading a model, once settings have been changed"));
     connect(modelFinalizeAct, SIGNAL(triggered()), this, SLOT(afterModelConfig()));
+    modelFinalizeAct->setEnabled(false);
 
     loadTrialAct = new QAction(QIcon(":/images/cog-2x.png"), tr("&Load trial"), this);
 //    loadTrialAct->setShortcuts(QKeySequence::Open);
@@ -1787,6 +1800,7 @@ void MainWindow::createMenus()
 
     fileSubMenu = fileMenu->addMenu(tr("&Load"));
     fileSubMenu->addAction(loadModelAct);
+    fileSubMenu->addAction(loadModelFileAct);
     fileSubMenu->addAction(loadModelUAct);
     fileSubMenu->addAction(modelFinalizeAct);
     fileSubMenu->addAction(loadTrialAct);

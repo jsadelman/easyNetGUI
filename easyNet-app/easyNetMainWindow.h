@@ -104,6 +104,7 @@ public slots:
     void showParameterSettings();
     void setStopButtonIcon(bool state);
     void displayExpertWindow();
+    void loadModelFromFileDialog(bool mode);
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -188,6 +189,8 @@ private slots:
     void coreDump();
 
     void mcLoadClicked();
+    void loadModelFromFileDialog();
+    void mcNewClicked();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -416,6 +419,7 @@ public:
     QAction         *newLogAct;
     QAction         *loadScriptAct;
     QAction         *loadModelAct;
+    QAction         *loadModelFileAct;
     QAction         *loadModelUAct;
     QAction         *modelFinalizeAct;
     QAction         *loadTrialAct;
