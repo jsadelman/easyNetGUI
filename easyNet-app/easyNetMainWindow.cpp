@@ -51,7 +51,7 @@
 #include "debuglog.h"
 #include "plotviewer.h"
 #include "plotviewerdispatcher.h"
-#include "diagramscenetabwidget.h"
+//#include "diagramscenetabwidget.h"
 #include "diagramscenestackedwidget.h"
 #include "diagramscene.h"
 #include "diagramwindow.h"

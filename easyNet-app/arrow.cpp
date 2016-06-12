@@ -216,14 +216,18 @@ void Arrow::updatePen()
 qreal Arrow::tangent()const
 {
     if(m_endItem==m_startItem) return 0;
-    return (m_endItem->pos().y() - m_startItem->pos().y()) /
-            (m_endItem->pos().x() - m_startItem->pos().x());
+    QPointF endPoint = m_endItem ? m_endItem->pos() : m_altEndPt;
+    return (endPoint.y() - m_startItem->pos().y()) /
+            (endPoint.x() - m_startItem->pos().x());
 }
 qreal Arrow::cotangent()const
 {
-    if(m_endItem==m_startItem) return 0;
-    return (m_endItem->pos().x() - m_startItem->pos().x()) /
-            (m_endItem->pos().y() - m_startItem->pos().y());
+    qreal tan = tangent();
+    return tan == 0 ? 0 : 1/tan;
+//    if(m_endItem==m_startItem) return 0;
+//    QPointF endPoint = m_endItem ? m_endItem->pos() : m_altEndPt;
+//    return (m_endItem->pos().x() - m_startItem->pos().x()) /
+//            (m_endItem->pos().y() - m_startItem->pos().y());
 }
 
 QPainterPath Arrow::shape() const

@@ -389,7 +389,10 @@ QPointF DiagramItem::connectionPoint(Arrow *arrow) const
 
 DiagramItem::Side DiagramItem::preferredSide (const Arrow *arrow)const
 {
-    if(arrow->getStartItem()==arrow->getEndItem())return Right;
+    if (!arrow->getStartItem() || !arrow->getEndItem())
+        return Unset;
+    if(arrow->getStartItem()==arrow->getEndItem())
+        return Right;
     const DiagramItem* otherItem=0;
     qreal halfwidth = mywidth/2.;
     qreal halfheight = myheight/2.;

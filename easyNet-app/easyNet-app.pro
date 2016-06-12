@@ -76,7 +76,7 @@ SOURCES +=  \
     finddialog.cpp \
     debuglog.cpp \
 #    plotviewer_old.cpp \
-    diagramscenetabwidget.cpp \
+#    diagramscenetabwidget.cpp \
     diagramscenestackedwidget.cpp \
     diagramwindow.cpp \
     diagramview.cpp \
@@ -181,7 +181,7 @@ HEADERS  += \
     finddialog.h \
     debuglog.h \
 #    plotviewer_old.h \
-    diagramscenetabwidget.h \
+#    diagramscenetabwidget.h \
     diagramscenestackedwidget.h \
     diagramwindow.h \
     diagramview.h \
