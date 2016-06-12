@@ -210,10 +210,16 @@ void DiagramWindow::createMenus()
 //    addDockWidget(Qt::LeftDockWidgetArea, layoutDock);
 
 //    loadModelAct = new QAction(QIcon(":/images/layers-2x.png"), tr("&Load model"), this);
-    loadModelAct = new QAction(QIcon(":/images/open.png"), tr("&Load model"), this);
+    loadModelAct = new QAction(QIcon(":/images/modelChooserIcon.png"), tr("&Load model from selector"), this);
     loadModelAct->setShortcuts(QKeySequence::Open);
     loadModelAct->setStatusTip(tr("Load a previously specified model"));
     connect(loadModelAct, SIGNAL(triggered()), this, SIGNAL(loadModelSignal()));
+
+    loadModelFileAct = new QAction(QIcon(":/images/open.png"), tr("&Load model from file dialog"), this);
+    loadModelFileAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_J));
+    loadModelFileAct->setStatusTip(tr("Load a previously specified model from file dialog"));
+    connect(loadModelFileAct, SIGNAL(triggered()), this, SIGNAL(loadModelFileSignal()));
+
 
     modelSettingsAct = new QAction(QIcon(":/images/list-4x.png"),tr("Model Settings"), this);
     modelSettingsAct->setStatusTip(tr("Display model settings"));
@@ -314,6 +320,8 @@ void DiagramWindow::createMenus()
     addToolBar(Qt::TopToolBarArea,diagramTopToolBar);
     diagramTopToolBar->setMovable(false);
     diagramTopToolBar->addAction(loadModelAct);
+    diagramTopToolBar->addAction(loadModelFileAct);
+    diagramTopToolBar->addSeparator();
     diagramTopToolBar->addAction(modelSettingsAct);
     diagramTopToolBar->addAction(parameterSettingsAct);
     diagramTopToolBar->addSeparator();

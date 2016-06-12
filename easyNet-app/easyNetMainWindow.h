@@ -104,6 +104,7 @@ public slots:
     void showParameterSettings();
     void setStopButtonIcon(bool state);
     void displayExpertWindow();
+    void loadModelFromFileDialog(bool mode);
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -187,6 +188,9 @@ private slots:
     void storeErrorMsg(QString cmd, QString error);
     void coreDump();
 
+    void mcLoadClicked();
+    void loadModelFromFileDialog();
+    void mcNewClicked();
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -259,7 +263,10 @@ public:
     QWidget*modelChooser;
     QListWidget* modelChooserI;
     QToolBar* mcTaskBar;
-    QAction* mcSetting;
+    QAction* mcNew;
+    QAction* mcLoad;
+    QAction* useDefault;
+    QAction* customise;
     QVBoxLayout *modelChooserLayout;
     struct modelInfo
     {
@@ -412,6 +419,7 @@ public:
     QAction         *newLogAct;
     QAction         *loadScriptAct;
     QAction         *loadModelAct;
+    QAction         *loadModelFileAct;
     QAction         *loadModelUAct;
     QAction         *modelFinalizeAct;
     QAction         *loadTrialAct;

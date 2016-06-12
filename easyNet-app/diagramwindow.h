@@ -29,6 +29,7 @@ public slots:
 
 signals:
     void loadModelSignal();
+    void loadModelFileSignal();
     void showModelSettingsSignal();
     void showParameterSettingsSignal();
 private slots:
@@ -57,6 +58,7 @@ private:
     QDoubleSpinBox *flowSeparationModifierSpinBox;
 //    QRadioButton *fitVisibleButton;
     QAction* loadModelAct;
+    QAction* loadModelFileAct;
     QAction* modelSettingsAct;
     QAction* parameterSettingsAct;
     QAction* fitVisibleAct;
