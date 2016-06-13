@@ -442,15 +442,10 @@ void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         {
             auto selectedObject = itemHash.key(item);
             if(item->parentItem()) selectedObject=itemHash.key(item->parentItem());
-            qDebug()<<selectedObject;
             emit objectSelected(selectedObject);
             break;
         }
     }
-
-#if 0
-    QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
-#endif
 }
 
 void DiagramScene::positionObject(QString name, QString type, QString subtype, QDomDocument *domDoc)
@@ -574,6 +569,7 @@ void DiagramScene::render()
                 arrow->setName(name);
                 arrow->setLazyNutType(m_arrowType);
                 arrow->setToolTip(name);
+                arrow->setDashedStroke(SessionManager::instance()->descriptionCache->subtype(name) == "lesioned_connection");
             }
 
             if (!startItem && !endItem)

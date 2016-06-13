@@ -42,13 +42,13 @@ public:
     virtual QPainterPath shape() const Q_DECL_OVERRIDE;
 
 protected:
-    virtual QAction *buildAndExecContextMenu(
-            QGraphicsSceneMouseEvent *event, QMenu& menu);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
 
-private:
+private slots:
     void lesion();
     void unlesion();
+
+private:
     void setArrowType(ArrowType p);
     QString m_name;
     QString m_lazyNutType;

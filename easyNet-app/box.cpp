@@ -166,8 +166,6 @@ QStringList Box::defaultPlotTypes()
 
 void Box::cacheFromDescription(QDomDocument *description, QString name)
 {
-
-
     if (m_lazyNutType != "layer" || name != m_name || !description)
         return;
     m_defaultPlotTypes.clear();
@@ -181,114 +179,94 @@ void Box::cacheFromDescription(QDomDocument *description, QString name)
     m_layerTransfer = XMLelement(*description)["subtype"]["layer_transfer"]();
 }
 
-
-QAction *Box::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
+void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
-    // a workaround for the following bug (feature?) of Dunnart or Qt:
-    // if right click on Box A without clicking on an action, then right click on Box B, the event on B is delivered to A.
-    if (!contains(event->pos()))
-        return nullptr;
+    if (m_lazyNutType != "layer")
+        return;
+    QMenu menu;
+
+    QMenu *plotMenu = new QMenu("Plot");
+    QList<QAction*> actionList;
+    foreach (QString observer, defaultObservers.keys())
+    {
+        QString dataframe = observer;
+        QString portPrettyName, rplotName;
+        if (observer.contains("input_channel"))
+        {
+            //                int i = default_input_observer_Rex.indexIn(observer);
+            //                portPrettyName = m_ports.value(default_input_observer_Rex.cap(1));
+            int i = default_input_observer_Rex.indexIn(observer);
+            portPrettyName = default_input_observer_Rex.cap(1);
+            rplotName = QString("%1.%2").arg(m_name).arg(portPrettyName);
+        }
+        else if (observer.contains("default_observer"))
+        {
+            portPrettyName = "state";
+            rplotName = QString("%1.state").arg(m_name);
+        }
+        QMenu *portMenu = plotMenu->addMenu(portPrettyName);
+        foreach(QString plotType, defaultPlotTypes())
+        {
+            QMap <QString, QVariant> plotData; // QMap <QString, QString> is not allowed
+            plotData["dataframe"] = dataframe;
+            plotData["observer"] = observer;
+            plotData["plotType"] = plotType;
+            plotData["rplotName"] = QString("%1.%2").arg(rplotName).arg(plotType).remove(QRegExp("\\.R$"));
+            actionList.append(portMenu->addAction(plotType));
+            actionList.last()->setData(plotData);
+            actionList.last()->setCheckable(true);
+            actionList.last()->setChecked(observerOfPlot.contains(plotData["rplotName"].toString()));
+        }
+    }
+    menu.addMenu(plotMenu);
+    QAction *lesionAct = menu.addAction(tr("Lesion layer"));
+    lesionAct->setVisible(m_layerTransfer != "lesion_transfer");
+    QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
+    unlesionAct->setVisible(m_layerTransfer == "lesion_transfer");
+
+    QAction *action = NULL;
     if (!menu.isEmpty())
     {
-        menu.addSeparator();
+        QApplication::restoreOverrideCursor();
+        action = menu.exec(event->screenPos());
     }
-    if (m_lazyNutType == "layer")
+
+    if (actionList.contains(action))
     {
-        QMenu *plotMenu = new QMenu("Plot");
-        QList<QAction*> actionList;
-        foreach (QString observer, defaultObservers.keys())
+        QMap <QString, QVariant> plotData = action->data().toMap();
+        if (action->isChecked())
         {
-            QString dataframe = observer;
-            QString portPrettyName, rplotName;
-            if (observer.contains("input_channel"))
+            if (!observerOfPlot.contains(plotData.value("rplotName").toString()))
             {
-//                int i = default_input_observer_Rex.indexIn(observer);
-//                portPrettyName = m_ports.value(default_input_observer_Rex.cap(1));
-                int i = default_input_observer_Rex.indexIn(observer);
-                portPrettyName = default_input_observer_Rex.cap(1);
-                rplotName = QString("%1.%2").arg(m_name).arg(portPrettyName);
+                observerOfPlot.insert(plotData.value("rplotName").toString(), plotData.value("observer").toString());
+                plotFilter->addName(plotData.value("rplotName").toString());
             }
-            else if (observer.contains("default_observer"))
+            enableObserver(plotData.value("observer").toString(), true);
+            if (!SessionManager::instance()->descriptionCache->exists(plotData.value("rplotName").toString()))
             {
-                portPrettyName = "state";
-                rplotName = QString("%1.state").arg(m_name);
-            }
-            QMenu *portMenu = plotMenu->addMenu(portPrettyName);
-            foreach(QString plotType, defaultPlotTypes())
-            {
-                QMap <QString, QVariant> plotData; // QMap <QString, QString> is not allowed
-                plotData["dataframe"] = dataframe;
-                plotData["observer"] = observer;
-                plotData["plotType"] = plotType;
-                plotData["rplotName"] = QString("%1.%2").arg(rplotName).arg(plotType).remove(QRegExp("\\.R$"));
-                actionList.append(portMenu->addAction(plotType));
-                actionList.last()->setData(plotData);
-                actionList.last()->setCheckable(true);
-                actionList.last()->setChecked(observerOfPlot.contains(plotData["rplotName"].toString()));
+                QMap<QString,QString> settings;
+                settings["df"] = plotData.value("dataframe").toString();
+                //emit createDataViewRequested
+                SessionManager::instance()->createDataView(plotData.value("rplotName").toString(),
+                                                           "rplot",
+                                                           plotData.value("plotType").toString().append(".R"),
+                                                           settings,
+                                                           false);
             }
         }
-        menu.addMenu(plotMenu);
-        QAction *lesionAct = menu.addAction(tr("Lesion layer"));
-        lesionAct->setVisible(m_layerTransfer != "lesion_transfer");
-        QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
-        unlesionAct->setVisible(m_layerTransfer == "lesion_transfer");
-
-        QAction *action = NULL;
-        if (!menu.isEmpty())
+        else
         {
-            QApplication::restoreOverrideCursor();
-            action = menu.exec(event->screenPos());
+            observerOfPlot.remove(plotData.value("rplotName").toString());
+            if (!observerOfPlot.values().contains(plotData.value("observer").toString()))
+                enableObserver(plotData.value("observer").toString(), false);
         }
-
-        if (actionList.contains(action))
-        {
-            QMap <QString, QVariant> plotData = action->data().toMap();
-            if (action->isChecked())
-            {
-                if (!observerOfPlot.contains(plotData.value("rplotName").toString()))
-                {
-                    observerOfPlot.insert(plotData.value("rplotName").toString(), plotData.value("observer").toString());
-                    plotFilter->addName(plotData.value("rplotName").toString());
-                }
-                enableObserver(plotData.value("observer").toString(), true);
-                if (!SessionManager::instance()->descriptionCache->exists(plotData.value("rplotName").toString()))
-                {
-                    QMap<QString,QString> settings;
-                    settings["df"] = plotData.value("dataframe").toString();
-                    //emit createDataViewRequested
-                    SessionManager::instance()->createDataView(plotData.value("rplotName").toString(),
-                                                    "rplot",
-                                                    plotData.value("plotType").toString().append(".R"),
-                                                    settings,
-                                                    false);
-                }
-            }
-            else
-            {
-                observerOfPlot.remove(plotData.value("rplotName").toString());
-                if (!observerOfPlot.values().contains(plotData.value("observer").toString()))
-                    enableObserver(plotData.value("observer").toString(), false);
-            }
-        }
-
-        else if (action == lesionAct)
-            lesionBox(true);
-
-        else if (action == unlesionAct)
-            lesionBox(false);
-
-        return action;
     }
-    else
-    {
-        QAction *action = NULL;
-        if (!menu.isEmpty())
-        {
-            QApplication::restoreOverrideCursor();
-            action = menu.exec(event->screenPos());
-        }
-        return action;
-    }
+
+    else if (action == lesionAct)
+        lesionBox(true);
+
+    else if (action == unlesionAct)
+        lesionBox(false);
 }
 
 

@@ -9,7 +9,8 @@
 #include <QGraphicsSceneEvent>
 #include <QPen>
 
-Arrow::Arrow():m_startItem(0),m_endItem(0),m_head(0),m_line(0),m_arrowType(Arrow::Unset)
+Arrow::Arrow():m_startItem(0),m_endItem(0),m_head(0),m_line(0),m_arrowType(Arrow::Unset),
+    m_dashedStroke(false)
 {
     m_pen.setWidth(4);
     m_pen.setColor(Qt::black);
@@ -243,61 +244,19 @@ QPainterPath Arrow::shape() const
     return QGraphicsItemGroup::shape();
 }
 
-QAction *Arrow::buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu &menu)
+void Arrow::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
-    if (!menu.isEmpty())
-    {
-        menu.addSeparator();
-    }
-    QString subtype;
-    QDomDocument *domDoc = SessionManager::instance()->descriptionCache->getDomDoc(m_name);
-    if (domDoc)
-        subtype =  XMLelement(*domDoc)["subtype"]();
+    if (m_lazyNutType != "connection")
+        return;
 
+    QMenu menu;
+    QString subtype = SessionManager::instance()->descriptionCache->subtype(name());
+    if (subtype == "lesioned_connection")
+        menu.addAction("Unlesion connection", this, SLOT(unlesion()));
+    else
+        menu.addAction("Lesion connection", this, SLOT(lesion()));
 
-    QAction *lesionAct = menu.addAction(tr("Lesion connection"));
-//    lesionAct->setVisible(m_lazyNutType == "connection" && subtype != "lesioned_connection");
-    lesionAct->setVisible(m_lazyNutType == "connection" && !dashedStroke());
-    QAction *unlesionAct = menu.addAction(tr("Unlesion connection"));
-//    unlesionAct->setVisible(m_lazyNutType == "connection" && subtype == "lesioned_connection");
-     unlesionAct->setVisible(m_lazyNutType == "connection" && dashedStroke());
-
-     QAction *action = NULL;
-     if (!menu.isEmpty())
-     {
-         QApplication::restoreOverrideCursor();
-         action = menu.exec(event->screenPos());
-     }
-
-
-    if (action == lesionAct)
-        lesion();
-
-    else if (action == unlesionAct)
-        unlesion();
-
-    return action;
-}
-
-void Arrow::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
- /*   if (event->button() == Qt::LeftButton)
-    {
-        QApplication::setOverrideCursor(Qt::ClosedHandCursor);
-        // Drop through to parent handler.
-    }
-    else*/ if (event->button() == Qt::RightButton)
-    {
-        QMenu menu;
-        QAction *action = buildAndExecContextMenu(event, menu);
-
-        if (action)
-        {
-            event->accept();
-        }
-    }
-
-    QGraphicsItem::mousePressEvent(event);
+    menu.exec(event->screenPos());
 }
 
 void Arrow::lesion()

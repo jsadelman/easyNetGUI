@@ -86,7 +86,7 @@ signals:
 
 
 protected:
-    virtual QAction *buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu& menu);
+    virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
 //    void sendCreateNewPlotOfType();

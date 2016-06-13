@@ -108,9 +108,6 @@ protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void setGeometry();
-    //void paintLabel();
-    virtual QAction *buildAndExecContextMenu(QGraphicsSceneMouseEvent *event, QMenu& menu)=0;
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
     QPen m_pen;
 
 //private:

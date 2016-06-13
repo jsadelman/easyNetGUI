@@ -652,19 +652,3 @@ QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &valu
 
     return value;
 }
-//! [6]
-void DiagramItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-if (event->button() == Qt::RightButton)
-    {
-        QMenu menu;
-        QAction *action = buildAndExecContextMenu(event, menu);
-
-        if (action)
-        {
-            event->accept();
-        }
-    }
-
-    QGraphicsItem::mousePressEvent(event);
-}
