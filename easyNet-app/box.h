@@ -43,11 +43,11 @@ class Box: public QObject, public DiagramItem//QGraphicsPolygonItem
 public:
     Box();
     virtual QString name(void) const {return m_name;}
-    virtual void setName(const QString& name) {m_name = name;}
+    virtual void setName(const QString& name) {m_name = name; setLabel();}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType);
     virtual int labelPointSize(void) const {return m_labelPointSize;}
-    virtual void setLabel(const QString& label);
+    virtual void setLabel(QString label="");
 
     virtual void setLabelPointSize(int labelPointSize);
     virtual qreal widthMarginProportionToLongestLabel() {return m_widthMarginProportionToLongestLabel;}
@@ -74,10 +74,11 @@ public:
     qreal height()const{return size().height();}
     qreal width()const{return size().width();}
     qreal autoWidth();
+    void autoFontSize();
 //    QSet<Box *> neighbours();
     void setFillColour(QColor);
     void setDashedStroke(bool);
-    void cmd_setSize(QSizeF f){myheight=f.height();mywidth=f.width();}
+    void cmd_setSize(QSizeF f){myheight=f.height();mywidth=f.width(); setGeometry();}
     QSizeF size()const{return QSizeF(mywidth,myheight);}
 signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);

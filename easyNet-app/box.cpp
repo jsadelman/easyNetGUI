@@ -21,7 +21,7 @@ const QColor observedCol = QColor("white");
 Box::Box()
     : QObject(),
       DiagramItem(DiagramItem::Layer,"",new QMenu,0),
-      m_longNameToDisplayIntact("longname"),
+      m_longNameToDisplayIntact("languages"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_labelPointSize(9),
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
@@ -36,6 +36,7 @@ Box::Box()
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
     m_ports.clear();
     setZValue(10);
+    autoFontSize();
 }
 
 void Box::setLazyNutType(const QString &lazyNutType)
@@ -78,8 +79,9 @@ void Box::read(const QJsonObject &json, qreal boxWidth)
     m_name = json["name"].toString();
     m_lazyNutType = json["lazyNutType"].toString();
     QPointF position(json["x"].toDouble(),json["y"].toDouble());
-    if (boxWidth != 0)
-        position *= (autoWidth() / boxWidth);
+//    if (boxWidth != 0)
+//        position *= (autoWidth() / boxWidth);
+//    autoSize();
     if (!position.isNull())
         setCentrePos(position);
 }
@@ -97,6 +99,20 @@ qreal Box::autoWidth()
 {
     QFontMetrics fm(labelFont);
     return (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
+}
+
+void Box::autoFontSize()
+{
+    QFontMetrics *fm = new QFontMetrics(labelFont);
+    bool enlarge = mywidth >= (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm->width(m_longNameToDisplayIntact);
+    while (enlarge == mywidth >= (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm->width(m_longNameToDisplayIntact))
+    {
+        labelFont.setPointSize(labelFont.pointSize() + (enlarge ? 1 : -1));
+        delete fm;
+        fm = new QFontMetrics(labelFont);
+    }
+    labelFont.setPointSize(labelFont.pointSize() + (enlarge ? -1 : 1));
+    delete fm;
 }
 
 void Box::setFillColour(QColor q)
@@ -139,13 +155,19 @@ void Box::paintLabel(QPainter *painter)
 //    }
     painter->setRenderHint(QPainter::TextAntialiasing, true);
 //    QString displayLabel = limitString(m_label, m_longNameToDisplayIntact.length());
-    painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextSingleLine, m_label);
+    painter->drawText(labelBoundingRect(), Qt::AlignCenter | Qt::TextWordWrap, m_label);
 }
 
 
-void Box::setLabel(const QString& label)
+void Box::setLabel(QString label)
 {
-    m_label = limitString(label, m_longNameToDisplayIntact.length());
+    if (label.isEmpty())
+    {
+        label = name();
+        label.replace("_", " ");
+    }
+    m_label = label;
+//    m_label = limitString(label, m_longNameToDisplayIntact.length());
     update();
 }
 

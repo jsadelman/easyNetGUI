@@ -272,7 +272,7 @@ void DiagramScene::write(QJsonObject &json)
             box->write(itemObject);
             itemArray.append(itemObject);
             if (boxWidth == 0)
-                boxWidth = box->autoWidth();
+                boxWidth = box->width();
     }
     json["QGraphicsItems"] = itemArray;
     json["boxWidth"] = boxWidth;
@@ -373,8 +373,8 @@ qDebug()<<"analyzing";
 //            qDebug()<<xm.label()<<" "<<xm.value();
             if(xm.value()==n)
             {
-                double x =250*xm["breadth"].value().toDouble();
-                double y= -250*xm["depth"].value().toDouble();
+                double x =2*box->width()*xm["breadth"].value().toDouble();
+                double y= -2*box->height()*xm["depth"].value().toDouble();
                 box->setCentrePos(QPointF(x,y));
             }
             xm=xm.nextSibling();
@@ -476,9 +476,9 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
         box->setProperty("longNameToDisplayIntact", boxLongNameToDisplayIntact);
         box->setProperty("widthMarginProportionToLongestLabel", boxWidthMarginProportionToLongestLabel);
         box->setProperty("widthOverHeight", boxWidthOverHeight);
-//        box->setLabelPointSize(14);
- //       box->autoSize();
-        box->setLabel(name);
+//        box->setLabelPointSize(18);
+//        box->autoSize();
+//        box->setLabel(name);
         box->setToolTip(name);
 //        if (m_boxType == "representation")
 //            box->setFillColour(QColor("azure"));
@@ -520,11 +520,12 @@ void DiagramScene::setLayoutFile(QDomDocument *domDoc)
     {
         m_layoutFile = XMLelement(*domDoc)["hints"]["json"]();
         if (m_layoutFile.isEmpty())
-            m_layoutFile = QString("%1/Models/%2.layer.json")
+            m_layoutFile = QString("%1/Models/%2/%2.layer.json")
                     .arg(SessionManager::instance()->easyNetDataHome())
                     .arg(SessionManager::instance()->currentModel());
         if (QFileInfo(m_layoutFile).isRelative())
             m_layoutFile.prepend(SessionManager::instance()->easyNetDataHome()+"/");
+//        qDebug() << Q_FUNC_INFO << m_layoutFile;
     }
 }
 
