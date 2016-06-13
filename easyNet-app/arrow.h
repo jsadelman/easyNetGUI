@@ -57,8 +57,10 @@ private:
     bool m_dashedStroke;
     QGraphicsItem* m_line;
     QGraphicsItem* m_head;
+    QGraphicsItem* m_lineSelectionArea;
     QPointF m_altStartPt,m_altEndPt;
     QPen m_pen;
+    QPen m_penSelectionArea;
 };
 
 #endif // ARROW_H

@@ -9,11 +9,12 @@
 #include <QGraphicsSceneEvent>
 #include <QPen>
 
-Arrow::Arrow():m_startItem(0),m_endItem(0),m_head(0),m_line(0),m_arrowType(Arrow::Unset),
-    m_dashedStroke(false)
+Arrow::Arrow():m_startItem(0),m_endItem(0),m_head(0),m_line(0),m_lineSelectionArea(0),
+    m_arrowType(Arrow::Unset),m_dashedStroke(false)
 {
     m_pen.setWidth(4);
     m_pen.setColor(Qt::black);
+    m_penSelectionArea.setWidth(20);
     setFlag(QGraphicsItem::ItemIsSelectable);
 
 }
@@ -40,10 +41,14 @@ void Arrow::setArrowType(Arrow::ArrowType typ)
           case(Arrow::Line):
             {
                 auto line=new QGraphicsLineItem(this);
+                auto lineSelectionArea =new QGraphicsLineItem(this);
                 m_line=line;
+                m_lineSelectionArea = lineSelectionArea;
+                m_lineSelectionArea->hide();
                 auto head=new QGraphicsPolygonItem(this);
                 m_head=head;
                 line->setPen(m_pen);
+                lineSelectionArea->setPen(m_penSelectionArea);
                 head->setPen(m_pen);
                 head->setBrush(QBrush(Qt::black,Qt::SolidPattern));
                 addToGroup(m_line);
@@ -146,12 +151,13 @@ void Arrow::updatePosition()
     case(Arrow::Line):
     {
         auto mline=dynamic_cast<QGraphicsLineItem*>(m_line);
-
-        if(!mline) break;
+        auto mlineSelectionArea=dynamic_cast<QGraphicsLineItem*>(m_lineSelectionArea);
+        if(!mline || !mlineSelectionArea) break;
         QLineF line;
         line.setP1(P1);
         line.setP2(P2);
         mline->setLine(line);
+        mlineSelectionArea->setLine(line);
         QGraphicsPolygonItem* mhead=dynamic_cast<QGraphicsPolygonItem*>(m_head);
         if(!mhead) break;
         QPolygonF tri;
@@ -233,9 +239,9 @@ qreal Arrow::cotangent()const
 
 QPainterPath Arrow::shape() const
 {
-    if (m_arrowType == Arrow::Line && m_line)
+    if (m_arrowType == Arrow::Line && m_lineSelectionArea)
     {
-        QPainterPath path = m_line->shape();
+        QPainterPath path = m_lineSelectionArea->shape();
         if (m_head)
             path.addPath(m_head->shape());
         return path;
