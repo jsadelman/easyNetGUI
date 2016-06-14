@@ -290,15 +290,23 @@ void DiagramScene::alignSelection(DiagramScene::Alignment al)
   int n=0;
   for(auto& item:selectedItems())
   {
-      qreal coord=(al==DiagramScene::Horizontal)?item->x():item->y();
-      average+=(coord-average)/(++n);
+      Box *box = dynamic_cast<Box *>(item);
+      if (box)
+      {
+          qreal coord=(al==DiagramScene::Horizontal)?box->centrePos().x():box->centrePos().y();
+          average+=(coord-average)/(++n);
+      }
   }
   for(auto& item:selectedItems())
   {
-      qreal coord=(al==DiagramScene::Horizontal)?item->x():item->y();
-      qreal xchange=(al==DiagramScene::Horizontal)?average-coord:0;
-      qreal ychange=(al==DiagramScene::Horizontal)?0:average-coord;
-      item->moveBy(xchange,ychange);
+      Box *box = dynamic_cast<Box *>(item);
+      if (box)
+      {
+          qreal coord=(al==DiagramScene::Horizontal)?box->centrePos().x():box->centrePos().y();
+          qreal xchange=(al==DiagramScene::Horizontal)?average-coord:0;
+          qreal ychange=(al==DiagramScene::Horizontal)?0:average-coord;
+          box->moveBy(xchange,ychange);
+      }
   }
   updateConnectorsForLayout();
 }
