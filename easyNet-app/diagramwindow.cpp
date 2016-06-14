@@ -326,9 +326,17 @@ void DiagramWindow::createMenus()
     diagramTopToolBar->addAction(parameterSettingsAct);
     diagramTopToolBar->addSeparator();
 
-    QWidget* empty = new QWidget();
-    empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    diagramTopToolBar->addWidget(empty);
+    modelNameLabel = new QLabel();
+    modelNameLabel->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    modelNameLabel->setStyleSheet("QLabel {"
+                            "qproperty-alignment: AlignCenter;"
+                            "padding-right: 3px;"
+                            "padding-left: 3px;"
+                            "font-weight: bold;"
+                            "background-color: white;"
+                            "}");
+
+    diagramTopToolBar->addWidget(modelNameLabel);
     diagramTopToolBar->addWidget(sceneScaleCombo);
     diagramTopToolBar->addAction(fitVisibleAct);
     diagramTopToolBar->addAction(vertAlign);
@@ -350,5 +358,10 @@ void DiagramWindow::vertAlignSlot()
 void DiagramWindow::horizAlignSlot()
 {
     alignSelection (DiagramScene::Horizontal);
+}
+
+void DiagramWindow::setModelName(QString name)
+{
+    modelNameLabel->setText(name);
 }
 

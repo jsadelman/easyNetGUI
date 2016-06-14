@@ -13,6 +13,7 @@ class QRadioButton;
 class QPushButton;
 class QToolButton;
 class QVBoxLayout;
+class QLabel;
 
 class DiagramWindow
         : public QMainWindow
@@ -48,6 +49,7 @@ private slots:
     void saveLayout();
     void vertAlignSlot();
     void horizAlignSlot();
+    void setModelName(QString name);
 private:
     void createMenus();
 //    DiagramSceneTabWidget *diagramSceneTabWidget;
@@ -67,6 +69,7 @@ private:
     QPushButton *deleteAlignmentButton;
     QPushButton *arrangeActButton;
     QToolBar *diagramTopToolBar;
+    QLabel *modelNameLabel;
     bool hidden;
 
 };

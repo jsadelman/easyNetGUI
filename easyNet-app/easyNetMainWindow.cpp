@@ -384,6 +384,7 @@ void MainWindow::connectSignalsAndSlots()
     connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
     connect(diagramWindow, SIGNAL(loadModelSignal()), this, SLOT(loadModel()));
     connect(diagramWindow, SIGNAL(loadModelFileSignal()), this, SLOT(loadModelFromFileDialog()));
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), diagramWindow, SLOT(setModelName(QString)));
     connect(trialEditor, SIGNAL(loadTrialSignal()), this, SLOT(loadTrial()));
 
 
