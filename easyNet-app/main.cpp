@@ -12,12 +12,11 @@ int main(int argc, char *argv[])
 //    QPixmap pixmap(":/images/image001.jpg");
     QSplashScreen splash(pixmap);
     splash.show();
-    app.processEvents();
 
     MainWindow* mainWindow = MainWindow::instance();
     mainWindow->build();
     splash.finish(mainWindow);
-    mainWindow->showMaximized();
+//    mainWindow->showMaximized();
     mainWindow->hide(); // get out of the way while user chooses model
 
 
