@@ -14,7 +14,7 @@
 #include <QDebug>
 
 ObjectNavigator::ObjectNavigator(QWidget *parent)
-    : QMainWindow(parent), currentObject("")
+    : QMainWindow(parent), currentObject(""), firstShow(true)
 {
 
     descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -57,8 +57,22 @@ void ObjectNavigator::setObject(QString name)
 
     SessionManager::instance()->descriptionCache->create(name);
     descriptionFilter->setName(name);
-    show();
-    raise();
+
+
+
+    if (!isVisible())
+    {
+        show();
+        // position in the centre (not the default behaviour for a QMainwindow)
+        if (parentWidget() && firstShow)
+        {
+            move(parentWidget()->window()->frameGeometry().topLeft() +
+                 parentWidget()->window()->rect().center() -
+                 rect().center());
+            firstShow = false;
+        }
+        raise();
+    }
     currentObject = name;
 }
 

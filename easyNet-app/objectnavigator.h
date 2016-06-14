@@ -45,6 +45,7 @@ private:
     QAction *backwardAct;
     QToolBar *navigationToolBar;
     QString currentObject;
+    bool firstShow;
 
 };
 
