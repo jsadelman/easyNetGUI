@@ -21,7 +21,7 @@ const QColor observedCol = QColor("white");
 Box::Box()
     : QObject(),
       DiagramItem(DiagramItem::Layer,"",new QMenu,0),
-      m_longNameToDisplayIntact("languages"),
+      m_longNameToDisplayIntact("graphemes"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_labelPointSize(9),
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
@@ -32,7 +32,7 @@ Box::Box()
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-    labelFont = scene() ? scene()->font() : QFont();
+    labelFont = QFont("Anka Coder", 10); //, QFont::Bold  scene() ? scene()->font() : QFont();
     connect(this, SIGNAL(lazyNutTypeChanged()), this, SLOT(setupDefaultObserverFilter()));
     m_ports.clear();
     setZValue(10);

@@ -38,7 +38,7 @@ void DiagramView::fitVisible(bool computeBoundingRect)
     qreal viewHeight = viewRect.height() - horizontalScrollBar()->height();
     qreal viewWidth = viewRect.width() - verticalScrollBar()->width();
     qreal newScale = qMin(viewHeight/sceneHeight, viewWidth/sceneWidth);
-    newScale = qMin(1.0, newScale);
+//    newScale = qMin(1.0, newScale);
     scale(newScale, newScale);
     centerOn(sceneRect.center());
     emit zoomChanged();
