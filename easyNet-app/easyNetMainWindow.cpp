@@ -67,6 +67,7 @@
 #include "modelsettingsdisplay.h"
 #include "settingswidget.h"
 #include "floatingDialogWindow.h"
+#include "errormsgdialog.h"
 
 
 MainWindow* MainWindow::mainWindow = nullptr;
@@ -967,30 +968,16 @@ void MainWindow::loadModelFromFileDialog(void)
 void MainWindow::popUpErrorMsg()
 {
     disconnect(SessionManager::instance(), SIGNAL(jobExecuted()), this, SLOT(popUpErrorMsg()));
-
-    QString errorText("The last command(s) triggered error(s).\n"
-                      "Would you like to save the simulator logs?");
-    QFontMetrics fm(QApplication::font("QMessageBox"));
-    int iconHeight = fm.height();
-    QString errorInfo = QString("<p>Note: a detailed log of commands and errors can always be retrieved from the Expert window "
-                      "(<img src=':/images/expert.mode.jpg' height=%1> button).</p>").arg(iconHeight);
     QString errorLog;
     QPair<QString, QString> errorPair;
     foreach (errorPair, errors)
     {
         errorLog.append(QString("COMMAND: %1\nERROR: %2\n\n").arg(errorPair.first).arg(errorPair.second));
     }
-    QMessageBox msgBox(QMessageBox::Critical,
-                       "Simulation Engine Error",
-                       errorText,
-                       QMessageBox::Yes | QMessageBox::No);
-    msgBox.setInformativeText(errorInfo);
-    msgBox.setDetailedText(errorLog);
-    msgBox.setDefaultButton(QMessageBox::No);
-    int answer = msgBox.exec();
-//    int answer = ScrollMessageBox::critical(this, "Simulation Engine Error", errorText,
-//                                QDialogButtonBox::Yes | QDialogButtonBox::No, QDialogButtonBox::No);
-    if (answer == QMessageBox::Yes)
+    ErrorMsgDialog errorDialog;
+    errorDialog.setErrorLog(errorLog);
+    int answer = errorDialog.exec();
+     if (answer == QDialog::Accepted)
         coreDump();
     errors.clear();
     SessionManager::instance()->submitJobs(SessionManager::instance()->updateObjectCacheJobs());

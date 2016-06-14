@@ -123,7 +123,8 @@ SOURCES +=  \
     parametersproxymodel.cpp \
     parametersmodel.cpp \
     parametersviewer.cpp \
-    hidefromlistmodel.cpp
+    hidefromlistmodel.cpp \
+    errormsgdialog.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -229,7 +230,8 @@ HEADERS  += \
     parametersproxymodel.h \
     parametersmodel.h \
     parametersviewer.h \
-    hidefromlistmodel.h
+    hidefromlistmodel.h \
+    errormsgdialog.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \
