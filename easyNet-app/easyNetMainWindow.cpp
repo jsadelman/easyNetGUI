@@ -1284,8 +1284,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
         writeSettings();
         SessionManager::instance()->killLazyNut();
-//        qDebug() << "eNMainWindow emitting saveLayout";
         emit saveLayout();
+        qApp->closeAllWindows();
         event->accept();
 }
 
