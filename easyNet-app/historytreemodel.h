@@ -5,6 +5,7 @@
 
 struct CheckRecord
 {
+    CheckRecord() : text(""), checked(false) {}
     QString text;
     bool checked;
 };

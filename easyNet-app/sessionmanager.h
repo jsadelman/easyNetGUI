@@ -55,6 +55,8 @@ public:
     QString easyNetUserHome() {return m_easyNetUserHome;}
     QString easyNetDir(QString env);
     QString defaultLocation(QString env) {return m_defaultLocation.value(env, QString());}
+    QString nextPrettyName(QString type);
+
 
     void setEasyNetHome(QString dir);
     void setEasyNetDataHome(QString dir);
@@ -97,6 +99,7 @@ public:
     bool isCopyRequested(QString original);
     bool isModelStageCompleted() {return m_isModelStageUpdated;}
     QDomDocument *description(QString name);
+    QString visibility(QString name);
 
 
     ObjectCache *descriptionCache;
@@ -158,14 +161,16 @@ public slots:
     void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
     void setCurrentTrial(QString s) {m_currentTrial = s; emit currentTrialChanged(m_currentTrial);}
     void setCurrentSet(QString s)   {m_currentSet = s;   emit currentSetChanged(m_currentSet);}
-    void setPrettyName(QString name, QString prettyName);
+    void setPrettyName(QString name, QString prettyName, bool quiet = false);
     void destroyObject(QString name);
     void setPlotFlags(QString name, int flags);
     void observerEnabled(QString observer=QString(), bool enabled=false);
     void suspendObservers(bool suspending) {m_suspendingObservers = suspending;}
     void setCopyRequested(QString original);
     void clearCopyRequested(QString original = "");
-    void createDataView(QString name, QString subtype, QString Type, QMap<QString,QString> settings=QMap<QString,QString>(), bool isBackup=false, bool popUpSettings=false);
+    void createDataView(QString name, QString prettyName, QString subtype, QString Type,
+                        QMap<QString,QString> settings=QMap<QString,QString>(), bool isBackup=false, bool popUpSettings=false);
+    void setShowHint(QString name, QString show);
 
 
 private slots:
@@ -176,7 +181,6 @@ private slots:
     void lazyNutProcessError(int error);
     void setDefaultLocations();
     void updateModelStageCompleted(QDomDocument* domDoc);
-    void setShowHint(QDomDocument*description, QString name);
 
 //    void macroStarted();
 //    void macroEnded();
@@ -232,7 +236,7 @@ private:
     ObjectCacheFilter *modelFilter;
     ObjectUpdater *modelDescriptionUpdater;
 
-
+    QMap<QString, int> itemCount;
 };
 
 #endif // SESSIONMANAGER_H

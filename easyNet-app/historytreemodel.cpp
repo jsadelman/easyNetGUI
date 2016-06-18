@@ -65,25 +65,37 @@ bool HistoryTreeModel::setData(const QModelIndex &index, const QVariant &value, 
     if (v.canConvert<CheckRecord>())
         record = v.value<CheckRecord>();
     bool success = false;
+    bool changed = false;
     switch(role)
     {
     case Qt::EditRole:
         record.text = value.toString();
         v.setValue(record);
         success = item->setData(0, v);
+        changed = true;
         break;
     case Qt::CheckStateRole:
         if (index.parent().isValid())
         {
-            record.checked = value.toInt() == Qt::Checked;
-            v.setValue(record);
-            success = item->setData(0, v);
+            if (record.checked != (value.toInt() == Qt::Checked))
+            {
+                record.checked = value.toInt() == Qt::Checked;
+                v.setValue(record);
+                success = item->setData(0, v);
+                changed = true;
+            }
+            else
+            {
+                success = true;
+            }
         }
     default:
         ;
     }
-    if (success)
+    if (success && changed)
+    {
         emit dataChanged(index, index, QVector<int>({role}));
+    }
 
     return success;
 }
@@ -153,9 +165,9 @@ bool HistoryTreeModel::appendView(QString view, QString trial, bool inView)
         eNerror << "cannot set view" << view;
         return false;
     }
-    QDomDocument *description = SessionManager::instance()->description(view);
-    if (description && XMLelement(*description)["hints"]["show"]() == "1")
-        inView = true;
+//    QDomDocument *description = SessionManager::instance()->description(view);
+//    if (description && XMLelement(*description)["hints"]["show"]() == "1")
+//        inView = true;
     if (!setData(index(rowCount(trialIdx)-1, 0, trialIdx), inView ? QVariant(Qt::Checked) : QVariant(Qt::Unchecked), Qt::CheckStateRole))
     {
         eNerror << "cannot set check value for view" << view;

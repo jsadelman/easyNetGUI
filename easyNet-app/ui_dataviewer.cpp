@@ -118,8 +118,8 @@ void Ui_DataViewer::createActions()
     settingsAct->setToolTip(tr("Show settings form"));
     if(!setup)
     {
-        historyAct = new QAction(QIcon(":/images/History.png"), tr("History"), this);
-        historyAct->setToolTip("show/hide history");
+        historyAct = new QAction(QIcon(":/images/History.png"), tr("View list"), this);
+        historyAct->setToolTip("show/hide view list");
         historyAct->setCheckable(true);
     }
 }

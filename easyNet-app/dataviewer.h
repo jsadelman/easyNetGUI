@@ -20,6 +20,7 @@ class DataViewer : public QWidget
     Q_OBJECT
     Q_PROPERTY(bool lazy READ isLazy WRITE setLazy NOTIFY lazyChanged)
     Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString itemPrettyName READ itemPrettyName WRITE setItemPrettyName)
     friend class DataViewerDispatcher;
 public:
     DataViewer(Ui_DataViewer *ui, QWidget * parent = 0);
@@ -37,6 +38,8 @@ public:
     QStringList items() {return m_items.toList();}
     QString name() {return m_name;}
     void setName(QString txt) {m_name = txt;}
+    QString itemPrettyName() {return m_itemPrettyName;}
+    void setItemPrettyName(QString txt) {m_itemPrettyName = txt;}
     bool isHidden(QString name) {return hiddenItems.contains(name);}
 
 
@@ -51,7 +54,7 @@ public slots:
     virtual void save()=0;
     virtual void copy()=0;
     virtual void destroySelectedItems();
-    virtual void snapshot(QString name="")=0;
+    virtual void snapshot(QString name="", QString snapshotName="")=0;
     virtual bool setCurrentItem(QString name);
 
 
@@ -95,6 +98,7 @@ protected:
     QSet<QString> m_items;
     QSet<QString> hiddenItems;
     QString m_name;
+    QString m_itemPrettyName;
 };
 
 #endif // DATAVIEWER_H

@@ -6,7 +6,8 @@
 #include "dataframeviewer.h"
 #include "objectcache.h"
 #include "objectcachefilter.h"
-#include "historytreemodel.h"
+//#include "historytreemodel.h"
+#include "xmlelement.h"
 
 #include <QSharedPointer>
 #include <QDomDocument>
@@ -40,38 +41,43 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
                    .arg(trialRunInfo.runMode);
         return;
     }
-//    int currentDispatchAction;
-    if (!inHistory(trialRunInfo.results))
+    if (!previousDispatchModeMap.contains(trialRunInfo.results))
     {
         currentDispatchAction = Dispatch_Overwrite;
+        SessionManager::instance()->setPrettyName(trialRunInfo.results,
+                                                  SessionManager::instance()->nextPrettyName(host->itemPrettyName()), true);
     }
-//    else if (!dispatchModeAuto && dispatchModeOverride > -1)
+//    else if (previousDispatchMode < 0)
 //    {
-//        currentDispatchAction = dispatchModeOverride;
+//        currentDispatchAction = currentDispatchMode;
 //    }
-    else if (previousDispatchMode < 0)
-    {
-        currentDispatchAction = currentDispatchMode;
-    }
     else
     {
-        currentDispatchAction = dispatchModeFST.value(qMakePair(previousDispatchMode, currentDispatchMode));
+        currentDispatchAction = dispatchModeFST.value(qMakePair(previousDispatchModeMap.value(trialRunInfo.results), currentDispatchMode));
     }
-    previousDispatchMode = currentDispatchMode;
+    previousDispatchModeMap[trialRunInfo.results] = currentDispatchMode;
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList();
     QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
-//    qDebug () << Q_FUNC_INFO << dispatchModeText.value(currentDispatchAction);
     switch(currentDispatchAction)
     {
     case Dispatch_New:
     {
         if (!SessionManager::instance()->isCopyRequested(trialRunInfo.results))
         {
+            SessionManager::instance()->setPrettyName(trialRunInfo.results,
+                                                      SessionManager::instance()->nextPrettyName(host->itemPrettyName()),
+                                                      true);
             SessionManager::instance()->setCopyRequested(trialRunInfo.results);
             QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(trialRunInfo.results));
             job->cmdList << QString("%1 copy %2").arg(trialRunInfo.results).arg(backupDf);
             job->cmdList << QString("%1 add_hint show 0").arg(backupDf);
+//            job->cmdList << QString("%1 set_pretty_name %2").arg(trialRunInfo.results)
+//                            .arg(SessionManager::instance()->nextPrettyName(host->itemPrettyName()));
+            QDomDocument *description = SessionManager::instance()->description(trialRunInfo.results);
+            if (description)
+                job->cmdList << QString("%1 set_pretty_name %2").arg(backupDf).arg(XMLelement(*description)["pretty name"]());
+
 //            job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
             QMap<QString, QVariant> jobData;
             jobData.insert("original", trialRunInfo.results);
@@ -88,12 +94,12 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     case Dispatch_Overwrite:
     {
 //        job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
-        if (!host->contains(trialRunInfo.results))
-        {
-            SessionManager::instance()->setTrialRunInfo(trialRunInfo.results, info);
-            host->addItem(trialRunInfo.results, false);
-        }
-        break;
+//        if (!host->contains(trialRunInfo.results))
+//        {
+//            SessionManager::instance()->setTrialRunInfo(trialRunInfo.results, info);
+//            host->addItem(trialRunInfo.results, false);
+//        }
+//        break;
     }
     case Dispatch_Append:
     {
@@ -128,8 +134,11 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 {
     QString results = TrialRunInfo(info).results;
-    if (!historyModel->isInView(results))
-        historyModel->setInView(results, true);
+    if (SessionManager::instance()->visibility(results).isEmpty())
+        setInView(results, true);
+
+//        SessionManager::instance()->setShowHint(trialRunInfo.results, "1", true);
+//    if (!historyModel->isInView(results))
 
 //    updateHistory(results, info);
     switch(currentDispatchAction)

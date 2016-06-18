@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     mainWindow->build();
     splash.finish(mainWindow);
     mainWindow->showMaximized();
-    mainWindow->hide(); // get out of the way while user chooses model
+//    mainWindow->hide(); // get out of the way while user chooses model
 
 
     int ret = app.exec();

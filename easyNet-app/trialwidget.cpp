@@ -50,11 +50,11 @@ TrialWidget::TrialWidget(QWidget *parent)
 //    });
 
     // cosmetics used in tabs names in TableWindow, will be taken care of in trial scripts
-    connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
-    {
-        QString df = QString("(%1 default_observer)").arg(name);
-        SessionManager::instance()->setPrettyName(df, name);
-    });
+//    connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
+//    {
+//        QString df = QString("(%1 default_observer)").arg(name);
+//        SessionManager::instance()->setPrettyName(df, name);
+//    });
 
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);

@@ -270,6 +270,7 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                 settings["df"] = plotData.value("dataframe").toString();
                 //emit createDataViewRequested
                 SessionManager::instance()->createDataView(plotData.value("rplotName").toString(),
+                                                           "",
                                                            "rplot",
                                                            plotData.value("plotType").toString().append(".R"),
                                                            settings,

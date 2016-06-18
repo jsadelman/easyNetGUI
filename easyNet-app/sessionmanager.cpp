@@ -208,6 +208,13 @@ QString SessionManager::easyNetDir(QString env)
     return QString();
 }
 
+QString SessionManager::nextPrettyName(QString type)
+{
+    if (!itemCount.contains(type))
+        itemCount[type] = 1;
+    return QString("%1 %2").arg(type).arg(itemCount[type]++);
+}
+
 void SessionManager::setEasyNetHome(QString dir)
 {
     m_easyNetHome = dir;
@@ -252,15 +259,19 @@ void SessionManager::restartLazyNut()
     startLazyNut();
 }
 
-void SessionManager::setPrettyName(QString name, QString prettyName)
+void SessionManager::setPrettyName(QString name, QString prettyName, bool quiet)
 {
     if (!descriptionCache->exists(name))
         return;
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList << QString("%1 set_pretty_name %2").arg(name).arg(prettyName);
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
-                                << job
-                                << recentlyModifiedJob();
+                                << job;
+    job->cmdList << QString("%1 set_pretty_name %2").arg(name).arg(prettyName);
+    if (quiet)
+        job->cmdList << "clear_recently_modified";
+    else
+        jobs << recentlyModifiedJob();
+
     submitJobs(jobs);
 }
 
@@ -331,7 +342,7 @@ void SessionManager::clearCopyRequested(QString original)
     m_requestedCopies.removeAll(original);
 }
 
-void SessionManager::createDataView(QString name, QString subtype, QString Type, QMap<QString, QString> settings, bool isBackup, bool popUpSettings)
+void SessionManager::createDataView(QString name, QString prettyName, QString subtype, QString Type, QMap<QString, QString> settings, bool isBackup, bool popUpSettings)
 {
     Q_UNUSED(isBackup)
     if (!(subtype == "dataframe_view" || subtype == "rplot"))
@@ -343,6 +354,7 @@ void SessionManager::createDataView(QString name, QString subtype, QString Type,
     job->cmdList = QStringList({
                                    QString("create %1 %2").arg(subtype).arg(name),
                                    QString("%1 set_type %2").arg(name).arg(Type),
+                                   QString("%1 set_pretty_name %2").arg(name).arg(prettyName)
 //                                   QString("%1 add_hint show %2").arg(name).arg(isBackup ? "0" : "1"),
                                 });
     QMapIterator<QString, QString> settings_it(settings);
@@ -413,6 +425,18 @@ bool SessionManager::isCopyRequested(QString original)
 QDomDocument *SessionManager::description(QString name)
 {
     return descriptionCache->getDomDoc(name);
+}
+
+QString SessionManager::visibility(QString name)
+{
+    QString val;
+    QDomDocument *desc = description(name);
+    if (desc)
+    {
+        if (XMLelement(*desc)["hints"].listLabels().contains("show"))
+            val = XMLelement(*desc)["hints"]["show"]();
+    }
+    return val;
 }
 
 
@@ -664,32 +688,35 @@ void SessionManager::updateModelStageCompleted(QDomDocument *domDoc)
             XMLelement(*domDoc)["staging"]().toInt() > *std::max_element(scriptList.begin(), scriptList.end());
 }
 
-void SessionManager::setShowHint(QDomDocument *description, QString name)
+void SessionManager::setShowHint(QString name, QString show)
 {
     if (!exists(name))
     {
-        eNerror << QString("observer %1 does not exist").arg(name);
+        eNerror << QString("object %1 does not exist").arg(name);
         return;
     }
-    if (!description)
+    QDomDocument *desc = description(name);
+    if (!desc)
     {
-        eNerror << QString("observer %1 does not have a description").arg(name);
+        eNerror << QString("object %1 does not have a description").arg(name);
         return;
     }
     QString cmd;
 
-    if (!XMLelement(*description)["hints"].listLabels().contains("show"))
-        cmd = QString("%1 add_hint show 1").arg(name);
-    else if (XMLelement(*description)["hints"]["show"]() != "1")
-        cmd = QString("%1 change_hint show 1").arg(name);
+    if (!XMLelement(*desc)["hints"].listLabels().contains("show"))
+        cmd = QString("%1 add_hint show %2").arg(name).arg(show);
+    else //if (XMLelement(*desc)["hints"]["show"]() != show)
+        cmd = QString("%1 change_hint show %2").arg(name).arg(show);
+
     if (!cmd.isEmpty())
     {
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList << cmd;
-        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
-                << job
-                << SessionManager::instance()->recentlyModifiedJob();
-        SessionManager::instance()->submitJobs(jobs);
+        job->cmdList << cmd << "clear_recently_modified";
+//        QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+//                << job;
+//        if (!quiet)
+//                jobs << recentlyModifiedJob();
+        submitJobs(job);
     }
 }
 

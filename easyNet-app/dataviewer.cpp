@@ -16,7 +16,7 @@
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
-    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), m_name(""),
+    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), m_name(""),m_itemPrettyName(""),
       lastOpenDir(""), defaultOpenDir(""), lastSaveDir(""), defaultSaveDir("")
 {
     setUi();
@@ -70,6 +70,15 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         {
             dispatcher->updateInfo(name);
             dispatcher->updateHistory(name);
+//            if (SessionManager::instance()->visibility(name) == "1" && !ui->contains(name))
+//            {
+//                addView(name);
+//                ui->setCurrentItem(name);
+//            }
+//            else if (SessionManager::instance()->visibility(name) == "0" && ui->contains(name))
+//            {
+//                removeView(name);
+//            }
         }
         return;
     }
@@ -84,7 +93,8 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         }
         if (dispatcher)
         {
-            dispatcher->addToHistory(name);
+            QString visibility = SessionManager::instance()->visibility(name);
+            dispatcher->addToHistory(name, visibility == "1");
         }
         else
         {
@@ -162,9 +172,9 @@ void DataViewer::addView(QString name)
     ui->addView(name, makeView(name));
     if (!isLazy())
         addNameToFilter(name);
-    QDomDocument *description = SessionManager::instance()->description(name);
-    if (!dispatcher || (description && XMLelement(*description)["hints"]["show"]() == "1"))
-        ui->setCurrentItem(name);
+
+//    if (!dispatcher || (description && XMLelement(*description)["hints"]["show"]() == "1"))
+//        ui->setCurrentItem(name);
 
 
 }
@@ -174,6 +184,8 @@ void DataViewer::removeView(QString name)
     if (!isLazy())
         removeNameFromFilter(name);
     delete ui->takeView(name);
+//    if (dispatcher)
+//        SessionManager::instance()->setShowHint(name, "0");
     //    descriptionFilter->removeName(name);
 }
 
