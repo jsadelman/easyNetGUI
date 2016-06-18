@@ -95,11 +95,11 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
   lazyNutIncompleteLine+=lazyNutOutput.midRef(offset);
 
   // Dots typically occur on an incomplete line, at least in quiet mode.
-  if(lazyNutIncompleteLine.startsWith("ANSWER: ."))
+  if(lazyNutIncompleteLine.startsWith("PROGRESS: ."))
   {
       int totDots=dotcount;
       int length = lazyNutIncompleteLine.length();
-      for(int i=8; i < length && lazyNutIncompleteLine[i]=='.';++i)
+      for(int i=10; i < length && lazyNutIncompleteLine[i]=='.';++i)
           totDots++;
       emit dotsCount(totDots);
   }
@@ -110,10 +110,15 @@ void CommandSequencer::processLazyNutLine()
     const QString& line=lazyNutLines.back();
 
     // Consider special ANSWER cases first
-    if(line.startsWith("ANSWER: ."))
+    if(line.startsWith("PROGRESS: Expect "))
+    {
+        int expect=line.midRef(16).toInt();
+        emit dotsExpect(expect);
+    }
+    else if(line.startsWith("PROGRESS: ."))
     {
         int length = line.length();
-        for(int i=8; i < length && line[i]=='.';++i)
+        for(int i=10; i < length && line[i]=='.';++i)
             dotcount++;
         emit dotsCount(dotcount);
     }

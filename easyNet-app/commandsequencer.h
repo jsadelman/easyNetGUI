@@ -50,6 +50,7 @@ signals:
     void cmdR(QString,QStringList);
 
     void dotsCount(int);
+    void dotsExpect(int);
 
 private:
 
