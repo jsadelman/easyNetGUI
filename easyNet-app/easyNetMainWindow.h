@@ -191,6 +191,8 @@ private slots:
     void mcLoadClicked();
     void loadModelFromFileDialog();
     void mcNewClicked();
+    void setProgress(int);
+    void rebaseProgress(int);
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -227,7 +229,7 @@ private:
 
     bool m_debugMode;
     void buildModelChooser();
-
+    void dotRedraw();
 public:
 
 
@@ -460,7 +462,8 @@ public:
 //    enum runMode {RunSingle, RunAll};
 
 
-
+    std::list<int> dotDenom,dotUse;
+    int dotLast;
 };
 
 #endif // NMCONSOLE_H

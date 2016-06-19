@@ -2,7 +2,7 @@
 #include "lazynut.h"
 
 #include <QDebug>
-
+#include <sstream>
 
 CommandSequencer::CommandSequencer(LazyNut *lazyNut, QObject *parent)
     : lazyNut(lazyNut), ready(true), logMode(0), QObject(parent),dotcount(0),beginLine(-1),timeMode(false),svgMode(false),
@@ -112,7 +112,9 @@ void CommandSequencer::processLazyNutLine()
     // Consider special ANSWER cases first
     if(line.startsWith("PROGRESS: Expect "))
     {
-        int expect=line.midRef(16).toInt();
+        std::stringstream expectS(line.midRef(16).toString().toStdString());
+        int expect;
+        expectS>>expect;
         emit dotsExpect(expect);
     }
     else if(line.startsWith("PROGRESS: ."))

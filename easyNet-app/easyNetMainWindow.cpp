@@ -128,7 +128,8 @@ MainWindow::MainWindow(QWidget *parent)
       modelChooserLayout(nullptr),
       modelChooserI(nullptr),
       mcTaskBar(nullptr),
-      useDefault(nullptr)
+      useDefault(nullptr),
+      dotLast(0)
 {
     errors.clear();
 }
@@ -904,6 +905,30 @@ void MainWindow::buildModelChooser()
 
 }
 
+void MainWindow::dotRedraw()
+{
+    auto iUse=dotUse.begin();
+    auto iDenom=dotDenom.begin();
+    int denom=1,pd=1;
+    int num=0;
+
+    for(;iUse!=dotUse.end();++iUse,++iDenom)
+    {
+        if(*iUse!=*iDenom)
+        {
+            denom*=*iDenom;
+            num*=*iDenom;
+            num+=*iUse;
+            pd=*iDenom;
+        }
+    }
+
+    qDebug()<<num<<"/"<<denom;
+
+    lazyNutProgressBar->setMaximum(denom);
+    lazyNutProgressBar->setValue(num);
+}
+
 void MainWindow::loadModel()
 {
 //    if (!modelChooser)
@@ -945,6 +970,36 @@ void MainWindow::mcNewClicked()
 {
     modelChooser->hide();
     show(); // can show main window now
+}
+
+
+void MainWindow::setProgress(int i)
+{
+    auto jDen=dotDenom.rbegin();
+    auto jUse=dotUse.rbegin();
+    int extra=i-dotLast;
+    qDebug()<<"X "<<extra;
+    for(;extra;extra--)
+    {
+        for(;*jUse==*jDen;++jUse,++jDen);
+        ++*jUse;
+    }
+    dotLast=i;
+    dotRedraw();
+}
+
+void MainWindow::rebaseProgress(int i)
+{
+    qDebug()<<"rebase "<<i;
+    if(dotUse.front()==dotDenom.front())
+    {
+        dotDenom.clear();
+        dotUse.clear();
+        dotLast=0;
+    }
+    dotDenom.push_back(i);
+    dotUse.push_back(0);
+    dotRedraw();
 }
 
 void MainWindow::mcLoadClicked()
@@ -1848,10 +1903,14 @@ void MainWindow::createStatusBar()
     lazyNutProgressBar->setTextVisible(false);
     lazyNutProgressBar->setMinimum(0);
     statusBar()->addPermanentWidget(lazyNutProgressBar, 0.5);
-    connect(SessionManager::instance(), SIGNAL(commandsInJob(int)),
-            lazyNutProgressBar, SLOT(setMaximum(int)));
-    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
-            this, SLOT(addOneToLazyNutProgressBar()));
+//    connect(SessionManager::instance(), SIGNAL(commandsInJob(int)),
+//            lazyNutProgressBar, SLOT(setMaximum(int)));
+//    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
+//            this, SLOT(addOneToLazyNutProgressBar()));
+      connect(SessionManager::instance(), SIGNAL(dotsExpect(int)),
+              this, SLOT(rebaseProgress(int)));
+      connect(SessionManager::instance(), SIGNAL(dotsCount(int)),
+              this, SLOT(setProgress(int)));
 
 
     readyLabel = new QLabel("READY");
