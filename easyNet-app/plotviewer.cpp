@@ -105,6 +105,7 @@ void PlotViewer::updateAllActivePlots()
             plotIsUpToDate[plotIsActiveIt.key()]=false;
         }
     }
+
     updateActivePlots();
 }
 
@@ -114,7 +115,7 @@ void PlotViewer::addRequestedItem(QString name, bool isBackup)
 //        addItem(name, isBackup);
 }
 
-void PlotViewer::snapshot(QString name)
+void PlotViewer::snapshot(QString name, QString snapshotName)
 {
     if (name.isEmpty())
         name = ui->currentItemName();
@@ -123,7 +124,9 @@ void PlotViewer::snapshot(QString name)
         eNwarning << "nothing to snapshot";
         return;
     }
-    QString snapshotName = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(name));
+    if (snapshotName.isEmpty())
+        snapshotName = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(name));
+
     SessionManager::instance()->addToExtraNamedItems(snapshotName);
     SessionManager::instance()->setTrialRunInfo(snapshotName, SessionManager::instance()->trialRunInfo(name));
     addItem(snapshotName);
@@ -348,6 +351,19 @@ void PlotViewer::restartTimer()
 {
     resizeTimer->stop();
     resizeTimer->start(250);
+}
+
+void PlotViewer::addItem_impl(QString name)
+{
+    QDomDocument *description = SessionManager::instance()->description(name);
+    if (description)
+    {
+        QString prettyName = XMLelement(*description)["pretty name"]();
+        if (prettyName == name || prettyName.isEmpty())
+        {
+            SessionManager::instance()->setPrettyName(name, SessionManager::instance()->nextPrettyName(itemPrettyName()));
+        }
+    }
 }
 
 

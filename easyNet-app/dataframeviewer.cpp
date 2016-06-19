@@ -401,8 +401,9 @@ void DataframeViewer::sendNewDataViewRequest()
     suffix.remove(QRegExp("\\.R$"));
     QMap<QString,QString> settings;
     settings["df"] = ui->currentItemName();
+    QString prettyName = subtype == "dataframe_view" ? SessionManager::instance()->nextPrettyName(itemPrettyName()) : "";
     QString dataViewName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
-    SessionManager::instance()->createDataView(dataViewName, subtype, dataViewScript, settings, false, true);
+    SessionManager::instance()->createDataView(dataViewName, prettyName, subtype, dataViewScript, settings, false, true);
 }
 
 void DataframeViewer::addItem_impl(QString name)

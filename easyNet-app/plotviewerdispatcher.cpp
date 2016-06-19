@@ -4,6 +4,7 @@
 #include "sessionmanager.h"
 #include "lazynutjob.h"
 #include "ui_dataviewer.h"
+#include "xmlelement.h"
 
 #include <QAction>
 #include <QToolBar>
@@ -39,7 +40,12 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     foreach (QString plot, affectedPlots(trialRunInfo.results))
     {
         if (host->plotByteArray.contains(plot) && snapshotActive())
-            host->snapshot(plot);
+        {
+            QDomDocument *description = SessionManager::instance()->description(plot);
+            QString snapshotName = description ? XMLelement(*description)["pretty name"]() : "";
+            host->snapshot(plot, snapshotName);
+            SessionManager::instance()->setPrettyName(plot, SessionManager::instance()->nextPrettyName(host->itemPrettyName()), true);
+        }
 
 //        if (!host->plotByteArray.contains(plot))
 //        {
@@ -103,11 +109,11 @@ void PlotViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
 
     foreach(QString plot, affectedPlots(TrialRunInfo(info).results))
     {
-//        SessionManager::instance()->setTrialRunInfo(plot, info);
         updateHistory(plot);
-        if (!isInView(plot))
+        if (SessionManager::instance()->visibility(plot).isEmpty())
+        {
             setInView(plot, true);
-//        host->plotIsUpToDate[plot] = false;
+        }
     }
     if (infoIsVisible)
         showInfo(true);

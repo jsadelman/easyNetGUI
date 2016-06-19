@@ -40,7 +40,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         // don't send comments, just are not necessary
         foreach (QString cmdLine, cmd.split(QRegExp("[\r\n]"),QString::SkipEmptyParts))
             if (!(cmdLine.startsWith("#") || emptyLineRex.exactMatch(cmdLine)))
-                commandList.append(cmdLine+"\n");
+                commandList.append(cmdLine);
     }
     if (commandList.size() == 0)
     {
@@ -64,7 +64,7 @@ void CommandSequencer::runCommands(QStringList commands, bool _getAnswer, unsign
         if (echoInterpreter(cmd) || logMode & ECHO_INTERPRETER)
             emit logCommand(cmd);
 
-        lazyNut->sendCommand(cmd);
+        lazyNut->sendCommand(cmd+"\n");
     }
 }
 

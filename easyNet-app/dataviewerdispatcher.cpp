@@ -153,6 +153,7 @@ bool DataViewerDispatcher::isInView(QString name)
 void DataViewerDispatcher::setInView(QString name, bool inView)
 {
     historyModel->setInView(name, trial(name), inView);
+//    SessionManager::instance()->setShowHint(name, inView ? "1" : "0");
 }
 
 void DataViewerDispatcher::setTrialRunMode(int mode)
@@ -172,7 +173,7 @@ void DataViewerDispatcher::setTrialRunMode(int mode)
 void DataViewerDispatcher::createHistoryWidget()
 {
     historyModel = new HistoryTreeModel(this);
-    historyWidget = new HistoryWidget(hostDataViewer->ui, QString("%1 History").arg(hostDataViewer->name()));
+    historyWidget = new HistoryWidget(hostDataViewer->ui, hostDataViewer->name());
     historyWidget->setModel(historyModel);
 //    historyWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 //    hostDataViewer->ui->addDockWidget(Qt::LeftDockWidgetArea, historyWidget);
@@ -219,7 +220,6 @@ void DataViewerDispatcher::createInfoWidget()
     infoAct->setToolTip("show/hide trial run info");
     connect(infoAct, SIGNAL(triggered(bool)), this, SLOT(showInfo(bool)));
     infoDock->setVisible(false);
-//    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(infoAct);
 }
 
 void DataViewerDispatcher::destroySelectedItems()
@@ -255,6 +255,8 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
         {
             name        = historyModel->data(historyModel->index(row, 0, topLeft.parent()), Qt::DisplayRole).toString();
             checked     = historyModel->data(historyModel->index(row, 0, topLeft.parent()), Qt::CheckStateRole).toInt();
+//            qDebug() << Q_FUNC_INFO << name << checked;
+            SessionManager::instance()->setShowHint(name, checked == Qt::Checked ? "1" : "0");
             if (checked == Qt::Checked)
             {
                 hostDataViewer->addView(name);

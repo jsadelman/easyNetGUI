@@ -40,7 +40,7 @@ public slots:
     virtual void copy() Q_DECL_OVERRIDE;
     void updateAllActivePlots();
     virtual void addRequestedItem(QString name="", bool isBackup=false);
-    virtual void snapshot(QString name="") Q_DECL_OVERRIDE;
+    virtual void snapshot(QString name="", QString snapshotName="") Q_DECL_OVERRIDE;
     virtual bool setCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
@@ -65,6 +65,7 @@ signals:
      void addDataframeRequested(QString, bool);
 
 protected:
+     virtual void addItem_impl(QString name) Q_DECL_OVERRIDE;
      virtual QWidget *makeView(QString name);
      virtual void addNameToFilter(QString name);
      virtual void removeNameFromFilter(QString name);

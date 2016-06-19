@@ -178,10 +178,15 @@ expertWindow=new QMainWindow;
 //    stimSetForm = new TableEditor ("Stimuli",this);
     ui_stimSetViewer = new Ui_DataTabsViewer;
     stimSetViewer = new DataframeViewer(ui_stimSetViewer, this);
+    stimSetDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    stimSetDescriptionFilter->setSubtype("stimulus_set");
     stimSetViewer->setDragDropColumns(true);
     stimSetViewer->setStimulusSet(true);
     stimSetViewer->setDefaultDir(SessionManager::instance()->defaultLocation("stimDir"));
     stimSetViewer->setShowInMainViewer(false);
+    connect(stimSetDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            stimSetViewer, SLOT(addItem(QString)));
+
 
 //    tablesWindow = new TableEditor (SessionManager::instance()->descriptionCache,"Tables",this);
 //    tableWindow = new TableViewer("Tables",this);
@@ -190,7 +195,8 @@ expertWindow=new QMainWindow;
     ui_dataframeResultsViewer = new Ui_DataTabsViewer;
     ui_dataframeResultsViewer->setUsePrettyNames(true);
     dataframeResultsViewer = new DataframeViewer(ui_dataframeResultsViewer, this);
-    dataframeResultsViewer->setName("Dataframes");
+    dataframeResultsViewer->setName("Tables");
+    dataframeResultsViewer->setItemPrettyName("Table");
     dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     dataframeDescriptionFilter->setType("dataframe");
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
@@ -222,7 +228,8 @@ expertWindow=new QMainWindow;
 
 
     plotViewer = new PlotViewer(ui_dataframeResultsViewer , this);
-    plotViewer->setName("Plots");
+    plotViewer->setName("Figures");
+    plotViewer->setItemPrettyName("Fig");
     plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
     plotDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     plotDescriptionFilter->setSubtype("rplot");

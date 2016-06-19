@@ -21,6 +21,7 @@ protected:
 
 private:
     DataframeViewer *host;
+    QMap<QString, int> previousDispatchModeMap;
 
 };
 

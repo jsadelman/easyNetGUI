@@ -225,7 +225,6 @@ private:
     //void loadModelUnconfigured(QString fileName);
     void loadModel(QString fileName,bool complete);
 
-
     bool m_debugMode;
     void buildModelChooser();
 
@@ -357,6 +356,7 @@ public:
     ObjectCacheFilter* modelListFilter;
     ObjectCacheFilter* trialListFilter;
     ObjectCacheFilter *dataframeDescriptionFilter;
+    ObjectCacheFilter *stimSetDescriptionFilter;
     ObjectCacheFilter *paramDescriptionFilter;
     ObjectCacheFilter *plotDescriptionFilter;
     ObjectCacheFilter *testFilter;

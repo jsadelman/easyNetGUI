@@ -41,7 +41,7 @@ public slots:
     virtual void copy() Q_DECL_OVERRIDE;
     void copyDataframe();
     virtual void addRequestedItem(QString name="", bool isBackup=false);
-    virtual void snapshot(QString name="") Q_DECL_OVERRIDE {Q_UNUSED(name)}
+    virtual void snapshot(QString name="", QString snapshotName="") Q_DECL_OVERRIDE {Q_UNUSED(name) Q_UNUSED(snapshotName)}
     virtual bool setCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
@@ -77,7 +77,6 @@ protected:
     bool dataframeExceedsCellLimit(QString name, int maxCells);
     void limitedGet(QString name, int maxCells);
     void doCopy();
-
 
 
     QMap<QString, DataFrameModel*> modelMap;
