@@ -114,8 +114,7 @@ void MainWindow::build()
 
     SessionManager::instance()->startLazyNut();
 
-    //  show model chooser at startup
-    loadModel();
+
 
 }
 

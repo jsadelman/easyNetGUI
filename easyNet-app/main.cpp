@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
     MainWindow* mainWindow = MainWindow::instance();
     mainWindow->build();
     mainWindow->showMaximized();
+    //  show model chooser at startup
+    mainWindow->loadModel();
+
     splash.finish(mainWindow);
 //    mainWindow->hide(); // get out of the way while user chooses model
 

@@ -105,6 +105,7 @@ public slots:
     void setStopButtonIcon(bool state);
     void displayExpertWindow();
     void loadModelFromFileDialog(bool mode);
+    void loadModel();
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -127,7 +128,7 @@ private slots:
     //bool save();
     //bool saveAs();
     //void documentWasModified();
-    void loadModel();
+
     void loadModelUnconfigured();
     void loadStimulusSet();
     void currentStimulusChanged(QString stim);
