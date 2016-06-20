@@ -136,7 +136,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::constructForms()
 {
-expertWindow=new QMainWindow;
+    expertWindow=new QMainWindow;
+    expertWindow->setWindowIcon(QIcon(":/images/zebra.png"));
 
     /* CONSTRUCT TABWIDGETS */
 /*
@@ -896,6 +897,7 @@ void MainWindow::buildModelChooser()
     modelChooser->setLayout(modelChooserLayout);
     modelChooser->show();
     modelChooser->raise();
+    modelChooser->setWindowIcon(QIcon(":/images/zebra.png"));
 
     connect(modelChooserI, SIGNAL(itemClicked(QListWidgetItem*)),
             this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
