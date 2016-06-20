@@ -889,7 +889,7 @@ void MainWindow::buildModelChooser()
     int w=std::ceil(std::sqrt(l));
     int h=std::ceil(l/w);
     QSize xx(w*250+80,h*250+60+mcTaskBar->sizeHint().height() );
-    qDebug()<<xx;
+//    qDebug()<<xx;
     modelChooser->resize(xx);
     modelChooserLayout->addWidget(mcTaskBar);
     modelChooserLayout->addWidget(modelChooserI);
@@ -923,7 +923,7 @@ void MainWindow::dotRedraw()
         }
     }
 
-    qDebug()<<num<<"/"<<denom;
+//    qDebug()<<num<<"/"<<denom;
 
     lazyNutProgressBar->setMaximum(denom);
     lazyNutProgressBar->setValue(num);
@@ -978,7 +978,7 @@ void MainWindow::setProgress(int i)
     auto jDen=dotDenom.rbegin();
     auto jUse=dotUse.rbegin();
     int extra=i-dotLast;
-    qDebug()<<"X "<<extra;
+//    qDebug()<<"X "<<extra;
     for(;extra;extra--)
     {
         for(;*jUse==*jDen;++jUse,++jDen);
@@ -990,7 +990,7 @@ void MainWindow::setProgress(int i)
 
 void MainWindow::rebaseProgress(int i)
 {
-    qDebug()<<"rebase "<<i;
+//    qDebug()<<"rebase "<<i;
     if(dotUse.front()==dotDenom.front())
     {
         dotDenom.clear();
