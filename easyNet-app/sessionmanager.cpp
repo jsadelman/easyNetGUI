@@ -653,6 +653,8 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(logCommand(QString)));
     connect(commandSequencer, SIGNAL(dotsCount(int)),
             this, SIGNAL(dotsCount(int)));
+    connect(commandSequencer, SIGNAL(dotsExpect(int)),
+            this, SIGNAL(dotsExpect(int)));
 
 
 

@@ -123,6 +123,7 @@ signals:
     void logCommand(QString);
     void commandsInJob(int);
     void dotsCount(int);
+    void dotsExpect(int);
     void lazyNutMacroStarted();
     void lazyNutMacroFinished();
 
