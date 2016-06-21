@@ -89,6 +89,8 @@ protected:
     QAction *getAllAct;
     QAction *findAct;
     QAction *copyDFAct;
+    QAction *plotAct;
+    QAction *dataframeViewAct;
 
     QToolButton *plotButton;
     QMenu *plotMenu;

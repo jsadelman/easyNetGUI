@@ -14,6 +14,7 @@ public:
     bool isAllValid();
     QDomDocument *getDomDoc(const QString& name);
     QString type(const QString& name);
+    bool contains(QString name);
 
 
 public slots:

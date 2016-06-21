@@ -10,6 +10,7 @@
 #include "xmlaccessor.h"
 #include "dataframeviewer.h"
 #include "enumclasses.h"
+#include "dataframemodel.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -28,7 +29,8 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument>)
 
 
 TrialWidget::TrialWidget(QWidget *parent)
-    : trialRunMode(TrialRunMode_Single), askDisableObserver(true), suspendingObservers(false), QWidget(parent)
+    : trialRunMode(TrialRunMode_Single), askDisableObserver(true),
+      suspendingObservers(false), QWidget(parent), currentParamExplore("")
 {
     layout = new QHBoxLayout;
     layout1 = new QHBoxLayout;
@@ -72,6 +74,15 @@ TrialWidget::TrialWidget(QWidget *parent)
     connect(modelDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*, QString)),
            this, SLOT(updateModelStochasticity(QDomDocument*)));
 
+    paramExploreFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    paramExploreDescriptionUpdater = new ObjectUpdater(this);
+    paramExploreDescriptionUpdater->setProxyModel(paramExploreFilter);
+
+    paramExploreDataframeFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
+    paramExploreDataframeUpdater = new ObjectUpdater(this);
+    paramExploreDataframeUpdater->setProxyModel(paramExploreDataframeFilter);
+    connect(paramExploreDataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
+            this, SLOT(runParamExplore(QDomDocument*,QString)));
 
     runAction = new QAction(tr("&Run"), this);
     runAction->setStatusTip(tr("Run"));
@@ -294,7 +305,15 @@ void TrialWidget::runTrial()
             job->cmdList << QString("%1 clear").arg(observer);
     }
     if (trialRunMode == TrialRunMode_List)
+    {
         runTrialList(job);
+        QDomDocument * stimulusSetDescription = SessionManager::instance()->descriptionCache->getDomDoc(SessionManager::instance()->currentSet());
+        int trialListLength = stimulusSetDescription ? XMLelement(*stimulusSetDescription)["rows"]().toInt() : 1;
+        if (isStochastic)
+            trialListLength *= repetitionsBox->currentText().isEmpty() ? 1 : repetitionsBox->currentText().toInt();
+        MainWindow::instance()->setTrialListLength(trialListLength);
+        MainWindow::instance()->updateTrialRunListCount(0);
+    }
     else
         runSingleTrial(job);
 
@@ -394,12 +413,7 @@ void TrialWidget::runTrialList(LazyNutJob *job)
         foreach(QString observer, SessionManager::instance()->enabledObservers())
             job->cmdList << QString("%1 enable").arg(observer);
 
-    QDomDocument * stimulusSetDescription = SessionManager::instance()->descriptionCache->getDomDoc(SessionManager::instance()->currentSet());
-    int trialListLength = stimulusSetDescription ? XMLelement(*stimulusSetDescription)["rows"]().toInt() : 1;
-    if (isStochastic)
-        trialListLength *= repetitionsBox->currentText().isEmpty() ? 1 : repetitionsBox->currentText().toInt();
-    MainWindow::instance()->setTrialListLength(trialListLength);
-    MainWindow::instance()->updateTrialRunListCount(0);
+
 }
 
 bool TrialWidget::checkIfReadyToRun()
@@ -452,6 +466,87 @@ void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
         isStochastic = false;
 
     setStochasticityVisible(trialRunMode == TrialRunMode_List && isStochastic);
+}
+
+void TrialWidget::addParamExploreDf(QString name)
+{
+    paramExploreFilter->addName(name);
+    paramExploreDataframeFilter->addName(name);
+}
+
+void TrialWidget::initParamExplore(QString name)
+{
+    if (!paramExploreFilter->contains(name))
+        return;
+    if (!checkIfReadyToRun())
+    {
+        QMessageBox::warning(this, "Missing arguments",
+                             "The current trial is not completely specified.\n"
+                             "Please fill in all arguments in the Trial box on top of the main window and then press the Apply button again."
+                             );
+        return;
+    }
+    currentParamExplore = name;
+}
+
+void TrialWidget::runParamExplore(QDomDocument *df, QString name)
+{
+    if (name != currentParamExplore)
+        return;
+
+    DataFrameModel dfModel(df, this);
+    if (dfModel.rowCount() == 0 || !(dfModel.colNames().contains("parameter") && dfModel.colNames().contains("value")))
+        return;
+
+    currentParamExplore = "";
+    // compute number of items
+    int trialListLength = dfModel.rowCount();
+    if (trialRunMode == TrialRunMode_List)
+    {
+        QDomDocument *description = SessionManager::instance()->description(getStimulusSet());
+        if (description)
+            trialListLength *= XMLelement(*description)["rows"]().toInt();
+    }
+    if (isStochastic)
+        trialListLength *= repetitionsBox->currentText().isEmpty() ? 1 : repetitionsBox->currentText().toInt();
+
+    MainWindow::instance()->setTrialListLength(trialListLength);
+    MainWindow::instance()->updateTrialRunListCount(0);
+
+    SessionManager::instance()->suspendObservers(true);
+    int saved_trialRunMode = trialRunMode;
+    trialRunMode = TrialRunMode_List;
+    QSharedPointer<QDomDocument> trialRunInfo = createTrialRunInfo();
+    emit aboutToRunTrial(trialRunInfo);
+    trialRunMode = saved_trialRunMode;
+
+    LazyNutJob *job = new LazyNutJob;
+    for (int row = 0; row < dfModel.rowCount(); ++row)
+    {
+        job->cmdList << QString("(%1 parameters) set %2 %3")
+                        .arg(SessionManager::instance()->currentModel())
+                        .arg(dfModel.data(dfModel.index(row, 0)).toString())
+                        .arg(dfModel.data(dfModel.index(row, 1)).toString());
+        if (trialRunMode == TrialRunMode_List)
+            runTrialList(job);
+        else
+            runSingleTrial(job);
+    }
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCacheJobs();
+
+    QMap<QString, QVariant> jobData;
+    jobData.insert("trialRunInfo", QVariant::fromValue(trialRunInfo));
+    jobData.insert("hide", name);
+    jobs.last()->data = jobData;
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->dataframeResultsViewer, SLOT(dispatch()));
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
+    jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(hideItemFromResults()));
+
+    MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
+    job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
+    SessionManager::instance()->submitJobs(jobs);
 }
 
 void TrialWidget::setStochasticityVisible(bool isVisible)

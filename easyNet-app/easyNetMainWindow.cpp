@@ -322,7 +322,7 @@ void MainWindow::connectSignalsAndSlots()
 //    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
 //    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
-
+    connect(paramViewer, SIGNAL(paramExploreDfCreated(QString)), trialWidget, SLOT(addParamExploreDf(QString)));
 
 
 //    connect(plotViewer,SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
@@ -404,6 +404,8 @@ void MainWindow::connectSignalsAndSlots()
 //            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
 
     connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
+    connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), trialWidget, SLOT(initParamExplore(QString)));
+
 
     connect(SessionManager::instance(), SIGNAL(logCommand(QString)),
             commandLog, SLOT(addText(QString)));
@@ -999,6 +1001,27 @@ void MainWindow::rebaseProgress(int i)
     dotDenom.push_back(i);
     dotUse.push_back(0);
     dotRedraw();
+}
+
+void MainWindow::hideItemFromResults(QString name)
+{
+    if (name.isEmpty())
+    {
+        QVariant v = SessionManager::instance()->getDataFromJob(sender(), "hide");
+        if (!v.canConvert<QString>())
+        {
+            eNerror << "cannot retrieve a valid string from hide key in sender LazyNut job";
+            return;
+        }
+        name = v.value<QString>();
+    }
+    if (SessionManager::instance()->descriptionCache->type(name) == "dataframe")
+        dataframeResultsDispatcher->setInView(name, false);
+    else if (SessionManager::instance()->descriptionCache->subtype(name) == "rplot")
+        plotViewerDispatcher->setInView(name, false);
+    else
+        eNerror << QString("object %1 is of a type not supported by Results Viewr").arg(name);
+
 }
 
 void MainWindow::mcLoadClicked()

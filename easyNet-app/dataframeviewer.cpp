@@ -467,7 +467,7 @@ void DataframeViewer::addExtraActions()
     plotMenu = new QMenu(plotButton);
     connect(plotMenu, SIGNAL(aboutToShow()), this, SLOT(buildPlotMenu()));
     plotButton->setMenu(plotMenu);
-    ui->editToolBar[this]->addWidget(plotButton);
+    plotAct = ui->editToolBar[this]->addWidget(plotButton);
 
     dataframeViewButton = new QToolButton(this);
     dataframeViewButton->setIcon(QIcon(":/images/formula.png"));
@@ -478,7 +478,7 @@ void DataframeViewer::addExtraActions()
     dataframeViewMenu = new QMenu(dataframeViewButton);
     connect(dataframeViewMenu, SIGNAL(aboutToShow()), this, SLOT(buildDataframeViewMenu()));
     dataframeViewButton->setMenu(dataframeViewMenu);
-    ui->editToolBar[this]->addWidget(dataframeViewButton);
+    dataframeViewAct = ui->editToolBar[this]->addWidget(dataframeViewButton);
 }
 
 bool DataframeViewer::partiallyLoaded(QString name)

@@ -39,6 +39,17 @@ QString ObjectCacheFilter::type(const QString &name)
     return static_cast<ObjectCache *>(sourceModel())->type(name);
 }
 
+bool ObjectCacheFilter::contains(QString name)
+{
+    QModelIndexList nameMatchList = match(
+                index(ObjectCache::NameCol,0),
+                Qt::DisplayRole,
+                name,
+                1,
+                Qt::MatchExactly);
+    return (nameMatchList.length() > 0);
+}
+
 void ObjectCacheFilter::setNoFilter()
 {
     setFilterRegExp("^$");

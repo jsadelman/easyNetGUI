@@ -194,6 +194,7 @@ private slots:
     void mcNewClicked();
     void setProgress(int);
     void rebaseProgress(int);
+    void hideItemFromResults(QString name="");
 protected:
     void closeEvent(QCloseEvent *event);
 

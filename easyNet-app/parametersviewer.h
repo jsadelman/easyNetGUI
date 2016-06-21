@@ -16,6 +16,10 @@ protected slots:
     virtual void updateDataframe(QDomDocument* domDoc, QString name) Q_DECL_OVERRIDE;
     void restoreSelection();
     void restoreAll();
+    void paramExplore();
+
+signals:
+    void paramExploreDfCreated(QString);
 
 
 protected:
@@ -25,8 +29,8 @@ protected:
     QAction *restoreSelectionAct;
     QAction *restoreAllAct;
     QToolButton *restoreButton;
+    QAction *paramExploreAct;
     QMenu *restoreMenu;
-
 };
 
 #endif // PARAMETERSVIEWER_H

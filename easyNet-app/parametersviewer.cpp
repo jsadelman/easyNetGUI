@@ -6,6 +6,7 @@
 #include "easyNetMainWindow.h"
 #include "parametersproxymodel.h"
 #include "lazynutjob.h"
+#include "objectcachefilter.h"
 
 
 #include <QToolButton>
@@ -19,8 +20,10 @@ ParametersViewer::ParametersViewer(Ui_DataViewer *ui, QWidget *parent)
     setDragDropColumns(false);
 
     ui->settingsAct->setVisible(false);
-    plotButton->setVisible(false);
-    dataframeViewButton->setVisible(false);
+    ui->destroyAct->setVisible(false);
+    plotAct->setVisible(false);
+    dataframeViewAct->setVisible(false);
+    getAllAct->setVisible(false);
 
     restoreButton = new QToolButton(this);
     restoreButton->setIcon(QIcon(":/images/restore.png"));
@@ -42,6 +45,11 @@ ParametersViewer::ParametersViewer(Ui_DataViewer *ui, QWidget *parent)
     });
     restoreButton->setMenu(restoreMenu);
     ui->editToolBar[this]->addWidget(restoreButton);
+
+    paramExploreAct = new QAction(QIcon(":/images/Microscope-red-icon.png"), "Explore parameter space", this);
+    connect(paramExploreAct, SIGNAL(triggered()), this, SLOT(paramExplore()));
+    ui->editToolBar[this]->addAction(paramExploreAct);
+    paramExploreAct->setEnabled(false);
 }
 
 void ParametersViewer::destroyItem_impl(QString name)
@@ -54,6 +62,7 @@ void ParametersViewer::enableActions(bool enable)
 {
     DataframeViewer::enableActions(enable);
     restoreButton->setEnabled(enable);
+    paramExploreAct->setEnabled(enable);
 }
 
 void ParametersViewer::updateDataframe(QDomDocument *domDoc, QString name)
@@ -161,6 +170,31 @@ void ParametersViewer::restoreAll()
                 << SessionManager::instance()->recentlyModifiedJob();
         SessionManager::instance()->submitJobs(jobs);
     }
+}
+
+void ParametersViewer::paramExplore()
+{
+    QString dataViewScript = "param_explore.R";
+    QFile paramExploreFile(QString("%1/%2").arg(SessionManager::instance()->defaultLocation("rDataframeViewsDir")).arg(dataViewScript));
+    if (!paramExploreFile.exists())
+    {
+        eNerror << dataViewScript << "not found";
+        return;
+    }
+    QString df = ui->currentItemName();
+    if (df.isEmpty())
+    {
+        eNerror << "no parameter dataframe available";
+        return;
+    }
+    QMap<QString,QString> settings;
+    settings["df"] = df;
+    QString suffix = dataViewScript;
+    suffix.remove(QRegExp("\\.R$"));
+
+    QString paramExploreDf = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
+    SessionManager::instance()->createDataView(paramExploreDf, "", "dataframe_view", dataViewScript, settings, false, true);
+    emit paramExploreDfCreated(paramExploreDf);
 }
 
 

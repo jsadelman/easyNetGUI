@@ -56,6 +56,9 @@ private slots:
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
     void updateModelStochasticity(QDomDocument* modelDescription);
+    void addParamExploreDf(QString name);
+    void initParamExplore(QString name);
+    void runParamExplore(QDomDocument *df, QString name);
 
 private:
     QSharedPointer<QDomDocument> createTrialRunInfo();
@@ -68,6 +71,12 @@ private:
     ObjectUpdater* trialDescriptionUpdater;
     ObjectCacheFilter* modelFilter;
     ObjectUpdater* modelDescriptionUpdater;
+    ObjectCacheFilter *paramExploreFilter;
+    ObjectUpdater* paramExploreDescriptionUpdater;
+    ObjectCacheFilter *paramExploreDataframeFilter;
+    ObjectUpdater* paramExploreDataframeUpdater;
+    QString currentParamExplore;
+
     QMap <QString, myComboBox*> argumentMap;
     QVector <QLabel*> labelList;
 
