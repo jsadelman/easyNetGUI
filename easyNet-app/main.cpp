@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
 //    QPixmap pixmap(":/images/image001.jpg");
     QSplashScreen splash(pixmap);
     splash.show();
-    app.processEvents();
 
     MainWindow* mainWindow = MainWindow::instance();
     mainWindow->build();

@@ -136,7 +136,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::constructForms()
 {
-expertWindow=new QMainWindow;
+    expertWindow=new QMainWindow;
+    expertWindow->setWindowIcon(QIcon(":/images/zebra.png"));
 
     /* CONSTRUCT TABWIDGETS */
 /*
@@ -869,7 +870,8 @@ void MainWindow::buildModelChooser()
     modelList<< modelInfo("Relative Position","Models/rpm-ia/rpm-ia.eNm",":images/rpm-ia.png");
     modelList<< modelInfo("LTRS","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
     modelList<< modelInfo("PMSP (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
-    modelList<< modelInfo("DRC","Models/drc/drc.eNm",":images/custom.png");
+    modelList<< modelInfo("DRC","Models/drc/drc.eNm",":images/drc.png");
+    modelList<< modelInfo("Overlap Open Bigram","Models/oob-ia/oob-ia.eNm",":images/custom.png");
 //    modelList<< modelInfo("Load from file","Models/",":images/open.png");
 //    modelList<< modelInfo("New","",":images/new.png");
 
@@ -897,6 +899,7 @@ void MainWindow::buildModelChooser()
     modelChooser->setLayout(modelChooserLayout);
     modelChooser->show();
     modelChooser->raise();
+    modelChooser->setWindowIcon(QIcon(":/images/zebra.png"));
 
     connect(modelChooserI, SIGNAL(itemClicked(QListWidgetItem*)),
             this, SLOT(modelChooserItemClicked(QListWidgetItem*)));
