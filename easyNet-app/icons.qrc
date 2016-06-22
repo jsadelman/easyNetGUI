@@ -195,5 +195,6 @@
         <file>images/ellipsis.png</file>
         <file>images/finalise.png</file>
         <file>images/Microscope-red-icon.png</file>
+        <file>images/ZebLT.png</file>
     </qresource>
 </RCC>

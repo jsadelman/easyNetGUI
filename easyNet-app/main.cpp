@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
 //    QPixmap pixmap(":/splash.png");
-    QPixmap pixmap(":/images/zebra.png");
+    QPixmap pixmap(":/images/ZebLT.png");
 //    QPixmap pixmap(":/images/image001.jpg");
     QSplashScreen splash(pixmap);
     splash.show();
