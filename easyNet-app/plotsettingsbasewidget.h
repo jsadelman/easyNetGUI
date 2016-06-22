@@ -127,8 +127,7 @@ protected:
     virtual void setWidgetValue(QVariant val) Q_DECL_OVERRIDE;
     virtual QVariant raw2widgetValue(QString val) Q_DECL_OVERRIDE;
     virtual QString widget2rawValue(QVariant val) Q_DECL_OVERRIDE;
-
-
+    QValidator *validator;
 
 };
 

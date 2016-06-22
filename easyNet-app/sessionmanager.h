@@ -167,6 +167,8 @@ public slots:
     void setPlotFlags(QString name, int flags);
     void observerEnabled(QString observer=QString(), bool enabled=false);
     void suspendObservers(bool suspending) {m_suspendingObservers = suspending;}
+    void suspendObservers() {m_suspendingObservers = true;}
+    void resumeObservers() {m_suspendingObservers = false;}
     void setCopyRequested(QString original);
     void clearCopyRequested(QString original = "");
     void createDataView(QString name, QString prettyName, QString subtype, QString Type,

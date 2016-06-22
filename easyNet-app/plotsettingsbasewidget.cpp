@@ -3,6 +3,8 @@
 #include <QSortFilterProxyModel>
 #include <QFontMetrics>
 #include <QFont>
+#include <QIntValidator>
+#include <QDoubleValidator>
 
 #include "plotsettingsbasewidget.h"
 #include "lazynutjob.h"
@@ -451,21 +453,12 @@ PlotSettingsNumericWidget::PlotSettingsNumericWidget(QDomElement &domElement, bo
 
 void PlotSettingsNumericWidget::setWidgetValue(QVariant val)
 {
-    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-    if (valueElement.tagName() == "real")
-        static_cast<QDoubleSpinBox*>(editDisplayWidget)->setValue(val.toDouble());
-    else
-        static_cast<QSpinBox*>(editDisplayWidget)->setValue(val.toInt());
+    static_cast<QLineEdit *>(editDisplayWidget)->setText(val.toString());
 }
-
 
 QVariant PlotSettingsNumericWidget::getWidgetValue()
 {
-    QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-    if (valueElement.tagName() == "real")
-        return QString::number(static_cast<QDoubleSpinBox*>(editDisplayWidget)->value());
-    else
-        return QString::number(static_cast<QSpinBox*>(editDisplayWidget)->value());
+    return static_cast<QLineEdit *>(editDisplayWidget)->text();
 }
 
 QVariant PlotSettingsNumericWidget::raw2widgetValue(QString val)
@@ -481,23 +474,22 @@ QString PlotSettingsNumericWidget::widget2rawValue(QVariant val)
 void PlotSettingsNumericWidget::createEditWidget()
 {
     QDomElement valueElement = XMLAccessor::childElement(settingsElement, "value");
-    if (valueElement.tagName() == "real")
+    QString tag = valueElement.tagName();
+    if (!(tag == "real" || tag == "integer"))
     {
-        editDisplayWidget = new QDoubleSpinBox;
-        static_cast<QDoubleSpinBox*>(editDisplayWidget)->setMaximum(10000);
-        static_cast<QDoubleSpinBox*>(editDisplayWidget)->setMinimum(-10);
-        setWidgetValue(XMLAccessor::value(valueElement));
-        connect(static_cast<QDoubleSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(double)),
-                this, SLOT(emitValueChanged()));
+        eNerror << "XML tag not an integer or real";
+        return;
     }
+    editDisplayWidget = new QLineEdit;
+    if (tag == "real")
+        validator = new QDoubleValidator(this);
     else
-    {
-        editDisplayWidget = new QSpinBox;
-        static_cast<QSpinBox*>(editDisplayWidget)->setMaximum(10000);
-        setWidgetValue(XMLAccessor::value(valueElement));
-        connect(static_cast<QSpinBox*>(editDisplayWidget), SIGNAL(valueChanged(int)),
-                this, SLOT(emitValueChanged()));
-    }
+        validator = new QIntValidator(this);
+
+    static_cast<QLineEdit *>(editDisplayWidget)->setValidator(validator);
+    setWidgetValue(XMLAccessor::value(valueElement));
+    connect(static_cast<QLineEdit *>(editDisplayWidget), SIGNAL(textChanged(QString)), this, SLOT(emitValueChanged()));
+
     currentValue = XMLAccessor::value(valueElement);
     valueSet = !currentValue.isEmpty();
     gridLayout->addWidget(editDisplayWidget, 0, 1);

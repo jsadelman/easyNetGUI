@@ -513,7 +513,7 @@ void TrialWidget::runParamExplore(QDomDocument *df, QString name)
     MainWindow::instance()->setTrialListLength(trialListLength);
     MainWindow::instance()->updateTrialRunListCount(0);
 
-    SessionManager::instance()->suspendObservers(true);
+    SessionManager::instance()->suspendObservers();
     int saved_trialRunMode = trialRunMode;
     trialRunMode = TrialRunMode_List;
     QSharedPointer<QDomDocument> trialRunInfo = createTrialRunInfo();
@@ -543,6 +543,7 @@ void TrialWidget::runParamExplore(QDomDocument *df, QString name)
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->dataframeResultsViewer, SLOT(dispatch()));
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance()->plotViewer, SLOT(dispatch()));
     jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(hideItemFromResults()));
+    jobs.last()->appendEndOfJobReceiver(SessionManager::instance(), SLOT(resumeObservers()));
 
     MainWindow::instance()->runAllTrialMsgAct->setVisible(true);
     job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
