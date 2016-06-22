@@ -51,7 +51,7 @@ public:
     void setCopyDfActive(bool active) {m_copyDfActive = active;}
 
     QAction *infoAct;
-    QAction *preferencesAct;
+
 //    int dispatchModeOverride;
 //    bool dispatchModeAuto;
     QMap<QString, int> dispatchDefaultMode;
@@ -65,6 +65,7 @@ public slots:
     void updateHistory(QString name);
     void showInfo(bool show, QString name="");
     void updateInfo(QString name);
+    virtual void enableActions(bool enable);
 
 protected slots:
     void showPreferences();
@@ -73,6 +74,7 @@ protected:
     void createHistoryWidget();
     void createInfoWidget();
     virtual QDomDocument *makePreferencesDomDoc() = 0;
+    virtual void addExtraActions();
 
     struct TrialRunInfo
     {
@@ -81,6 +83,7 @@ protected:
         QString trial;
         QString runMode;
     };
+    QAction *preferencesAct;
     const QString no_trial = "<no-trial>";
     DataViewer *hostDataViewer;
     int previousDispatchMode;

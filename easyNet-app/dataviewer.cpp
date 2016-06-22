@@ -36,6 +36,12 @@ DataViewer::~DataViewer()
     //delete dispatcher;
 }
 
+void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
+{
+    Q_ASSERT(dataViewerDispatcher);
+    dispatcher = dataViewerDispatcher;
+}
+
 void DataViewer::setUi()
 {
     if (!ui)
@@ -143,17 +149,6 @@ void DataViewer::destroyItem(QString name)
     m_items.remove(name);
     hiddenItems.remove(name);
     emit itemRemoved(name);
-}
-
-
-void DataViewer::setDispatcher(DataViewerDispatcher *dataViewerDispatcher)
-{
-    dispatcher = dataViewerDispatcher;
-    if (!dispatcher)
-    {
-        eNerror << "invalid DataViewerDispatcher object";
-        return;
-    }
 }
 
 bool DataViewer::contains(QString name)
@@ -290,6 +285,10 @@ void DataViewer::enableActions(bool enable)
         return;
     for(auto x: ui->actionSet[this])
         x->setEnabled(enable);
+
+    if (dispatcher)
+        dispatcher->enableActions(enable);
+
 /*    ui->saveAct->setEnabled(enable);
     ui->copyAct->setEnabled(enable);
     ui->destroyAct->setEnabled(enable);

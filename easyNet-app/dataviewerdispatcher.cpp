@@ -63,10 +63,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     createHistoryWidget();
 //    createInfoWidget();
 
-    preferencesAct = new QAction(QIcon(":/images/setting.png"), "Preferences", this);
-    preferencesAct->setToolTip("Show preferences for this viewer");
-    connect(preferencesAct, SIGNAL(triggered()), this, SLOT(showPreferences()));
-    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(preferencesAct);
+
 
 }
 
@@ -222,6 +219,14 @@ void DataViewerDispatcher::createInfoWidget()
     infoDock->setVisible(false);
 }
 
+void DataViewerDispatcher::addExtraActions()
+{
+    preferencesAct = new QAction(QIcon(":/images/setting.png"), "Preferences", this);
+    preferencesAct->setToolTip("Show preferences for this viewer");
+    connect(preferencesAct, SIGNAL(triggered()), this, SLOT(showPreferences()));
+    hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(preferencesAct);
+}
+
 void DataViewerDispatcher::destroySelectedItems()
 {
     foreach(QModelIndex index, historyWidget->view->selectionModel()->selectedIndexes())
@@ -351,6 +356,11 @@ void DataViewerDispatcher::updateInfo(QString name)
 {
     if (infoIsVisible && SessionManager::instance()->dependencies(name).contains(hostDataViewer->ui->currentItemName()))
         showInfo(true);
+}
+
+void DataViewerDispatcher::enableActions(bool enable)
+{
+    preferencesAct->setEnabled(enable);
 }
 
 void DataViewerDispatcher::showPreferences()

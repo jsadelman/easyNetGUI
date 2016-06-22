@@ -8,10 +8,14 @@
 #include "objectcachefilter.h"
 //#include "historytreemodel.h"
 #include "xmlelement.h"
+#include "ui_dataviewer.h"
 
 #include <QSharedPointer>
 #include <QDomDocument>
 #include <QAction>
+#include <QToolButton>
+#include <QToolBar>
+#include <QMenu>
 
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
@@ -25,11 +29,91 @@ DataframeViewerDispatcher::DataframeViewerDispatcher(DataframeViewer *host)
     }
     setSingleTrialMode(Dispatch_Append);
     setTrialListMode(Dispatch_New);
+    addExtraActions();
 }
 
 DataframeViewerDispatcher::~DataframeViewerDispatcher()
 {
 }
+
+void DataframeViewerDispatcher::backup(QString name)
+{
+    if (name.isEmpty())
+        name = host->currentItemName();
+
+    if (name.isEmpty())
+        return;
+
+    if (!SessionManager::instance()->isCopyRequested(name))
+    {
+        SessionManager::instance()->setPrettyName(name,
+                                                  SessionManager::instance()->nextPrettyName(host->itemPrettyName()),
+                                                  true);
+        SessionManager::instance()->setCopyRequested(name);
+        QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(name));
+        LazyNutJob *job = new LazyNutJob;
+        job->cmdList = QStringList();
+        QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
+        job->cmdList << QString("%1 copy %2").arg(name).arg(backupDf);
+        job->cmdList << QString("%1 add_hint show 0").arg(backupDf);
+        QDomDocument *description = SessionManager::instance()->description(name);
+        if (description)
+            job->cmdList << QString("%1 set_pretty_name %2").arg(backupDf).arg(XMLelement(*description)["pretty name"]());
+
+        QMap<QString, QVariant> jobData;
+        jobData.insert("original", name);
+        jobData.insert("name", backupDf);
+        jobData.insert("isBackup", true);
+        jobs << SessionManager::instance()->updateObjectCacheJobs();
+        jobs.last()->data = jobData;
+        jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
+        jobs.last()->appendEndOfJobReceiver(SessionManager::instance(), SLOT(clearCopyRequested()));
+        SessionManager::instance()->copyTrialRunInfo(name, backupDf);
+        SessionManager::instance()->submitJobs(jobs);
+    }
+}
+
+void DataframeViewerDispatcher::clear(QString name)
+{
+    if (name.isEmpty())
+        name = host->currentItemName();
+
+    if (name.isEmpty())
+        return;
+
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("%1 clear").arg(name);
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job << SessionManager::instance()->recentlyModifiedJob();
+    SessionManager::instance()->submitJobs(jobs);
+}
+
+void DataframeViewerDispatcher::backupAndClear(QString name)
+{
+    backup(name);
+    clear(name);
+}
+
+void DataframeViewerDispatcher::addExtraActions()
+{
+    DataViewerDispatcher::addExtraActions();
+
+    clearButton = new QToolButton(host);
+    clearButton->setIcon(QIcon(":/images/Eraser.png"));
+    clearButton->setVisible(true);
+    clearButton->setPopupMode(QToolButton::InstantPopup);
+    clearButton->setToolTip("Clear table");
+    clearMenu = new QMenu(clearButton);
+    clearAct = new QAction("Clear current table", this);
+    connect(clearAct, SIGNAL(triggered()), this, SLOT(clear()));
+    clearMenu->addAction(clearAct);
+    backupAndClearAct = new QAction("Backup and clear current table", this);
+    connect(backupAndClearAct, SIGNAL(triggered()), this, SLOT(backupAndClear()));
+    clearMenu->addAction(backupAndClearAct);
+    clearButton->setMenu(clearMenu);
+    clearMenuAct = host->ui->editToolBar[host]->addWidget(clearButton);
+}
+
+
 
 void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 {
@@ -56,39 +140,12 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         currentDispatchAction = dispatchModeFST.value(qMakePair(previousDispatchModeMap.value(trialRunInfo.results), currentDispatchMode));
     }
     previousDispatchModeMap[trialRunInfo.results] = currentDispatchMode;
-    LazyNutJob *job = new LazyNutJob;
-    job->cmdList = QStringList();
-    QList<LazyNutJob*> jobs = QList<LazyNutJob*>() << job;
+
     switch(currentDispatchAction)
     {
     case Dispatch_New:
     {
-        if (!SessionManager::instance()->isCopyRequested(trialRunInfo.results))
-        {
-            SessionManager::instance()->setPrettyName(trialRunInfo.results,
-                                                      SessionManager::instance()->nextPrettyName(host->itemPrettyName()),
-                                                      true);
-            SessionManager::instance()->setCopyRequested(trialRunInfo.results);
-            QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(trialRunInfo.results));
-            job->cmdList << QString("%1 copy %2").arg(trialRunInfo.results).arg(backupDf);
-            job->cmdList << QString("%1 add_hint show 0").arg(backupDf);
-//            job->cmdList << QString("%1 set_pretty_name %2").arg(trialRunInfo.results)
-//                            .arg(SessionManager::instance()->nextPrettyName(host->itemPrettyName()));
-            QDomDocument *description = SessionManager::instance()->description(trialRunInfo.results);
-            if (description)
-                job->cmdList << QString("%1 set_pretty_name %2").arg(backupDf).arg(XMLelement(*description)["pretty name"]());
-
-//            job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
-            QMap<QString, QVariant> jobData;
-            jobData.insert("original", trialRunInfo.results);
-            jobData.insert("name", backupDf);
-            jobData.insert("isBackup", true);
-            jobs << SessionManager::instance()->updateObjectCacheJobs();
-            jobs.last()->data = jobData;
-            jobs.last()->appendEndOfJobReceiver(host, SLOT(addItem()));
-            jobs.last()->appendEndOfJobReceiver(SessionManager::instance(), SLOT(clearCopyRequested()));
-            SessionManager::instance()->copyTrialRunInfo(trialRunInfo.results, backupDf);
-        }
+        backup(trialRunInfo.results);
         break;
     }
     case Dispatch_Overwrite:
@@ -111,15 +168,7 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         eNerror << "the computed dispatch action was not recognised";
     }
     }
-    if (!job->cmdList.isEmpty())
-    {
-        SessionManager::instance()->submitJobs(jobs);
-    }
-    else
-    {
-        foreach(LazyNutJob *j, jobs)
-            delete j;
-    }
+
     if (currentDispatchAction == Dispatch_New || currentDispatchAction == Dispatch_Overwrite)
     {
         // send clear WITHOUT updating obj cache, otherwise it would clear active dfs and plots
@@ -156,6 +205,12 @@ void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
     }
     if (infoIsVisible)
         showInfo(true);
+}
+
+void DataframeViewerDispatcher::enableActions(bool enable)
+{
+    DataViewerDispatcher::enableActions(enable);
+    clearMenuAct->setEnabled(enable);
 }
 
 QDomDocument *DataframeViewerDispatcher::makePreferencesDomDoc()

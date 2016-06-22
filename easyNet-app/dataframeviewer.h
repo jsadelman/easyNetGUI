@@ -92,10 +92,13 @@ protected:
     QAction *plotAct;
     QAction *dataframeViewAct;
 
+
     QToolButton *plotButton;
     QMenu *plotMenu;
     QToolButton *dataframeViewButton;
     QMenu *dataframeViewMenu;
+
+
     bool m_showInMainViewer;
 
     int maxRows;

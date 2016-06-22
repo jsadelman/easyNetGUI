@@ -80,7 +80,6 @@ PlotViewer::~PlotViewer()
 {
 }
 
-
 void PlotViewer::sendPlotCmd(QString name)
 {
     if (name.isEmpty() || !SessionManager::instance()->exists(name))

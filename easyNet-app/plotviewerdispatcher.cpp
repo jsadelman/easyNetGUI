@@ -20,6 +20,8 @@ PlotViewerDispatcher::PlotViewerDispatcher(PlotViewer *host)
     }
     setSingleTrialMode(Dispatch_New);
     setTrialListMode(Dispatch_New);
+    addExtraActions();
+
 //    host->ui->dispatchToolBar->removeAction(host->ui->setDispatchModeOverrideActs.at(Dispatch_Append));
 }
 

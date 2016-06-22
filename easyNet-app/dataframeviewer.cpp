@@ -14,6 +14,7 @@
 #include "dataframemergesettingsformdialog.h"
 #include "xmlelement.h"
 #include "parametersproxymodel.h"
+#include "dataframeviewerdispatcher.h"
 
 
 #include <QSettings>
@@ -183,6 +184,9 @@ void DataframeViewer::enableActions(bool enable)
     copyDFAct->setEnabled(enable);
     plotButton->setEnabled(enable);
     dataframeViewButton->setEnabled(enable);
+    if (dispatcher)
+        dispatcher->enableActions(enable);
+
 }
 
 bool DataframeViewer::setCurrentItem(QString name)
@@ -479,6 +483,7 @@ void DataframeViewer::addExtraActions()
     connect(dataframeViewMenu, SIGNAL(aboutToShow()), this, SLOT(buildDataframeViewMenu()));
     dataframeViewButton->setMenu(dataframeViewMenu);
     dataframeViewAct = ui->editToolBar[this]->addWidget(dataframeViewButton);
+
 }
 
 bool DataframeViewer::partiallyLoaded(QString name)
