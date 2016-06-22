@@ -197,5 +197,6 @@
         <file>images/Microscope-red-icon.png</file>
         <file>images/Eraser.png</file>
         <file>images/mergeicon.png</file>
+        <file>images/ZebLT.png</file>
     </qresource>
 </RCC>
