@@ -131,13 +131,10 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         SessionManager::instance()->setPrettyName(trialRunInfo.results,
                                                   SessionManager::instance()->nextPrettyName(host->itemPrettyName()), true);
     }
-//    else if (previousDispatchMode < 0)
-//    {
-//        currentDispatchAction = currentDispatchMode;
-//    }
     else
     {
-        currentDispatchAction = dispatchModeFST.value(qMakePair(previousDispatchModeMap.value(trialRunInfo.results), currentDispatchMode));
+        currentDispatchAction = currentDispatchMode;
+//        currentDispatchAction = dispatchModeFST.value(qMakePair(previousDispatchModeMap.value(trialRunInfo.results), currentDispatchMode));
     }
     previousDispatchModeMap[trialRunInfo.results] = currentDispatchMode;
 
@@ -149,18 +146,8 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         break;
     }
     case Dispatch_Overwrite:
-    {
-//        job->cmdList << QString("%1 clear").arg(trialRunInfo.results);
-//        if (!host->contains(trialRunInfo.results))
-//        {
-//            SessionManager::instance()->setTrialRunInfo(trialRunInfo.results, info);
-//            host->addItem(trialRunInfo.results, false);
-//        }
-//        break;
-    }
     case Dispatch_Append:
     {
-        // don't send results clear
         break;
     }
     default:
@@ -316,8 +303,6 @@ QDomDocument *DataframeViewerDispatcher::makePreferencesDomDoc()
     listTrialRunChoice.setAttribute("label", "choice");
     listTrialRunChoice.setAttribute("value", "single");
     listTrialRun.appendChild(listTrialRunChoice);
-
-    //    qDebug() << preferencesXML->toString();
 
     return domDoc;
 }

@@ -42,57 +42,19 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     }
     host->setDispatcher(this);
 
-
     dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_Single), -1);
     dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_List), -1);
-
-    dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_New), Dispatch_New);
-    dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_Overwrite), Dispatch_New);
-    dispatchModeFST.insert(qMakePair(Dispatch_New,Dispatch_Append), Dispatch_New);
-    dispatchModeFST.insert(qMakePair(Dispatch_Overwrite,Dispatch_New), Dispatch_Overwrite);
-    dispatchModeFST.insert(qMakePair(Dispatch_Overwrite,Dispatch_Overwrite), Dispatch_Overwrite);
-    dispatchModeFST.insert(qMakePair(Dispatch_Overwrite,Dispatch_Append), Dispatch_Overwrite);
-    dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_New), Dispatch_New);
-    dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Overwrite), Dispatch_New);
-    dispatchModeFST.insert(qMakePair(Dispatch_Append,Dispatch_Append), Dispatch_Append);
-
     dispatchModeText.insert(Dispatch_New, "new");
     dispatchModeText.insert(Dispatch_Append, "append");
     dispatchModeText.insert(Dispatch_Overwrite, "overwrite");
 
     createHistoryWidget();
 //    createInfoWidget();
-
-
-
 }
 
 DataViewerDispatcher::~DataViewerDispatcher()
 {
 }
-
-
-//void DataViewerDispatcher::setTrialRunInfo(QString item, QList<QSharedPointer<QDomDocument> > info)
-//{
-//    trialRunInfoMap[item] = info;
-//}
-
-//void DataViewerDispatcher::setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-//{
-//    setTrialRunInfo(item, QList<QSharedPointer<QDomDocument> >({info}));
-//}
-
-//void DataViewerDispatcher::appendTrialRunInfo(QString item, QSharedPointer<QDomDocument> info)
-//{
-//    trialRunInfoMap[item].append(info);
-//}
-
-//void DataViewerDispatcher::copyTrialRunInfo(QString fromItem, QString toItem)
-//{
-//    if (trialRunInfoMap.contains(fromItem))
-//        trialRunInfoMap[toItem] = trialRunInfoMap.value(fromItem);
-////        trialRunInfoMap.insert(toItem, trialRunInfoMap.value(fromItem));
-//}
 
 QString DataViewerDispatcher::trial(QString name)
 {
@@ -111,14 +73,6 @@ QString DataViewerDispatcher::results(QString name)
     QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);
     return !info.isEmpty() && info.last() ? TrialRunInfo(info.last()).results : QString();
 }
-
-//QList<QVariant> DataViewerDispatcher::infoVariantList(QString name)
-//{
-//    QList<QVariant> vList;
-//    foreach(QSharedPointer<QDomDocument> info, trialRunInfoMap.value(name))
-//        vList.append(QVariant::fromValue(info));
-//    return vList;
-//}
 
 void DataViewerDispatcher::addToHistory(QString name, bool inView)
 {
@@ -159,13 +113,6 @@ void DataViewerDispatcher::setTrialRunMode(int mode)
 //    if (!dispatchModeAuto)
 //        restoreOverrideDefaultValue();
 }
-
-//void DataViewerDispatcher::restoreOverrideDefaultValue()
-//{
-//    int mode = dispatchDefaultMode.value(trialRunModeName.value(trialRunMode));
-//    hostDataViewer->ui->setDispatchModeOverrideActs.at(mode)->setChecked(true);
-//    dispatchModeOverride = mode;
-//}
 
 void DataViewerDispatcher::createHistoryWidget()
 {

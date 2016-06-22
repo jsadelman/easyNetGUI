@@ -56,7 +56,6 @@ public:
 //    bool dispatchModeAuto;
     QMap<QString, int> dispatchDefaultMode;
     QMap<int, QString> dispatchModeText;
-    QMap<QPair<int, int>, int> dispatchModeFST; // <previous mode, current mode> -> action
 
 
 public slots:
