@@ -196,5 +196,6 @@
         <file>images/finalise.png</file>
         <file>images/Microscope-red-icon.png</file>
         <file>images/Eraser.png</file>
+        <file>images/mergeicon.png</file>
     </qresource>
 </RCC>

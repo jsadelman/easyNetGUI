@@ -311,15 +311,17 @@ void MainWindow::connectSignalsAndSlots()
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)), SessionManager::instance(), SLOT(setCurrentModel(QString)));
 
     // synch between DataViewers and dataViewSettingsWidget
-    connect(plotViewer,SIGNAL(showSettingsRequested()),this,SLOT(showDataViewSettings()));
     connect(plotViewer, &PlotViewer::showSettingsRequested, [=]()
     {
-       setFormAndShow(plotViewer->currentItemName());
+       setForm(plotViewer->currentItemName());
+       showDataViewSettings();
     });
     connect(dataframeResultsViewer, &DataframeViewer::showSettingsRequested, [=]()
     {
-       setFormAndShow(dataframeResultsViewer->currentItemName());
+       setForm(dataframeResultsViewer->currentItemName());
+       showDataViewSettings();
     });
+
 //    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
 //    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
@@ -941,7 +943,27 @@ void MainWindow::loadModel()
 //        modelChooser->show();
 //    modelDialog->show();
 //    modelDialog->raise();
-//    modelDialog->activateWindow();
+        //    modelDialog->activateWindow();
+}
+
+void MainWindow::setForm(QString name)
+{
+    if (name.isEmpty())
+    {
+        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+        if (!job)
+        {
+            eNerror << "cannot extract LazyNutJob from sender";
+            return;
+        }
+        name = SessionManager::instance()->getDataFromJob(job, "name").toString();
+        if (name.isEmpty())
+        {
+            eNerror << "LazyNutJob->data contains an empty name entry";
+            return;
+        }
+    }
+    dataViewSettingsWidget->setForm(name);
 }
 
 void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
@@ -1501,6 +1523,21 @@ void MainWindow::switchFormInSettingsWidget(QTabWidget *panel)
 
 void MainWindow::showResultsViewer(QString name)
 {
+    if (name.isEmpty())
+    {
+        LazyNutJob *job = qobject_cast<LazyNutJob *>(sender());
+        if (!job)
+        {
+            eNerror << "cannot extract LazyNutJob from sender";
+            return;
+        }
+        name = SessionManager::instance()->getDataFromJob(job, "name").toString();
+        if (name.isEmpty())
+        {
+            eNerror << "LazyNutJob->data contains an empty name entry";
+            return;
+        }
+    }
     resultsDock->raise();
     if (SessionManager::instance()->descriptionCache->type(name) == "dataframe")
     {

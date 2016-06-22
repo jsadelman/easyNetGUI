@@ -175,25 +175,13 @@ void ParametersViewer::restoreAll()
 void ParametersViewer::paramExplore()
 {
     QString dataViewScript = "param_explore.R";
-    QFile paramExploreFile(QString("%1/%2").arg(SessionManager::instance()->defaultLocation("rDataframeViewsDir")).arg(dataViewScript));
-    if (!paramExploreFile.exists())
+    QFile dataViewScriptFile(QString("%1/%2").arg(SessionManager::instance()->defaultLocation("rDataframeViewsDir")).arg(dataViewScript));
+    if (!dataViewScriptFile.exists())
     {
         eNerror << dataViewScript << "not found";
         return;
     }
-    QString df = ui->currentItemName();
-    if (df.isEmpty())
-    {
-        eNerror << "no parameter dataframe available";
-        return;
-    }
-    QMap<QString,QString> settings;
-    settings["df"] = df;
-    QString suffix = dataViewScript;
-    suffix.remove(QRegExp("\\.R$"));
-
-    QString paramExploreDf = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
-    SessionManager::instance()->createDataView(paramExploreDf, "", "dataframe_view", dataViewScript, settings, false, true);
+    QString paramExploreDf = sendNewDataViewRequest(dataViewScript, "dataframe_view");
     emit paramExploreDfCreated(paramExploreDf);
 }
 

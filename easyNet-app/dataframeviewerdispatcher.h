@@ -39,6 +39,7 @@ private:
     QMenu *clearMenu;
     QAction *clearAct;
     QAction *backupAndClearAct;
+    QAction *mergeAct;
 
 };
 

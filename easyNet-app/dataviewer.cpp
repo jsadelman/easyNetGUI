@@ -303,6 +303,7 @@ void DataViewer::setTrialRunMode(int mode)
         dispatcher->setTrialRunMode(mode);
 }
 
+
 void DataViewer::destroySelectedItems()
 {
     if (dispatcher && ui->historyAct->isChecked())

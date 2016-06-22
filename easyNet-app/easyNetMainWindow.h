@@ -106,6 +106,7 @@ public slots:
     void displayExpertWindow();
     void loadModelFromFileDialog(bool mode);
     void loadModel();
+    void setForm(QString name = "");
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();
@@ -183,7 +184,7 @@ private slots:
     void setFormInSettingsWidget(QString name);
     void switchFormInSettingsWidget(bool visible);
     void switchFormInSettingsWidget(QTabWidget *panel=nullptr);
-    void showResultsViewer(QString name);
+    void showResultsViewer(QString name = "");
     void modelChooserItemClicked(QListWidgetItem *item);
     void popUpErrorMsg();
     void storeErrorMsg(QString cmd, QString error);

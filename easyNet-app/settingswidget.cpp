@@ -139,7 +139,7 @@ void SettingsWidget::setForm(QString name)
         typeEdit->setText(typeMap.value(name));
         formScrollArea->setWidget(formMap.value(name));
     }
-    else if (!visibleRegion().isEmpty())
+    else //if (!visibleRegion().isEmpty())
         createNewForm(name);
 }
 

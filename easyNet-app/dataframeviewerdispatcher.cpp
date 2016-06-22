@@ -111,6 +111,11 @@ void DataframeViewerDispatcher::addExtraActions()
     clearMenu->addAction(backupAndClearAct);
     clearButton->setMenu(clearMenu);
     clearMenuAct = host->ui->editToolBar[host]->addWidget(clearButton);
+
+    mergeAct = new QAction(QIcon(":/images/mergeicon.png"), "Merge", this);
+    connect(mergeAct, SIGNAL(triggered()), host, SLOT(merge()));
+    host->ui->editToolBar[host]->addAction(mergeAct);
+    mergeAct->setEnabled(false);
 }
 
 
@@ -198,6 +203,7 @@ void DataframeViewerDispatcher::enableActions(bool enable)
 {
     DataViewerDispatcher::enableActions(enable);
     clearMenuAct->setEnabled(enable);
+    mergeAct->setEnabled(enable);
 }
 
 QDomDocument *DataframeViewerDispatcher::makePreferencesDomDoc()

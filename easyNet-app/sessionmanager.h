@@ -100,6 +100,8 @@ public:
     bool isModelStageCompleted() {return m_isModelStageUpdated;}
     QDomDocument *description(QString name);
     QString visibility(QString name);
+    LazyNutJob *createDataViewJob(QString name, QString prettyName, QString subtype, QString Type,
+                                          QMap<QString,QString> settings=QMap<QString,QString>());
 
 
     ObjectCache *descriptionCache;
@@ -172,7 +174,7 @@ public slots:
     void setCopyRequested(QString original);
     void clearCopyRequested(QString original = "");
     void createDataView(QString name, QString prettyName, QString subtype, QString Type,
-                        QMap<QString,QString> settings=QMap<QString,QString>(), bool isBackup=false, bool popUpSettings=false);
+                        QMap<QString,QString> settings=QMap<QString,QString>());
     void setShowHint(QString name, QString show);
 
 

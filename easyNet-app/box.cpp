@@ -273,8 +273,7 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                                                            "",
                                                            "rplot",
                                                            plotData.value("plotType").toString().append(".R"),
-                                                           settings,
-                                                           false);
+                                                           settings);
             }
         }
         else

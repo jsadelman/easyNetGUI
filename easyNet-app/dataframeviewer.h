@@ -57,7 +57,8 @@ protected slots:
     void buildPlotMenu();
     void buildDataframeViewMenu();
     void buildRScriptMenu(QMenu *menu, QString defaultLocation, QString subtype);
-    void sendNewDataViewRequest();
+    QString sendNewDataViewRequest(QString dataViewScript = "", QString subtype = "", bool setForm =  true, bool popUpSettings = true);
+    void merge();
 
 
 signals:
@@ -91,6 +92,7 @@ protected:
     QAction *copyDFAct;
     QAction *plotAct;
     QAction *dataframeViewAct;
+
 
 
     QToolButton *plotButton;

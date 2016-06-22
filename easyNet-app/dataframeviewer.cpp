@@ -381,33 +381,68 @@ void DataframeViewer::buildRScriptMenu(QMenu *menu, QString defaultLocation, QSt
     }
 }
 
-void DataframeViewer::sendNewDataViewRequest()
+QString DataframeViewer::sendNewDataViewRequest(QString dataViewScript, QString subtype, bool setForm, bool popUpSettings)
 {
-    QAction *action = qobject_cast<QAction*>(sender());
-    if (!action)
+    if (dataViewScript.isEmpty() || subtype.isEmpty())
     {
-        eNerror << "invalid QAction argument";
-        return;
+        QAction *action = qobject_cast<QAction*>(sender());
+        if (!action)
+        {
+            eNerror << "invalid QAction argument";
+            return QString();
+        }
+        if (action->text().isEmpty())
+        {
+            eNerror << "QAction does not contain text, while it should contain an R script name";
+            return QString();
+        }
+        dataViewScript = action->text();
+        subtype = action->data().toString();
     }
-    if (action->text().isEmpty())
-    {
-        eNerror << "QAction does not contain text, while it should contain an R script name";
-        return;
-    }
-    QString subtype = action->data().toString();
     if (!(subtype == "dataframe_view" || subtype == "rplot"))
     {
         eNerror << "invalid subtype:" << subtype;
-        return;
+        return QString();
     }
-    QString dataViewScript = action->text();
+
     QString suffix = dataViewScript;
     suffix.remove(QRegExp("\\.R$"));
     QMap<QString,QString> settings;
     settings["df"] = ui->currentItemName();
     QString prettyName = subtype == "dataframe_view" ? SessionManager::instance()->nextPrettyName(itemPrettyName()) : "";
     QString dataViewName = SessionManager::instance()->makeValidObjectName(QString("%1.%2.1").arg(ui->currentItemName()).arg(suffix));
-    SessionManager::instance()->createDataView(dataViewName, prettyName, subtype, dataViewScript, settings, false, true);
+    LazyNutJob *job = SessionManager::instance()->createDataViewJob(dataViewName, prettyName, subtype, dataViewScript, settings);
+    if (setForm && !popUpSettings)
+        job->cmdList << QString("%1 add_hint show 1").arg(dataViewName);
+
+    QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
+            << job
+            << SessionManager::instance()->updateObjectCacheJobs();
+    QMap<QString, QVariant> jobData;
+    jobData.insert("name", dataViewName);
+    jobs.last()->data = jobData;
+    if (setForm)
+    {
+        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(setForm()));
+        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(showResultsViewer()));
+    }
+    if (popUpSettings)
+        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(showDataViewSettings()));
+
+    SessionManager::instance()->submitJobs(jobs);
+    return dataViewName;
+}
+
+void DataframeViewer::merge()
+{
+    QString dataViewScript = "merge.R";
+    QFile dataViewScriptFile(QString("%1/%2").arg(SessionManager::instance()->defaultLocation("rDataframeViewsDir")).arg(dataViewScript));
+    if (!dataViewScriptFile.exists())
+    {
+        eNerror << dataViewScript << "not found";
+        return;
+    }
+    sendNewDataViewRequest(dataViewScript, "dataframe_view", true, false);
 }
 
 void DataframeViewer::addItem_impl(QString name)
@@ -483,6 +518,8 @@ void DataframeViewer::addExtraActions()
     connect(dataframeViewMenu, SIGNAL(aboutToShow()), this, SLOT(buildDataframeViewMenu()));
     dataframeViewButton->setMenu(dataframeViewMenu);
     dataframeViewAct = ui->editToolBar[this]->addWidget(dataframeViewButton);
+
+
 
 }
 
