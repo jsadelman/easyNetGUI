@@ -234,6 +234,7 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
             plotData["observer"] = observer;
             plotData["plotType"] = plotType;
             plotData["rplotName"] = QString("%1.%2").arg(rplotName).arg(plotType).remove(QRegExp("\\.R$"));
+            plotData["prettyName"] = rplotName.replace('.', ' ');
             actionList.append(portMenu->addAction(plotType));
             actionList.last()->setData(plotData);
             actionList.last()->setCheckable(true);
@@ -270,7 +271,7 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                 settings["df"] = plotData.value("dataframe").toString();
                 //emit createDataViewRequested
                 SessionManager::instance()->createDataView(plotData.value("rplotName").toString(),
-                                                           "",
+                                                           plotData.value("prettyName").toString(),
                                                            "rplot",
                                                            plotData.value("plotType").toString().append(".R"),
                                                            settings);

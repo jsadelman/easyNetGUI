@@ -44,9 +44,10 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         if (host->plotByteArray.contains(plot) && snapshotActive())
         {
             QDomDocument *description = SessionManager::instance()->description(plot);
-            QString snapshotName = description ? XMLelement(*description)["pretty name"]() : "";
+            QString snapshotName = description ?
+                        SessionManager::instance()->addParenthesizedLetter(XMLelement(*description)["pretty name"]()) : "";
             host->snapshot(plot, snapshotName);
-            SessionManager::instance()->setPrettyName(plot, SessionManager::instance()->nextPrettyName(host->itemPrettyName()), true);
+//            SessionManager::instance()->setPrettyName(plot, SessionManager::instance()->nextPrettyName(host->itemPrettyName()), true);
         }
 
 //        if (!host->plotByteArray.contains(plot))

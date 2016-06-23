@@ -56,6 +56,7 @@ public:
     QString easyNetDir(QString env);
     QString defaultLocation(QString env) {return m_defaultLocation.value(env, QString());}
     QString nextPrettyName(QString type);
+    QString addParenthesizedLetter(QString txt);
 
 
     void setEasyNetHome(QString dir);
@@ -205,6 +206,7 @@ private:
     QString m_easyNetUserHome;
     QMap<QString, QString> m_defaultLocation;
 
+
     QString         lazyNutExt;
     QString         binDir;
     QString         lazyNutBasename;
@@ -242,6 +244,7 @@ private:
     ObjectUpdater *modelDescriptionUpdater;
 
     QMap<QString, int> itemCount;
+    QMap<QString, int> prettyBaseNames;
 };
 
 #endif // SESSIONMANAGER_H

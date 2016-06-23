@@ -40,6 +40,7 @@ private:
     QAction *clearAct;
     QAction *backupAndClearAct;
     QAction *mergeAct;
+    QRegExp defaultObserverRex;
 
 };
 

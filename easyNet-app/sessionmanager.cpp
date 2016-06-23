@@ -215,6 +215,18 @@ QString SessionManager::nextPrettyName(QString type)
     return QString("%1 %2").arg(type).arg(itemCount[type]++);
 }
 
+QString SessionManager::addParenthesizedLetter(QString txt)
+{
+    if (prettyBaseNames.contains(txt))
+        prettyBaseNames[txt] = prettyBaseNames[txt] < QChar('z').unicode() ?
+                    prettyBaseNames[txt] + 1 : QChar('a').unicode();
+
+    else
+        prettyBaseNames[txt] = QChar('a').unicode();
+
+    return QString("%1(%2)").arg(txt).arg(QChar(prettyBaseNames[txt]));
+}
+
 void SessionManager::setEasyNetHome(QString dir)
 {
     m_easyNetHome = dir;

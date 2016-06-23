@@ -21,7 +21,7 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 
 DataframeViewerDispatcher::DataframeViewerDispatcher(DataframeViewer *host)
-    :DataViewerDispatcher(host), host(host)
+    :DataViewerDispatcher(host), host(host), defaultObserverRex("\\((.*) default_observer\\)")
 {
     if (!host)
     {
@@ -46,9 +46,9 @@ void DataframeViewerDispatcher::backup(QString name)
 
     if (!SessionManager::instance()->isCopyRequested(name))
     {
-        SessionManager::instance()->setPrettyName(name,
-                                                  SessionManager::instance()->nextPrettyName(host->itemPrettyName()),
-                                                  true);
+//        SessionManager::instance()->setPrettyName(name,
+//                                                  SessionManager::instance()->nextPrettyName(host->itemPrettyName()),
+//                                                  true);
         SessionManager::instance()->setCopyRequested(name);
         QString backupDf = SessionManager::instance()->makeValidObjectName(QString("%1.Copy.1").arg(name));
         LazyNutJob *job = new LazyNutJob;
@@ -58,7 +58,10 @@ void DataframeViewerDispatcher::backup(QString name)
         job->cmdList << QString("%1 add_hint show 0").arg(backupDf);
         QDomDocument *description = SessionManager::instance()->description(name);
         if (description)
-            job->cmdList << QString("%1 set_pretty_name %2").arg(backupDf).arg(XMLelement(*description)["pretty name"]());
+        {
+            QString prettyName = SessionManager::instance()->addParenthesizedLetter(XMLelement(*description)["pretty name"]());
+            job->cmdList << QString("%1 set_pretty_name %2").arg(backupDf).arg(prettyName);
+        }
 
         QMap<QString, QVariant> jobData;
         jobData.insert("original", name);
@@ -133,8 +136,11 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
     if (!previousDispatchModeMap.contains(trialRunInfo.results))
     {
         currentDispatchAction = Dispatch_Overwrite;
-        SessionManager::instance()->setPrettyName(trialRunInfo.results,
-                                                  SessionManager::instance()->nextPrettyName(host->itemPrettyName()), true);
+        QString prettyName = defaultObserverRex.indexIn(trialRunInfo.results) >=0 ?
+                    defaultObserverRex.cap(1) :
+                    SessionManager::instance()->nextPrettyName(host->itemPrettyName());
+
+        SessionManager::instance()->setPrettyName(trialRunInfo.results, prettyName, true);
     }
     else
     {
