@@ -12,6 +12,8 @@ typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
 
 // model/view data roles
 enum : unsigned int {ExpandToFillRole = Qt::UserRole};
+enum : unsigned int {NameRole = Qt::UserRole, PrettyNameRole};
+
 
 // flags for logMode to be set up in LazyNutJobParam
 enum : unsigned int
@@ -29,6 +31,7 @@ enum class AnswerFormatterType
 };
 
 enum {Dispatch_New=0, Dispatch_Overwrite, Dispatch_Append, MAX_DISPATCH_MODE};
+
 
 enum : unsigned int
 {

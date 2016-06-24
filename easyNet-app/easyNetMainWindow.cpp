@@ -230,7 +230,7 @@ void MainWindow::constructForms()
 
     plotViewer = new PlotViewer(ui_dataframeResultsViewer , this);
     plotViewer->setName("Figures");
-    plotViewer->setItemPrettyName("Fig");
+    plotViewer->setItemPrettyName("Fig.");
     plotViewerDispatcher = new PlotViewerDispatcher(plotViewer);
     plotDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     plotDescriptionFilter->setSubtype("rplot");
@@ -313,13 +313,13 @@ void MainWindow::connectSignalsAndSlots()
     // synch between DataViewers and dataViewSettingsWidget
     connect(plotViewer, &PlotViewer::showSettingsRequested, [=]()
     {
-       setForm(plotViewer->currentItemName());
-       showDataViewSettings();
+        showDataViewSettings();
+        setForm(plotViewer->currentItemName());
     });
     connect(dataframeResultsViewer, &DataframeViewer::showSettingsRequested, [=]()
     {
-       setForm(dataframeResultsViewer->currentItemName());
-       showDataViewSettings();
+        showDataViewSettings();
+        setForm(dataframeResultsViewer->currentItemName());
     });
 
 //    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
@@ -2124,7 +2124,7 @@ void MainWindow::showDataViewSettings()
 
 }
 
-void MainWindow::setFormAndShow(QString name)
+void MainWindow::createNewForm(QString name)
 {
     if (name.isEmpty())
     {
@@ -2141,6 +2141,5 @@ void MainWindow::setFormAndShow(QString name)
             return;
         }
     }
-    showDataViewSettings();
-    dataViewSettingsWidget->setForm(name);
+    dataViewSettingsWidget->createNewForm(name);
 }

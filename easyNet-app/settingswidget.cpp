@@ -139,7 +139,7 @@ void SettingsWidget::setForm(QString name)
         typeEdit->setText(typeMap.value(name));
         formScrollArea->setWidget(formMap.value(name));
     }
-    else //if (!visibleRegion().isEmpty())
+    else if (!visibleRegion().isEmpty())
         createNewForm(name);
 }
 
@@ -162,7 +162,7 @@ void SettingsWidget::createNewForm(QString name)
     }
     if (!SessionManager::instance()->exists(name))
     {
-        eNerror << "object" << name << "does not exist";
+//        eNerror << "object" << name << "does not exist";
         return;
     }
     QString subtype = SessionManager::instance()->descriptionCache->subtype(name);

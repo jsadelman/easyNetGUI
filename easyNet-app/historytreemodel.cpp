@@ -4,12 +4,20 @@
 #include "sessionmanager.h"
 #include "xmlelement.h"
 
+#include "objectcachefilter.h"
+#include "objectupdater.h"
+
+
 #include <QDomDocument>
 
 
 HistoryTreeModel::HistoryTreeModel(QObject *parent)
     : TreeModel(QStringList({""}), parent)
 {
+    filter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    updater = new ObjectUpdater(this);
+    updater->setProxyModel(filter);
+    connect(updater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(updatePrettyName(QDomDocument*,QString)));
 }
 
 QVariant HistoryTreeModel::data(const QModelIndex &index, int role) const
@@ -21,8 +29,8 @@ QVariant HistoryTreeModel::data(const QModelIndex &index, int role) const
 
     if (!index.parent().isValid())
     {
-        if (role == Qt::DisplayRole)
-            return record.text;
+        if (role == Qt::DisplayRole || NameRole)
+            return record.name;
         else
             return QVariant();
     }
@@ -31,9 +39,13 @@ QVariant HistoryTreeModel::data(const QModelIndex &index, int role) const
         switch (role)
         {
         case Qt::DisplayRole:
-            return record.text;
+            return QString("%1 [%2]").arg(record.prettyName).arg(record.name);
         case Qt::CheckStateRole:
             return record.checked ? QVariant(Qt::Checked) : QVariant(Qt::Unchecked);
+        case NameRole:
+            return record.name;
+        case PrettyNameRole:
+            return record.prettyName;
         default:
             return QVariant();
         }
@@ -66,14 +78,53 @@ bool HistoryTreeModel::setData(const QModelIndex &index, const QVariant &value, 
         record = v.value<CheckRecord>();
     bool success = false;
     bool changed = false;
+
     switch(role)
     {
-    case Qt::EditRole:
-        record.text = value.toString();
-        v.setValue(record);
-        success = item->setData(0, v);
-        changed = true;
+//    case Qt::EditRole:
+//        record.name = value.toString();
+//        v.setValue(record);
+//        success = item->setData(0, v);
+//        changed = true;
+//        break;
+    case NameRole:
+    {
+        QString name = value.toString();
+        if (name != record.name)
+        {
+            record.name = name;
+            v.setValue(record);
+            success = item->setData(0, v);
+            changed = true;
+        }
+        QDomDocument *description = SessionManager::instance()->description(name);
+        QString prettyName;
+        if (description)
+            prettyName = XMLelement(*description)["pretty name"]();
+        else
+            prettyName = record.name;
+
+        if (prettyName != record.prettyName)
+        {
+            record.prettyName = prettyName;
+            v.setValue(record);
+            success |= item->setData(0, v);
+            changed = true;
+        }
         break;
+    }
+    case PrettyNameRole:
+    {
+        QString prettyName = value.toString();
+        if (prettyName != record.prettyName)
+        {
+            record.prettyName = prettyName;
+            v.setValue(record);
+            success = item->setData(0, v);
+            changed = true;
+        }
+        break;
+    }
     case Qt::CheckStateRole:
         if (index.parent().isValid())
         {
@@ -94,7 +145,10 @@ bool HistoryTreeModel::setData(const QModelIndex &index, const QVariant &value, 
     }
     if (success && changed)
     {
-        emit dataChanged(index, index, QVector<int>({role}));
+        if (role == Qt::CheckStateRole)
+            emit dataChanged(index, index, QVector<int>({role}));
+        else if (role == NameRole || role == PrettyNameRole || role == Qt::EditRole)
+            emit dataChanged(index, index, QVector<int>({NameRole, PrettyNameRole, Qt::EditRole}));
     }
 
     return success;
@@ -127,7 +181,7 @@ bool HistoryTreeModel::appendTrial(QString trial)
         eNerror << "cannot insert a new row for trial" << trial;
         return false;
     }
-    if (!setData(index(rowCount()-1,0), trial, Qt::EditRole))
+    if (!setData(index(rowCount()-1,0), trial, NameRole))
     {
         eNerror << "cannot set trial" << trial;
         return false;
@@ -160,7 +214,7 @@ bool HistoryTreeModel::appendView(QString view, QString trial, bool inView)
     }
 
     trialIdx = trialIndex(trial);
-    if (!setData(index(rowCount(trialIdx)-1, 0, trialIdx), view, Qt::EditRole))
+    if (!setData(index(rowCount(trialIdx)-1, 0, trialIdx), view, NameRole))
     {
         eNerror << "cannot set view" << view;
         return false;
@@ -208,7 +262,7 @@ bool HistoryTreeModel::setInView(QString view, bool inView)
 
 QModelIndex HistoryTreeModel::trialIndex(QString trial)
 {
-    QModelIndexList matchList = match(index(0,0), Qt::DisplayRole, trial, 1, Qt::MatchExactly);
+    QModelIndexList matchList = match(index(0,0), NameRole, trial, 1, Qt::MatchExactly);
     return matchList.isEmpty() ? QModelIndex() : matchList.first();
 }
 
@@ -218,7 +272,7 @@ QModelIndex HistoryTreeModel::viewIndex(QString view, QString trial)
     if (!trialIdx.isValid())
         return QModelIndex();
 
-    QModelIndexList matchList = match(index(0, 0, trialIdx), Qt::DisplayRole, view, 1, Qt::MatchFixedString | Qt::MatchCaseSensitive);
+    QModelIndexList matchList = match(index(0, 0, trialIdx), NameRole, view, 1, Qt::MatchFixedString | Qt::MatchCaseSensitive);
     return matchList.isEmpty() ? QModelIndex() : matchList.first();
 }
 
@@ -227,7 +281,7 @@ QModelIndex HistoryTreeModel::viewIndex(QString view)
     QModelIndex viewIdx = QModelIndex();
     for(int trialRow = 0; trialRow < rowCount(); ++trialRow)
     {
-        if ((viewIdx = viewIndex(view, data(index(trialRow, 0), Qt::DisplayRole).toString())).isValid())
+        if ((viewIdx = viewIndex(view, data(index(trialRow, 0), NameRole).toString())).isValid())
             return viewIdx;
     }
     return viewIdx;
@@ -237,7 +291,13 @@ QString HistoryTreeModel::trial(QString view)
 {
     QModelIndex viewIdx = viewIndex(view);
     if (viewIdx.isValid())
-        return data(viewIdx.parent(),  Qt::DisplayRole).toString();
+        return data(viewIdx.parent(),  NameRole).toString();
     return QString();
+}
+
+void HistoryTreeModel::updatePrettyName(QDomDocument *description, QString name)
+{
+    if (description)
+        setData(viewIndex(name), XMLelement(*description)["pretty name"](), PrettyNameRole);
 }
 

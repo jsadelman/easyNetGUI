@@ -234,7 +234,9 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
             plotData["observer"] = observer;
             plotData["plotType"] = plotType;
             plotData["rplotName"] = QString("%1.%2").arg(rplotName).arg(plotType).remove(QRegExp("\\.R$"));
-            plotData["prettyName"] = rplotName.replace('.', ' ');
+            QString prettyName = rplotName;
+            prettyName.replace('.', ' ');
+            plotData["prettyName"] = prettyName;
             actionList.append(portMenu->addAction(plotType));
             actionList.last()->setData(plotData);
             actionList.last()->setCheckable(true);

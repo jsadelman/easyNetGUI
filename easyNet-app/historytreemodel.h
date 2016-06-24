@@ -3,10 +3,15 @@
 
 #include "treemodel.h"
 
+class ObjectCacheFilter;
+class ObjectUpdater;
+class QDomDocument;
+
 struct CheckRecord
 {
-    CheckRecord() : text(""), checked(false) {}
-    QString text;
+    CheckRecord() : name(""), prettyName(""), checked(false) {}
+    QString name;
+    QString prettyName;
     bool checked;
 };
 Q_DECLARE_METATYPE(CheckRecord)
@@ -37,6 +42,14 @@ public:
     QModelIndex viewIndex(QString view, QString trial);
     QModelIndex viewIndex(QString view);
     QString trial(QString view);
+
+private slots:
+    void updatePrettyName(QDomDocument* description, QString name);
+
+private:
+    ObjectCacheFilter *filter;
+    ObjectUpdater *updater;
+
 };
 
 #endif // HISTORYTREEMODEL_H

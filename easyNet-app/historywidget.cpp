@@ -1,5 +1,6 @@
 #include "historywidget.h"
 #include "historytreemodel.h"
+#include "enumclasses.h"
 
 #include <QAction>
 #include <QVBoxLayout>
@@ -32,7 +33,7 @@ void HistoryWidget::buildWidget()
 
     connect(view, &QTreeView::clicked, [=](const QModelIndex & index)
     {
-        QString item = view->model()->data(index).toString();
+        QString item = view->model()->data(index, NameRole).toString();
         emit clicked(item);
     });
 

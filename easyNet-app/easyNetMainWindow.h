@@ -177,7 +177,7 @@ private slots:
     void showMostRecentError();
 //    void showPlotSettings();
     void showDataViewSettings();
-    void setFormAndShow(QString name = "");
+    void createNewForm(QString name = "");
     void updateDFComboBox();
     void runTest();
 //    void afterTestsCompleted();

@@ -180,7 +180,7 @@ void DataViewerDispatcher::destroySelectedItems()
     {
         if (index.parent().isValid())
         {
-            QString name = historyModel->data(index, Qt::DisplayRole).toString();
+            QString name = historyModel->data(index, NameRole).toString();
             hostDataViewer->initiateDestroyItem(name);
         }
     }
@@ -205,7 +205,7 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
         int checked;
         for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
         {
-            name        = historyModel->data(historyModel->index(row, 0, topLeft.parent()), Qt::DisplayRole).toString();
+            name        = historyModel->data(historyModel->index(row, 0, topLeft.parent()), NameRole).toString();
             checked     = historyModel->data(historyModel->index(row, 0, topLeft.parent()), Qt::CheckStateRole).toInt();
 //            qDebug() << Q_FUNC_INFO << name << checked;
             SessionManager::instance()->setShowHint(name, checked == Qt::Checked ? "1" : "0");

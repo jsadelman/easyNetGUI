@@ -423,8 +423,8 @@ QString DataframeViewer::sendNewDataViewRequest(QString dataViewScript, QString 
     jobs.last()->data = jobData;
     if (setForm)
     {
-        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(setForm()));
-        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(showResultsViewer()));
+        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(createNewForm()));
+//        jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(showResultsViewer()));
     }
     if (popUpSettings)
         jobs.last()->appendEndOfJobReceiver(MainWindow::instance(), SLOT(showDataViewSettings()));

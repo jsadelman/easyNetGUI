@@ -705,13 +705,13 @@ void SessionManager::setShowHint(QString name, QString show)
 {
     if (!exists(name))
     {
-        eNerror << QString("object %1 does not exist").arg(name);
+//        eNerror << QString("object %1 does not exist").arg(name);
         return;
     }
     QDomDocument *desc = description(name);
     if (!desc)
     {
-        eNerror << QString("object %1 does not have a description").arg(name);
+        eNwarning << QString("object %1 does not have a description, show hint will not be set.").arg(name);
         return;
     }
     QString cmd;
