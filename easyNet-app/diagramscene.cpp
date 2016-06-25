@@ -557,8 +557,9 @@ void DiagramScene::render()
             QMap <QString, QString> ports;
             foreach (QString label, XMLelement(*domDoc)["Ports"].listLabels())
                 ports[label] = XMLelement(*domDoc)["Ports"][label]();
-
+            QString pname = XMLelement(*domDoc)["pretty name"]();
             static_cast<Box*>(itemHash.value(name))->setPorts(ports);
+            static_cast<Box*>(itemHash.value(name))->setLabel(pname);
         }
         else if (AsLazyNutObject(*domDoc).type() == m_arrowType)
         {

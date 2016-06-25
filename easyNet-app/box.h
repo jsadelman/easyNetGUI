@@ -43,7 +43,7 @@ class Box: public QObject, public DiagramItem//QGraphicsPolygonItem
 public:
     Box();
     virtual QString name(void) const {return m_name;}
-    virtual void setName(const QString& name) {m_name = name; setLabel();}
+    virtual void setName(const QString& name) {m_name = name;/* setLabel();*/}
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType);
     virtual int labelPointSize(void) const {return m_labelPointSize;}
