@@ -10,13 +10,14 @@ int main(int argc, char *argv[])
 //    QPixmap pixmap(":/splash.png");
     QPixmap pixmap(":/images/ZebLT.png");
 //    QPixmap pixmap(":/images/image001.jpg");
-    QSplashScreen splash(pixmap);
+    QSplashScreen splash(pixmap.scaledToWidth(pixmap.width()*2));
     splash.show();
 
     MainWindow* mainWindow = MainWindow::instance();
     mainWindow->build();
     mainWindow->showMaximized();
     //  show model chooser at startup
+
     mainWindow->loadModel();
 
     splash.finish(mainWindow);
