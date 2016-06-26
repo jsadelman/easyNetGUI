@@ -64,6 +64,7 @@ void DataViewer::setUi()
 void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
 {
     Q_UNUSED(domDoc)
+
     if (name.isEmpty())
     {
         eNerror << "name is empty";

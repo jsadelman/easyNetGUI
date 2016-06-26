@@ -198,5 +198,23 @@
         <file>images/Eraser.png</file>
         <file>images/mergeicon.png</file>
         <file>images/ZebLT.png</file>
+        <file>images/graph-128.png</file>
+        <file>images/df-view-green.png</file>
+        <file>images/df-view-yellow.png</file>
+        <file>images/df-view-grey.png</file>
+        <file>images/table-grey.png</file>
+        <file>images/table-green.png</file>
+        <file>images/table-yellow.png</file>
+        <file>images/table-green2.png</file>
+        <file>images/table-grey2.png</file>
+        <file>images/table-yellow2.png</file>
+        <file>images/graph-grey.png</file>
+        <file>images/graph-green.png</file>
+        <file>images/graph-yellow.png</file>
+        <file>images/graph-grey2.png</file>
+        <file>images/graph-yellow2.png</file>
+        <file>images/graph-green2.png</file>
+        <file>images/graph-green4.png</file>
+        <file>images/graph-green5.png</file>
     </qresource>
 </RCC>

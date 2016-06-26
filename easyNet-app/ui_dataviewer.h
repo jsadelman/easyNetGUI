@@ -73,6 +73,7 @@ public slots:
     virtual QWidget *takeView(QString name)=0;
     virtual void setCurrentItem(QString name)=0;
 
+
 signals:
     void deleteItemRequested(QString);
     void currentItemChanged(QString);

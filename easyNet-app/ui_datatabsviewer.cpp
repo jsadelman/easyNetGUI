@@ -5,6 +5,8 @@
 #include "sessionmanager.h"
 
 #include <QVBoxLayout>
+#include <QSvgWidget>
+#include <QTabBar>
 
 Ui_DataTabsViewer::Ui_DataTabsViewer()
     : Ui_DataViewer(), quiet_tab_change(false), tabsClosable(true)
@@ -91,6 +93,49 @@ void Ui_DataTabsViewer::createViewer()
 
 void Ui_DataTabsViewer::displayPrettyName(QString name)
 {
-    tabWidget->setTabText(tabWidget->indexOf(viewMap.value(name)), prettyName.value(name));
+    tabWidget->setStyleSheet("QTabBar::tab { height: 30px; }");
+    tabWidget->setIconSize(QSize(24,24));
+
+    int index = tabWidget->indexOf(viewMap.value(name));
+    tabWidget->setTabText(index, prettyName.value(name));
+    qDebug() << name << " view is" << viewMap.value(name);
+    QTabBar* bar=tabWidget->tabBar();
+    if (qobject_cast<QSvgWidget*>(viewMap.value(name))!=NULL)
+    {
+        // if (live && dependent on current trial)
+        if (name.contains("letters"))
+        {
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-yellow2.png"));
+            bar->setTabTextColor(index, Qt::black);
+        }
+        //      if (live && NOT dependent on current trial)
+        else if (name.contains("words"))
+        {
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-green2.png"));
+            bar->setTabTextColor(index, Qt::black);
+        }
+        //      if (dead)
+        else
+        {
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-grey2.png"));
+            bar->setTabTextColor(index, Qt::darkGray);
+        }
+    }
+    else
+    {
+        // table
+
+        // Note re colours: rather than traffic lights, I suggest the scale is based on *luminance*,
+        // i.e., the brightest colour (yellow) indicates the most salient objects
+//      if (live && dependent on current trial)
+        if (name.contains("brief"))
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-yellow2.png"));
+//      if (live && NOT dependent on current trial)
+        else if (name.contains("present"))
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-green2.png"));
+//      if (dead)
+        else
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-grey2.png"));
+    }
 }
 

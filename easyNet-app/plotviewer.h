@@ -44,7 +44,6 @@ public slots:
     virtual bool setCurrentItem(QString name) Q_DECL_OVERRIDE;
 
 
-
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
