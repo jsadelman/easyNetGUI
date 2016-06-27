@@ -251,6 +251,11 @@ void SessionManager::setEasyNetUserHome(QString dir)
     emit easyNetUserHomeChanged();
 }
 
+QIcon SessionManager::viewIcon(int type, int state)
+{
+    return viewIconMap.value(type).value(state, QIcon());
+}
+
 void SessionManager::setEasyNetDir(QString env, QString dir)
 {
     if (env == "easyNetHome")

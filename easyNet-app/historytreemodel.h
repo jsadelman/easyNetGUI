@@ -9,9 +9,10 @@ class QDomDocument;
 
 struct CheckRecord
 {
-    CheckRecord() : name(""), prettyName(""), checked(false) {}
+    CheckRecord() : name(""), prettyName(""), checked(false), viewState(-1) {}
     QString name;
     QString prettyName;
+    int viewState;
     bool checked;
 };
 Q_DECLARE_METATYPE(CheckRecord)
@@ -43,8 +44,13 @@ public:
     QModelIndex viewIndex(QString view);
     QString trial(QString view);
 
+public slots:
+    bool setViewState(QString view, int state);
+
+
 private slots:
     void updatePrettyName(QDomDocument* description, QString name);
+
 
 private:
     ObjectCacheFilter *filter;

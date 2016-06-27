@@ -9,6 +9,7 @@
 
 
 #include <QDomDocument>
+#include <QIcon>
 
 
 HistoryTreeModel::HistoryTreeModel(QObject *parent)
@@ -46,6 +47,12 @@ QVariant HistoryTreeModel::data(const QModelIndex &index, int role) const
             return record.name;
         case PrettyNameRole:
             return record.prettyName;
+        case Qt::DecorationRole:
+        {
+            int viewType = (SessionManager::instance()->descriptionCache->type(record.name) == "dataframe") ?
+                        ViewType_Table : ViewType_Plot;
+            return SessionManager::instance()->viewIcon(viewType, record.viewState);
+        }
         default:
             return QVariant();
         }
@@ -126,6 +133,7 @@ bool HistoryTreeModel::setData(const QModelIndex &index, const QVariant &value, 
         break;
     }
     case Qt::CheckStateRole:
+    {
         if (index.parent().isValid())
         {
             if (record.checked != (value.toInt() == Qt::Checked))
@@ -140,15 +148,31 @@ bool HistoryTreeModel::setData(const QModelIndex &index, const QVariant &value, 
                 success = true;
             }
         }
+        break;
+    }
+    case Qt::DecorationRole:
+    {
+        if (index.parent().isValid())
+        {
+                record.viewState = value.toInt();
+                v.setValue(record);
+                success = item->setData(0, v);
+                changed = true;
+        }
+        else
+        {
+            success = true;
+        }
+    }
     default:
         ;
     }
     if (success && changed)
     {
-        if (role == Qt::CheckStateRole)
-            emit dataChanged(index, index, QVector<int>({role}));
-        else if (role == NameRole || role == PrettyNameRole || role == Qt::EditRole)
+        if (role == NameRole || role == PrettyNameRole || role == Qt::EditRole)
             emit dataChanged(index, index, QVector<int>({NameRole, PrettyNameRole, Qt::EditRole}));
+        else
+            emit dataChanged(index, index, QVector<int>({role}));
     }
 
     return success;
@@ -257,6 +281,11 @@ bool HistoryTreeModel::setInView(QString view, QString trial, bool inView)
 bool HistoryTreeModel::setInView(QString view, bool inView)
 {
     setInView(view, trial(view), inView);
+}
+
+bool HistoryTreeModel::setViewState(QString view, int state)
+{
+    return setData(viewIndex(view), state, Qt::DecorationRole);
 }
 
 

@@ -4,6 +4,7 @@
 #include <QString>
 #include <QObject>
 #include <QSharedPointer>
+#include <QIcon>
 #include "qprocess.h"
 #include "enumclasses.h"
 
@@ -103,13 +104,16 @@ public:
     QString visibility(QString name);
     LazyNutJob *createDataViewJob(QString name, QString prettyName, QString subtype, QString Type,
                                           QMap<QString,QString> settings=QMap<QString,QString>());
+    void setEasyNetUserHome(QString dir);
+    QIcon viewIcon(int type, int state);
 
 
     ObjectCache *descriptionCache;
     ObjectCache *dataframeCache;
 
 
-    void setEasyNetUserHome(QString dir);
+
+
 signals:
 
     // send output to editor
@@ -245,6 +249,21 @@ private:
 
     QMap<QString, int> itemCount;
     QMap<QString, int> prettyBaseNames;
+    QMap <int, QMap<int, QIcon> > viewIconMap
+    {
+        {ViewType_Table, {
+                {ViewState_Static, QIcon(":/images/table-grey2.png")},
+                {ViewState_Stale, QIcon(":/images/table-yellow2.png")},
+                {ViewState_Fresh, QIcon(":/images/table-green2.png")}
+            }
+        },
+        {ViewType_Plot, {
+                {ViewState_Static, QIcon(":/images/graph-grey2.png")},
+                {ViewState_Stale, QIcon(":/images/graph-yellow2.png")},
+                {ViewState_Fresh, QIcon(":/images/graph-green2.png")}
+            }
+        }
+    };
 };
 
 #endif // SESSIONMANAGER_H

@@ -49,6 +49,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
     dispatchModeText.insert(Dispatch_Overwrite, "overwrite");
 
     createHistoryWidget();
+    connect(host, SIGNAL(viewStateChanged(QString,int)), historyModel, SLOT(setViewState(QString,int)));
 //    createInfoWidget();
 }
 
@@ -207,7 +208,6 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
         {
             name        = historyModel->data(historyModel->index(row, 0, topLeft.parent()), NameRole).toString();
             checked     = historyModel->data(historyModel->index(row, 0, topLeft.parent()), Qt::CheckStateRole).toInt();
-//            qDebug() << Q_FUNC_INFO << name << checked;
             SessionManager::instance()->setShowHint(name, checked == Qt::Checked ? "1" : "0");
             if (checked == Qt::Checked)
             {
@@ -237,6 +237,7 @@ void DataViewerDispatcher::updateHistory(QString name)
     historyModel->removeView(name, historyModel->trial(name));
     historyModel->appendView(name, newTrial);
     historyModel->setInView(name, newTrial, isInView);
+    historyModel->setViewState(name, hostDataViewer->viewState(name));
     connect(historyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
             this, SLOT(updateView(QModelIndex,QModelIndex,QVector<int>)));
 }

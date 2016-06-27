@@ -102,6 +102,7 @@ void DataViewer::execAddItem(QDomDocument *domDoc, QString name)
         {
             QString visibility = SessionManager::instance()->visibility(name);
             dispatcher->addToHistory(name, visibility == "1");
+            setFirstViewState(name);
         }
         else
         {

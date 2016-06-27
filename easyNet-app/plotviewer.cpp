@@ -363,6 +363,10 @@ void PlotViewer::addItem_impl(QString name)
             SessionManager::instance()->setPrettyName(name, SessionManager::instance()->nextPrettyName(itemPrettyName()));
         }
     }
+}
+
+void PlotViewer::setFirstViewState(QString name)
+{
     if (SessionManager::instance()->exists(name))
     {
         if (viewState(name) != ViewState_Fresh)

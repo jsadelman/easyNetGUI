@@ -450,6 +450,10 @@ void DataframeViewer::merge()
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
+}
+
+void DataframeViewer::setFirstViewState(QString name)
+{
     QString subtype = SessionManager::instance()->descriptionCache->subtype(name);
     if (subtype == "dataframe_for_activities" || subtype == "dataframe_for_trials" || subtype == "dataframe_view")
     {

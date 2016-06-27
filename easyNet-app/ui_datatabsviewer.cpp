@@ -109,57 +109,19 @@ void Ui_DataTabsViewer::setStateIcon(QString name, int state)
         foreach (DataViewer * viewer, dataViewers)
             state = qMax(state, viewer->viewState(name));
     }
-    if (SessionManager::instance()->descriptionCache->type(name) == "dataframe")
+    int viewType = (SessionManager::instance()->descriptionCache->type(name) == "dataframe") ?
+                ViewType_Table : ViewType_Plot;
+    tabWidget->setTabIcon(index, SessionManager::instance()->viewIcon(viewType, state));
+    switch (state)
     {
-        switch (state)
-        {
-        case ViewState_Static:
-        {
-            tabWidget->setTabIcon(index, QIcon(":/images/table-grey2.png"));
-            tabWidget->tabBar()->setTabTextColor(index, Qt::darkGray);
-            break;
-        }
-        case ViewState_Stale:
-        {
-            tabWidget->setTabIcon(index, QIcon(":/images/table-yellow2.png"));
-            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
-            break;
-        }
-        case ViewState_Fresh:
-        {
-            tabWidget->setTabIcon(index, QIcon(":/images/table-green2.png"));
-            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
-            break;
-        }
-        default:
-            break;
-        }
+    case ViewState_Static:
+        tabWidget->tabBar()->setTabTextColor(index, Qt::darkGray);
+        break;
+    case ViewState_Stale:
+    case ViewState_Fresh:
+        tabWidget->tabBar()->setTabTextColor(index, Qt::black);
+        break;
+    default:
+        break;
     }
-    else
-    {
-        switch (state)
-        {
-        case ViewState_Static:
-        {
-            tabWidget->setTabIcon(index, QIcon(":/images/graph-grey2.png"));
-            tabWidget->tabBar()->setTabTextColor(index, Qt::darkGray);
-            break;
-        }
-        case ViewState_Stale:
-        {
-            tabWidget->setTabIcon(index, QIcon(":/images/graph-yellow2.png"));
-            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
-            break;
-        }
-        case ViewState_Fresh:
-        {
-            tabWidget->setTabIcon(index, QIcon(":/images/graph-green2.png"));
-            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
-            break;
-        }
-        default:
-            break;
-        }
-    }
-
 }
