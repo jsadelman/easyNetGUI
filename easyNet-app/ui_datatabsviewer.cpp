@@ -105,19 +105,19 @@ void Ui_DataTabsViewer::displayPrettyName(QString name)
         // if (live && dependent on current trial)
         if (name.contains("letters"))
         {
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-yellow2.png"));
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-green6.png"));
             bar->setTabTextColor(index, Qt::black);
         }
         //      if (live && NOT dependent on current trial)
         else if (name.contains("words"))
         {
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-green2.png"));
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-orange2.png"));
             bar->setTabTextColor(index, Qt::black);
         }
         //      if (dead)
         else
         {
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-grey2.png"));
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-grey4.png"));
             bar->setTabTextColor(index, Qt::darkGray);
         }
     }
@@ -129,10 +129,10 @@ void Ui_DataTabsViewer::displayPrettyName(QString name)
         // i.e., the brightest colour (yellow) indicates the most salient objects
 //      if (live && dependent on current trial)
         if (name.contains("brief"))
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-yellow2.png"));
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-green3.png"));
 //      if (live && NOT dependent on current trial)
         else if (name.contains("present"))
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-green2.png"));
+            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-orange.png"));
 //      if (dead)
         else
             tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-grey2.png"));

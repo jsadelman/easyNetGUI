@@ -223,5 +223,13 @@
         <file>images/preferences-icon.png</file>
         <file>images/compass.png</file>
         <file>images/compass256.png</file>
+        <file>images/table-green3.png</file>
+        <file>images/table-orange.png</file>
+        <file>images/graph-grey3.png</file>
+        <file>images/graph-orange.png</file>
+        <file>images/graph-green3.png</file>
+        <file>images/graph-grey4.png</file>
+        <file>images/graph-green6.png</file>
+        <file>images/graph-orange2.png</file>
     </qresource>
 </RCC>
