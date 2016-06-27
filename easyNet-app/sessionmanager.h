@@ -253,14 +253,14 @@ private:
     {
         {ViewType_Table, {
                 {ViewState_Static, QIcon(":/images/table-grey2.png")},
-                {ViewState_Stale, QIcon(":/images/table-yellow2.png")},
-                {ViewState_Fresh, QIcon(":/images/table-green2.png")}
+                {ViewState_Stale, QIcon(":/images/table-orange.png")},
+                {ViewState_Fresh, QIcon(":/images/table-green3.png")}
             }
         },
         {ViewType_Plot, {
-                {ViewState_Static, QIcon(":/images/graph-grey2.png")},
-                {ViewState_Stale, QIcon(":/images/graph-yellow2.png")},
-                {ViewState_Fresh, QIcon(":/images/graph-green2.png")}
+                {ViewState_Static, QIcon(":/images/graph-grey4.png")},
+                {ViewState_Stale, QIcon(":/images/graph-orange2.png")},
+                {ViewState_Fresh, QIcon(":/images/graph-green6.png")}
             }
         }
     };
