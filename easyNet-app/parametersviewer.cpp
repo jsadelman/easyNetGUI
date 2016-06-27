@@ -46,7 +46,7 @@ ParametersViewer::ParametersViewer(Ui_DataViewer *ui, QWidget *parent)
     restoreButton->setMenu(restoreMenu);
     ui->editToolBar[this]->addWidget(restoreButton);
 
-    paramExploreAct = new QAction(QIcon(":/images/Microscope-red-icon.png"), "Explore parameter space", this);
+    paramExploreAct = new QAction(QIcon(":/images/compass256.png"), "Explore parameter space", this);
     connect(paramExploreAct, SIGNAL(triggered()), this, SLOT(paramExplore()));
     ui->editToolBar[this]->addAction(paramExploreAct);
     paramExploreAct->setEnabled(false);

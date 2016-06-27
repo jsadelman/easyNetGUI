@@ -168,7 +168,7 @@ void DataViewerDispatcher::createInfoWidget()
 
 void DataViewerDispatcher::addExtraActions()
 {
-    preferencesAct = new QAction(QIcon(":/images/setting.png"), "Preferences", this);
+    preferencesAct = new QAction(QIcon(":/images/preferences-icon.png"), "Preferences", this);
     preferencesAct->setToolTip("Show preferences for this viewer");
     connect(preferencesAct, SIGNAL(triggered()), this, SLOT(showPreferences()));
     hostDataViewer->ui->dispatchToolBar[hostDataViewer]->addAction(preferencesAct);

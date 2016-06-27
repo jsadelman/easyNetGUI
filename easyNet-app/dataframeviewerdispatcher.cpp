@@ -101,7 +101,7 @@ void DataframeViewerDispatcher::addExtraActions()
     DataViewerDispatcher::addExtraActions();
 
     clearButton = new QToolButton(host);
-    clearButton->setIcon(QIcon(":/images/Eraser.png"));
+    clearButton->setIcon(QIcon(":/images/clean_brush-128.png"));
     clearButton->setVisible(true);
     clearButton->setPopupMode(QToolButton::InstantPopup);
     clearButton->setToolTip("Clear table");
@@ -109,13 +109,13 @@ void DataframeViewerDispatcher::addExtraActions()
     clearAct = new QAction("Clear current table", this);
     connect(clearAct, SIGNAL(triggered()), this, SLOT(clear()));
     clearMenu->addAction(clearAct);
-    backupAndClearAct = new QAction("Backup and clear current table", this);
+    backupAndClearAct = new QAction("Copy then clear current table", this);
     connect(backupAndClearAct, SIGNAL(triggered()), this, SLOT(backupAndClear()));
     clearMenu->addAction(backupAndClearAct);
     clearButton->setMenu(clearMenu);
     clearMenuAct = host->ui->editToolBar[host]->addWidget(clearButton);
 
-    mergeAct = new QAction(QIcon(":/images/mergeicon.png"), "Merge", this);
+    mergeAct = new QAction(QIcon(":/images/merge.png"), "Merge with stimulus set", this);
     connect(mergeAct, SIGNAL(triggered()), host, SLOT(merge()));
     host->ui->editToolBar[host]->addAction(mergeAct);
     mergeAct->setEnabled(false);

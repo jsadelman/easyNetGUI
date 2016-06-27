@@ -509,11 +509,11 @@ void DataframeViewer::addExtraActions()
     plotAct = ui->editToolBar[this]->addWidget(plotButton);
 
     dataframeViewButton = new QToolButton(this);
-    dataframeViewButton->setIcon(QIcon(":/images/formula.png"));
+    dataframeViewButton->setIcon(QIcon(":/images/R2.png"));
     dataframeViewButton->setVisible(true);
     dataframeViewButton->setEnabled(false);
     dataframeViewButton->setPopupMode(QToolButton::InstantPopup);
-    dataframeViewButton->setToolTip("Compute");
+    dataframeViewButton->setToolTip("Transform data via R script");
     dataframeViewMenu = new QMenu(dataframeViewButton);
     connect(dataframeViewMenu, SIGNAL(aboutToShow()), this, SLOT(buildDataframeViewMenu()));
     dataframeViewButton->setMenu(dataframeViewMenu);

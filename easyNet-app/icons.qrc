@@ -216,5 +216,12 @@
         <file>images/graph-green2.png</file>
         <file>images/graph-green4.png</file>
         <file>images/graph-green5.png</file>
+        <file>images/merge.png</file>
+        <file>images/clean_brush-128.png</file>
+        <file>images/R.png</file>
+        <file>images/R2.png</file>
+        <file>images/preferences-icon.png</file>
+        <file>images/compass.png</file>
+        <file>images/compass256.png</file>
     </qresource>
 </RCC>
