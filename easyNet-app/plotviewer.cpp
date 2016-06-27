@@ -363,6 +363,13 @@ void PlotViewer::addItem_impl(QString name)
             SessionManager::instance()->setPrettyName(name, SessionManager::instance()->nextPrettyName(itemPrettyName()));
         }
     }
+    if (SessionManager::instance()->exists(name))
+    {
+        if (viewState(name) != ViewState_Fresh)
+            setViewState(name, ViewState_Stale);
+    }
+    else
+        setViewState(name, ViewState_Static);
 }
 
 

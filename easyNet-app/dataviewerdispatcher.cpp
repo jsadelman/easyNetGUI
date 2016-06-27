@@ -213,6 +213,7 @@ void DataViewerDispatcher::updateView(QModelIndex topLeft, QModelIndex bottomRig
             {
                 hostDataViewer->addView(name);
                 hostDataViewer->ui->setCurrentItem(name);
+                hostDataViewer->ui->setStateIcon(name);
             }
             else
             {

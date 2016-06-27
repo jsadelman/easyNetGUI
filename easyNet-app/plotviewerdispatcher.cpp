@@ -39,6 +39,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
                    .arg(trialRunInfo.runMode);
         return;
     }
+    host->resetViewStates();
     foreach (QString plot, affectedPlots(trialRunInfo.results))
     {
         if (host->plotByteArray.contains(plot) && snapshotActive())
@@ -100,6 +101,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
                 }
              }
         }
+        host->setViewState(plot, ViewState_Fresh);
     }
     previousDispatchMode = currentDispatchMode;
 }

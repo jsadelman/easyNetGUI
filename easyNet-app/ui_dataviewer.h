@@ -72,6 +72,7 @@ public slots:
     virtual void addView(QString name, QWidget *view)=0;
     virtual QWidget *takeView(QString name)=0;
     virtual void setCurrentItem(QString name)=0;
+    virtual void setStateIcon(QString name, int state = -1) {Q_UNUSED(name) Q_UNUSED(state)}
 
 
 signals:
@@ -87,6 +88,8 @@ protected:
     virtual void createToolBars(DataViewer*);
     virtual void createViewer()=0;
     virtual void displayPrettyName(QString name)=0;
+
+    QList<DataViewer *> dataViewers;
     QMap<QString, QWidget *> viewMap;
     ObjectCacheFilter *itemDescriptionFilter;
     ObjectUpdater *itemDescriptionUpdater;

@@ -190,6 +190,29 @@ QString DataViewer::currentItemName()
     return ui->currentItemName();
 }
 
+void DataViewer::resetViewStates()
+{
+    foreach (QString name, viewStateMap.keys())
+    {
+        if (viewStateMap.value(name) == ViewState_Fresh)
+        {
+            setViewState(name, ViewState_Stale);
+        }
+    }
+}
+
+void DataViewer::updateDependeesViewStates(QString depender)
+{
+    foreach (QString name, viewStateMap.keys())
+    {
+        if (viewStateMap.value(name) == ViewState_Stale &&
+            SessionManager::instance()->dependencies(name).contains(depender))
+        {
+            setViewState(name, ViewState_Fresh);
+        }
+    }
+}
+
 void DataViewer::addItem(QString name, bool hidden)
 {
     if (name.isEmpty())

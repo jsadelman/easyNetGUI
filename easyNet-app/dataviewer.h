@@ -41,7 +41,11 @@ public:
     QString itemPrettyName() {return m_itemPrettyName;}
     void setItemPrettyName(QString txt) {m_itemPrettyName = txt;}
     bool isHidden(QString name) {return hiddenItems.contains(name);}
-
+    int viewState(QString name) {return viewStateMap.value(name, -1);}
+    void setViewState(QString name, int state) {viewStateMap[name] = state;
+                                                emit viewStateChanged(name, state);}
+    void resetViewStates();
+    void updateDependeesViewStates(QString depender);
 
 public slots:
     void addItem(QString name="", bool hidden=false);
@@ -75,6 +79,7 @@ signals:
     void itemRemoved(QString);
     void showSettingsRequested();
     void currentItemChanged(QString); // old setPlotSettings
+    void viewStateChanged(QString, int);
 
 
 protected:
@@ -99,6 +104,7 @@ protected:
     QSet<QString> hiddenItems;
     QString m_name;
     QString m_itemPrettyName;
+    QMap<QString, int> viewStateMap;
 };
 
 #endif // DATAVIEWER_H

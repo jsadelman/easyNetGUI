@@ -407,6 +407,21 @@ void MainWindow::connectSignalsAndSlots()
 //            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
 
     connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
+    connect(dataViewSettingsWidget, &SettingsWidget::settingsApplied, [=](QString name)
+    {
+        if (SessionManager::instance()->descriptionCache->type(name) == "dataframe")
+        {
+            dataframeResultsViewer->setViewState(name, ViewState_Fresh);
+            dataframeResultsViewer->updateDependeesViewStates(name);
+            plotViewer->updateDependeesViewStates(name);
+        }
+        else if (SessionManager::instance()->descriptionCache->subtype(name) == "rplot")
+            plotViewer->setViewState(name, ViewState_Fresh);
+    });
+
+    connect(dataframeResultsViewer, SIGNAL(viewStateChanged(QString,int)), ui_dataframeResultsViewer, SLOT(setStateIcon(QString,int)));
+    connect(plotViewer, SIGNAL(viewStateChanged(QString,int)), ui_dataframeResultsViewer, SLOT(setStateIcon(QString,int)));
+
     connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), trialWidget, SLOT(initParamExplore(QString)));
 
 

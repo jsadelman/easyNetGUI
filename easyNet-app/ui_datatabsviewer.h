@@ -23,10 +23,15 @@ public slots:
     virtual void addView(QString name, QWidget *view) Q_DECL_OVERRIDE;
     virtual QWidget *takeView(QString name) Q_DECL_OVERRIDE;
     virtual void setCurrentItem(QString name);
+    virtual void setStateIcon(QString name, int state = -1) Q_DECL_OVERRIDE;
+
 
 protected:
     virtual void createViewer();
     virtual void displayPrettyName(QString name);
+
+
+
 
 private:
     QTabWidget *tabWidget;

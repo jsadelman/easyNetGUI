@@ -442,12 +442,22 @@ void DataframeViewer::merge()
         eNerror << dataViewScript << "not found";
         return;
     }
-    sendNewDataViewRequest(dataViewScript, "dataframe_view", true, false);
+    QString mergeName = sendNewDataViewRequest(dataViewScript, "dataframe_view", true, false);
+    if (!mergeName.isEmpty())
+        setViewState(mergeName, ViewState_Fresh);
 }
 
 void DataframeViewer::addItem_impl(QString name)
 {
     modelMap.insert(name, nullptr);
+    QString subtype = SessionManager::instance()->descriptionCache->subtype(name);
+    if (subtype == "dataframe_for_activities" || subtype == "dataframe_for_trials" || subtype == "dataframe_view")
+    {
+        if (viewState(name) != ViewState_Fresh)
+            setViewState(name, ViewState_Stale);
+    }
+    else
+        setViewState(name, ViewState_Static);
 }
 
 QWidget *DataframeViewer::makeView(QString name)

@@ -3,6 +3,7 @@
 #include "objectupdater.h"
 #include "enumclasses.h"
 #include "sessionmanager.h"
+#include "dataviewer.h"
 
 #include <QVBoxLayout>
 #include <QSvgWidget>
@@ -75,6 +76,8 @@ void Ui_DataTabsViewer::createViewer()
 {
     tabWidget = new QTabWidget;
     tabWidget->setTabsClosable(tabsClosable);
+    tabWidget->setStyleSheet("QTabBar::tab { height: 30px; }");
+    tabWidget->setIconSize(QSize(24,24));
 //    setCentralWidget(tabWidget);
     mainLayout->addWidget(tabWidget);
     connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)
@@ -93,49 +96,70 @@ void Ui_DataTabsViewer::createViewer()
 
 void Ui_DataTabsViewer::displayPrettyName(QString name)
 {
-    tabWidget->setStyleSheet("QTabBar::tab { height: 30px; }");
-    tabWidget->setIconSize(QSize(24,24));
+    tabWidget->setTabText(tabWidget->indexOf(viewMap.value(name)), prettyName.value(name));
+}
 
+void Ui_DataTabsViewer::setStateIcon(QString name, int state)
+{
     int index = tabWidget->indexOf(viewMap.value(name));
-    tabWidget->setTabText(index, prettyName.value(name));
-    qDebug() << name << " view is" << viewMap.value(name);
-    QTabBar* bar=tabWidget->tabBar();
-    if (qobject_cast<QSvgWidget*>(viewMap.value(name))!=NULL)
+    if (index < 0)
+        return;
+    if (state == -1)
     {
-        // if (live && dependent on current trial)
-        if (name.contains("letters"))
+        foreach (DataViewer * viewer, dataViewers)
+            state = qMax(state, viewer->viewState(name));
+    }
+    if (SessionManager::instance()->descriptionCache->type(name) == "dataframe")
+    {
+        switch (state)
         {
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-yellow2.png"));
-            bar->setTabTextColor(index, Qt::black);
+        case ViewState_Static:
+        {
+            tabWidget->setTabIcon(index, QIcon(":/images/table-grey2.png"));
+            tabWidget->tabBar()->setTabTextColor(index, Qt::darkGray);
+            break;
         }
-        //      if (live && NOT dependent on current trial)
-        else if (name.contains("words"))
+        case ViewState_Stale:
         {
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-green2.png"));
-            bar->setTabTextColor(index, Qt::black);
+            tabWidget->setTabIcon(index, QIcon(":/images/table-yellow2.png"));
+            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
+            break;
         }
-        //      if (dead)
-        else
+        case ViewState_Fresh:
         {
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/graph-grey2.png"));
-            bar->setTabTextColor(index, Qt::darkGray);
+            tabWidget->setTabIcon(index, QIcon(":/images/table-green2.png"));
+            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
+            break;
+        }
+        default:
+            break;
         }
     }
     else
     {
-        // table
-
-        // Note re colours: rather than traffic lights, I suggest the scale is based on *luminance*,
-        // i.e., the brightest colour (yellow) indicates the most salient objects
-//      if (live && dependent on current trial)
-        if (name.contains("brief"))
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-yellow2.png"));
-//      if (live && NOT dependent on current trial)
-        else if (name.contains("present"))
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-green2.png"));
-//      if (dead)
-        else
-            tabWidget->setTabIcon(tabWidget->indexOf(viewMap.value(name)), QIcon(":/images/table-grey2.png"));
+        switch (state)
+        {
+        case ViewState_Static:
+        {
+            tabWidget->setTabIcon(index, QIcon(":/images/graph-grey2.png"));
+            tabWidget->tabBar()->setTabTextColor(index, Qt::darkGray);
+            break;
+        }
+        case ViewState_Stale:
+        {
+            tabWidget->setTabIcon(index, QIcon(":/images/graph-yellow2.png"));
+            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
+            break;
+        }
+        case ViewState_Fresh:
+        {
+            tabWidget->setTabIcon(index, QIcon(":/images/graph-green2.png"));
+            tabWidget->tabBar()->setTabTextColor(index, Qt::black);
+            break;
+        }
+        default:
+            break;
+        }
     }
-}
 
+}

@@ -175,7 +175,13 @@ void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         clearJob->cmdList << QString("%1 clear").arg(trialRunInfo.results);
         SessionManager::instance()->submitJobs(clearJob);
     }
+    // view state
+    host->resetViewStates();
+    host->setViewState(trialRunInfo.results, ViewState_Fresh);
+    foreach(QString observer, SessionManager::instance()->enabledObservers())
+        host->setViewState(observer, ViewState_Fresh);
 
+    host->updateDependeesViewStates(trialRunInfo.results);
 }
 
 void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)

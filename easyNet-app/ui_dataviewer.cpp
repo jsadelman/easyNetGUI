@@ -37,6 +37,7 @@ void Ui_DataViewer::setupUi(DataViewer *dataViewer)
         return;
     }
     setParent(dataViewer);
+    dataViewers.append(dataViewer);
     if (usePrettyNames())
     {
         itemDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
