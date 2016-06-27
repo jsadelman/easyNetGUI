@@ -29,7 +29,7 @@ QVariant HistoryTreeModel::data(const QModelIndex &index, int role) const
 
     if (!index.parent().isValid())
     {
-        if (role == Qt::DisplayRole || NameRole)
+        if (role == Qt::DisplayRole || role == NameRole)
             return record.name;
         else
             return QVariant();
@@ -176,12 +176,12 @@ bool HistoryTreeModel::isInView(QString view)
 
 bool HistoryTreeModel::appendTrial(QString trial)
 {
-    if (!insertRows(rowCount(), 1))
+    if (!insertRows(0, 1))
     {
         eNerror << "cannot insert a new row for trial" << trial;
         return false;
     }
-    if (!setData(index(rowCount()-1,0), trial, NameRole))
+    if (!setData(index(0,0), trial, NameRole))
     {
         eNerror << "cannot set trial" << trial;
         return false;
