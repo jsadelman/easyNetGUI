@@ -26,7 +26,7 @@ class DataViewerDispatcher: public QObject
 public:
     DataViewerDispatcher(DataViewer *host);
     virtual ~DataViewerDispatcher();
-    virtual void preDispatch(QSharedPointer<QDomDocument> info)=0;
+    virtual void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch(QSharedPointer<QDomDocument> info)=0;
     void setSingleTrialMode(int mode)   {dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_Single), mode);}
     void setTrialListMode(int mode)     {dispatchDefaultMode.insert(trialRunModeName.value(TrialRunMode_List), mode);}

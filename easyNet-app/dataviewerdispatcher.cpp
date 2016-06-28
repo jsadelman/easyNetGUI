@@ -57,6 +57,15 @@ DataViewerDispatcher::~DataViewerDispatcher()
 {
 }
 
+void DataViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
+{
+    TrialRunInfo trialRunInfo(info);
+    if (!(SessionManager::instance()->dataframeDependencies(hostDataViewer->ui->currentItemName()).contains(trialRunInfo.results) ||
+          SessionManager::instance()->enabledObservers().contains(hostDataViewer->ui->currentItemName()) ||
+          !SessionManager::instance()->dataframeDependencies(hostDataViewer->ui->currentItemName()).intersect(SessionManager::instance()->enabledObservers().toSet()).isEmpty() ))
+        hostDataViewer->ui->setCurrentItem(trialRunInfo.results);
+}
+
 QString DataViewerDispatcher::trial(QString name)
 {
     QList<QSharedPointer<QDomDocument> > info = SessionManager::instance()->trialRunInfo(name);

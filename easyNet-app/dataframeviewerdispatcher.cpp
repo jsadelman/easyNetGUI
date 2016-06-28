@@ -125,6 +125,7 @@ void DataframeViewerDispatcher::addExtraActions()
 
 void DataframeViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
 {
+    DataViewerDispatcher::preDispatch(info);
     TrialRunInfo trialRunInfo(info);
     int currentDispatchMode = dispatchDefaultMode.value(trialRunInfo.runMode, -1);
     if (currentDispatchMode < 0 || currentDispatchMode >= MAX_DISPATCH_MODE)
