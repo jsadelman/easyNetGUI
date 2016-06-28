@@ -789,11 +789,12 @@ void MainWindow::loadModel(QString fileName,bool complete)
                     QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
                     QStringList({fileName}),
                     qApp->applicationDirPath());
-        diagramPanel->useFake(modelTabIdx,false);
+//        diagramPanel->useFake(modelTabIdx,false);
 #endif
         return;
     }
     modelScene->goToSleep();
+    diagramPanel->useFake(modelTabIdx,true);
 //    conversionScene->goToSleep();
 
     // load and run script
@@ -1004,7 +1005,6 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
         loadModelFromFileDialog(mode);
     else
     {
-        diagramPanel->useFake(modelTabIdx,true);
         loadModel(eNmFile,mode);
     }
     modelChooserI->setCurrentItem(nullptr);

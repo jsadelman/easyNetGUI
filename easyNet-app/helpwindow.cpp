@@ -63,6 +63,8 @@ HelpWindow::HelpWindow()
 
     htHome=hToolBar->addAction(QIcon(":/images/home.png"),tr("Home"));
     connect(htHome, SIGNAL(triggered()), this, SLOT(htHomeClicked()));
+    htBack=hToolBar->addAction(QIcon(":/images/Back.png"),tr("Back"));
+    connect(htBack, SIGNAL(triggered()), this, SLOT(back()));
 
     textViewer = new TextEdit;
     textViewer->setContents(SessionManager::instance()->defaultLocation("docsDir")+"/start.html");
@@ -78,9 +80,11 @@ void HelpWindow::htHomeClicked()
     textViewer->setContents(SessionManager::instance()->defaultLocation("docsDir")+"/start.html");
 
 }
+
+void HelpWindow::back(){textViewer->back();}
 void HelpWindow::showInfo(QString page)
 {
-//    qDebug() << "show info" << page;
+    //    qDebug() << "show info" << page;
     textViewer->setContents(page);
 }
 
