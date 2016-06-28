@@ -68,8 +68,19 @@ void TextEdit::back()
     setContents(fn);
 }
 
-void TextEdit::setContents(const QString &fileName)
+void TextEdit::setContents(QString fileName)
 {
+    qDebug()<<"recvd "<<fileName;
+    int x=fileName.indexOf("#");
+    QString anch;
+    if(x>=0)
+    {
+        x=fileName.size()-x-1;
+        anch=fileName.right(x);
+        qDebug()<<"anch is "<<anch;
+        fileName.chop(x+1);
+        qDebug()<<fileName<<" pruned to";
+    }
     QFileInfo fi(fileName);
     srcUrl = QUrl::fromLocalFile(fi.absoluteFilePath());
     currdir=QDir::cleanPath(fileName+"/..");
@@ -82,6 +93,7 @@ void TextEdit::setContents(const QString &fileName)
         else
             setPlainText(data);
     }
+    if(!anch.isEmpty()) scrollToAnchor(anch);
 }
 
 QVariant TextEdit::loadResource(int type, const QUrl &name)
