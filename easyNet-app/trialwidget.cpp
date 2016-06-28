@@ -32,17 +32,15 @@ TrialWidget::TrialWidget(QWidget *parent)
     : trialRunMode(TrialRunMode_Single), askDisableObserver(true),
       suspendingObservers(false), QWidget(parent), currentParamExplore("")
 {
-    layout = new QHBoxLayout;
-    layout1 = new QHBoxLayout;
-    layout2 = new QHBoxLayout;
-    layout3 = new QVBoxLayout;
-
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentTrialChanged(QString)), trialFilter, SLOT(setName(QString)));
     connect(SessionManager::instance(), &SessionManager::currentTrialChanged, [=] (QString name)
     {
         if (name.isEmpty())
-            buildComboBoxesTest(); // a hack to clear the layout when all trials are gone, e.g. restart lazynut
+        {
+            execBuildComboBoxes(); // a hack to clear the layout when all trials are gone, e.g. restart lazynut
+            hideSetComboBox();
+        }
     });
 
     trialDescriptionUpdater = new ObjectUpdater(this);
@@ -71,17 +69,12 @@ TrialWidget::TrialWidget(QWidget *parent)
     connect(paramExploreDataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(runParamExplore(QDomDocument*,QString)));
 
-    runAction = new QAction(tr("&Run"), this);
-    runAction->setStatusTip(tr("Run"));
-    connect(runAction,SIGNAL(triggered()),this,SLOT(runTrial()));
-    runButton = new QToolButton(this);
-    runButton->hide();
-
     hideSetComboBoxAction = new QAction(QIcon(":/images/icon_dismiss.png"),tr("&Hide"), this);
     hideSetComboBoxAction->setStatusTip(tr("Hide"));
     connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
 
-    buildComboBoxesTest();
+    buildWidget();
+    hideSetComboBox();
 
     disableObserversMsg = new QMessageBox(
                 QMessageBox::Question,
@@ -123,51 +116,23 @@ void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
         defs.remove(label);
 
     if (argList.size())
-        buildComboBoxesTest(argList);
+        execBuildComboBoxes(argList);
 
 }
 
-void TrialWidget::buildComboBoxesTest(QStringList args)
+void TrialWidget::execBuildComboBoxes(QStringList args)
 {
     // save defs
     foreach(QString label, argumentMap.keys())
         defs[label] = argumentMap[label]->currentText();
-    // first delete existing labels/boxes/button
-    clearLayout(layout);
-
-    // need to reconstruct constituent layouts that were in layout
-    layout1 = new QHBoxLayout;
+    // first delete existing trial-dependent labels/boxes
+    clearLayout(layout2);
+    delete layout2;
     layout2 = new QHBoxLayout;
-    layout3 = new QVBoxLayout;
+
 
     argumentMap.clear();
     labelList.clear();
-
-
-    setComboBox = new QComboBox(this);
-    setComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    setCancelButton = new QToolButton(this);
-    setCancelButton->setIcon(QIcon(":/images/icon_dismiss.png"));
-    setCancelButton->setAutoRaise(true);
-    setCancelButton->setDefaultAction(hideSetComboBoxAction);
-
-    // Widget for stochastic models
-    repetitionsLabel = new QLabel("Repetitions");
-    repetitionsBox = new QComboBox(this);
-    repetitionsBox->setEditable(true);
-    repetitionsBox->setValidator(new QIntValidator(this));
-    strategyLabel = new QLabel("Strategy");
-    strategyBox = new QComboBox(this);
-    strategyBox->addItems(QStringList({"ABAB", "AABB"}));
-    strategyBox->setEditable(false);
-
-    layout1->addWidget(repetitionsLabel);
-    layout1->addWidget(repetitionsBox);
-    layout1->addWidget(strategyLabel);
-    layout1->addWidget(strategyBox);
-
-    layout1->addWidget(setComboBox);
-    layout1->addWidget(setCancelButton);
 
     // now add new boxes
     for (int i=0;i<args.count();i++)
@@ -191,20 +156,11 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
         connect(ed, SIGNAL(returnPressed()),runAction,SIGNAL(triggered()));
     }
 
-    if (runButton == NULL)
-        runButton = new QToolButton(this);
-    runButton->setAutoRaise(true);
-    runButton->setDefaultAction(runAction);
-    runButton->setIcon(QIcon(":/images/run_disabled.png"));
-    runButton->setIconSize(QSize(40, 40));
-    runButton->show();
 
-    layout3->addLayout(layout1);
+    runButton->show();
     layout3->addLayout(layout2);
 
-    layout->addLayout(layout3);
-    layout->addWidget(runButton);
-    setLayout(layout);
+
 
     clearArgumentBoxes();
     if (!hasDollarArguments())
@@ -220,6 +176,8 @@ void TrialWidget::argWasChanged(QString arg)
 
 void TrialWidget::clearLayout(QLayout *layout)
 {
+    if (!layout)
+        return;
     QLayoutItem *item;
     while((item = layout->takeAt(0)))
     {
@@ -538,6 +496,55 @@ void TrialWidget::runParamExplore(QDomDocument *df, QString name)
     SessionManager::instance()->submitJobs(jobs);
 }
 
+void TrialWidget::buildWidget()
+{
+    setComboBox = new QComboBox(this);
+    setComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    setCancelButton = new QToolButton(this);
+    setCancelButton->setIcon(QIcon(":/images/icon_dismiss.png"));
+    setCancelButton->setAutoRaise(true);
+    setCancelButton->setDefaultAction(hideSetComboBoxAction);
+
+    // Widget for stochastic models
+    repetitionsLabel = new QLabel("Repetitions");
+    repetitionsBox = new QComboBox(this);
+    repetitionsBox->setEditable(true);
+    repetitionsBox->setValidator(new QIntValidator(this));
+    strategyLabel = new QLabel("Strategy");
+    strategyBox = new QComboBox(this);
+    strategyBox->addItems(QStringList({"ABAB", "AABB"}));
+    strategyBox->setEditable(false);
+
+    layout1 = new QHBoxLayout;
+    layout1->addWidget(repetitionsLabel);
+    layout1->addWidget(repetitionsBox);
+    layout1->addWidget(strategyLabel);
+    layout1->addWidget(strategyBox);
+
+    layout1->addWidget(setComboBox);
+    layout1->addWidget(setCancelButton);
+
+    runAction = new QAction(tr("&Run"), this);
+    runAction->setStatusTip(tr("Run"));
+    connect(runAction,SIGNAL(triggered()),this,SLOT(runTrial()));
+    runButton = new QToolButton(this);
+    runButton->setAutoRaise(true);
+    runButton->setDefaultAction(runAction);
+    runButton->setIcon(QIcon(":/images/run_disabled.png"));
+    runButton->setIconSize(QSize(40, 40));
+    runButton->hide();
+
+    layout2 = new QHBoxLayout; // used in execBuildComboBoxes
+    layout3 = new QVBoxLayout;
+    layout3->addLayout(layout1);
+    layout = new QHBoxLayout;
+    layout->addLayout(layout3);
+    layout->addWidget(runButton);
+    setLayout(layout);
+
+
+}
+
 void TrialWidget::setStochasticityVisible(bool isVisible)
 {
     if (isVisible)
@@ -606,8 +613,10 @@ void TrialWidget::showSetComboBox()
 void TrialWidget::showSetLabel(QString set)
 {
     showSetComboBox();
-    setComboBox->addItem(set);
-    setComboBox->setCurrentIndex(setComboBox->findData(set,Qt::DisplayRole));
+    if (setComboBox->findText(set) < 0)
+        setComboBox->addItem(set);
+
+    setComboBox->setCurrentText(set);
     SessionManager::instance()->setCurrentSet(set);
 }
 

@@ -46,7 +46,7 @@ private slots:
     void runTrial();
     void update(QString trialName);
     void buildComboBoxes(QDomDocument* domDoc);
-    void buildComboBoxesTest(QStringList args = QStringList());
+    void execBuildComboBoxes(QStringList args = QStringList());
     void setRunButtonIcon();
     void hideSetComboBox();
     void showSetComboBox();
@@ -61,6 +61,7 @@ private slots:
     void runParamExplore(QDomDocument *df, QString name);
 
 private:
+    void buildWidget();
     QSharedPointer<QDomDocument> createTrialRunInfo();
     void clearLayout(QLayout *layout);
     void runSingleTrial(LazyNutJob *job);
