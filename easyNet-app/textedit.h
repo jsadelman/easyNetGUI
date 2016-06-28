@@ -51,13 +51,15 @@ class TextEdit : public QTextBrowser
 
 public:
     TextEdit(QWidget *parent = 0);
-    void setContents(const QString &fileName);
+    void setContents(QString fileName);
 public slots:
     void do_source(const QUrl& url);
+    void back();
 private:
     QVariant loadResource(int type, const QUrl &name);
     QUrl srcUrl;
     QDir currdir;
+    QStringList trail;
 };
 
 #endif

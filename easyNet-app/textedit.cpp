@@ -59,12 +59,30 @@ void TextEdit::do_source(const QUrl& url)
     setContents(resolvedPath);
 }
 
-void TextEdit::setContents(const QString &fileName)
+void TextEdit::back()
 {
+    if(trail.size()<2) return;
+    trail.pop_back();
+    QString fn=trail.back();
+    trail.pop_back();
+    setContents(fn);
+}
+
+void TextEdit::setContents(QString fileName)
+{
+    int x=fileName.indexOf("#");
+    QString anch;
+    if(x>=0)
+    {
+        x=fileName.size()-x-1;
+        anch=fileName.right(x);
+        fileName.chop(x+1);
+    }
     QFileInfo fi(fileName);
     srcUrl = QUrl::fromLocalFile(fi.absoluteFilePath());
     currdir=QDir::cleanPath(fileName+"/..");
     QFile file(fileName);
+    trail.push_back(fileName);
     if (file.open(QIODevice::ReadOnly)) {
         QString data(file.readAll());
         if (fileName.endsWith(".html"))
@@ -72,6 +90,7 @@ void TextEdit::setContents(const QString &fileName)
         else
             setPlainText(data);
     }
+    if(!anch.isEmpty()) scrollToAnchor(anch);
 }
 
 QVariant TextEdit::loadResource(int type, const QUrl &name)
