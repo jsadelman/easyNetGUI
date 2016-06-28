@@ -90,6 +90,8 @@ public:
     bool debugMode() {return m_debugMode;}
     int trialListLength() {return m_trialListLength;}
     void setTrialListLength(int length) {m_trialListLength = length;}
+    void loadModel(QString fileName,bool complete);
+
 
 public slots:
     void loadTrial();
@@ -228,7 +230,6 @@ private:
     bool proceedWithRestartOk();
     //void loadModel(QString fileName);
     //void loadModelUnconfigured(QString fileName);
-    void loadModel(QString fileName,bool complete);
 
     bool m_debugMode;
     void buildModelChooser();

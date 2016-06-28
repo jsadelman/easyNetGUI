@@ -18,7 +18,15 @@ int main(int argc, char *argv[])
     mainWindow->showMaximized();
     //  show model chooser at startup
 
-    mainWindow->loadModel();
+    #ifdef WIN32
+    if (argc == 1)
+    #endif
+        mainWindow->loadModel();
+     #ifdef WIN32
+    else
+        mainWindow->loadModel(QDir::fromNativeSeparators(argv[1]),true);
+    #endif
+
 
     splash.finish(mainWindow);
 //    mainWindow->hide(); // get out of the way while user chooses model

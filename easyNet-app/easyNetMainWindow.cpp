@@ -106,13 +106,14 @@ void MainWindow::build()
     diagramPanel->setCurrentIndex(modelTabIdx);
     diagramSceneTabChanged(modelTabIdx);
     setQuietMode(true);
-
-    #ifdef WIN32
-    if (qApp->arguments().count() > 1)
-        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)),true);
-    #endif
-
     SessionManager::instance()->startLazyNut();
+
+
+//    #ifdef WIN32
+//    if (qApp->arguments().count() > 1)
+//        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)),true);
+//    #endif
+
 
 
 
@@ -781,17 +782,17 @@ void MainWindow::loadModel(QString fileName,bool complete)
     {
         return;
     }
-#ifdef WIN32
     if (!SessionManager::instance()->currentModel().isEmpty())
     {
+#ifdef WIN32
         QProcess::startDetached(
                     QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
                     QStringList({fileName}),
                     qApp->applicationDirPath());
         diagramPanel->useFake(modelTabIdx,false);
+#endif
         return;
     }
-#endif
     modelScene->goToSleep();
 //    conversionScene->goToSleep();
 
