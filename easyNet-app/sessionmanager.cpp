@@ -694,6 +694,7 @@ void SessionManager::setDefaultLocations()
     m_defaultLocation["rPlotsDir"]    =   QString("%1/%2/R-library/plots").arg(easyNetHome()).arg(binDir);
     m_defaultLocation["outputDir"]    =   QString("%1/Outputs").arg(easyNetUserHome());
     m_defaultLocation["rDataframeViewsDir"]    =   QString("%1/%2/R-library/dataframe_views").arg(easyNetHome()).arg(binDir);
+    m_defaultLocation["docsDir"]   =   QString("%1/documentation").arg(easyNetDataHome());
 }
 
 void SessionManager::updateModelStageCompleted(QDomDocument *domDoc)

@@ -49,11 +49,14 @@
 #include <QVBoxLayout>
 #include <QTextBrowser>
 #include <QToolBar>
+#include <QDesktopWidget>
+#include <QSize>
+#include <QFileDialog>
 
 #include "helpwindow.h"
 #include "textedit.h"
-#include <QDesktopWidget>
-#include <QSize>
+#include "sessionmanager.h"
+
 
 HelpWindow::HelpWindow()
 {
@@ -62,6 +65,9 @@ HelpWindow::HelpWindow()
 
     htHome=hToolBar->addAction(QIcon(":/images/home.png"),tr("Home"));
     connect(htHome, SIGNAL(triggered()), this, SLOT(htHomeClicked()));
+    htLoad=hToolBar->addAction(QIcon(":/images/open.png"),tr("Open html file"));
+    connect(htLoad, SIGNAL(triggered()), this, SLOT(htLoadClicked()));
+
 
     textViewer = new TextEdit;
     QString link = QApplication::applicationDirPath() + "/documentation/intro.html";
@@ -80,6 +86,25 @@ void HelpWindow::htHomeClicked()
     textViewer->setContents(loc);
 
 }
+
+
+void HelpWindow::htLoadClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,tr("Load html page"),
+                                                    SessionManager::instance()->defaultLocation("docsDir"),
+                                                    tr("html Files (*.html);;htm Files (*.htm);;All files (*.*)"));
+    if (!fileName.isEmpty())
+    {
+//        QLatin1String loc(fileName);
+        textViewer->setContents(fileName);
+    }
+    qDebug() << "loading html page:" << filename;
+
+    QString searchPath = QString(SessionManager::instance()->defaultLocation("docsDir"))+QString("/gui");
+    textViewer->setSearchPaths({searchPath});
+    qDebug() << "setting search path to" << searchPath;
+}
+
 void HelpWindow::showInfo(QString page)
 {
 //    qDebug() << "show info" << page;
