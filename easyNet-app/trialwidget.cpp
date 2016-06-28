@@ -281,6 +281,7 @@ void TrialWidget::runTrial()
         job->appendEndOfJobReceiver(MainWindow::instance(), SIGNAL(runAllTrialEnded()));
     }
     SessionManager::instance()->submitJobs(jobs);
+    insertArgumentsInBoxes();
 }
 
 QString TrialWidget::defaultDataframe()
@@ -397,6 +398,19 @@ void TrialWidget::clearDollarArgumentBoxes()
         {
             static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
         }
+        i++;
+    }
+}
+
+void TrialWidget::insertArgumentsInBoxes()
+{
+    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
+    while (i != argumentMap.constEnd())
+    {
+        QString argument = argumentMap[i.key()]->currentText();
+        if (argumentMap[i.key()]->findText(argument) < 0)
+            argumentMap[i.key()]->insertItem(0, argument);
+
         i++;
     }
 }

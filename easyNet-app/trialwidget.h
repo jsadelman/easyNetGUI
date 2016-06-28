@@ -55,6 +55,7 @@ private slots:
     void argWasChanged(QString arg);
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
+    void insertArgumentsInBoxes();
     void updateModelStochasticity(QDomDocument* modelDescription);
     void addParamExploreDf(QString name);
     void initParamExplore(QString name);
