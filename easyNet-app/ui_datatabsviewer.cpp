@@ -45,6 +45,8 @@ void Ui_DataTabsViewer::addView(QString name, QWidget *view)
     }
     else
         tabWidget->insertTab(0, view, name);
+
+    tabWidget->setTabToolTip(0, name);
 }
 
 QWidget *Ui_DataTabsViewer::takeView(QString name)
