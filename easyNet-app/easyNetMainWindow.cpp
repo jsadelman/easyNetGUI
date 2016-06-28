@@ -594,7 +594,7 @@ void MainWindow::displayExpertWindow()
 void MainWindow::initialiseToolBar()
 {
 //    QIcon newpix(":/images/zebra_64x64.png");
-    QIcon newpix(":/images/expert.mode.jpg");
+    QIcon newpix(":/images/glasses-256.png");
     expertShow = new QAction(newpix, "E&xpert", this);
     toolbar = addToolBar("main toolbar");
 //    QLabel* modelBoxLabel = new QLabel("Model: ");
@@ -1716,7 +1716,7 @@ void MainWindow::setLazyNutFinished(bool crashed)
     int iconHeight = fm.height();
     QString errorInfo = QString("<p>Note: you can manually restart the simulator engine by selecting 'Restart simulation engine' in File menu.<br/>"
                                 "Note: a detailed log of commands and errors can always be retrieved from the Expert window "
-                      "(<img src=':/images/expert.mode.jpg' height=%1> button).</p>").arg(iconHeight);
+                      "(<img src=':/images/glasses-256.png' height=%1> button).</p>").arg(iconHeight);
     QMessageBox msgBox(QMessageBox::Critical,
                        "Simulation Engine Crash",
                        errorText);

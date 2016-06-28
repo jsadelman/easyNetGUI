@@ -232,5 +232,6 @@
         <file>images/graph-green6.png</file>
         <file>images/graph-orange2.png</file>
         <file>images/home.png</file>
+        <file>images/glasses-256.png</file>
     </qresource>
 </RCC>
