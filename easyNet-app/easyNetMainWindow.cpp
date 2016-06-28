@@ -891,6 +891,7 @@ void MainWindow::buildModelChooser()
     modelList<< modelInfo("CDP+","Models/cdpplus/cdpplus.eNm",":images/cdpplus.png");
     modelList<< modelInfo("Spatial Coding","Models/scm/SCM.eNm",":images/SCM.png");
     modelList<< modelInfo("Relative Position","Models/rpm-ia/rpm-ia.eNm",":images/rpm-ia.png");
+    modelList<< modelInfo("LTRS (simplified)","Models/ltrs/ltrs_4slot.eNm",":images/ltrs.png");
     modelList<< modelInfo("LTRS","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
     modelList<< modelInfo("PMSP (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
     modelList<< modelInfo("DRC","Models/drc/drc.eNm",":images/drc.png");
