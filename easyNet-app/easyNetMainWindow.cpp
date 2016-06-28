@@ -789,11 +789,12 @@ void MainWindow::loadModel(QString fileName,bool complete)
                     QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
                     QStringList({fileName}),
                     qApp->applicationDirPath());
-        diagramPanel->useFake(modelTabIdx,false);
+//        diagramPanel->useFake(modelTabIdx,false);
 #endif
         return;
     }
     modelScene->goToSleep();
+    diagramPanel->useFake(modelTabIdx,true);
 //    conversionScene->goToSleep();
 
     // load and run script
@@ -890,6 +891,7 @@ void MainWindow::buildModelChooser()
     modelList<< modelInfo("CDP+","Models/cdpplus/cdpplus.eNm",":images/cdpplus.png");
     modelList<< modelInfo("Spatial Coding","Models/scm/SCM.eNm",":images/SCM.png");
     modelList<< modelInfo("Relative Position","Models/rpm-ia/rpm-ia.eNm",":images/rpm-ia.png");
+    modelList<< modelInfo("LTRS (simplified)","Models/ltrs/ltrs_4slot.eNm",":images/ltrs.png");
     modelList<< modelInfo("LTRS","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
     modelList<< modelInfo("PMSP (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
     modelList<< modelInfo("DRC","Models/drc/drc.eNm",":images/drc.png");
@@ -1004,7 +1006,6 @@ void MainWindow::modelChooserItemClicked(QListWidgetItem* item)
         loadModelFromFileDialog(mode);
     else
     {
-        diagramPanel->useFake(modelTabIdx,true);
         loadModel(eNmFile,mode);
     }
     modelChooserI->setCurrentItem(nullptr);

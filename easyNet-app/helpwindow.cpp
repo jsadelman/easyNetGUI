@@ -52,6 +52,7 @@
 #include <QDesktopWidget>
 #include <QSize>
 #include <QFileDialog>
+#include <QFileInfo>
 
 #include "helpwindow.h"
 #include "textedit.h"
@@ -65,14 +66,15 @@ HelpWindow::HelpWindow()
 
     htHome=hToolBar->addAction(QIcon(":/images/home.png"),tr("Home"));
     connect(htHome, SIGNAL(triggered()), this, SLOT(htHomeClicked()));
+
     htLoad=hToolBar->addAction(QIcon(":/images/open.png"),tr("Open html file"));
     connect(htLoad, SIGNAL(triggered()), this, SLOT(htLoadClicked()));
 
+    htBack=hToolBar->addAction(QIcon(":/images/Back.png"),tr("Back"));
+    connect(htBack, SIGNAL(triggered()), this, SLOT(back()));
 
     textViewer = new TextEdit;
-    QString link = QApplication::applicationDirPath() + "/documentation/intro.html";
-    QLatin1String loc(":/documentation/siteexport/start.html");
-    textViewer->setContents(loc);
+    textViewer->setContents(SessionManager::instance()->defaultLocation("docsDir")+"/start.html");
 
     setCentralWidget(textViewer);
     setWindowTitle(tr("easyNet help"));
@@ -82,11 +84,9 @@ HelpWindow::HelpWindow()
 
 void HelpWindow::htHomeClicked()
 {
-    QLatin1String loc(":/documentation/siteexport/start.html");
-    textViewer->setContents(loc);
+    textViewer->setContents(SessionManager::instance()->defaultLocation("docsDir")+"/start.html");
 
 }
-
 
 void HelpWindow::htLoadClicked()
 {
@@ -96,18 +96,23 @@ void HelpWindow::htLoadClicked()
     if (!fileName.isEmpty())
     {
 //        QLatin1String loc(fileName);
+//        textViewer->setContents(fileName);
+        QUrl localRef = QUrl::fromLocalFile(fileName);
+        textViewer->setSource(localRef); //can't figure out how to get QTextBrowser to understand relative references
         textViewer->setContents(fileName);
     }
-    qDebug() << "loading html page:" << filename;
+    qDebug() << "loading html page:" << fileName;
 
-    QString searchPath = QString(SessionManager::instance()->defaultLocation("docsDir"))+QString("/gui");
+    QString searchPath = QFileInfo(fileName).absolutePath();
     textViewer->setSearchPaths({searchPath});
     qDebug() << "setting search path to" << searchPath;
 }
 
+void HelpWindow::back(){textViewer->back();}
+
 void HelpWindow::showInfo(QString page)
 {
-//    qDebug() << "show info" << page;
+    //    qDebug() << "show info" << page;
     textViewer->setContents(page);
 }
 

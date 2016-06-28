@@ -61,12 +61,16 @@ protected:
 private slots:
     void htHomeClicked();
     void htLoadClicked();
+    void back();
+
 private:
 
     TextEdit *textViewer;
     QToolBar *hToolBar;
     QAction *htHome;
     QAction *htLoad;
+    QAction *htBack;
+
 };
 
 #endif // HELPWINDOW_H

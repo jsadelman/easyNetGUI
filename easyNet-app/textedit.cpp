@@ -59,12 +59,22 @@ void TextEdit::do_source(const QUrl& url)
     setContents(resolvedPath);
 }
 
+void TextEdit::back()
+{
+    if(trail.size()<2) return;
+    trail.pop_back();
+    QString fn=trail.back();
+    trail.pop_back();
+    setContents(fn);
+}
+
 void TextEdit::setContents(const QString &fileName)
 {
     QFileInfo fi(fileName);
     srcUrl = QUrl::fromLocalFile(fi.absoluteFilePath());
     currdir=QDir::cleanPath(fileName+"/..");
     QFile file(fileName);
+    trail.push_back(fileName);
     if (file.open(QIODevice::ReadOnly)) {
         QString data(file.readAll());
         if (fileName.endsWith(".html"))

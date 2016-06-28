@@ -54,10 +54,12 @@ public:
     void setContents(const QString &fileName);
 public slots:
     void do_source(const QUrl& url);
+    void back();
 private:
     QVariant loadResource(int type, const QUrl &name);
     QUrl srcUrl;
     QDir currdir;
+    QStringList trail;
 };
 
 #endif
