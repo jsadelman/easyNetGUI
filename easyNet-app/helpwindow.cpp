@@ -98,14 +98,14 @@ void HelpWindow::htLoadClicked()
 //        QLatin1String loc(fileName);
 //        textViewer->setContents(fileName);
         QUrl localRef = QUrl::fromLocalFile(fileName);
-        textViewer->setSource(localRef); //can't figure out how to get QTextBrowser to understand relative references
+//        textViewer->setSource(localRef); //can't figure out how to get QTextBrowser to understand relative references
         textViewer->setContents(fileName);
     }
     qDebug() << "loading html page:" << fileName;
 
-    QString searchPath = QFileInfo(fileName).absolutePath();
-    textViewer->setSearchPaths({searchPath});
-    qDebug() << "setting search path to" << searchPath;
+//    QString searchPath = QFileInfo(fileName).absolutePath();
+//    textViewer->setSearchPaths({searchPath});
+//    qDebug() << "setting search path to" << searchPath;
 }
 
 void HelpWindow::back(){textViewer->back();}
