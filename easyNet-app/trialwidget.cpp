@@ -209,7 +209,8 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     clearArgumentBoxes();
     if (!hasDollarArguments())
         hideSetComboBox();
-
+    else
+        setStochasticityVisible(isStochastic);
 }
 
 void TrialWidget::argWasChanged(QString arg)
