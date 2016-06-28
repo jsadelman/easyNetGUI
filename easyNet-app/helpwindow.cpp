@@ -52,6 +52,7 @@
 
 #include "helpwindow.h"
 #include "textedit.h"
+#include "sessionmanager.h"
 #include <QDesktopWidget>
 #include <QSize>
 
@@ -64,9 +65,7 @@ HelpWindow::HelpWindow()
     connect(htHome, SIGNAL(triggered()), this, SLOT(htHomeClicked()));
 
     textViewer = new TextEdit;
-    QString link = QApplication::applicationDirPath() + "/documentation/intro.html";
-    QLatin1String loc(":/documentation/siteexport/start.html");
-    textViewer->setContents(loc);
+    textViewer->setContents(SessionManager::instance()->defaultLocation("docsDir")+"/start.html");
 
     setCentralWidget(textViewer);
     setWindowTitle(tr("easyNet help"));
@@ -76,8 +75,7 @@ HelpWindow::HelpWindow()
 
 void HelpWindow::htHomeClicked()
 {
-    QLatin1String loc(":/documentation/siteexport/start.html");
-    textViewer->setContents(loc);
+    textViewer->setContents(SessionManager::instance()->defaultLocation("docsDir")+"/start.html");
 
 }
 void HelpWindow::showInfo(QString page)
