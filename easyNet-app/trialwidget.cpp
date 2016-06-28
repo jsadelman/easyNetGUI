@@ -45,19 +45,6 @@ TrialWidget::TrialWidget(QWidget *parent)
             buildComboBoxesTest(); // a hack to clear the layout when all trials are gone, e.g. restart lazynut
     });
 
-//    connect(trialFilter, SIGNAL(objectDestroyed(QString)), this, SLOT(buildComboBoxesTest()));
-//    connect(trialFilter, &ObjectCacheFilter::objectDestroyed, [=](QString name)
-//    {
-//        qDebug() << Q_FUNC_INFO << name << trialFilter;
-//    });
-
-    // cosmetics used in tabs names in TableWindow, will be taken care of in trial scripts
-//    connect(trialFilter, &ObjectCacheFilter::objectCreated, [=](QString name, QString, QString, QDomDocument*)
-//    {
-//        QString df = QString("(%1 default_observer)").arg(name);
-//        SessionManager::instance()->setPrettyName(df, name);
-//    });
-
     trialDescriptionUpdater = new ObjectUpdater(this);
     trialDescriptionUpdater->setProxyModel(trialFilter);
     connect(trialDescriptionUpdater,SIGNAL (objectUpdated(QDomDocument*, QString)),
@@ -219,8 +206,10 @@ void TrialWidget::buildComboBoxesTest(QStringList args)
     layout->addWidget(runButton);
     setLayout(layout);
 
-    hideSetComboBox();
     clearArgumentBoxes();
+    if (!hasDollarArguments())
+        hideSetComboBox();
+
 }
 
 void TrialWidget::argWasChanged(QString arg)
@@ -445,11 +434,9 @@ void TrialWidget::clearDollarArgumentBoxes()
     QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
     while (i != argumentMap.constEnd())
     {
-        if(!static_cast<myComboBox*>(argumentMap[i.key()])->currentText().isEmpty()) // fix Jamesbug
-            if (static_cast<myComboBox*>(argumentMap[i.key()])->currentText().at(0)=='$')
+        if (static_cast<myComboBox*>(argumentMap[i.key()])->currentText().startsWith('$'))
         {
             static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
-            static_cast<myComboBox*>(argumentMap[i.key()])->setCurrentText(defs[i.key()]);
         }
         i++;
     }
@@ -566,6 +553,18 @@ void TrialWidget::setStochasticityVisible(bool isVisible)
         strategyLabel->hide();
         strategyBox->hide();
     }
+}
+
+bool TrialWidget::hasDollarArguments()
+{
+    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
+    bool dollars = false;
+    while (i != argumentMap.constEnd())
+    {
+        dollars |= static_cast<myComboBox*>(argumentMap[i.key()])->currentText().startsWith('$');
+        i++;
+    }
+    return dollars;
 }
 
 void TrialWidget::setRunButtonIcon()

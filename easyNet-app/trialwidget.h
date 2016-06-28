@@ -66,6 +66,7 @@ private:
     void runSingleTrial(LazyNutJob *job);
     void runTrialList(LazyNutJob *job);
     void setStochasticityVisible(bool isVisible);
+    bool hasDollarArguments();
 
     ObjectCacheFilter* trialFilter;
     ObjectUpdater* trialDescriptionUpdater;
