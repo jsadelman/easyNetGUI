@@ -373,7 +373,7 @@ public:
 //    TextEdit        *textViewer;
     HelpWindow      *infoWindow;
     int             stimSetTabIdx;
-    int             infoTabIdx;
+    int             helpTabIdx;
     int             paramTabIdx;
     int             plotTabIdx;
     int             plotSettingsTabIdx;

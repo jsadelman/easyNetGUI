@@ -44,33 +44,27 @@
 #include <QtWidgets/QMainWindow>
 
 class TextEdit;
-class QPushButton;
-class QTextBrowser;
+class QToolBar;
 
-//class HelpWindow : public QMainWindow
-class HelpWindow : public QWidget
+
+class HelpWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    HelpWindow(const QString &path, const QString &page, QWidget *parent);
+    HelpWindow();
 
-//    void showInfo(QString page);
+    void showInfo(QString page);
 
-public slots:
-    static void showPage(const QString &page);
-private slots:
-
-    void updateWindowTitle();
 protected:
 
+private slots:
+    void htHomeClicked();
 private:
 
-//    TextEdit *textViewer;
-    QTextBrowser *textViewer;
-    QPushButton *homeButton;
-    QPushButton *backButton;
-    QPushButton *closeButton;
+    TextEdit *textViewer;
+    QToolBar *hToolBar;
+    QAction *htHome;
 };
 
 #endif // HELPWINDOW_H

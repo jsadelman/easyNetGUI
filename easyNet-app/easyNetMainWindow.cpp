@@ -264,7 +264,6 @@ void MainWindow::constructForms()
 
 
     /* ADD TABS */
-//    infoTabIdx = introPanel->addTab(infoWindow, tr("Intro"));
 
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
@@ -281,6 +280,11 @@ void MainWindow::constructForms()
 //    paramTabIdx = methodsPanel->addTab(paramViewer, tr("Parameters"));
 //    plotSettingsTabIdx = methodsPanel->addTab(plotSettingsWindow, tr("Plot settings"));
 //    dataViewSettingsTabIdx = methodsPanel->addTab(dataViewSettingsWidget, tr("Dataframe/plot settings"));
+
+    infoWindow = new HelpWindow;
+    assistant = new Assistant(QString("%1/documentation/easyNetDemo.qhc").arg(SessionManager::instance()->easyNetDataHome()));
+    infoWindow->show();
+    helpTabIdx = methodsPanel->addTab(infoWindow, tr("Help"));
 
     lazynutPanel->addTab(lazyNutConsole, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
@@ -1905,6 +1909,9 @@ void MainWindow::restart()
 void MainWindow::showDocumentation()
 {
     qDebug() << "Entered showDocumentation";
+
+    methodsPanel->setCurrentIndex(helpTabIdx);
+
 //    assistant->showDocumentation("index.html");
 
 //    introDock->show();
@@ -1918,7 +1925,7 @@ void MainWindow::showDocumentation()
 //    infoWindow->showNormal();
 //    infoWindow->raise();
 
-    HelpWindow::showPage("start.html");
+
 }
 
 void MainWindow::createMenus()

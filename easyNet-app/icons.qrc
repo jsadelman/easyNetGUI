@@ -231,5 +231,6 @@
         <file>images/graph-grey4.png</file>
         <file>images/graph-green6.png</file>
         <file>images/graph-orange2.png</file>
+        <file>images/home.png</file>
     </qresource>
 </RCC>
