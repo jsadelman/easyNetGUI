@@ -70,16 +70,13 @@ void TextEdit::back()
 
 void TextEdit::setContents(QString fileName)
 {
-    qDebug()<<"recvd "<<fileName;
     int x=fileName.indexOf("#");
     QString anch;
     if(x>=0)
     {
         x=fileName.size()-x-1;
         anch=fileName.right(x);
-        qDebug()<<"anch is "<<anch;
         fileName.chop(x+1);
-        qDebug()<<fileName<<" pruned to";
     }
     QFileInfo fi(fileName);
     srcUrl = QUrl::fromLocalFile(fi.absoluteFilePath());
