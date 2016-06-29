@@ -101,72 +101,98 @@ void TrialWidget::update(QString trialName)
 
 void TrialWidget::buildComboBoxes(QDomDocument* domDoc)
 {
-    QStringList argList;
-//    defs.clear();
+    QStringList args;
     XMLelement arg = XMLelement(*domDoc)["arguments"].firstChild();
     while (!arg.isNull())
     {
-        argList.append(arg.label());
+        args.append(arg.label());
         defs.insert(arg.label(), defs.keys().contains(arg.label()) && (arg.value().isNull() || arg.value() == "NULL") ?
                     defs[arg.label()] : arg.value());
 //        defs[arg.label()]=(arg.value());
         arg = arg.nextSibling();
     }
-    foreach(QString label, defs.keys().toSet().subtract(argList.toSet()))
+    foreach(QString label, defs.keys().toSet().subtract(args.toSet()))
         defs.remove(label);
 
-    if (argList.size())
-        execBuildComboBoxes(argList);
-
+    if (args.size())
+        execBuildComboBoxes(args);
 }
 
 void TrialWidget::execBuildComboBoxes(QStringList args)
 {
-    // save defs
-    foreach(QString label, argumentMap.keys())
-        defs[label] = argumentMap[label]->currentText();
-    // first delete existing trial-dependent labels/boxes
-    clearLayout(layout2);
-    delete layout2;
-    layout2 = new QHBoxLayout;
-
-
-    argumentMap.clear();
-    labelList.clear();
-
-    // now add new boxes
-    for (int i=0;i<args.count();i++)
+    // clear layout2
+    foreach (QString arg, argList)
     {
-        argumentMap[args[i]] = new myComboBox(this); // new QComboBox(this);
-        argumentMap[args[i]]->setArg(args[i]);
-        argumentMap[args[i]]->setEditable(true);
-        argumentMap[args[i]]->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-        argumentMap[args[i]]->setMinimumSize(100, argumentMap[args[i]]->minimumHeight());
-        connect(argumentMap[args[i]], SIGNAL(editTextChanged(QString)),this,SLOT(setRunButtonIcon()));
-        connect(argumentMap[args[i]], SIGNAL(argWasChanged(QString)),this,SLOT(argWasChanged(QString)));
+        layout2->removeWidget(labelMap.value(arg));
+        labelMap.value(arg)->setVisible(false);
+        layout2->removeWidget(comboMap.value(arg));
+        comboMap.value(arg)->setVisible(false);
+    }
+    argList = args;
 
-        labelList.push_back(new QLabel(args[i]+":"));
-        layout2->addWidget(labelList[i]);
-        layout2->addWidget(argumentMap[args[i]]);
+    // build new widgets if needed
+    foreach (QString arg, args)
+    {
+        if (!labelMap.contains(arg))
+        {
+            labelMap[arg] = new QLabel(QString("%1:").arg(arg), this);
+        }
+        else
+        {
+            labelMap.value(arg)->setVisible(true);
+        }
+        if (!comboMap.contains(arg))
+        {
+            comboMap[arg] = new myComboBox(this);
+            comboMap[arg]->setArg(arg);
+            comboMap[arg]->setEditable(true);
+            comboMap[arg]->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+            comboMap[arg]->setMinimumSize(100, comboMap[arg]->minimumHeight());
+            connect(comboMap[arg], SIGNAL(editTextChanged(QString)),this,SLOT(setRunButtonIcon()));
+            connect(comboMap[arg], SIGNAL(argWasChanged(QString)),this,SLOT(argWasChanged(QString)));
+        }
+        else
+        {
+            comboMap.value(arg)->setVisible(true);
+        }
+    }
+    // repopulate layout2
+    foreach (QString arg, args)
+    {
+        layout2->addWidget(labelMap.value(arg));
+        layout2->addWidget(comboMap.value(arg));
+    }
+    // set defaults
+    foreach (QString arg, defs.keys())
+    {
+        if (comboMap.contains(arg) && comboMap.value(arg)->currentText().isEmpty())
+            comboMap.value(arg)->setCurrentText(defs.value(arg));
     }
 
     if (!args.isEmpty())
     {
-        QLineEdit *ed = argumentMap[args[args.count()-1]]->lineEdit();
+        foreach (QString arg, args)
+        {
+            QLineEdit *ed = comboMap.value(arg)->lineEdit();
+            disconnect(ed, SIGNAL(returnPressed()),runAction,SIGNAL(triggered()));
+        }
+        QLineEdit *ed = comboMap.value(args.last())->lineEdit();
         connect(ed, SIGNAL(returnPressed()),runAction,SIGNAL(triggered()));
     }
 
+    if (args.isEmpty())
+        runButton->hide();
+    else
+    {
+        runButton->show();
+        setRunButtonIcon();
+    }
 
-    runButton->show();
-    layout3->addLayout(layout2);
-
-
-
-    clearArgumentBoxes();
     if (!hasDollarArguments())
         hideSetComboBox();
     else
         setStochasticityVisible(isStochastic);
+
 }
 
 void TrialWidget::argWasChanged(QString arg)
@@ -199,13 +225,13 @@ void TrialWidget::clearLayout(QLayout *layout)
 QString TrialWidget::getTrialCmd()
 {
     QString cmd;
-    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
-    while (i != argumentMap.constEnd())
+    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
+    while (i != comboMap.constEnd())
     {
         cmd += " ";
         cmd += i.key();
         cmd += "=";
-        cmd += static_cast<myComboBox*>(argumentMap[i.key()])->currentText();
+        cmd += static_cast<myComboBox*>(comboMap[i.key()])->currentText();
         ++i;
     }
     return (cmd);
@@ -220,7 +246,7 @@ QString TrialWidget::getStochasticCmd()
 
 QStringList TrialWidget::getArguments()
 {
-    return(argumentMap.keys());
+    return(comboMap.keys());
 }
 
 void TrialWidget::runTrial()
@@ -321,13 +347,13 @@ QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
     rootElem.appendChild(dataframeElem);
     QDomElement valuesElem = trialRunInfo->createElement("map");
     valuesElem.setAttribute("label", "Values");
-    QMapIterator<QString, myComboBox*> argumentMap_it(argumentMap);
+    QMapIterator<QString, myComboBox*> argumentMap_it(comboMap);
     while(argumentMap_it.hasNext())
     {
         argumentMap_it.next();
         QDomElement valueElem = trialRunInfo->createElement("string");
         valueElem.setAttribute("label", argumentMap_it.key());
-        valueElem.setAttribute("value", static_cast<myComboBox*>(argumentMap[argumentMap_it.key()])->currentText());
+        valueElem.setAttribute("value", static_cast<myComboBox*>(comboMap[argumentMap_it.key()])->currentText());
         valuesElem.appendChild(valueElem);
     }
     rootElem.appendChild(valuesElem);
@@ -367,36 +393,34 @@ void TrialWidget::runTrialList(LazyNutJob *job)
 
 bool TrialWidget::checkIfReadyToRun()
 {
-    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
-    while (i != argumentMap.constEnd())
+    foreach(QString arg, argList)
     {
-        if (static_cast<myComboBox*>(argumentMap[i.key()])->currentText().isEmpty())
+        if (comboMap.value(arg)->currentText().isEmpty())
             return false;
-        i++;
     }
     return true;
 }
 
 void TrialWidget::clearArgumentBoxes()
 {
-    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
+    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
 
-    while (i != argumentMap.constEnd())
+    while (i != comboMap.constEnd())
     {
-        static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
-        static_cast<myComboBox*>(argumentMap[i.key()])->setCurrentText(defs[i.key()]);
+        static_cast<myComboBox*>(comboMap[i.key()])->clearEditText();
+        static_cast<myComboBox*>(comboMap[i.key()])->setCurrentText(defs[i.key()]);
         i++;
     }
 }
 
 void TrialWidget::clearDollarArgumentBoxes()
 {
-    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
-    while (i != argumentMap.constEnd())
+    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
+    while (i != comboMap.constEnd())
     {
-        if (static_cast<myComboBox*>(argumentMap[i.key()])->currentText().startsWith('$'))
+        if (static_cast<myComboBox*>(comboMap[i.key()])->currentText().startsWith('$'))
         {
-            static_cast<myComboBox*>(argumentMap[i.key()])->clearEditText();
+            static_cast<myComboBox*>(comboMap[i.key()])->clearEditText();
         }
         i++;
     }
@@ -404,12 +428,12 @@ void TrialWidget::clearDollarArgumentBoxes()
 
 void TrialWidget::insertArgumentsInBoxes()
 {
-    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
-    while (i != argumentMap.constEnd())
+    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
+    while (i != comboMap.constEnd())
     {
-        QString argument = argumentMap[i.key()]->currentText();
-        if (argumentMap[i.key()]->findText(argument) < 0)
-            argumentMap[i.key()]->insertItem(0, argument);
+        QString argument = comboMap[i.key()]->currentText();
+        if (!argument.isEmpty() && comboMap[i.key()]->findText(argument) < 0)
+            comboMap[i.key()]->insertItem(0, argument);
 
         i++;
     }
@@ -551,6 +575,7 @@ void TrialWidget::buildWidget()
     layout2 = new QHBoxLayout; // used in execBuildComboBoxes
     layout3 = new QVBoxLayout;
     layout3->addLayout(layout1);
+    layout3->addLayout(layout2);
     layout = new QHBoxLayout;
     layout->addLayout(layout3);
     layout->addWidget(runButton);
@@ -579,14 +604,12 @@ void TrialWidget::setStochasticityVisible(bool isVisible)
 
 bool TrialWidget::hasDollarArguments()
 {
-    QMap<QString, myComboBox*>::const_iterator i = argumentMap.constBegin();
-    bool dollars = false;
-    while (i != argumentMap.constEnd())
+    foreach(QString arg, argList)
     {
-        dollars |= static_cast<myComboBox*>(argumentMap[i.key()])->currentText().startsWith('$');
-        i++;
+        if (comboMap.value(arg)->currentText().startsWith('$'))
+            return true;
     }
-    return dollars;
+    return false;
 }
 
 void TrialWidget::setRunButtonIcon()
@@ -638,9 +661,9 @@ void TrialWidget::restoreComboBoxText()
 {
     if (argChanged.isEmpty())
         return;
-    if (argumentMap.isEmpty())
+    if (comboMap.isEmpty())
         return;
-    myComboBox* box = static_cast<myComboBox*>(argumentMap[argChanged]);
+    myComboBox* box = static_cast<myComboBox*>(comboMap[argChanged]);
     box->restoreComboBoxText();
 
 }

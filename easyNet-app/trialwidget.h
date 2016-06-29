@@ -80,8 +80,9 @@ private:
     ObjectUpdater* paramExploreDataframeUpdater;
     QString currentParamExplore;
 
-    QMap <QString, myComboBox*> argumentMap;
-    QVector <QLabel*> labelList;
+    QMap <QString, QLabel*> labelMap;
+    QMap <QString, myComboBox*> comboMap;
+    QStringList argList;
 
     QComboBox*      setComboBox;
     QToolButton*    setCancelButton;
