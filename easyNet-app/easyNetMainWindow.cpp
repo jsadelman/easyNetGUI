@@ -1025,10 +1025,9 @@ void MainWindow::setProgress(int i)
     auto jDen=dotDenom.rbegin();
     auto jUse=dotUse.rbegin();
     int extra=i-dotLast;
-//    qDebug()<<"X "<<extra;
-    for(;extra;extra--)
+    for(;extra>0;extra--)
     {
-        for(;*jUse==*jDen;++jUse,++jDen);
+        for(;*jUse==*jDen&&jUse!=dotUse.rend();++jUse,++jDen);
         ++*jUse;
     }
     dotLast=i;
@@ -1314,36 +1313,31 @@ void MainWindow::readSettings()
     QSettings settings("easyNet", "GUI");
     QString easyNetHome, easyNetDataHome,easyNetUserHome;
 
-    easyNetHome = settings.value("easyNetHome").toString();
-    if(easyNetHome.isEmpty())
-    {
-        if (qEnvironmentVariableIsSet("EASYNET_HOME"))
-            easyNetHome = QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_HOME")));
-    }
+    if (qEnvironmentVariableIsSet("EASYNET_HOME"))
+        easyNetHome = QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_HOME")));
+    else
+        easyNetHome = settings.value("easyNetHome").toString();
+
     QDir dir(easyNetHome);
     if (easyNetHome.isEmpty() || !dir.exists())
         easyNetHome = "../..";
     SessionManager::instance()->setEasyNetHome(easyNetHome);
 
-    easyNetDataHome = settings.value("easyNetDataHome").toString();
-    if(easyNetDataHome.isEmpty())
-    {
-        if (qEnvironmentVariableIsSet("EASYNET_DATA_HOME"))
-            easyNetDataHome = QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_DATA_HOME")));
-    }
+    if (qEnvironmentVariableIsSet("EASYNET_DATA_HOME"))
+        easyNetDataHome = QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_DATA_HOME")));
+    else
+        easyNetDataHome = settings.value("easyNetDataHome").toString();
     dir.setPath(easyNetDataHome);
     if (easyNetDataHome.isEmpty() || !dir.exists())
         easyNetDataHome = easyNetHome;
     SessionManager::instance()->setEasyNetDataHome(easyNetDataHome);
 
-    easyNetUserHome = settings.value("easyNetUserHome").toString();
-    if(easyNetUserHome.isEmpty())
-    {
-        if (qEnvironmentVariableIsSet("EASYNET_USER_HOME"))
-            easyNetUserHome = QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_USER_HOME")));
-    }
+    if (qEnvironmentVariableIsSet("EASYNET_USER_HOME"))
+        easyNetUserHome = QDir::fromNativeSeparators(QString::fromUtf8(qgetenv("EASYNET_USER_HOME")));
+    else
+        easyNetUserHome = settings.value("easyNetUserHome").toString();
     dir.setPath(easyNetUserHome);
-    if (easyNetDataHome.isEmpty() || !dir.exists())
+    if (easyNetUserHome.isEmpty() || !dir.exists())
     {
         easyNetUserHome=QDir::fromNativeSeparators(QString(
                 #ifdef _WIN32
@@ -1353,7 +1347,6 @@ void MainWindow::readSettings()
                 #endif
                     )+"/easyNet_files"
                    );
-        SessionManager::instance()->setEasyNetUserHome(easyNetUserHome);
 
     }
 

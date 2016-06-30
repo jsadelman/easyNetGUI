@@ -14,7 +14,8 @@
 #include "xmlelement.h"
 #include <algorithm>
 
-
+#include <iostream>
+#include <cstdlib>
 
 #include <QtGlobal>
 #include <QFinalState>
@@ -153,14 +154,6 @@ void SessionManager::startLazyNut()
 {
     delete lazyNut;
     killingLazyNut = false;
-    lazyNut = new LazyNut(this);
-    connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
-    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
-    connect(lazyNut,  static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&LazyNut::finished), [=](int /*code*/, QProcess::ExitStatus status)
-    {
-        emit lazyNutFinished(!(killingLazyNut || (status == QProcess::NormalExit && lazyNut->exitCode()==0) ));
-        killingLazyNut = false;
-    });
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QSettings settings("easyNet", "GUI");
@@ -176,9 +169,24 @@ void SessionManager::startLazyNut()
                ;
     QString easyNetUserHome = QDir::toNativeSeparators(settings.value("easyNetUserHome",
                                                                       enuh).toString());
+
+    if(qEnvironmentVariableIsSet("EASYNET_HOME")) easyNetHome=qgetenv("EASYNET_HOME");
+    if(qEnvironmentVariableIsSet("EASYNET_DATA_HOME")) easyNetDataHome=qgetenv("EASYNET_DATA_HOME");
+    if(qEnvironmentVariableIsSet("EASYNET_USER_HOME")) easyNetUserHome=qgetenv("EASYNET_USER_HOME");
     env.insert("EASYNET_HOME", easyNetHome);
     env.insert("EASYNET_DATA_HOME", easyNetDataHome);
     env.insert("EASYNET_USER_HOME", easyNetUserHome);
+    setEasyNetHome(easyNetHome);
+    setEasyNetDataHome(easyNetDataHome);
+    setEasyNetUserHome(easyNetUserHome);
+    lazyNut = new LazyNut(this);
+    connect(lazyNut, SIGNAL(started()), this, SLOT(startCommandSequencer()));
+    connect(lazyNut,SIGNAL(outputReady(QString)),this,SLOT(getOOB(QString)));
+    connect(lazyNut,  static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&LazyNut::finished), [=](int /*code*/, QProcess::ExitStatus status)
+    {
+        emit lazyNutFinished(!(killingLazyNut || (status == QProcess::NormalExit && lazyNut->exitCode()==0) ));
+        killingLazyNut = false;
+    });
     lazyNut->setProcessEnvironment(env);
     lazyNut->setWorkingDirectory(QFileInfo(defaultLocation("lazyNutBat")).absolutePath());
     lazyNut->setProgram(defaultLocation("lazyNutBat"));

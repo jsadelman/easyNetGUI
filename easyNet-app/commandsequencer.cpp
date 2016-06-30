@@ -75,7 +75,6 @@ void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int
 
 void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
 {
-
   if (commandList.isEmpty() || echoInterpreter(commandList.first()) || (logMode & ECHO_INTERPRETER))
     emit userLazyNutOutputReady(lazyNutOutput);
   if(commandList.isEmpty()) return;
@@ -84,7 +83,7 @@ void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
   while( (newoffset=lazyNutOutput.indexOf('\n',offset)) >= 0 )
   {
       int cr_adj=0;
-      if(lazyNutOutput[newoffset-1]=='\r') { cr_adj=1;}
+      if(newoffset>0&&lazyNutOutput[newoffset-1]=='\r') { cr_adj=1;}
 
       lazyNutIncompleteLine+=lazyNutOutput.midRef(offset,newoffset-offset-cr_adj);
       lazyNutLines.append(QString());
