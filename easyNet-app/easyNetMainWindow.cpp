@@ -466,7 +466,6 @@ void MainWindow::connectSignalsAndSlots()
     });
 
     connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
-connect(expertShow,SIGNAL(triggered()),this,SLOT(displayExpertWindow()));
 }
 
 void MainWindow::showExplorer()
@@ -593,9 +592,11 @@ void MainWindow::displayExpertWindow()
 
 void MainWindow::initialiseToolBar()
 {
-//    QIcon newpix(":/images/zebra_64x64.png");
-    QIcon newpix(":/images/glasses-256.png");
-    expertShow = new QAction(newpix, "E&xpert", this);
+    expertButton = new QToolButton(this);
+//    expertButton->setIcon(QIcon(":/images/glasses-256.png"));
+    expertButton->setIcon(QIcon(":/images/expert.mode.jpg"));
+    expertButton->setToolTip("Expert mode");
+
     toolbar = addToolBar("main toolbar");
 //    QLabel* modelBoxLabel = new QLabel("Model: ");
     modelButton = new QPushButton("Model:");
@@ -624,6 +625,8 @@ void MainWindow::initialiseToolBar()
               this, SLOT(loadTrial()));
     connect(addonButton, SIGNAL(clicked()),
               this, SLOT(loadAddOn()));
+    connect(expertButton, SIGNAL(clicked()),
+              this, SLOT(displayExpertWindow()));
 
       modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
       modelComboBox->setModel(modelListFilter);
@@ -680,10 +683,10 @@ void MainWindow::initialiseToolBar()
     stopButton->setIconSize(QSize(40, 40));
     setStopButtonIcon(false);
     stopButton->show();
-    expertButton=new QToolButton(this);
-    expertButton->setAutoRaise(true);
-    expertButton->setDefaultAction(expertShow);
-    expertButton->setIconSize(QSize(40,40));
+//    expertButton=new QToolButton(this);
+//    expertButton->setAutoRaise(true);
+//    expertButton->setDefaultAction(expertShow);
+//    expertButton->setIconSize(QSize(40,40));
 
 
     toolbar->addWidget(stopButton);
