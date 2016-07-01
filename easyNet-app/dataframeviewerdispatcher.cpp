@@ -59,7 +59,7 @@ void DataframeViewerDispatcher::backup(QString name)
         QDomDocument *description = SessionManager::instance()->description(name);
         if (description)
         {
-            QString prettyName = SessionManager::instance()->addParenthesizedLetter(XMLelement(*description)["pretty name"]());
+            QString prettyName = SessionManager::instance()->addParenthesizedNumber(XMLelement(*description)["pretty name"]());
             job->cmdList << QString("%1 set_pretty_name %2").arg(backupDf).arg(prettyName);
         }
 

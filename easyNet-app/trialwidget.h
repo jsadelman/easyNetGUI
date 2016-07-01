@@ -60,6 +60,7 @@ private slots:
     void addParamExploreDf(QString name);
     void initParamExplore(QString name);
     void runParamExplore(QDomDocument *df, QString name);
+    void setTrialRunMode(int mode);
 
 private:
     void buildWidget();
@@ -78,6 +79,7 @@ private:
     ObjectUpdater* paramExploreDescriptionUpdater;
     ObjectCacheFilter *paramExploreDataframeFilter;
     ObjectUpdater* paramExploreDataframeUpdater;
+    ObjectCacheFilter* setFilter;
     QString currentParamExplore;
 
     QMap <QString, QLabel*> labelMap;

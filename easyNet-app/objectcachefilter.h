@@ -15,6 +15,8 @@ public:
     QDomDocument *getDomDoc(const QString& name);
     QString type(const QString& name);
     bool contains(QString name);
+    QString first();
+    QStringList names();
 
 
 public slots:
@@ -48,6 +50,7 @@ private slots:
 
 private:
     void setList(QStringList list);
+    QStringList list(int col);
     QStringList nameList;
     QStringList typeList;
     QStringList subtypeList;

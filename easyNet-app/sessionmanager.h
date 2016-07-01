@@ -48,9 +48,9 @@ friend class ObjectNameValidator;
 public:
     static SessionManager* instance(); // singleton
     void startLazyNut();
-    QString currentModel() {return m_currentModel;}
-    QString currentTrial() {return m_currentTrial;}
-    QString currentSet() {return m_currentSet;}
+    QString currentModel();
+    QString currentTrial();
+    QString currentSet();
     QString easyNetHome() {return m_easyNetHome;}
     QString easyNetDataHome() {return m_easyNetDataHome;}
     QString easyNetUserHome() {return m_easyNetUserHome;}
@@ -58,6 +58,7 @@ public:
     QString defaultLocation(QString env) {return m_defaultLocation.value(env, QString());}
     QString nextPrettyName(QString type);
     QString addParenthesizedLetter(QString txt);
+    QString addParenthesizedNumber(QString txt);
 
 
     void setEasyNetHome(QString dir);
@@ -88,10 +89,8 @@ public:
     void copyTrialRunInfo(QString fromObj, QString toObj);
 
 
-    QStringList enabledObservers() {return m_enabledObservers;}
+    QStringList enabledObservers();
     bool suspendingObservers() {return m_suspendingObservers;}
-    bool isAnyTrialPlot(QString name);
-    int plotFlags(QString name) {return m_plotFlags.value(name, 0);}
     QStringList lazyNutkeywords;
     QString makeValidObjectName(QString name);
     bool isValidObjectName(QString name);
@@ -166,12 +165,11 @@ public slots:
     void runCmd(QString cmd, unsigned int logMode = 0);
     void runCmd(QStringList cmd, unsigned int logMode = 0);
     void restartLazyNut();
-    void setCurrentModel(QString s) {m_currentModel = s; emit currentModelChanged(m_currentModel);}
-    void setCurrentTrial(QString s) {m_currentTrial = s; emit currentTrialChanged(m_currentTrial);}
-    void setCurrentSet(QString s)   {m_currentSet = s;   emit currentSetChanged(m_currentSet);}
+    void setCurrentModel(QString name);
+    void setCurrentTrial(QString name);
+    void setCurrentSet(QString name);
     void setPrettyName(QString name, QString prettyName, bool quiet = false);
     void destroyObject(QString name);
-    void setPlotFlags(QString name, int flags);
     void observerEnabled(QString observer=QString(), bool enabled=false);
     void suspendObservers(bool suspending) {m_suspendingObservers = suspending;}
     void suspendObservers() {m_suspendingObservers = true;}
@@ -217,9 +215,11 @@ private:
     QString         oobBaseName;
 
     // state
-    QString m_currentModel;
-    QString m_currentTrial;
-    QString m_currentSet;
+    ObjectCacheFilter * m_currentModel;
+    ObjectCacheFilter * m_currentTrial;
+    ObjectCacheFilter * m_currentSet;
+
+
 
     LazyNutJobQueue *jobQueue;
     CommandSequencer *commandSequencer;
@@ -232,8 +232,7 @@ private:
     QString OOBsecret;
 
     QMap <QString, QList<QSharedPointer<QDomDocument> > > trialRunInfoMap;
-    QMap <QString, int> m_plotFlags;
-    QStringList m_enabledObservers;
+    ObjectCacheFilter *m_enabledObservers;
     bool        m_suspendingObservers;
     bool        killingLazyNut;
     bool        m_isModelStageUpdated;
