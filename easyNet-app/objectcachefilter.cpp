@@ -42,12 +42,27 @@ QString ObjectCacheFilter::type(const QString &name)
 bool ObjectCacheFilter::contains(QString name)
 {
     QModelIndexList nameMatchList = match(
-                index(ObjectCache::NameCol,0),
+                index(0, ObjectCache::NameCol),
                 Qt::DisplayRole,
                 name,
                 1,
                 Qt::MatchExactly);
     return (nameMatchList.length() > 0);
+}
+
+QString ObjectCacheFilter::first()
+{
+    QString name;
+    if (rowCount() > 0)
+    {
+        name = data(index(0, ObjectCache::NameCol)).toString();
+    }
+    return name;
+}
+
+QStringList ObjectCacheFilter::names()
+{
+    return list(ObjectCache::NameCol);
 }
 
 void ObjectCacheFilter::setNoFilter()
@@ -222,5 +237,16 @@ void ObjectCacheFilter::setList(QStringList list)
 
     QRegExp rex = QRegExp(QString("^(%1)$").arg(list.join('|')));
     setFilterRegExp(rex);
+}
+
+QStringList ObjectCacheFilter::list(int col)
+{
+    QStringList itemList;
+    if (col >= 0 && col < columnCount())
+    {
+        for(int row = 0; row < rowCount(); ++row)
+            itemList.append(data(index(row, col)).toString());
+    }
+    return itemList;
 }
 

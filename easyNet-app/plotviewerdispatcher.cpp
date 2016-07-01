@@ -46,7 +46,7 @@ void PlotViewerDispatcher::preDispatch(QSharedPointer<QDomDocument> info)
         {
             QDomDocument *description = SessionManager::instance()->description(plot);
             QString snapshotName = description ?
-                        SessionManager::instance()->addParenthesizedLetter(XMLelement(*description)["pretty name"]()) : "";
+                        SessionManager::instance()->addParenthesizedNumber(XMLelement(*description)["pretty name"]()) : "";
             host->snapshot(plot, snapshotName);
 //            SessionManager::instance()->setPrettyName(plot, SessionManager::instance()->nextPrettyName(host->itemPrettyName()), true);
         }

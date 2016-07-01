@@ -38,8 +38,7 @@ TrialWidget::TrialWidget(QWidget *parent)
     {
         if (name.isEmpty())
         {
-            execBuildComboBoxes(); // a hack to clear the layout when all trials are gone, e.g. restart lazynut
-            hideSetComboBox();
+            execBuildComboBoxes();
         }
     });
 
@@ -53,11 +52,20 @@ TrialWidget::TrialWidget(QWidget *parent)
     modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
             modelFilter, SLOT(setName(QString)));
+    connect(SessionManager::instance(), &SessionManager::currentModelChanged, [=](QString name)
+    {
+        if (name.isEmpty())
+        {
+            setTrialRunMode(TrialRunMode_Single);
+            setStochasticityVisible(false);
+        }
+    });
 
     modelDescriptionUpdater = new ObjectUpdater(this);
     modelDescriptionUpdater->setProxyModel(modelFilter);
     connect(modelDescriptionUpdater,SIGNAL(objectUpdated(QDomDocument*, QString)),
            this, SLOT(updateModelStochasticity(QDomDocument*)));
+
 
     paramExploreFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     paramExploreDescriptionUpdater = new ObjectUpdater(this);
@@ -69,12 +77,16 @@ TrialWidget::TrialWidget(QWidget *parent)
     connect(paramExploreDataframeUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(runParamExplore(QDomDocument*,QString)));
 
+    setFilter = new ObjectCacheFilter(SessionManager::instance()->dataframeCache, this);
+
     hideSetComboBoxAction = new QAction(QIcon(":/images/icon_dismiss.png"),tr("&Hide"), this);
     hideSetComboBoxAction->setStatusTip(tr("Hide"));
-    connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
+//    connect(hideSetComboBoxAction,SIGNAL(triggered()),this,SLOT(hideSetComboBox()));
+    connect(hideSetComboBoxAction, &QAction::triggered, [=](){setTrialRunMode(TrialRunMode_Single);});
 
     buildWidget();
-    hideSetComboBox();
+    setTrialRunMode(TrialRunMode_Single);
+//    hideSetComboBox();
 
     disableObserversMsg = new QMessageBox(
                 QMessageBox::Question,
@@ -186,13 +198,9 @@ void TrialWidget::execBuildComboBoxes(QStringList args)
     {
         runButton->show();
         setRunButtonIcon();
+        if (!hasDollarArguments())
+            setTrialRunMode(TrialRunMode_Single);
     }
-
-    if (!hasDollarArguments())
-        hideSetComboBox();
-    else
-        setStochasticityVisible(isStochastic);
-
 }
 
 void TrialWidget::argWasChanged(QString arg)
@@ -432,7 +440,7 @@ void TrialWidget::insertArgumentsInBoxes()
     while (i != comboMap.constEnd())
     {
         QString argument = comboMap[i.key()]->currentText();
-        if (!argument.isEmpty() && comboMap[i.key()]->findText(argument) < 0)
+        if (!argument.isEmpty() && !argument.startsWith('$') && comboMap[i.key()]->findText(argument) < 0)
             comboMap[i.key()]->insertItem(0, argument);
 
         i++;
@@ -449,7 +457,7 @@ void TrialWidget::updateModelStochasticity(QDomDocument *modelDescription)
     else
         isStochastic = false;
 
-    setStochasticityVisible(trialRunMode == TrialRunMode_List && isStochastic);
+    setStochasticityVisible(isStochastic);
 }
 
 void TrialWidget::addParamExploreDf(QString name)
@@ -534,10 +542,31 @@ void TrialWidget::runParamExplore(QDomDocument *df, QString name)
     SessionManager::instance()->submitJobs(jobs);
 }
 
+void TrialWidget::setTrialRunMode(int mode)
+{
+    switch (mode) {
+    case TrialRunMode_Single:
+        clearDollarArgumentBoxes();
+        trialRunMode = TrialRunMode_Single;
+        hideSetComboBox();
+        emit trialRunModeChanged(trialRunMode);
+        break;
+    case TrialRunMode_List:
+        trialRunMode = TrialRunMode_List;
+        showSetComboBox();
+        emit trialRunModeChanged(trialRunMode);
+        break;
+    default:
+        break;
+    }
+
+}
+
 void TrialWidget::buildWidget()
 {
     setComboBox = new QComboBox(this);
     setComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    setComboBox->setModel(setFilter);
     setCancelButton = new QToolButton(this);
     setCancelButton->setIcon(QIcon(":/images/icon_dismiss.png"));
     setCancelButton->setAutoRaise(true);
@@ -548,6 +577,7 @@ void TrialWidget::buildWidget()
     repetitionsBox = new QComboBox(this);
     repetitionsBox->setEditable(true);
     repetitionsBox->setValidator(new QIntValidator(this));
+    repetitionsBox->addItem("1");
     strategyLabel = new QLabel("Strategy");
     strategyBox = new QComboBox(this);
     strategyBox->addItems(QStringList({"ABAB", "AABB"}));
@@ -631,27 +661,20 @@ void TrialWidget::hideSetComboBox()
 {
     setComboBox->hide();
     setCancelButton->hide();
-    setStochasticityVisible(false);
-    clearDollarArgumentBoxes();
-    trialRunMode = TrialRunMode_Single;
-    emit trialRunModeChanged(trialRunMode);
-
 }
 
 void TrialWidget::showSetComboBox()
 {
     setComboBox->show();
     setCancelButton->show();
-    setStochasticityVisible(isStochastic);
-    trialRunMode = TrialRunMode_List;
-    emit trialRunModeChanged(trialRunMode);
 }
 
 void TrialWidget::showSetLabel(QString set)
 {
-    showSetComboBox();
+    setTrialRunMode(TrialRunMode_List);
     if (setComboBox->findText(set) < 0)
-        setComboBox->addItem(set);
+        setFilter->addName(set);
+//        setComboBox->addItem(set);
 
     setComboBox->setCurrentText(set);
     SessionManager::instance()->setCurrentSet(set);

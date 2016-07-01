@@ -45,15 +45,11 @@ SessionManager::SessionManager()
     : lazyNutHeaderBuffer(""),
       lazyNutOutput(""),
       OOBrex("OOB secret: (\\w+)\\r?\\n"),
-      m_plotFlags(),
       m_suspendingObservers(false),
       killingLazyNut(false),
       m_isModelStageUpdated(false),
       m_easyNetHome(""),
       m_easyNetDataHome(""),
-      m_currentModel(""),
-      m_currentTrial(""),
-      m_currentSet(""),
       #if defined(__linux__)
       lazyNutExt("sh"),
       binDir("bin-linux"),
@@ -147,6 +143,52 @@ SessionManager::SessionManager()
                       << "R"
                          ;
     validator = new ObjectNameValidator(this, lazyNutkeywords);
+    m_currentModel = new ObjectCacheFilter(descriptionCache, this);
+    m_currentTrial = new ObjectCacheFilter(descriptionCache, this);
+    m_currentSet = new ObjectCacheFilter(descriptionCache, this);
+    connect(m_currentModel, &ObjectCacheFilter::objectCreated, [=](QString name)
+    {
+        if (name == m_currentModel->first())
+            emit currentModelChanged(name);
+    });
+    connect(m_currentModel, &ObjectCacheFilter::objectDestroyed, [=]()
+    {
+        emit currentModelChanged("");
+    });
+    connect(m_currentTrial, &ObjectCacheFilter::objectCreated, [=](QString name)
+    {
+        if (name == m_currentTrial->first())
+            emit currentTrialChanged(name);
+    });
+    connect(m_currentTrial, &ObjectCacheFilter::objectDestroyed, [=]()
+    {
+        emit currentTrialChanged("");
+    });
+    connect(m_currentSet, &ObjectCacheFilter::objectCreated, [=](QString name)
+    {
+        if (name == m_currentSet->first())
+            emit currentSetChanged(name);
+    });
+    connect(m_currentSet, &ObjectCacheFilter::objectDestroyed, [=]()
+    {
+        emit currentSetChanged("");
+    });
+
+    m_enabledObservers = new ObjectCacheFilter(descriptionCache, this);
+
+
+
+    // test clean up
+    connect(this, &SessionManager::lazyNutStarted, [=]()
+    {
+        qDebug() << m_currentModel->first() << m_currentTrial->first() << m_currentSet->first();
+        qDebug() << commandList << lazyNutHeaderBuffer;
+        qDebug() << trialRunInfoMap.keys();
+        qDebug() << m_enabledObservers->names();
+        qDebug() << m_suspendingObservers << killingLazyNut << m_isModelStageUpdated;
+
+
+    });
 }
 
 
@@ -205,6 +247,23 @@ void SessionManager::startLazyNut()
 
 }
 
+QString SessionManager::currentModel()
+{
+    return m_currentModel->first();
+}
+
+QString SessionManager::currentTrial()
+{
+    return m_currentTrial->first();
+}
+
+QString SessionManager::currentSet()
+{
+    return m_currentSet->first();
+}
+
+
+
 QString SessionManager::easyNetDir(QString env)
 {
     if (env == "easyNetHome")
@@ -233,6 +292,21 @@ QString SessionManager::addParenthesizedLetter(QString txt)
         prettyBaseNames[txt] = QChar('a').unicode();
 
     return QString("%1(%2)").arg(txt).arg(QChar(prettyBaseNames[txt]));
+}
+
+QString SessionManager::addParenthesizedNumber(QString txt)
+{
+    // used for pretty names only
+    if (prettyBaseNames.contains(txt))
+        prettyBaseNames[txt]++;
+    else
+        prettyBaseNames[txt] = 1;
+
+    while (extraNamedItems().contains(QString("%1(%2)").arg(txt).arg(QString::number(prettyBaseNames[txt]))))
+    {
+        prettyBaseNames[txt]++;
+    }
+    return QString("%1(%2)").arg(txt).arg(QString::number(prettyBaseNames[txt]));
 }
 
 void SessionManager::setEasyNetHome(QString dir)
@@ -284,6 +358,21 @@ void SessionManager::restartLazyNut()
     startLazyNut();
 }
 
+void SessionManager::setCurrentModel(QString name)
+{
+    m_currentModel->setName(name);
+}
+
+void SessionManager::setCurrentTrial(QString name)
+{
+    m_currentTrial->setName(name);
+}
+
+void SessionManager::setCurrentSet(QString name)
+{
+    m_currentSet->setName(name);
+}
+
 void SessionManager::setPrettyName(QString name, QString prettyName, bool quiet)
 {
     if (!descriptionCache->exists(name))
@@ -313,13 +402,6 @@ void SessionManager::destroyObject(QString name)
     }
 }
 
-
-
-void SessionManager::setPlotFlags(QString name, int flags)
-{
-    m_plotFlags[name] = flags;
-}
-
 void SessionManager::observerEnabled(QString observer, bool enabled)
 {
     if (observer.isEmpty())
@@ -334,11 +416,11 @@ void SessionManager::observerEnabled(QString observer, bool enabled)
     }
     if (enabled)
     {
-        if (!m_enabledObservers.contains(observer))
-                m_enabledObservers.append(observer);
+        if (!m_enabledObservers->contains(observer))
+                m_enabledObservers->addName(observer);
     }
     else
-        m_enabledObservers.removeAll(observer);
+        m_enabledObservers->removeName(observer);
 }
 
 void SessionManager::setCopyRequested(QString original)
@@ -379,13 +461,6 @@ void SessionManager::createDataView(QString name, QString prettyName, QString su
     SessionManager::instance()->submitJobs(jobs);
 }
 
-
-bool SessionManager::isAnyTrialPlot(QString name)
-{
-    if (m_plotFlags.contains(name))
-        return m_plotFlags.value(name) & Plot_AnyTrial;
-    return false;
-}
 
 
 QString SessionManager::makeValidObjectName(QString name)
@@ -613,6 +688,11 @@ void SessionManager::copyTrialRunInfo(QString fromObj, QString toObj)
     trialRunInfoMap[toObj] = trialRunInfo(fromObj);
 }
 
+QStringList SessionManager::enabledObservers()
+{
+    return m_enabledObservers->names();
+}
+
 void SessionManager::getOOB(const QString &lazyNutOutput)
 {
 //    qDebug() << lazyNutOutput;
@@ -782,6 +862,10 @@ void SessionManager::reset()
     dataframeCache->clear();
     jobQueue->clear();
     jobQueue->forceFree();
+    itemCount.clear();
+    prettyBaseNames.clear();
+    m_requestedNames.clear();
+    m_isModelStageUpdated = false;
     emit resetExecuted();
 }
 

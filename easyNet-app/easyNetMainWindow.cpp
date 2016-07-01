@@ -448,6 +448,7 @@ void MainWindow::connectSignalsAndSlots()
         objNavigator->reset();
         runAllTrialMsgAct->setVisible(false);
         stopButton->setIcon(QIcon(":/images/stop-disabled.png"));
+        SessionManager::instance()->resumeObservers();
     });
 
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString cmd, QString error)
@@ -466,6 +467,7 @@ void MainWindow::connectSignalsAndSlots()
     });
 
     connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
+
 }
 
 void MainWindow::showExplorer()
