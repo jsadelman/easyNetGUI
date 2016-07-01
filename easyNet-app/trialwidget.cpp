@@ -247,9 +247,17 @@ QString TrialWidget::getTrialCmd()
 
 QString TrialWidget::getStochasticCmd()
 {
-    return QString("%1 %2")
+    switch (trialRunMode)
+    {
+    case TrialRunMode_Single:
+        return repetitionsBox->currentText().isEmpty() ? "1" : repetitionsBox->currentText();
+    case TrialRunMode_List:
+        return QString("%1 %2")
             .arg(strategyBox->currentText())
             .arg(repetitionsBox->currentText().isEmpty() ? "1" : repetitionsBox->currentText());
+    default:
+        return QString();
+    }
 }
 
 QStringList TrialWidget::getArguments()
@@ -326,10 +334,21 @@ QString TrialWidget::defaultDataframe()
 
 void TrialWidget::runSingleTrial(LazyNutJob *job)
 {
-    job->cmdList << QString("%1 %2 step %3")
-            .arg(MainWindow::instance()->quietMode)
-            .arg(SessionManager::instance()->currentTrial())
-            .arg(getTrialCmd());
+    if (isStochastic)
+    {
+        job->cmdList << QString("%1 %2 multistep %3 %4")
+                        .arg(MainWindow::instance()->quietMode)
+                        .arg(SessionManager::instance()->currentTrial())
+                        .arg(getStochasticCmd())
+                        .arg(getTrialCmd());
+    }
+    else
+    {
+        job->cmdList << QString("%1 %2 step %3")
+                        .arg(MainWindow::instance()->quietMode)
+                        .arg(SessionManager::instance()->currentTrial())
+                        .arg(getTrialCmd());
+    }
 }
 
 QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
@@ -620,8 +639,11 @@ void TrialWidget::setStochasticityVisible(bool isVisible)
     {
         repetitionsLabel->show();
         repetitionsBox->show();
-        strategyLabel->show();
-        strategyBox->show();
+        if (trialRunMode == TrialRunMode_List)
+        {
+            strategyLabel->show();
+            strategyBox->show();
+        }
     }
     else
     {
@@ -661,12 +683,22 @@ void TrialWidget::hideSetComboBox()
 {
     setComboBox->hide();
     setCancelButton->hide();
+    if (isStochastic)
+    {
+        strategyLabel->hide();
+        strategyBox->hide();
+    }
 }
 
 void TrialWidget::showSetComboBox()
 {
     setComboBox->show();
     setCancelButton->show();
+    if (isStochastic)
+    {
+        strategyLabel->show();
+        strategyBox->show();
+    }
 }
 
 void TrialWidget::showSetLabel(QString set)
