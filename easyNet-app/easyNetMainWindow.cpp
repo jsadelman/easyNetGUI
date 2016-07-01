@@ -466,6 +466,7 @@ void MainWindow::connectSignalsAndSlots()
     });
 
     connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
+connect(expertShow,SIGNAL(triggered()),this,SLOT(displayExpertWindow()));
 }
 
 void MainWindow::showExplorer()
@@ -592,11 +593,9 @@ void MainWindow::displayExpertWindow()
 
 void MainWindow::initialiseToolBar()
 {
-    expertButton = new QToolButton(this);
-//    expertButton->setIcon(QIcon(":/images/glasses-256.png"));
-    expertButton->setIcon(QIcon(":/images/expert.mode.jpg"));
-    expertButton->setToolTip("Expert mode");
-
+//    QIcon newpix(":/images/zebra_64x64.png");
+    QIcon newpix(":/images/glasses-256.png");
+    expertShow = new QAction(newpix, "E&xpert", this);
     toolbar = addToolBar("main toolbar");
 //    QLabel* modelBoxLabel = new QLabel("Model: ");
     modelButton = new QPushButton("Model:");
@@ -625,8 +624,6 @@ void MainWindow::initialiseToolBar()
               this, SLOT(loadTrial()));
     connect(addonButton, SIGNAL(clicked()),
               this, SLOT(loadAddOn()));
-    connect(expertButton, SIGNAL(clicked()),
-              this, SLOT(displayExpertWindow()));
 
       modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
       modelComboBox->setModel(modelListFilter);
@@ -683,10 +680,10 @@ void MainWindow::initialiseToolBar()
     stopButton->setIconSize(QSize(40, 40));
     setStopButtonIcon(false);
     stopButton->show();
-//    expertButton=new QToolButton(this);
-//    expertButton->setAutoRaise(true);
-//    expertButton->setDefaultAction(expertShow);
-//    expertButton->setIconSize(QSize(40,40));
+    expertButton=new QToolButton(this);
+    expertButton->setAutoRaise(true);
+    expertButton->setDefaultAction(expertShow);
+    expertButton->setIconSize(QSize(40,40));
 
 
     toolbar->addWidget(stopButton);
@@ -787,13 +784,18 @@ void MainWindow::loadModel(QString fileName,bool complete)
     }
     if (!SessionManager::instance()->currentModel().isEmpty())
     {
-#ifdef WIN32
+//#ifdef WIN32
         QProcess::startDetached(
+ //                   SessionManager::instance()->defaultLocation("easyNetBat"),
+#ifdef WIN32
                     QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
+#else
+                    QString("%1/start.sh").arg(qApp->applicationDirPath()),
+#endif
                     QStringList({fileName}),
                     qApp->applicationDirPath());
 //        diagramPanel->useFake(modelTabIdx,false);
-#endif
+//#endif
         return;
     }
     modelScene->goToSleep();
@@ -842,10 +844,10 @@ void MainWindow::loadModel(QString fileName,bool complete)
     trialButton->setEnabled(true);
     loadAddOnAct->setEnabled(true);
 
-    #ifndef WIN32
+//    #ifndef WIN32
             loadModelAct->setEnabled(false);
             modelButton->setEnabled(false);
-    #endif
+//    #endif
 
 }
 
