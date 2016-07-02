@@ -17,6 +17,8 @@ public:
     virtual ~DataframeViewerDispatcher();
     virtual void preDispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
     virtual void dispatch(QSharedPointer<QDomDocument> info) Q_DECL_OVERRIDE;
+    virtual void reset() Q_DECL_OVERRIDE;
+
 
     QAction *clearMenuAct;
 

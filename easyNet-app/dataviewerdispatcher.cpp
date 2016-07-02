@@ -30,7 +30,6 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
       hostDataViewer(host),
       previousDispatchMode(-1),
       currentDispatchAction(-1),
-      previousItem(""),
       infoIsVisible(false),
       trialRunMode(TrialRunMode_Single),
       m_snapshotActive(true),
@@ -121,7 +120,13 @@ void DataViewerDispatcher::setTrialRunMode(int mode)
 {
     trialRunMode = mode;
 //    if (!dispatchModeAuto)
-//        restoreOverrideDefaultValue();
+    //        restoreOverrideDefaultValue();
+}
+
+void DataViewerDispatcher::reset()
+{
+    previousDispatchMode = -1;
+    currentDispatchAction = -1;
 }
 
 void DataViewerDispatcher::createHistoryWidget()

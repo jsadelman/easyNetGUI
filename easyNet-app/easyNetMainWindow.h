@@ -109,6 +109,8 @@ public slots:
     void loadModelFromFileDialog(bool mode);
     void loadModel();
     void setForm(QString name = "");
+    void reset();
+    
 signals:
     void savedLayoutToBeLoaded(QString);
     void saveLayout();

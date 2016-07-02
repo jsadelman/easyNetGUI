@@ -49,6 +49,7 @@ public:
     void setSnapshotActive(bool active) {m_snapshotActive = active;}
     bool copyDfActive() {return m_copyDfActive;}
     void setCopyDfActive(bool active) {m_copyDfActive = active;}
+    virtual void reset();
 
     QAction *infoAct;
 
@@ -91,7 +92,6 @@ protected:
 //    QMap <QString, QList<QSharedPointer<QDomDocument> > > trialRunInfoMap;
     HistoryTreeModel *historyModel;
     HistoryWidget  *historyWidget;
-    QString previousItem;
     bool infoIsVisible;
     int trialRunMode;
     QDockWidget  *infoDock;

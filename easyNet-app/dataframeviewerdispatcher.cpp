@@ -212,6 +212,12 @@ void DataframeViewerDispatcher::dispatch(QSharedPointer<QDomDocument> info)
         showInfo(true);
 }
 
+void DataframeViewerDispatcher::reset()
+{
+    DataViewerDispatcher::reset();
+    previousDispatchModeMap.clear();
+}
+
 void DataframeViewerDispatcher::enableActions(bool enable)
 {
     DataViewerDispatcher::enableActions(enable);

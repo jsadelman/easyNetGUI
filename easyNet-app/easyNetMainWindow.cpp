@@ -311,6 +311,20 @@ void MainWindow::constructForms()
 }
 
 
+void MainWindow::reset()
+{
+    commandLog->clear();
+    errorLog->clear();
+    rLog->clear();
+    debugLog->clear();
+    objNavigator->reset();
+    runAllTrialMsgAct->setVisible(false);
+    stopButton->setIcon(QIcon(":/images/stop-disabled.png"));
+    SessionManager::instance()->resumeObservers();
+    dataframeResultsDispatcher->reset();
+    plotViewerDispatcher->reset();
+}
+
 void MainWindow::connectSignalsAndSlots()
 {
     connect(modelComboBox, SIGNAL(currentIndexChanged(QString)), SessionManager::instance(), SLOT(setCurrentModel(QString)));
@@ -438,19 +452,7 @@ void MainWindow::connectSignalsAndSlots()
             debugLog, SLOT(updateCmd(QString,QString)));
     connect(SessionManager::instance(), SIGNAL(resetExecuted()),
             debugLog, SLOT(skipRemainingCommands()));
-    connect(SessionManager::instance(), &SessionManager::resetExecuted, [=]()
-    {
-        // clean up History etc
-        commandLog->clear();
-        errorLog->clear();
-        rLog->clear();
-        debugLog->clear();
-        objNavigator->reset();
-        runAllTrialMsgAct->setVisible(false);
-        stopButton->setIcon(QIcon(":/images/stop-disabled.png"));
-        SessionManager::instance()->resumeObservers();
-    });
-
+    connect(SessionManager::instance(), SIGNAL(resetExecuted()), this, SLOT(reset()));
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString cmd, QString error)
     {
         errorLog->addText(QString("COMMAND: %1\nERROR: %2\n").arg(cmd).arg(error));
