@@ -52,10 +52,13 @@ DataframeViewer::DataframeViewer(Ui_DataViewer *ui, QWidget *parent)
 
 void DataframeViewer::open()
 {
-    qDebug() << "Entered open() in DataframeViewer" << this;
-    QString fileName = QFileDialog::getOpenFileName(this,tr("Import dataframe"),
+    QString dataframeType = stimulusSet() ? "stimulus_set" : "dataframe";
+    qDebug() << "Entered open() in DataframeViewer" << this << dataframeType;
+    QString caption = stimulusSet() ? tr("Load stimulus_set") : tr("Import dataframe");
+    QString filter = stimulusSet() ? tr("Stimulus set files (*.eNd);;CSV files (*.csv);;All files (*.*)") : tr("CSV files (*.csv);;Database files (*.eNd);;All files (*.*)");
+    QString fileName = QFileDialog::getOpenFileName(this,caption,
                                                     lastOpenDir.isEmpty() ? defaultOpenDir : lastOpenDir,
-                                                    tr("Database Files (*.eNd);;Text files (*.csv);;All files (*.*)"));
+                                                    filter);
     if (!fileName.isEmpty())
     {
         // create db
@@ -65,7 +68,6 @@ void DataframeViewer::open()
 
         fileName = QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName);
         QString loadCmd = fi.suffix() == "csv" ? "load_csv" : "load";
-        QString dataframeType = stimulusSet() ? "stimulus_set" : "dataframe";
         LazyNutJob *job = new LazyNutJob;
         job->cmdList = QStringList({
                             QString("create %1 %2").arg(dataframeType).arg(dfName),
