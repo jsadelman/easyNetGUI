@@ -233,14 +233,9 @@ void TrialWidget::clearLayout(QLayout *layout)
 QString TrialWidget::getTrialCmd()
 {
     QString cmd;
-    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
-    while (i != comboMap.constEnd())
+    foreach(QString arg, argList)
     {
-        cmd += " ";
-        cmd += i.key();
-        cmd += "=";
-        cmd += static_cast<myComboBox*>(comboMap[i.key()])->currentText();
-        ++i;
+        cmd.append(QString(" %1=%2").arg(arg).arg(comboMap.value(arg)->currentText()));
     }
     return (cmd);
 }
