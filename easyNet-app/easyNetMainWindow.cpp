@@ -854,8 +854,8 @@ void MainWindow::loadModel(QString fileName,bool complete)
     loadAddOnAct->setEnabled(true);
 
 //    #ifndef WIN32
-            loadModelAct->setEnabled(false);
-            modelButton->setEnabled(false);
+//            loadModelAct->setEnabled(false);
+//            modelButton->setEnabled(false);
 //    #endif
 
 }
