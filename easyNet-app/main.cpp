@@ -2,7 +2,8 @@
 #include <QApplication>
 #include <QFont>
 #include <QDebug>
-
+#include <cstdlib>
+#include <cstring>
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -18,15 +19,26 @@ int main(int argc, char *argv[])
     mainWindow->showMaximized();
     //  show model chooser at startup
 
-//    #ifdef WIN32
-    if (argc == 1)
-//    #endif
+    if (argc < 2)
         mainWindow->loadModel();
-//     #ifdef WIN32
     else
-        mainWindow->loadModel(QDir::fromNativeSeparators(argv[1]),true);
-//    #endif
+    {
+        bool complete=true;
+        QString modelName;
+        for(int i=1;i<argc;++i)
+        {
+            if(std::strlen(argv[i])>=2&&argv[i][0]=='-'&&argv[i][1]=='-')
+            {
+                if(std::strcmp(argv[i],"--no-stage")==0)
+                    complete=false;
+                else if(std::strcmp(argv[i],"--stage")==0)
+                        complete=true;
+            }
 
+                else modelName=argv[i];
+        }
+        mainWindow->loadModel(QDir::fromNativeSeparators(modelName),complete);
+    }
 
     splash.finish(mainWindow);
 //    mainWindow->hide(); // get out of the way while user chooses model

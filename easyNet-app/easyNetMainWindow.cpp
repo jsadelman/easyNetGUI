@@ -791,6 +791,10 @@ void MainWindow::loadModel(QString fileName,bool complete)
     {
         return;
     }
+    QStringList args;
+    if(!complete) args<<"--no-stage";
+    args<<fileName;
+
     if (!SessionManager::instance()->currentModel().isEmpty())
     {
 //#ifdef WIN32
@@ -801,7 +805,7 @@ void MainWindow::loadModel(QString fileName,bool complete)
 #else
                     QString("%1/start.sh").arg(qApp->applicationDirPath()),
 #endif
-                    QStringList({fileName}),
+                    args,
                     qApp->applicationDirPath());
 //        diagramPanel->useFake(modelTabIdx,false);
 //#endif
