@@ -448,7 +448,7 @@ public:
     QAction         *assistantAct;
     QAction         *setQuietModeAct;
     QAction         *debugModeAct;
-    QAction         *expertShow;
+//    QAction         *expertShow;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QAction *saveAct;
