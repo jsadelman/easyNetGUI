@@ -1103,7 +1103,7 @@ void MainWindow::loadModelFromFileDialog(bool mode)
                                                     SessionManager::instance()->defaultLocation("modelsDir"),
                                                     tr("easyNet Model Files (*.eNm)"));
 //    diagramPanel->hide();
-    if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
+//    if(!fileName.isEmpty()) diagramPanel->useFake(modelTabIdx,true);
     loadModel(fileName,mode);
 }
 
