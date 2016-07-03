@@ -2146,8 +2146,13 @@ void MainWindow::showModelSettings()
 
 void MainWindow::showParameterSettings()
 {
+    static bool first=true;
+    if(first)
+    {
+        first=false;
+        dataViewSettingsDialog->setGeometry(30,175,width()/3-60,height()-225);
+    }
     paramSettingsDialog->show();
-    paramSettingsDialog->showNormal();
     paramSettingsDialog->raise();
 
 }
@@ -2155,8 +2160,13 @@ void MainWindow::showParameterSettings()
 
 void MainWindow::showDataViewSettings()
 {
+    static bool first=true;
+    if(first)
+    {
+        first=false;
+        dataViewSettingsDialog->setGeometry(30,175,width()/2-60,height()-225);
+    }
     dataViewSettingsDialog->show();
-    dataViewSettingsDialog->showNormal();
     dataViewSettingsDialog->raise();
 
 }
