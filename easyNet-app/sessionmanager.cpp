@@ -194,6 +194,7 @@ SessionManager::SessionManager()
 
 void SessionManager::startLazyNut()
 {
+    disconnect(this,SIGNAL(resetExecuted()),this,SLOT(startLazyNut()));
     delete lazyNut;
     killingLazyNut = false;
 
@@ -353,9 +354,9 @@ void SessionManager::setEasyNetDir(QString env, QString dir)
 
 void SessionManager::restartLazyNut()
 {
+    connect(this,SIGNAL(lazyNutKilled()),this,SLOT(reset()));
+    connect(this,SIGNAL(resetExecuted()),this,SLOT(startLazyNut()));
     killLazyNut();
-    reset();
-    startLazyNut();
 }
 
 void SessionManager::setCurrentModel(QString name)
@@ -843,7 +844,7 @@ void SessionManager::killLazyNut()
     {
         lazyNut->write("stop\n");
         QTimer::singleShot(1000,Qt::CoarseTimer,this,SLOT(closeLazyNutChannels()));
-    }
+    }else emit lazyNutKilled();
 }
 
 void SessionManager::closeLazyNutChannels()
@@ -851,17 +852,19 @@ void SessionManager::closeLazyNutChannels()
   if(lazyNut->state()==QProcess::Running) { lazyNut->closeWriteChannel();
 lazyNut->closeReadChannel(QProcess::StandardOutput);
         QTimer::singleShot(1000,Qt::CoarseTimer,this,SLOT(reallyKillLazyNut()));
-  }
+  }else emit lazyNutKilled();
 }
 
 void SessionManager::reallyKillLazyNut()
 {
     if(lazyNut->state()==QProcess::Running) { qDebug()<<"going to have to kill lazyNut"; lazyNut->kill(); }
 
+    emit lazyNutKilled();
 }
 
 void SessionManager::reset()
 {
+    disconnect(this,SIGNAL(lazyNutKilled()),this,SLOT(reset()));
     descriptionCache->clear();
     dataframeCache->clear();
     jobQueue->clear();

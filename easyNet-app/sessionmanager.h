@@ -47,7 +47,6 @@ friend class ObjectNameValidator;
 
 public:
     static SessionManager* instance(); // singleton
-    void startLazyNut();
     QString currentModel();
     QString currentTrial();
     QString currentSet();
@@ -119,6 +118,7 @@ signals:
     void userLazyNutOutputReady(const QString&);
 
     void lazyNutStarted();
+    void lazyNutKilled();
     void isReady(bool);
     void isPaused(bool);
     void cmdError(QString,QString);
@@ -159,6 +159,7 @@ public slots:
 
     bool isReady();
     bool isOn();
+    void startLazyNut();
     void killLazyNut();
     void closeLazyNutChannels();
     void reallyKillLazyNut();
