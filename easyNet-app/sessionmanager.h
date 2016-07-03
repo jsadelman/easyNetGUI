@@ -160,6 +160,8 @@ public slots:
     bool isReady();
     bool isOn();
     void killLazyNut();
+    void closeLazyNutChannels();
+    void reallyKillLazyNut();
     void reset();
     void oobStop();
     void runCmd(QString cmd, unsigned int logMode = 0);

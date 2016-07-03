@@ -837,25 +837,27 @@ void SessionManager::killLazyNut()
     if(oob) oob->write("stop\n");
 
     if(oob) oob->write("quit\n");
-    if(oob) oob->closeWriteChannel();
     QThread::sleep(1);
-    if(lazyNut) { lazyNut->write("stop\n");     QThread::sleep(1); }
-    if(lazyNut) { lazyNut->closeWriteChannel();     QThread::sleep(2); }
-    if(lazyNut) { lazyNut->kill(); }
+    if(oob->state()==QProcess::Running) oob->closeWriteChannel();
+    if(lazyNut->state()==QProcess::Running)
+    {
+        lazyNut->write("stop\n");
+        QTimer::singleShot(1000,Qt::CoarseTimer,this,SLOT(closeLazyNutChannels()));
+    }
+}
 
-//    lazyNut->kill();
-//    if (!lazyNut->waitForFinished())
-//    {
-//        qDebug() << Q_FUNC_INFO << "lazyNut cannot be killed";
-//    }
-//    if (oob)
-//    {
-//        oob->kill();
-//        if (!oob->waitForFinished())
-//        {
-//            qDebug() << Q_FUNC_INFO << "lazyNut_oob cannot be killed";
-//        }
-//    }
+void SessionManager::closeLazyNutChannels()
+{
+  if(lazyNut->state()==QProcess::Running) { lazyNut->closeWriteChannel();
+lazyNut->closeReadChannel(QProcess::StandardOutput);
+        QTimer::singleShot(1000,Qt::CoarseTimer,this,SLOT(reallyKillLazyNut()));
+  }
+}
+
+void SessionManager::reallyKillLazyNut()
+{
+    if(lazyNut->state()==QProcess::Running) { qDebug()<<"going to have to kill lazyNut"; lazyNut->kill(); }
+
 }
 
 void SessionManager::reset()
