@@ -601,8 +601,8 @@ void MainWindow::initialiseToolBar()
 //    QIcon newpix(":/images/glasses-256.png");
 //    expertShow = new QAction(newpix, "E&xpert", this);
     expertButton = new QToolButton(this);
-    //    expertButton->setIcon(QIcon(":/images/glasses-256.png"));
-    expertButton->setIcon(QIcon(":/images/expert.mode.jpg"));
+        expertButton->setIcon(QIcon(":/images/glasses-256.png"));
+    //expertButton->setIcon(QIcon(":/images/expert.mode.jpg"));
     expertButton->setToolTip("Expert mode");
 
     toolbar = addToolBar("main toolbar");
