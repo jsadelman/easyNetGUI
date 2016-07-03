@@ -838,9 +838,10 @@ void SessionManager::killLazyNut()
 
     if(oob) oob->write("quit\n");
     if(oob) oob->closeWriteChannel();
-    if(lazyNut) lazyNut->write("stop\n");
-    if(lazyNut) lazyNut->closeWriteChannel();
-
+    QThread::sleep(1);
+    if(lazyNut) { lazyNut->write("stop\n");     QThread::sleep(1); }
+    if(lazyNut) { lazyNut->closeWriteChannel();     QThread::sleep(2); }
+    if(lazyNut) { lazyNut->kill(); }
 
 //    lazyNut->kill();
 //    if (!lazyNut->waitForFinished())
