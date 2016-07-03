@@ -233,5 +233,6 @@
         <file>images/graph-orange2.png</file>
         <file>images/home.png</file>
         <file>images/glasses-256.png</file>
+        <file>images/ltrs_4slot.png</file>
     </qresource>
 </RCC>

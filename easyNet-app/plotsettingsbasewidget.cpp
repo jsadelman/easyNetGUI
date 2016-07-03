@@ -556,7 +556,7 @@ void PlotSettingsSingleChoiceWidget::buildEditWidget()
     currentValue = XMLAccessor::value(valueElement);
 
     setWidgetValue(raw2widgetValue(currentValue));
-     valueSet = !currentValue.isEmpty();
+     valueSet = !(currentValue.isEmpty() || currentValue=="NULL");
 
 //    connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
     connect(static_cast<QComboBox*>(editDisplayWidget),SIGNAL(currentIndexChanged(int)),
@@ -677,7 +677,7 @@ void PlotSettingsMultipleChoiceWidget::buildEditWidget()
 
     updateEditDisplayWidget();
 
-    valueSet = !currentValue.isEmpty();
+    valueSet = !(currentValue.isEmpty() || currentValue=="NULL");
 
     connect(static_cast<PairedListWidget*>(editExtraWidget),SIGNAL(valueChanged()),
             this, SLOT(emitValueChanged()));

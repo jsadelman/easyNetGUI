@@ -18,15 +18,6 @@ PlotSettingsForm::PlotSettingsForm(QDomDocument *domDoc, QWidget *parent)
     m_useRFormat = true;
 }
 
-
-void PlotSettingsForm::recordValueChange(QString oldValue, QString newValue)
-{
-    Q_UNUSED(oldValue)
-    Q_UNUSED(newValue)
-    PlotSettingsBaseWidget* widget = qobject_cast<PlotSettingsBaseWidget*>(sender());
-    hasChanged[widget->name()] = true;
-}
-
 void PlotSettingsForm::triggerUpdateDependees()
 {
 
