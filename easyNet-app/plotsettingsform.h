@@ -22,9 +22,6 @@ public:
     void setPlotName(QString plotName) {m_plotName = plotName; m_name = plotName;}
 
 
-private slots:
-    virtual void recordValueChange(QString oldValue, QString newValue);
-
 protected:
     virtual void triggerUpdateDependees();
 //    virtual QString getSettingCmdLine(QString setting);
