@@ -175,20 +175,6 @@ SessionManager::SessionManager()
     });
 
     m_enabledObservers = new ObjectCacheFilter(descriptionCache, this);
-
-
-
-    // test clean up
-    connect(this, &SessionManager::lazyNutStarted, [=]()
-    {
-        qDebug() << m_currentModel->first() << m_currentTrial->first() << m_currentSet->first();
-        qDebug() << commandList << lazyNutHeaderBuffer;
-        qDebug() << trialRunInfoMap.keys();
-        qDebug() << m_enabledObservers->names();
-        qDebug() << m_suspendingObservers << killingLazyNut << m_isModelStageUpdated;
-
-
-    });
 }
 
 

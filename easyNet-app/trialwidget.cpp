@@ -30,7 +30,8 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument>)
 
 TrialWidget::TrialWidget(QWidget *parent)
     : trialRunMode(TrialRunMode_Single), askDisableObserver(true),
-      suspendingObservers(false), QWidget(parent), currentParamExplore("")
+      suspendingObservers(false), QWidget(parent), currentParamExplore(""),
+      isStochastic(false)
 {
     trialFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentTrialChanged(QString)), trialFilter, SLOT(setName(QString)));
@@ -625,6 +626,7 @@ void TrialWidget::buildWidget()
     layout->addWidget(runButton);
     setLayout(layout);
 
+    setStochasticityVisible(false);
 
 }
 
