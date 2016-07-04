@@ -52,6 +52,7 @@ private slots:
     void vertAlignSlot();
     void horizAlignSlot();
     void setModelName(QString name);
+    void disableAllObservers();
 private:
     void createMenus();
 //    DiagramSceneTabWidget *diagramSceneTabWidget;
@@ -64,6 +65,7 @@ private:
     QAction* loadModelAct;
     QAction* loadModelFileAct;
     QAction* modelSettingsAct;
+    QAction* disableAllObserversAct;
     QAction* fitVisibleAct;
     QPushButton *loadLayoutButton;
     QPushButton *saveLayoutButton;

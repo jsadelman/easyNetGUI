@@ -429,6 +429,12 @@ void DiagramScene::goToSleep()
     }
 }
 
+void DiagramScene::disableAllObservers()
+{
+    foreach(Box *box, boxes())
+        box->disableAllObservers();
+}
+
 
 #if 0
 void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)

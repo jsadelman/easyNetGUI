@@ -120,6 +120,8 @@ public slots:
     void wakeUp();
     void goToSleep();
     QGraphicsItem* getZeb(){return zeb;}
+    void disableAllObservers();
+
 
 signals:
     void itemInserted(QGraphicsItem*);

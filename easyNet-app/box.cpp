@@ -134,6 +134,15 @@ void Box::setDashedStroke(bool arg)
   }
 }
 
+void Box::disableAllObservers()
+{
+    foreach(QString observer, observerOfPlot.values().toSet())
+    {
+        enableObserver(observer, false);
+    }
+    observerOfPlot.clear();
+}
+
 void Box::autoSize()
 {
 //   QFontMetrics fm(labelFont);

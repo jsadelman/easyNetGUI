@@ -229,6 +229,9 @@ void DiagramWindow::createMenus()
     parameterSettingsAct->setStatusTip(tr("Display parameter settings"));
     connect(parameterSettingsAct,SIGNAL(triggered()), this,SIGNAL(showParameterSettingsSignal()));
 
+    disableAllObserversAct = new QAction(QIcon(":/images/clean_brush-128.png"),tr("Stop observing"), this);
+    connect(disableAllObserversAct,SIGNAL(triggered()), this, SLOT(disableAllObservers()));
+
     fitVisibleAct = new QAction(QIcon(":/images/resize.png"),tr("Fit to window"), this);
     fitVisibleAct->setStatusTip(tr("Resize diagram to fit window"));
     fitVisibleAct->setCheckable(true);
@@ -324,6 +327,7 @@ void DiagramWindow::createMenus()
     diagramTopToolBar->addSeparator();
     diagramTopToolBar->addAction(modelSettingsAct);
     diagramTopToolBar->addAction(parameterSettingsAct);
+    diagramTopToolBar->addAction(disableAllObserversAct);
     diagramTopToolBar->addSeparator();
 
     modelNameLabel = new QLabel();
@@ -363,5 +367,10 @@ void DiagramWindow::horizAlignSlot()
 void DiagramWindow::setModelName(QString name)
 {
     modelNameLabel->setText(name);
+}
+
+void DiagramWindow::disableAllObservers()
+{
+    diagramSceneStackedWidget->currentDiagramScene()->disableAllObservers();
 }
 

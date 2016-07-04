@@ -80,6 +80,10 @@ public:
     void setDashedStroke(bool);
     void cmd_setSize(QSizeF f){myheight=f.height();mywidth=f.width(); setGeometry();}
     QSizeF size()const{return QSizeF(mywidth,myheight);}
+
+public slots:
+    void disableAllObservers();
+
 signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);
     void lazyNutTypeChanged();
