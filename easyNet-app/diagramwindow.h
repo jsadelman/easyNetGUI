@@ -22,6 +22,8 @@ class DiagramWindow
 public:
 //    DiagramWindow(DiagramSceneTabWidget *diagramSceneTabWidget, QWidget *parent = 0);
     DiagramWindow(DiagramSceneStackedWidget *diagramSceneStackedWidget, QWidget *parent = 0);
+    QAction* parameterSettingsAct;
+
 
 public slots:
     void rearrange(bool ignoreEdges = false);
@@ -62,7 +64,6 @@ private:
     QAction* loadModelAct;
     QAction* loadModelFileAct;
     QAction* modelSettingsAct;
-    QAction* parameterSettingsAct;
     QAction* fitVisibleAct;
     QPushButton *loadLayoutButton;
     QPushButton *saveLayoutButton;

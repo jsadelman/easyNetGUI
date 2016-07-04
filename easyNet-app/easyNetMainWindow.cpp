@@ -154,6 +154,7 @@ void MainWindow::constructForms()
     lazynutPanel->setMovable(true);
     diagramWindow = new DiagramWindow(diagramPanel, this);
     methodsPanel->addTab(diagramWindow,"Model");
+    toolbar->insertAction(addonAct, diagramWindow->parameterSettingsAct);
 
     /* CONSTRUCT ALL THE INDIVIDUAL FORMS */
 
@@ -611,11 +612,8 @@ void MainWindow::initialiseToolBar()
     modelButton->setFlat(true);
     modelButton->setEnabled(true);
 
-    addonButton = new QToolButton(this);
-    addonButton->setIcon(QIcon(":/images/add-on.png"));
-    addonButton->setToolTip("load add-on");
+    addonAct = new QAction(QIcon(":/images/add-on.png"),tr("load add-on"), this);
 
-//    QLabel* trialBoxLabel = new QLabel("Trial:");
     trialButton = new QPushButton("Trial:");
     trialButton->setFlat(true);
     trialButton->setEnabled(false);
@@ -631,8 +629,7 @@ void MainWindow::initialiseToolBar()
               this, SLOT(loadModel()));
     connect(trialButton, SIGNAL(clicked()),
               this, SLOT(loadTrial()));
-    connect(addonButton, SIGNAL(clicked()),
-              this, SLOT(loadAddOn()));
+    connect(addonAct, SIGNAL(triggered()), this, SLOT(loadAddOn()));
     connect(expertButton, SIGNAL(clicked()),
             this, SLOT(displayExpertWindow()));
 
@@ -657,20 +654,11 @@ void MainWindow::initialiseToolBar()
     spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-//    toolbar->addWidget(modelBoxLabel);
     toolbar->addWidget(modelButton);
     // Add values in the combo box
     toolbar->addWidget(modelComboBox);
-//    toolbar->addAction(openAct);
-//    toolbar->addAction(QIcon(openpix), "Open File");
-//    toolbar->addSeparator();
-
-
-    toolbar->addWidget(addonButton);
+    toolbar->addAction(addonAct);
     toolbar->addSeparator();
-
-
-//    toolbar->addWidget(trialBoxLabel);
     toolbar->addWidget(trialButton);
     // Add values in the combo box
     toolbar->addWidget(trialComboBox);
@@ -678,8 +666,6 @@ void MainWindow::initialiseToolBar()
     trialWidget = new TrialWidget(this);
     toolbar->addWidget(trialWidget);
 //    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
-
-//    toolbar->addSeparator();
     stopAct = new QAction("Stop", this);
     stopAct->setToolTip("stop simulation");
     connect(stopAct, SIGNAL(triggered()), SessionManager::instance(), SLOT(oobStop()));

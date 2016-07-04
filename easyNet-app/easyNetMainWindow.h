@@ -355,7 +355,7 @@ public:
 
     QPushButton     * trialButton;
     QPushButton     * modelButton;
-    QToolButton     * addonButton;
+    QAction         * addonAct;
     QToolButton     * stopButton;
     QToolButton     * expertButton;
 
