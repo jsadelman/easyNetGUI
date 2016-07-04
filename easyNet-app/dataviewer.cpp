@@ -17,7 +17,8 @@ Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), m_name(""),m_itemPrettyName(""),
-      lastOpenDir(""), defaultOpenDir(""), lastSaveDir(""), defaultSaveDir("")
+      lastOpenDir(""), defaultOpenDir(""), lastSaveDir(""),
+      defaultSaveDir(SessionManager::instance()->defaultLocation("outputDir"))
 {
     setUi();
     descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -28,6 +29,7 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(execAddItem(QDomDocument*,QString)));
     m_items.clear();
     hiddenItems.clear();
+
 }
 
 DataViewer::~DataViewer()
