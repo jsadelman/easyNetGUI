@@ -203,7 +203,7 @@ void MainWindow::constructForms()
     dataframeDescriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     dataframeDescriptionFilter->setType("dataframe");
     dataframeResultsDispatcher = new DataframeViewerDispatcher(dataframeResultsViewer);
-    dataframeResultsViewer->setDefaultDir(SessionManager::instance()->defaultLocation("dfDir"));
+    dataframeResultsViewer->setDefaultOpenDir(SessionManager::instance()->defaultLocation("dfDir"));
     connect(dataframeDescriptionFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
             dataframeResultsViewer, SLOT(addItem(QString)));
 
@@ -263,6 +263,7 @@ void MainWindow::constructForms()
     dataViewSettingsWidget = new SettingsWidget(this);
     dataViewSettingsDialog = new FloatingDialogWindow(this);
     dataViewSettingsDialog->setCentralWidget(dataViewSettingsWidget);
+    connect(dataViewSettingsWidget, SIGNAL(closeRequested()), dataViewSettingsDialog, SLOT(hide()));
 
 
     /* ADD TABS */

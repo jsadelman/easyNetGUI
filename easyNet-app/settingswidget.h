@@ -37,6 +37,7 @@ public slots:
 signals:
     void dataViewCreated(QString, bool); // old newRPlotCreated
     void settingsApplied(QString);
+    void closeRequested();
 
 
 protected slots:
@@ -65,6 +66,7 @@ protected:
     ObjectUpdater *descriptionUpdater;
     QPushButton *reloadScriptButton;
     QPushButton *applyButton;
+    QPushButton *okButton;
     QLineEdit *nameEdit;
     QLineEdit *typeEdit;
     QScrollArea *formScrollArea;

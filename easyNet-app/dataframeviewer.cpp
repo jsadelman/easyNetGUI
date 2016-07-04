@@ -89,9 +89,11 @@ void DataframeViewer::open()
 void DataframeViewer::save()
 {
     // this is an illegal approach -- get R to copy the df to file
+    QDomDocument *description = SessionManager::instance()->description(ui->currentItemName());
+    QString prettyName = description ? XMLelement(*description)["pretty name"]() : ui->currentItemName();
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Save as CSV file"),
-                        lastSaveDir.isEmpty() ? defaultSaveDir : lastOpenDir,
+                        QString("%1/%2").arg(lastSaveDir.isEmpty() ? defaultSaveDir : lastSaveDir).arg(prettyName),
                         "CSV (*.csv)");
     if (!fileName.isEmpty())
     {
