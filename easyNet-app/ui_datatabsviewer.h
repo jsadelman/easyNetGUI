@@ -25,6 +25,10 @@ public slots:
     virtual void setCurrentItem(QString name);
     virtual void setStateIcon(QString name, int state = -1) Q_DECL_OVERRIDE;
 
+protected slots:
+    void showContextMenu(const QPoint &point);
+    void closeAllButThisTab(int index);
+
 
 protected:
     virtual void createViewer();
@@ -37,6 +41,7 @@ private:
     QTabWidget *tabWidget;
     bool tabsClosable;
     bool quiet_tab_change;
+    QAction *closeAllButThisTabAct;
 
 };
 
