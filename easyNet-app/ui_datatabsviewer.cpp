@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <QSvgWidget>
 #include <QTabBar>
+#include <QMenu>
 
 Ui_DataTabsViewer::Ui_DataTabsViewer()
     : Ui_DataViewer(), quiet_tab_change(false), tabsClosable(true)
@@ -80,7 +81,10 @@ void Ui_DataTabsViewer::createViewer()
     tabWidget->setTabsClosable(tabsClosable);
     tabWidget->setStyleSheet("QTabBar::tab { height: 30px; }");
     tabWidget->setIconSize(QSize(24,24));
-//    setCentralWidget(tabWidget);
+    tabWidget->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tabWidget->tabBar(), SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+    closeAllButThisTabAct = new QAction("close all but this tab", this);
+
     mainLayout->addWidget(tabWidget);
     connect(tabWidget, &QTabWidget::tabCloseRequested, [=](int index)
     {
@@ -125,5 +129,36 @@ void Ui_DataTabsViewer::setStateIcon(QString name, int state)
         break;
     default:
         break;
+    }
+}
+
+void Ui_DataTabsViewer::showContextMenu(const QPoint &point)
+{
+    if (point.isNull())
+        return;
+    int index = tabWidget->tabBar()->tabAt(point);
+    if (index < 0 || index >= tabWidget->count())
+        return;
+    QMenu menu(this);
+    if (tabWidget->count() > 1)
+        menu.addAction(closeAllButThisTabAct);
+
+    QAction *action = menu.exec(tabWidget->tabBar()->mapToGlobal(point));
+    if (action == closeAllButThisTabAct)
+        closeAllButThisTab(index);
+
+}
+
+void Ui_DataTabsViewer::closeAllButThisTab(int index)
+{
+    QStringList names;
+    for (int i = 0; i < tabWidget->count(); ++i)
+    {
+        if (i != index)
+            names.append(viewMap.key(tabWidget->widget(i)));
+    }
+    foreach (QString name, names)
+    {
+        emit deleteItemRequested(name);
     }
 }
