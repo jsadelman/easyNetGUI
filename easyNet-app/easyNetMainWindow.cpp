@@ -895,7 +895,8 @@ void MainWindow::buildModelChooser()
     modelList << modelInfo("IA","Models/ia/ia.eNm",":images/ia.png");
     modelList << modelInfo("Bilingual IA","Models/bia/bia.eNm",":images/bia.png");
     modelList<< modelInfo("CDP+","Models/cdpplus/cdpplus.eNm",":images/cdpplus.png");
-    modelList<< modelInfo("Spatial Coding","Models/scm/SCM.eNm",":images/SCM.png");
+    modelList<< modelInfo("Spatial Coding 2010","Models/scm/SCM.eNm",":images/SCM.png");
+    modelList<< modelInfo("Spatial Coding Demo","Models/scm.demo/SCM.eNm",":images/SCM.png");
     modelList<< modelInfo("Relative Position","Models/rpm-ia/rpm-ia.eNm",":images/rpm-ia.png");
     modelList<< modelInfo("LTRS (simplified)","Models/ltrs/ltrs_4slot.eNm",":images/ltrs_4slot.png");
     modelList<< modelInfo("LTRS","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
