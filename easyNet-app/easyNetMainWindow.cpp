@@ -263,6 +263,7 @@ void MainWindow::constructForms()
     dataViewSettingsWidget = new SettingsWidget(this);
     dataViewSettingsDialog = new FloatingDialogWindow(this);
     dataViewSettingsDialog->setCentralWidget(dataViewSettingsWidget);
+    connect(dataViewSettingsWidget, SIGNAL(closeRequested()), dataViewSettingsDialog, SLOT(hide()));
 
 
     /* ADD TABS */

@@ -320,8 +320,16 @@ void SettingsWidget::buildWidget()
     applyButton = new QPushButton("Apply", this);
     connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
 
+    okButton = new QPushButton("Ok", this);
+    connect(okButton, &QPushButton::clicked, [=]()
+    {
+       apply();
+       emit closeRequested();
+    });
+
     QVBoxLayout *buttonsLayout = new QVBoxLayout;
     buttonsLayout->addWidget(applyButton);
+    buttonsLayout->addWidget(okButton);
     buttonsLayout->addWidget(reloadScriptButton);
 
     nameEdit = new QLineEdit;
