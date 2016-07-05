@@ -120,7 +120,7 @@ void DataViewer::initiateDestroyItem(QString name)
     {
         dispatcher->setInView(name, false);
     }
-    else if (name.contains(QRegExp("[()]"))) // don't destroy default dataframes
+    else if (name.startsWith('(')) // don't destroy default dataframes
     {
         eNwarning << QString("attempt to delete lazyNut system object %1").arg(name);
         // this should change, trigger desable default observer
