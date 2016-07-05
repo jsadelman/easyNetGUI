@@ -904,6 +904,7 @@ void MainWindow::buildModelChooser()
     modelList<< modelInfo("PMSP (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
     modelList<< modelInfo("DRC","Models/drc/drc.eNm",":images/drc.png");
     modelList<< modelInfo("Overlap Open Bigram","Models/oob-ia/oob-ia.eNm",":images/custom.png");
+    modelList<< modelInfo("Test Plotting","Scripts/plot_test.eNs",":images/graph-8x.png");
 //    modelList<< modelInfo("Load from file","Models/",":images/open.png");
 //    modelList<< modelInfo("New","",":images/new.png");
 
