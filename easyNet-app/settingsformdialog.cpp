@@ -57,7 +57,7 @@ void SettingsFormDialog::build()
                               "font: bold 12pt;"
                               "}");
     buttonsLayout = new QVBoxLayout;
-    okButton = new QPushButton("Ok");
+    okButton = new QPushButton("OK");
     cancelButton = new QPushButton("Cancel");
     connect(okButton, SIGNAL(clicked()), this, SLOT(checkBeforeAccept()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));

@@ -320,7 +320,7 @@ void SettingsWidget::buildWidget()
     applyButton = new QPushButton("Apply", this);
     connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
 
-    okButton = new QPushButton("Ok", this);
+    okButton = new QPushButton("OK", this);
     connect(okButton, &QPushButton::clicked, [=]()
     {
        apply();
