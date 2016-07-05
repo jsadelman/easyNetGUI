@@ -129,7 +129,7 @@ protected:
     QString myName;
     QGraphicsSimpleTextItem labelItem;
     const double BOUNDINGRECTPADDING = 10;
-    qreal mywidth = 150;
+    qreal mywidth = 170;
     qreal myheight = 100;
     QColor myColor;
     int penWidth;

@@ -32,7 +32,7 @@ DataViewerDispatcher::DataViewerDispatcher(DataViewer *host)
       currentDispatchAction(-1),
       infoIsVisible(false),
       trialRunMode(TrialRunMode_Single),
-      m_snapshotActive(true),
+      m_snapshotActive(false),
       m_copyDfActive(false)
 {
     if (!host)

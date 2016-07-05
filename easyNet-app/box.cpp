@@ -21,7 +21,7 @@ const QColor observedCol = QColor("white");
 Box::Box()
     : QObject(),
       DiagramItem(DiagramItem::Layer,"",new QMenu,0),
-      m_longNameToDisplayIntact("graphemes"),
+      m_longNameToDisplayIntact("Orthographic"),
       m_widthMarginProportionToLongestLabel(0.1),
       m_labelPointSize(9),
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
