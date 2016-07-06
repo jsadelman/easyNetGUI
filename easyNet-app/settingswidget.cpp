@@ -7,6 +7,7 @@
 #include "objectupdater.h"
 #include "xmlelement.h"
 #include "easyNetMainWindow.h"
+#include "sessionmanager.h"
 
 #include <QAction>
 #include <QToolButton>
@@ -32,7 +33,7 @@ SettingsWidget::SettingsWidget(QWidget *parent)
     descriptionUpdater->setProxyModel(descriptionFilter);
     connect(descriptionUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domDoc, QString name)
     {
-        typeMap[name] = QFileInfo(XMLelement(*domDoc)["Type"]()).fileName();
+        typeMap[name] = type(name);
         if (name == currentName)
             typeEdit->setText(typeMap[name]);
     });
@@ -125,7 +126,15 @@ QString SettingsWidget::type(QString name)
 {
     QDomDocument *domDoc = descriptionFilter->getDomDoc(name);
     if (domDoc)
-        return QFileInfo(XMLelement(*domDoc)["Type"]()).fileName();
+    {
+        QString baseDir;
+        if (SessionManager::instance()->descriptionCache->type(name) == "dataframe")
+            baseDir = "rDataframeViewsDir";
+        else if (SessionManager::instance()->descriptionCache->subtype(name) == "rplot")
+            baseDir = "rPlotsDir";
+        return QDir(SessionManager::instance()->defaultLocation(baseDir)).relativeFilePath(XMLelement(*domDoc)["Type"]());
+    }
+
     return QString();
 }
 
