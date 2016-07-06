@@ -446,21 +446,21 @@ void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
 #endif
 
 
-void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
-{
-    if (mouseEvent->button() != Qt::LeftButton)
-        return;
-    foreach (QGraphicsItem *item, QGraphicsScene::items(mouseEvent->scenePos()))
-    {
-        if(item)
-        {
-            auto selectedObject = itemHash.key(item);
-            if(item->parentItem()) selectedObject=itemHash.key(item->parentItem());
-            emit objectSelected(selectedObject);
-            break;
-        }
-    }
-}
+//void DiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
+//{
+//    if (mouseEvent->button() != Qt::LeftButton)
+//        return;
+//    foreach (QGraphicsItem *item, QGraphicsScene::items(mouseEvent->scenePos()))
+//    {
+//        if(item)
+//        {
+//            auto selectedObject = itemHash.key(item);
+//            if(item->parentItem()) selectedObject=itemHash.key(item->parentItem());
+//            emit objectSelected(selectedObject);
+//            break;
+//        }
+//    }
+//}
 
 void DiagramScene::positionObject(QString name, QString type, QString subtype, QDomDocument *domDoc)
 {
@@ -472,6 +472,11 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
         Box *box = new Box();
         connect(box, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString, QString>,bool)),
                 this, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)));
+        connect(box, &Box::propertiesRequested, [=]()
+        {
+            emit propertiesRequested(box->name());
+        });
+        connect(box, SIGNAL(focusOnPlotRequested(QString)), this, SIGNAL(focusOnPlotRequested(QString)));
 
         addItem(box);
         box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers
@@ -586,6 +591,10 @@ void DiagramScene::render()
                 arrow->setLazyNutType(m_arrowType);
                 arrow->setToolTip(name);
                 arrow->setDashedStroke(SessionManager::instance()->descriptionCache->subtype(name) == "lesioned_connection");
+                connect(arrow, &Arrow::propertiesRequested, [=]()
+                {
+                    emit propertiesRequested(arrow->name());
+                });
             }
 
             if (!startItem && !endItem)

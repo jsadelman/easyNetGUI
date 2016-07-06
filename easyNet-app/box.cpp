@@ -258,6 +258,8 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
     unlesionAct->setVisible(m_layerTransfer == "lesion_transfer");
 
+    menu.addAction("Properties", this, SIGNAL(propertiesRequested()));
+
     QAction *action = NULL;
     if (!menu.isEmpty())
     {
@@ -301,6 +303,14 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
     else if (action == unlesionAct)
         lesionBox(false);
+}
+
+void Box::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
+{
+    if (mouseEvent->button() != Qt::LeftButton)
+        return;
+    if (!observerOfPlot.isEmpty())
+        emit focusOnPlotRequested(observerOfPlot.keys().first());
 }
 
 

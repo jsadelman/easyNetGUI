@@ -382,7 +382,9 @@ void MainWindow::connectSignalsAndSlots()
 //    connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
 //    connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
 
-    connect(modelScene,SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
+//    connect(modelScene,SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
+    connect(modelScene,SIGNAL(propertiesRequested(QString)), objNavigator, SLOT(setObject(QString)));
+    connect(modelScene,SIGNAL(focusOnPlotRequested(QString)), ui_dataframeResultsViewer, SLOT(setCurrentItem(QString)));
     connect(objExplorer, SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
 
     connect(modelScene,SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>, bool)),

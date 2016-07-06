@@ -262,6 +262,8 @@ void Arrow::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     else
         menu.addAction("Lesion connection", this, SLOT(lesion()));
 
+    menu.addAction("Properties", this, SIGNAL(propertiesRequested()));
+
     menu.exec(event->screenPos());
 }
 

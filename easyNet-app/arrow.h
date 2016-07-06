@@ -41,6 +41,9 @@ public:
     virtual QRectF	boundingRect() const Q_DECL_OVERRIDE {return childrenBoundingRect();} // Qt bug
     virtual QPainterPath shape() const Q_DECL_OVERRIDE;
 
+signals:
+    void propertiesRequested();
+
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
 

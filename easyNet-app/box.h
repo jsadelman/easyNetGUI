@@ -88,10 +88,15 @@ signals:
     void createDataViewRequested(QString, QString, QString, QMap<QString, QString>, bool);
     void lazyNutTypeChanged();
     void plotDestroyed(QString name);
+    void propertiesRequested();
+    void focusOnPlotRequested(QString name);
+
 
 
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
+
 
 private slots:
 //    void sendCreateNewPlotOfType();

@@ -135,13 +135,15 @@ signals:
     void animationFinished();
     void createDataViewRequested(QString,QString,QString, QMap<QString, QString>, bool);
     void plotDestroyed(QString name);
+    void propertiesRequested(QString name);
+    void focusOnPlotRequested(QString name);
 
 
 protected:
 //    void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
 //    void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
 //    void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
+//    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 //    void contextMenuEvent(QGraphicsSceneContextMenuEvent *mouseEvent);
 
 private slots:
