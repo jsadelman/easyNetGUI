@@ -609,7 +609,10 @@ void MainWindow::initialiseToolBar()
     //expertButton->setIcon(QIcon(":/images/expert.mode.jpg"));
     expertButton->setToolTip("Expert mode");
 
-    toolbar = addToolBar("main toolbar");
+    toolbar = addToolBar("toolbar 1");
+    toolbar2 = addToolBar("toolbar 2");
+    toolbar3 = addToolBar("toolbar 3");
+    toolbar4 = addToolBar("toolbar 4");
 //    QLabel* modelBoxLabel = new QLabel("Model: ");
     modelButton = new QPushButton("Model:");
     modelButton->setFlat(true);
@@ -661,13 +664,13 @@ void MainWindow::initialiseToolBar()
     // Add values in the combo box
     toolbar->addWidget(modelComboBox);
     toolbar->addAction(addonAct);
-    toolbar->addSeparator();
-    toolbar->addWidget(trialButton);
+//    toolbar->addSeparator();
+    toolbar2->addWidget(trialButton);
     // Add values in the combo box
-    toolbar->addWidget(trialComboBox);
+    toolbar2->addWidget(trialComboBox);
 
     trialWidget = new TrialWidget(this);
-    toolbar->addWidget(trialWidget);
+    toolbar3->addWidget(trialWidget);
 //    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),trialWidget,SLOT(update(QString)));
     stopAct = new QAction("Stop", this);
     stopAct->setToolTip("stop simulation");
@@ -686,14 +689,14 @@ void MainWindow::initialiseToolBar()
 //    expertButton->setIconSize(QSize(40,40));
 
 
-    toolbar->addWidget(stopButton);
-    toolbar->addSeparator();
+    toolbar3->addWidget(stopButton);
+//    toolbar3->addSeparator();
 
-            toolbar->addWidget(expertButton);
-            toolbar->addSeparator();
+            toolbar4->addWidget(expertButton);
+            toolbar4->addSeparator();
 
-    toolbar->addWidget(spacer);
-    toolbar->addSeparator();
+    toolbar4->addWidget(spacer);
+    toolbar4->addSeparator();
 
     // notifier of run all trial
     runAllTrialLabel = new QLabel;
@@ -703,7 +706,7 @@ void MainWindow::initialiseToolBar()
                                  "padding: 4px;"
                                  "font: bold 12pt;"
                                  "}");
-    runAllTrialMsgAct = toolbar->addWidget(runAllTrialLabel);
+    runAllTrialMsgAct = toolbar4->addWidget(runAllTrialLabel);
     runAllTrialMsgAct->setVisible(false);
     connect(this, &MainWindow::runAllTrialEnded, [=]()
     {

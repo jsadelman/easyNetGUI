@@ -343,7 +343,7 @@ public:
     Ui_DataTabsViewer *ui_paramViewer;
     DebugLog        *debugLog;
     QToolBar        *infoToolBar;
-    QToolBar        *toolbar;
+    QToolBar        *toolbar,*toolbar2,*toolbar3,*toolbar4;
     QComboBox       *modelComboBox;
     QComboBox       *trialComboBox;
     TrialWidget     *trialWidget;
