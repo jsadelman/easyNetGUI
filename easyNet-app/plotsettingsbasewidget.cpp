@@ -98,7 +98,7 @@ void PlotSettingsBaseWidget::createDisplay()
         defaultButton->setToolTip("Leave the value unspecified");
     }
     connect(defaultButton, SIGNAL(clicked()), this, SLOT(resetDefault()));
-    connect(defaultButton, SIGNAL(clicked()), this, SLOT(emitValueChanged()));
+//    connect(defaultButton, SIGNAL(clicked()), this, SLOT(emitValueChanged()));
 
     gridLayout->addWidget(nameLabel, 0, 0);
 

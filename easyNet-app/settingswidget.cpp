@@ -68,7 +68,7 @@ void SettingsWidget::sendSettings(QString name, bool force)
     if (form)
     {
         LazyNutJob *job = new LazyNutJob;
-        job->cmdList = form->getSettingsCmdList(true); // force
+        job->cmdList = form->getSettingsCmdList(force); // force
         QList<LazyNutJob*> jobs = QList<LazyNutJob*>()
                 << job;
         if (force)
@@ -198,7 +198,7 @@ void SettingsWidget::buildSettingsForm(QString name, QDomDocument *domDoc, QMap<
     settingsForm->build();
     formMap[name] = settingsForm;
     setForm(name);
-    sendSettings(name, true);
+//    sendSettings(name, true);
 }
 
 void SettingsWidget::buildSettingsForm()

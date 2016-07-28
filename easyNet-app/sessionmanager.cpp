@@ -766,11 +766,11 @@ void SessionManager::setDefaultLocations()
     m_defaultLocation["trialsDir"]    =   QString("%1/Trials").arg(easyNetDataHome());
     m_defaultLocation["stimDir"]      =   QString("%1/Databases/Stimulus_files").arg(easyNetDataHome());
     m_defaultLocation["dfDir"]        =   QString("%1/Databases").arg(easyNetDataHome());
-    m_defaultLocation["rPlotsDir"]    =   QString("%1/bin/R-library/plots").arg(easyNetHome()).arg(binDir);
+    m_defaultLocation["rPlotsDir"]    =   QString("%1/bin/R-library/plots").arg(easyNetHome());
     m_defaultLocation["outputDir"]    =   QString("%1/Outputs").arg(easyNetUserHome());
     m_defaultLocation["docsDir"]    =   QString("%1/documentation").arg(easyNetDataHome());
     m_defaultLocation["docsImageDir"]    =   QString("%1/documentation/images").arg(easyNetHome());
-    m_defaultLocation["rDataframeViewsDir"]    =   QString("%1/bin/R-library/dataframe_views").arg(easyNetHome()).arg(binDir);
+    m_defaultLocation["rDataframeViewsDir"]    =   QString("%1/bin/R-library/dataframe_views").arg(easyNetHome());
     m_defaultLocation["docsDir"]   =   QString("%1/documentation").arg(easyNetDataHome());
 }
 
