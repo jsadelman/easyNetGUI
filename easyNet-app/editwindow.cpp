@@ -10,6 +10,7 @@
 #include "editwindow.h"
 #include "codeeditor.h"
 #include "finddialog.h"
+#include "sessionmanager.h"
 
 EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
     : QMainWindow(parent), isReadOnly(isReadOnly), textEdit(nullptr),
@@ -17,7 +18,6 @@ EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
 
 {
     filenameLabel = new QLabel("");
-    startDir="";
     textEdit = new CodeEditor(this);
     textEdit->setReadOnly(isReadOnly);
     setCentralWidget(textEdit);
@@ -44,7 +44,7 @@ EditWindow::EditWindow(QWidget *parent, bool isReadOnly)
             this, SLOT(findForward(QString, QFlags<QTextDocument::FindFlag>)));
     connect(findDialog, SIGNAL(findBackward(QString, QFlags<QTextDocument::FindFlag>)),
             this, SLOT(findBackward(QString, QFlags<QTextDocument::FindFlag>)));
-
+    setDefaultSaveDir(SessionManager::instance()->defaultLocation("outputDir"));
 
 }
 
@@ -71,7 +71,7 @@ void EditWindow::open()
     if (maybeSave())
     {
         // bring up file dialog
-        QString fileName = QFileDialog::getOpenFileName(this,"",startDir);
+        QString fileName = QFileDialog::getOpenFileName(this,"",lastOpenDir.isEmpty() ? defaultOpenDir() : lastOpenDir);
         if (!fileName.isEmpty())
             loadFile(fileName);
     }
@@ -91,8 +91,8 @@ bool EditWindow::saveAs()
     QFileDialog dialog(this);
     dialog.setWindowModality(Qt::WindowModal);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setDirectory(startDir);
-    if (startDir.contains("Scripts"))
+    dialog.setDirectory(lastSaveDir.isEmpty() ? defaultSaveDir() : lastSaveDir);
+    if (dialog.directory().absolutePath().contains("Scripts"))
     {
         dialog.setNameFilter("easynet script files (*.eNs)");
         dialog.setDefaultSuffix(".eNs");
@@ -237,6 +237,7 @@ void EditWindow::loadFile(const QString &fileName)
 #endif
 
     setCurrentFile(fileName);
+    lastOpenDir = QFileInfo(fileName).path();
 //    statusBar()->showMessage(tr("File loaded"), 2000);
 }
 
@@ -261,6 +262,8 @@ bool EditWindow::saveFile(const QString &fileName)
 #endif
 
     setCurrentFile(fileName);
+    lastSaveDir = QFileInfo(fileName).path();
+
 //    statusBar()->showMessage(tr("File saved"), 2000);
     return true;
 }

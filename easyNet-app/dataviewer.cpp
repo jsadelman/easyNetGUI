@@ -16,9 +16,7 @@
 Q_DECLARE_METATYPE(QSharedPointer<QDomDocument> )
 
 DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
-    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), m_name(""),m_itemPrettyName(""),
-      lastOpenDir(""), defaultOpenDir(""), lastSaveDir(""),
-      defaultSaveDir(SessionManager::instance()->defaultLocation("outputDir"))
+    : QWidget(parent), ui(ui), dispatcher(nullptr), m_lazy(false), m_name(""), m_itemPrettyName("")
 {
     setUi();
     descriptionFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -29,7 +27,7 @@ DataViewer::DataViewer(Ui_DataViewer *ui, QWidget *parent)
     connect(descriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)), this, SLOT(execAddItem(QDomDocument*,QString)));
     m_items.clear();
     hiddenItems.clear();
-
+    setDefaultSaveDir(SessionManager::instance()->defaultLocation("outputDir"));
 }
 
 DataViewer::~DataViewer()
@@ -160,11 +158,6 @@ bool DataViewer::contains(QString name)
     return m_items.contains(name);
 }
 
-void DataViewer::setDefaultDir(QString dir)
-{
-    setDefaultOpenDir(dir);
-    setDefaultSaveDir(dir);
-}
 
 void DataViewer::addView(QString name)
 {

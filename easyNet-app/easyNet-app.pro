@@ -231,7 +231,8 @@ HEADERS  += \
     parametersmodel.h \
     parametersviewer.h \
     hidefromlistmodel.h \
-    errormsgdialog.h
+    errormsgdialog.h \
+    defaultdirs.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

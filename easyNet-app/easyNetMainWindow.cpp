@@ -163,7 +163,8 @@ void MainWindow::constructForms()
     objExplorer = new ObjExplorer(this);
     objNavigator = new ObjectNavigator(this);
     objNavigator->hide();
-    scriptEdit = new ScriptEditor(SessionManager::instance()->defaultLocation("scriptsDir"), this);
+    scriptEdit = new ScriptEditor(this);
+    scriptEdit->setDefaultOpenDir(SessionManager::instance()->defaultLocation("scriptsDir"));
     highlighter = new Highlighter(scriptEdit->textEdit->document());
 //    commandLog = new EditWindow(this, newLogAct, loadScriptAct, true); // no cut, no paste
     commandLog = new CommandLog(this, false);

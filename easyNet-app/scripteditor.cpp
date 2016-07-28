@@ -7,7 +7,7 @@
 #include <QShortcut>
 
 
-ScriptEditor::ScriptEditor(QString _startDir, QWidget *parent)
+ScriptEditor::ScriptEditor(QWidget *parent)
     : EditWindow(parent)
 {
     runAct = new QAction(QIcon(":/images/media-play-3x.png"), tr("&Run"), this);
@@ -30,7 +30,6 @@ ScriptEditor::ScriptEditor(QString _startDir, QWidget *parent)
     runToolBar->addAction(runSelectionAct);
 //    runToolBar->addAction(pasteAct);
 
-    startDir = _startDir;
 
 }
 

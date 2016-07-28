@@ -6,6 +6,8 @@
 #include <QMap>
 #include <QSet>
 
+#include "defaultdirs.h"
+
 class Ui_DataViewer;
 class DataViewerDispatcher;
 class ObjectCacheFilter;
@@ -15,12 +17,13 @@ class ObjectUpdater;
 class QDomDocument;
 
 
-class DataViewer : public QWidget
+class DataViewer : public QWidget, public DefaultDirs
 {
     Q_OBJECT
     Q_PROPERTY(bool lazy READ isLazy WRITE setLazy NOTIFY lazyChanged)
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString itemPrettyName READ itemPrettyName WRITE setItemPrettyName)
+
     friend class DataViewerDispatcher;
 public:
     DataViewer(Ui_DataViewer *ui, QWidget * parent = 0);
@@ -29,9 +32,6 @@ public:
     bool contains(QString name);
     bool isLazy() {return m_lazy;}
     void setLazy (bool lazy) {m_lazy = lazy; emit lazyChanged(lazy);}
-    void setDefaultOpenDir(QString dir) {defaultOpenDir = dir;}
-    void setDefaultSaveDir(QString dir) {defaultSaveDir = dir;}
-    void setDefaultDir(QString dir);
     void addView(QString name);
     void removeView(QString name);
     QString currentItemName();
@@ -52,8 +52,6 @@ public slots:
     virtual void addRequestedItem(QString name="", bool isBackup=false) =0;
     void preDispatch(QSharedPointer<QDomDocument> info);
     virtual void dispatch();
-//    void setDispatchModeOverride(int mode);
-//    void setDispatchModeAuto(bool isAuto);
     virtual void open()=0;
     virtual void save()=0;
     virtual void copy()=0;
@@ -69,7 +67,6 @@ protected slots:
     virtual void destroyItem(QString name);
     virtual void destroyItem_impl(QString name)=0;
     virtual void enableActions(bool enable);
-//    void setTrialRunInfo(QString item, QSharedPointer<QDomDocument> info);
     void setTrialRunMode(int mode);
 
 
@@ -90,16 +87,11 @@ protected:
     virtual void removeNameFromFilter(QString name) = 0;
     virtual void setNameInFilter(QString name) = 0;
 
-//    QMap<QString, QWidget*> viewMap;
     Ui_DataViewer *ui;
     DataViewerDispatcher *dispatcher;
     ObjectCacheFilter *descriptionFilter;
     ObjectUpdater *descriptionUpdater;
 
-    QString lastOpenDir;
-    QString defaultOpenDir;
-    QString lastSaveDir;
-    QString defaultSaveDir;
     bool m_lazy;
     QSet<QString> m_items;
     QSet<QString> hiddenItems;

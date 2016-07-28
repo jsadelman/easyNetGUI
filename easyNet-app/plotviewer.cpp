@@ -159,7 +159,7 @@ void PlotViewer::destroyItem_impl(QString name)
 void PlotViewer::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this,tr("Load SVG File"),
-                                                    lastOpenDir.isEmpty() ? defaultOpenDir : lastOpenDir,
+                                                    lastOpenDir.isEmpty() ? defaultOpenDir() : lastOpenDir,
                                                     tr("SVG Files (*.svg)"));
     if (!fileName.isEmpty())
     {
@@ -182,7 +182,7 @@ void PlotViewer::save()
     QDomDocument *description = SessionManager::instance()->description(ui->currentItemName());
     QString prettyName = description ? XMLelement(*description)["pretty name"]() : ui->currentItemName();
     QString fileName = QFileDialog::getSaveFileName(this,tr("Save current plot as SVG File"),
-                                                    QString("%1/%2").arg(lastSaveDir.isEmpty() ? defaultSaveDir : lastSaveDir)
+                                                    QString("%1/%2").arg(lastSaveDir.isEmpty() ? defaultSaveDir() : lastSaveDir)
                                                     .arg(prettyName),
                                                     tr("SVG Files (*.svg)"));
     if (!fileName.isEmpty())

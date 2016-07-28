@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTextDocument>
+#include "defaultdirs.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -16,7 +17,7 @@ class FindDialog;
 class QFlag;
 QT_END_NAMESPACE
 
-class EditWindow : public QMainWindow
+class EditWindow : public QMainWindow, public DefaultDirs
 {
     Q_OBJECT
     friend class MainWindow;
@@ -38,7 +39,6 @@ public:
     QAction *findAct;
     QAction *stopScriptAct;
     QAction *pauseAct;
-    QString startDir;
 
 
     bool maybeSave();

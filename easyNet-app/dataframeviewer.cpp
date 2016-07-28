@@ -57,7 +57,7 @@ void DataframeViewer::open()
     QString caption = stimulusSet() ? tr("Load stimulus_set") : tr("Import dataframe");
     QString filter = stimulusSet() ? tr("Stimulus set files (*.eNd);;CSV files (*.csv);;All files (*.*)") : tr("CSV files (*.csv);;Database files (*.eNd);;All files (*.*)");
     QString fileName = QFileDialog::getOpenFileName(this,caption,
-                                                    lastOpenDir.isEmpty() ? defaultOpenDir : lastOpenDir,
+                                                    lastOpenDir.isEmpty() ? defaultOpenDir() : lastOpenDir,
                                                     filter);
     if (!fileName.isEmpty())
     {
@@ -93,7 +93,7 @@ void DataframeViewer::save()
     QString prettyName = description ? XMLelement(*description)["pretty name"]() : ui->currentItemName();
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Save as CSV file"),
-                        QString("%1/%2").arg(lastSaveDir.isEmpty() ? defaultSaveDir : lastSaveDir).arg(prettyName),
+                        QString("%1/%2").arg(lastSaveDir.isEmpty() ? defaultSaveDir() : lastSaveDir).arg(prettyName),
                         "CSV (*.csv)");
     if (!fileName.isEmpty())
     {
