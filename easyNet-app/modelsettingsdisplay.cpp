@@ -10,11 +10,15 @@ ModelSettingsDisplay::ModelSettingsDisplay(QWidget *parent)
 {
     modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), modelFilter, SLOT(setName(QString)));
-    connect(modelFilter, &ObjectCacheFilter::objectDestroyed, [=]()
+    connect(modelFilter, &ObjectCacheFilter::objectDestroyed, [=](QString name)
     {
-        delete takeWidget();
-        m_name.clear();
+        if (name == m_name)
+        {
+            delete takeWidget();
+            m_name.clear();
+        }
     });
+//    connect(modelFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)), this, SLOT(buildForm(QString)));
     connect(modelFilter, SIGNAL(objectModified(QString)), this, SLOT(buildForm(QString)));
 }
 

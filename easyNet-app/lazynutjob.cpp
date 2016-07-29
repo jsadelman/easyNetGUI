@@ -63,6 +63,7 @@ void LazyNutJob::run()
             this,SLOT(finish()));
     setActive(true);
 //    qDebug() << "run" << this << cmdList;
+    SessionManager::instance()->beforeRunCommands();
     SessionManager::instance()->commandSequencer->runCommands(cmdList, answerFormatter, logMode);
 //    emit runCommands(cmdList, answerFormatter, logMode);
 }

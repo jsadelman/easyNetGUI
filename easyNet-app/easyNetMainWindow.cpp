@@ -109,14 +109,6 @@ void MainWindow::build()
     SessionManager::instance()->startLazyNut();
 
 
-//    #ifdef WIN32
-//    if (qApp->arguments().count() > 1)
-//        loadModel(QDir::fromNativeSeparators(qApp->arguments().at(1)),true);
-//    #endif
-
-
-
-
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -344,28 +336,11 @@ void MainWindow::connectSignalsAndSlots()
         setForm(dataframeResultsViewer->currentItemName());
     });
 
-//    connect(dataframeResultsViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
-//    connect(dataframeViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(stimSetViewer, SIGNAL(showSettingsRequested()), this,SLOT(showDataViewSettings()));
     connect(paramViewer, SIGNAL(paramExploreDfCreated(QString)), trialWidget, SLOT(addParamExploreDf(QString)));
-
-
-//    connect(plotViewer,SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
     connect(ui_dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
-//    connect(dataframeViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
     connect(ui_stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
-
-//    connect(resultsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
- //   connect(explorerPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
-//    connect(methodsPanel, SIGNAL(currentChanged(int)), this, SLOT(switchFormInSettingsWidget()));
-
     connect(resultsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
-//   connect(explorerDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
-//    connect(methodsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
-    // cannot apply this to methodsPanel/Dock because methodsPanel sits in the same Dock as dataViewSettingsWidget
-
-
-    //
     connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(scriptEdit,SIGNAL(runCmdRequested(QStringList)),SessionManager::instance(),SLOT(runCmd(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
@@ -376,59 +351,33 @@ void MainWindow::connectSignalsAndSlots()
             lazyNutConsole,SLOT(showHistory(QString)));
     connect(lazyNutConsole, SIGNAL(coreDumpRequested()),
             this, SLOT(coreDump()));
-//    connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
-//            trialEditor,SLOT(setTrialName(QString)));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
-//    connect(modelScene,SIGNAL(objectSelected(QString)), objExplorer,SIGNAL(objectSelected(QString)));
-//    connect(modelScene,SIGNAL(objectSelected(QString)), this,SLOT(showExplorer()));
-
-//    connect(modelScene,SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
     connect(modelScene,SIGNAL(propertiesRequested(QString)), objNavigator, SLOT(setObject(QString)));
     connect(modelScene,SIGNAL(focusOnPlotRequested(QString)), ui_dataframeResultsViewer, SLOT(setCurrentItem(QString)));
     connect(objExplorer, SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
 
     connect(modelScene,SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>, bool)),
             dataViewSettingsWidget,SLOT(newForm(QString,QString,QString,QMap<QString,QString>, bool)));
-//    connect(plotViewer,SIGNAL(createNewRPlot(QString,QString,QMap<QString,QString>, bool)),
-//            dataViewSettingsWidget,SLOT(newForm(QString,QString,QMap<QString,QString>, bool)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             plotViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
-//     connect(plotSettingsWindow, SIGNAL(newRPlotCreated(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)),
-//             plotViewer, SLOT(addItem(QString, bool, bool, QList<QSharedPointer<QDomDocument> >)));
-//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-//             dataframeViewer, SLOT(addRequestedItem(QString,bool)));
-//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-//             dataframeResultsViewer, SLOT(addRequestedItem(QString,bool)));
-//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-//             stimSetViewer, SLOT(addRequestedItem(QString,bool)));
-//     connect(dataViewSettingsWidget, SIGNAL(dataViewCreated(QString,bool)),
-//             plotViewer, SLOT(addRequestedItem(QString,bool)));
-//     connect(plotViewer, SIGNAL(addDataframeRequested(QString,bool)), dataframeResultsViewer, SLOT(addItem(QString,bool)));
 
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), dataframeResultsViewer, SLOT(setTrialRunMode(int)));
      connect(trialWidget, SIGNAL(trialRunModeChanged(int)), plotViewer, SLOT(setTrialRunMode(int)));
 
     connect(dataframeResultsViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(stimSetViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
-//    connect(dataframeViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(plotViewer, SIGNAL(itemRemoved(QString)), dataViewSettingsWidget, SLOT(removeForm(QString)));
     connect(diagramWindow,SIGNAL(showModelSettingsSignal()), this,SLOT(showModelSettings()));
     connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
     connect(diagramWindow, SIGNAL(loadModelSignal()), this, SLOT(loadModel()));
     connect(diagramWindow, SIGNAL(loadModelFileSignal()), this, SLOT(loadModelFromFileDialog()));
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), diagramWindow, SLOT(setModelName(QString)));
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), this, SLOT(setWindowTitle(QString)));
     connect(trialEditor, SIGNAL(loadTrialSignal()), this, SLOT(loadTrial()));
 
-
-//    connect(dataframeResultsViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
-//            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
-//    connect(stimSetViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
-//            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
-//    connect(dataframeViewer, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)),
-//            dataViewSettingsWidget, SLOT(newForm(QString,QString,QString,QMap<QString,QString>,bool)));
 
     connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
     connect(dataViewSettingsWidget, &SettingsWidget::settingsApplied, [=](QString name)
@@ -474,8 +423,19 @@ void MainWindow::connectSignalsAndSlots()
     });
 
     connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
-//    connect(expertShow,SIGNAL(triggered()),this,SLOT(displayExpertWindow()));
-
+    connect(SessionManager::instance(), SIGNAL(maybeLoadingModel()), modelScene, SLOT(goToSleep()));
+    connect(SessionManager::instance(), &SessionManager::maybeModelLoaded, [=]()
+    {
+        if (SessionManager::instance()->currentModel().isEmpty())
+        {
+            modelScene->wakeUp();
+        }
+        else
+        {
+            trialButton->setEnabled(true);
+            loadAddOnAct->setEnabled(true);
+        }
+    });
 }
 
 void MainWindow::showExplorer()
@@ -786,15 +746,13 @@ void MainWindow::loadModel(QString fileName,bool complete)
     {
         return;
     }
-    QStringList args;
-    if(!complete) args<<"--no-stage";
-    args<<fileName;
-
+    // spawn another GUI if a model already exists
     if (!SessionManager::instance()->currentModel().isEmpty())
     {
-//#ifdef WIN32
+        QStringList args;
+        if(!complete) args<<"--no-stage";
+        args<<fileName;
         QProcess::startDetached(
- //                   SessionManager::instance()->defaultLocation("easyNetBat"),
 #ifdef WIN32
                     QString("%1/easyNet.bat").arg(qApp->applicationDirPath()),
 #else
@@ -802,30 +760,14 @@ void MainWindow::loadModel(QString fileName,bool complete)
 #endif
                     args,
                     qApp->applicationDirPath());
-//        diagramPanel->useFake(modelTabIdx,false);
-//#endif
         return;
     }
-    modelScene->goToSleep();
     diagramPanel->useFake(modelTabIdx,true);
-//    conversionScene->goToSleep();
 
     // load and run script
     qDebug() << "Starting clock ...";
     loadModelTimer.start();
-//    loadFile(fileName);
-
-    // the /path/basename is used by DiagramScene objects to load JSON files
-//    QString base = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
-//    modelScene->setBaseName(base);
-//    conversionScene->setBaseName(base);
-    setWindowTitle(QFileInfo(fileName).completeBaseName());
-
-
-    // set up signal - slots so that loadLayout will be called
-    // once all of the layers/connections have descriptions
-    //        designWindow->prepareToLoadLayout(base);
-    //        conversionWindow->prepareToLoadLayout(base);
+//    setWindowTitle(QFileInfo(fileName).completeBaseName());
 
     // show info page, if there is one
     QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
@@ -833,30 +775,17 @@ void MainWindow::loadModel(QString fileName,bool complete)
 //    if (QFileInfo(page).exists())
 //        infoWindow->showInfo(page);
 
-    // note: this synch is wrong, yet it works fine if one loads just one model while
-    // no other jobs run. In general commandsCompleted() might be sent from a previous job.
-    if(complete)
-      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()), Qt::UniqueConnection);
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("%1 include %2").arg(quietMode)
+                    .arg(QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName));
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << job
+                                << SessionManager::instance()->updateObjectCacheJobs();
+    if (complete)
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(afterModelConfig()));
     else
-      connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()), Qt::UniqueConnection);
-
-//    runScript();
-    SessionManager::instance()->runCmd(QString("%1 include %2")
-                                       .arg(quietMode)
-                                       .arg(QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName)));
-
-    //        SessionManager::instance()->setCurrentModel(currentModel);
-    // need to construct a job that'll run when model is loaded, i.e., lazyNut's ready
-    // should then call getList() and choose the appropriate model
-
-    trialButton->setEnabled(true);
-    loadAddOnAct->setEnabled(true);
-
-//    #ifndef WIN32
-//            loadModelAct->setEnabled(false);
-//            modelButton->setEnabled(false);
-//    #endif
-
+        jobs.last()->appendEndOfJobReceiver(this, SLOT(modelConfigNeeded()));
+    SessionManager::instance()->submitJobs(jobs);
 }
 
 
@@ -1180,26 +1109,23 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 
 void MainWindow::afterModelConfig()
 {
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(modelConfigNeeded()));
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelConfig()));
-    modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
-    connect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()), Qt::UniqueConnection);
-    SessionManager::instance()->runCmd(QString("%1%2 stage").arg(quietMode).arg(SessionManager::instance()->currentModel()));
-//    modelScene->setNewModelLoaded(true);
-//    conversionScene->setNewModelLoaded(true);
+//    modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("%1%2 stage").arg(quietMode).arg(SessionManager::instance()->currentModel());
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << job
+                                << SessionManager::instance()->updateObjectCacheJobs();
+    jobs.last()->appendEndOfJobReceiver(this, SLOT(afterModelStaged()));
+    SessionManager::instance()->submitJobs(jobs);
     diagramSceneTabChanged(diagramPanel->currentIndex());
-//    modelScene->wakeUp();
     qDebug() << "Time taken to config model:" << QString::number(loadModelTimer.elapsed()) << "ms";
     commandLog->addText(QString("## Time taken to config model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
-
-
 }
 
 void MainWindow::afterModelStaged()
 {
     qDebug() << "Time taken to load and stage model:" << QString::number(loadModelTimer.elapsed()) << "ms";
     commandLog->addText(QString("## Time taken to load and stage model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
-    disconnect(SessionManager::instance(),SIGNAL(commandsCompleted()),this,SLOT(afterModelStaged()));
     connect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
 }
 

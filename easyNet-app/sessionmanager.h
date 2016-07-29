@@ -104,7 +104,7 @@ public:
                                           QMap<QString,QString> settings=QMap<QString,QString>());
     void setEasyNetUserHome(QString dir);
     QIcon viewIcon(int type, int state);
-
+    void beforeRunCommands();
 
     ObjectCache *descriptionCache;
     ObjectCache *dataframeCache;
@@ -132,7 +132,8 @@ signals:
     void dotsExpect(int);
     void lazyNutMacroStarted();
     void lazyNutMacroFinished();
-
+    void maybeLoadingModel();
+    void maybeModelLoaded();
     void recentlyCreated(QDomDocument*);
     void recentlyModified(QDomDocument*);
     void recentlyDestroyed(QStringList);
@@ -193,6 +194,7 @@ private slots:
     void setDefaultLocations();
     void updateModelStageCompleted(QDomDocument* domDoc);
 
+
 //    void macroStarted();
 //    void macroEnded();
 
@@ -239,6 +241,7 @@ private:
     bool        m_suspendingObservers;
     bool        killingLazyNut;
     bool        m_isModelStageUpdated;
+    bool        m_maybeLoadingModel;
 
     ObjectNameValidator *validator;
     QStringList m_extraNamedItems;

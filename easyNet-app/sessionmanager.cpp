@@ -65,8 +65,8 @@ SessionManager::SessionManager()
       #endif
       lazyNut(nullptr),
       commandSequencer(nullptr),
-      oob(nullptr)
-
+      oob(nullptr),
+      m_maybeLoadingModel(false)
 {
     jobQueue = new LazyNutJobQueue;
 
@@ -175,6 +175,15 @@ SessionManager::SessionManager()
     });
 
     m_enabledObservers = new ObjectCacheFilter(descriptionCache, this);
+    connect(this, &SessionManager::commandsCompleted, [=]()
+    {
+        if (m_maybeLoadingModel)
+        {
+            emit maybeModelLoaded();
+            m_maybeLoadingModel = false;
+        }
+    });
+
 }
 
 
@@ -323,6 +332,15 @@ void SessionManager::setEasyNetUserHome(QString dir)
 QIcon SessionManager::viewIcon(int type, int state)
 {
     return viewIconMap.value(type).value(state, QIcon());
+}
+
+void SessionManager::beforeRunCommands()
+{
+    if (currentModel().isEmpty())
+    {
+        m_maybeLoadingModel = true;
+        emit maybeLoadingModel();
+    }
 }
 
 void SessionManager::setEasyNetDir(QString env, QString dir)
@@ -783,6 +801,7 @@ void SessionManager::updateModelStageCompleted(QDomDocument *domDoc)
     m_isModelStageUpdated = !scriptList.isEmpty() &&
             XMLelement(*domDoc)["staging"]().toInt() > *std::max_element(scriptList.begin(), scriptList.end());
 }
+
 
 void SessionManager::setShowHint(QString name, QString show)
 {

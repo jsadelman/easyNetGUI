@@ -46,9 +46,9 @@ void ObjectUpdater::setFilter(ObjectCacheFilter *filter)
 void ObjectUpdater::wakeUpUpdate()
 {
         connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,const QVector<int> &)),
-                this, SLOT(requestObjects(QModelIndex,QModelIndex)));
+                this, SLOT(requestObjects(QModelIndex,QModelIndex)), Qt::UniqueConnection);
         connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-                this, SLOT(requestObjects(QModelIndex,int,int)));
+                this, SLOT(requestObjects(QModelIndex,int,int)), Qt::UniqueConnection);
 }
 
 void ObjectUpdater::goToSleep()
