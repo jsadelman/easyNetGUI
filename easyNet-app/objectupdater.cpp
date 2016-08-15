@@ -12,9 +12,8 @@
 #include <QDebug>
 
 ObjectUpdater::ObjectUpdater(QObject *parent)
-    : m_command(""), m_dependencies(false), QObject(parent)
+    : m_command(""), m_dependencies(false), QObject(parent), m_awake(false)
 {
-
 }
 
 void ObjectUpdater::setProxyModel(QSortFilterProxyModel *proxy)
@@ -22,52 +21,60 @@ void ObjectUpdater::setProxyModel(QSortFilterProxyModel *proxy)
     objectCache = qobject_cast<ObjectCache*>(proxy->sourceModel());
     if (!objectCache)
     {
-        qDebug() << "ERROR: ObjectUpdater: proxy model not compatible with ObjectCache";
+        eNerror << "proxy model not compatible with ObjectCache";
         return;
     }
     proxyModel = proxy;
+    connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,const QVector<int> &)),
+            this, SLOT(requestObjects(QModelIndex,QModelIndex)), Qt::UniqueConnection);
+    connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(requestObjects(QModelIndex,int,int)), Qt::UniqueConnection);
     wakeUpUpdate();
-
-
 }
 
 void ObjectUpdater::setFilter(ObjectCacheFilter *filter)
 {
+    objectCache = qobject_cast<ObjectCache*>(filter->sourceModel());
+    if (!objectCache)
+    {
+        eNerror << "proxy model not compatible with ObjectCache";
+        return;
+    }
     if (!filter)
     {
         qDebug() << "ERROR: ObjectUpdater::setFilter invalid filter";
         return;
     }
     proxyModel = filter;
+    connect(static_cast<ObjectCacheFilter *>(proxyModel), SIGNAL(objectModified(QString)),
+            this, SLOT(requestObject(QString)));
+    connect(static_cast<ObjectCacheFilter *>(proxyModel), SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+            this, SLOT(requestObject(QString)));
     wakeUpUpdate();
 
 }
 
 void ObjectUpdater::wakeUpUpdate()
 {
-        connect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex,const QVector<int> &)),
-                this, SLOT(requestObjects(QModelIndex,QModelIndex)), Qt::UniqueConnection);
-        connect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-                this, SLOT(requestObjects(QModelIndex,int,int)), Qt::UniqueConnection);
+    m_awake = true;
 }
 
 void ObjectUpdater::goToSleep()
 {
-        disconnect(proxyModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                   this, SLOT(requestObjects(QModelIndex,QModelIndex)));
-        disconnect(proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-                   this, SLOT(requestObjects(QModelIndex,int,int)));
+    m_awake = false;
 }
 
 void ObjectUpdater::requestObjects(QModelIndex top, QModelIndex bottom)
 {
-    requestObjects(top.row(), bottom.row());
+    if (m_awake)
+        requestObjects(top.row(), bottom.row());
 }
 
 void ObjectUpdater::requestObjects(QModelIndex parent, int first, int last)
 {
     Q_UNUSED(parent)
-    requestObjects(first, last);
+    if (m_awake)
+        requestObjects(first, last);
 }
 
 void ObjectUpdater::errorHandler(QString cmd, QString error)
@@ -82,9 +89,12 @@ void ObjectUpdater::errorHandler(QString cmd, QString error)
 
 void ObjectUpdater::requestObjects(int first, int last)
 {
-    foreach (QString name, getObjectNames(first, last))
+    if (m_awake)
     {
-        requestObject(name);
+        foreach (QString name, getObjectNames(first, last))
+        {
+            requestObject(name);
+        }
     }
 }
 
@@ -111,6 +121,8 @@ QStringList ObjectUpdater::getObjectNames(int first, int last)
 
 void ObjectUpdater::requestObject(QString name, QString command)
 {
+    if (!m_awake)
+        return;
     if (name.isEmpty())
     {
         qDebug() << "ERROR: ObjectUpdater::requestObject for empty name";

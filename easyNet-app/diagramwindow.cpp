@@ -20,16 +20,16 @@ DiagramWindow::DiagramWindow(DiagramSceneStackedWidget *diagramSceneStackedWidge
 
     setCentralWidget(diagramSceneStackedWidget);
     createMenus();
-    connect(diagramSceneStackedWidget, SIGNAL(initArrangement()), this, SLOT(initArrangement()));
+    connect(diagramSceneStackedWidget, SIGNAL(initArrangement(DiagramScene*)), this, SLOT(initArrangement(DiagramScene*)));
     connect(diagramSceneStackedWidget, SIGNAL(zoomChanged()), this, SLOT(restoreZoom()));
 }
 
 void DiagramWindow::rearrange(bool ignoreEdges)
 {
 
-    if (fitVisibleAct->isChecked())
-        connect(diagramSceneStackedWidget->currentDiagramScene(), SIGNAL(animationFinished()),
-                this, SLOT(toFitVisible()));
+//    if (fitVisibleAct->isChecked())
+//        connect(diagramSceneStackedWidget->currentDiagramScene(), SIGNAL(animationFinished()),
+//                this, SLOT(toFitVisible()));
 #if 0
     diagramSceneStackedWidget->currentCanvas()->layout()->runDirect(true, ignoreEdges);
     diagramSceneStackedWidget->currentDiagramScene()->processLayoutUpdateEvent();
@@ -46,20 +46,16 @@ void DiagramWindow::arrange(bool ignoreEdges)
 
 }
 
-void DiagramWindow::initArrangement()
+void DiagramWindow::initArrangement(DiagramScene *scene)
 {
-
     fitVisibleAct->setChecked(true);
-    connect(diagramSceneStackedWidget->diagramSceneAt(0), SIGNAL(animationFinished()),
-            this, SLOT(toFitVisible()));
-
-    if (QFileInfo(diagramSceneStackedWidget->diagramSceneAt(0)->layoutFile()).exists())
+     if (QFileInfo(scene->layoutFile()).exists())
     {
         loadLayout();
     }
     else
     {
-        diagramSceneStackedWidget->diagramSceneAt(0)->initShapePlacement();
+        scene->initShapePlacement();
     }
 }
 
@@ -135,11 +131,16 @@ void DiagramWindow::alignSelection(DiagramScene::Alignment alignType)
 }
 
 
-void DiagramWindow::toFitVisible()
+void DiagramWindow::toFitVisible(DiagramScene *scene)
 {
-    diagramSceneStackedWidget->currentDiagramView()->fitVisible();
-        disconnect(diagramSceneStackedWidget->currentCanvas(), SIGNAL(animationFinished()),
-                   this, SLOT(toFitVisible()));
+
+    if (diagramSceneStackedWidget->currentDiagramView()->canvas() == scene)
+    {
+        qDebug() << Q_FUNC_INFO;
+        diagramSceneStackedWidget->currentDiagramView()->fitVisible();
+    }
+//    disconnect(scene, SIGNAL(animationFinished()),
+//               this, SLOT(toFitVisible(DiagramScene *)));
 }
 
 void DiagramWindow::setZoom()

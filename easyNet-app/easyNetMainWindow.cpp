@@ -263,6 +263,13 @@ void MainWindow::constructForms()
 
     modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
     modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
+    connect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
+    connect(modelScene, &DiagramScene::animationFinished, [=]()
+    {
+        diagramWindow->toFitVisible(modelScene);
+    });
+
+
 //    diagramPanel->hide();
     diagramPanel->show();
 
@@ -376,9 +383,13 @@ void MainWindow::connectSignalsAndSlots()
     connect(diagramWindow, SIGNAL(loadModelFileSignal()), this, SLOT(loadModelFromFileDialog()));
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), diagramWindow, SLOT(setModelName(QString)));
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), this, SLOT(setWindowTitle(QString)));
+    connect(SessionManager::instance(), &SessionManager::currentModelChanged, [=](QString name)
+    {
+        if (!name.isEmpty())
+            diagramPanel->useFake(modelTabIdx, true);
+    });
+
     connect(trialEditor, SIGNAL(loadTrialSignal()), this, SLOT(loadTrial()));
-
-
     connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
     connect(dataViewSettingsWidget, &SettingsWidget::settingsApplied, [=](QString name)
     {
@@ -423,19 +434,6 @@ void MainWindow::connectSignalsAndSlots()
     });
 
     connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
-    connect(SessionManager::instance(), SIGNAL(maybeLoadingModel()), modelScene, SLOT(goToSleep()));
-    connect(SessionManager::instance(), &SessionManager::maybeModelLoaded, [=]()
-    {
-        if (SessionManager::instance()->currentModel().isEmpty())
-        {
-            modelScene->wakeUp();
-        }
-        else
-        {
-            trialButton->setEnabled(true);
-            loadAddOnAct->setEnabled(true);
-        }
-    });
 }
 
 void MainWindow::showExplorer()
@@ -600,21 +598,21 @@ void MainWindow::initialiseToolBar()
     connect(expertButton, SIGNAL(clicked()),
             this, SLOT(displayExpertWindow()));
 
-      modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-      modelComboBox->setModel(modelListFilter);
-      modelComboBox->setModelColumn(0);
-//      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
-      modelListFilter->setType("grouping");
-      connect(modelListFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
-              modelComboBox, SLOT(setCurrentText(QString)));
+    modelListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    modelComboBox->setModel(modelListFilter);
+    modelComboBox->setModelColumn(0);
+    //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    modelListFilter->setType("grouping");
+    connect(modelListFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            modelComboBox, SLOT(setCurrentText(QString)));
 
-      trialListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-      trialComboBox->setModel(trialListFilter);
-      trialComboBox->setModelColumn(0);
-//      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
-      trialListFilter->setType("steps");
-      connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
-              trialComboBox, SLOT(setCurrentText(QString)));
+    trialListFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
+    trialComboBox->setModel(trialListFilter);
+    trialComboBox->setModelColumn(0);
+    //      modelComboBox->view()->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    trialListFilter->setType("steps");
+    connect(trialListFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+            trialComboBox, SLOT(setCurrentText(QString)));
 
 
 
@@ -762,8 +760,6 @@ void MainWindow::loadModel(QString fileName,bool complete)
                     qApp->applicationDirPath());
         return;
     }
-    diagramPanel->useFake(modelTabIdx,true);
-
     // load and run script
     qDebug() << "Starting clock ...";
     loadModelTimer.start();
@@ -1109,7 +1105,6 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 
 void MainWindow::afterModelConfig()
 {
-//    modelSettingsDisplay->buildForm(SessionManager::instance()->currentModel());
     LazyNutJob *job = new LazyNutJob;
     job->cmdList << QString("%1%2 stage").arg(quietMode).arg(SessionManager::instance()->currentModel());
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
@@ -1126,7 +1121,6 @@ void MainWindow::afterModelStaged()
 {
     qDebug() << "Time taken to load and stage model:" << QString::number(loadModelTimer.elapsed()) << "ms";
     commandLog->addText(QString("## Time taken to load and stage model:") + QString::number(loadModelTimer.elapsed()) + QString("ms"));
-    connect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
 }
 
 void MainWindow::initialLayout()
@@ -1134,7 +1128,6 @@ void MainWindow::initialLayout()
     qDebug()<<"initialLayout";
     diagramPanel->show();
     diagramPanel->useFake(modelTabIdx,false);
-    disconnect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
 
 }
 

@@ -158,8 +158,9 @@ private slots:
 //    void disableObserverClicked();
 //    void lesionClicked();
     virtual void drawBackground(QPainter *painter, const QRectF &rect);
-private:
     void render();
+
+private:
 //    bool isItemChange(int type);
 
     bool awake;

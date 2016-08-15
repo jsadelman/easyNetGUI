@@ -31,12 +31,12 @@ void DiagramView::fitVisible(bool computeBoundingRect)
     QRectF sceneRect = computeBoundingRect ? canvas()->itemsBoundingRect() :
                                              canvas()->sceneRect();
 //    scene()->addItem(canvas()->getZeb());
-    qreal viewBorder = 50;
+    qreal viewBorder = 100;
     qreal sceneHeight = sceneRect.height() + viewBorder;
     qreal sceneWidth = sceneRect.width() + viewBorder;
     QRectF viewRect = geometry();
-    qreal viewHeight = viewRect.height() - horizontalScrollBar()->height();
-    qreal viewWidth = viewRect.width() - verticalScrollBar()->width();
+    qreal viewHeight = viewRect.height() - (horizontalScrollBar()->isVisible() ?  horizontalScrollBar()->height() : 0);
+    qreal viewWidth = viewRect.width() - (verticalScrollBar()->isVisible() ? verticalScrollBar()->width() : 0);
     qreal newScale = qMin(viewHeight/sceneHeight, viewWidth/sceneWidth);
 //    newScale = qMin(1.0, newScale);
     scale(newScale, newScale);

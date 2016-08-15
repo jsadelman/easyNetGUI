@@ -47,7 +47,7 @@ SessionManager::SessionManager()
       OOBrex("OOB secret: (\\w+)\\r?\\n"),
       m_suspendingObservers(false),
       killingLazyNut(false),
-      m_isModelStageUpdated(false),
+      m_isModelStageCompleted(false),
       m_easyNetHome(""),
       m_easyNetDataHome(""),
       #if defined(__linux__)
@@ -65,8 +65,7 @@ SessionManager::SessionManager()
       #endif
       lazyNut(nullptr),
       commandSequencer(nullptr),
-      oob(nullptr),
-      m_maybeLoadingModel(false)
+      oob(nullptr)
 {
     jobQueue = new LazyNutJobQueue;
 
@@ -175,14 +174,6 @@ SessionManager::SessionManager()
     });
 
     m_enabledObservers = new ObjectCacheFilter(descriptionCache, this);
-    connect(this, &SessionManager::commandsCompleted, [=]()
-    {
-        if (m_maybeLoadingModel)
-        {
-            emit maybeModelLoaded();
-            m_maybeLoadingModel = false;
-        }
-    });
 
 }
 
@@ -332,15 +323,6 @@ void SessionManager::setEasyNetUserHome(QString dir)
 QIcon SessionManager::viewIcon(int type, int state)
 {
     return viewIconMap.value(type).value(state, QIcon());
-}
-
-void SessionManager::beforeRunCommands()
-{
-    if (currentModel().isEmpty())
-    {
-        m_maybeLoadingModel = true;
-        emit maybeLoadingModel();
-    }
 }
 
 void SessionManager::setEasyNetDir(QString env, QString dir)
@@ -797,9 +779,16 @@ void SessionManager::updateModelStageCompleted(QDomDocument *domDoc)
     QList<int> scriptList;
     foreach(QString s, XMLelement(*domDoc)["scripts"].listLabels())
         scriptList << s.toInt();
-
-    m_isModelStageUpdated = !scriptList.isEmpty() &&
+    bool completed = !scriptList.isEmpty() &&
             XMLelement(*domDoc)["staging"]().toInt() > *std::max_element(scriptList.begin(), scriptList.end());
+
+    if (!m_isModelStageCompleted && completed)
+    {
+        m_isModelStageCompleted = completed;
+        emit modelStageCompleted();
+    }
+    else
+        m_isModelStageCompleted = completed;
 }
 
 
@@ -877,7 +866,7 @@ void SessionManager::reset()
     itemCount.clear();
     prettyBaseNames.clear();
     m_requestedNames.clear();
-    m_isModelStageUpdated = false;
+    m_isModelStageCompleted = false;
     emit resetExecuted();
 }
 

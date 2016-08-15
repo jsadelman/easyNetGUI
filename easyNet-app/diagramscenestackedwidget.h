@@ -28,7 +28,7 @@ public:
     void poke();
 signals:
     void currentDiagramSceneChanged(DiagramScene *scene);
-    void initArrangement();
+    void initArrangement(DiagramScene*);
     void zoomChanged();
 
 private slots:

@@ -160,10 +160,9 @@ bool ObjectCache::create(QString name, QString type, QString subtype)
 {
     if (rowFromName(name) >= 0) // name exists already
     {
-//        qDebug()  << "name exists already:" << name;
+        eNwarning << "name already exists:" << name;
         return false;
     }
-
     beginInsertRows(QModelIndex(), 0, 0);
     LazyNutObjectCacheElem *elem = new LazyNutObjectCacheElem(name, type, subtype);
     cache.insert(0, elem);

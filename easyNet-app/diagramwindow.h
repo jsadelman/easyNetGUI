@@ -6,6 +6,7 @@
 #include "diagramscene.h"
 class DiagramSceneTabWidget;
 class DiagramSceneStackedWidget;
+class DiagramScene;
 class QComboBox;
 class QSpinBox;
 class QDoubleSpinBox;
@@ -28,7 +29,9 @@ public:
 public slots:
     void rearrange(bool ignoreEdges = false);
     void arrange(bool ignoreEdges = false);
-    void initArrangement();
+    void initArrangement(DiagramScene *scene);
+    void toFitVisible(DiagramScene *scene);
+
 
 signals:
     void loadModelSignal();
@@ -45,7 +48,6 @@ private slots:
     void restore();
     void deleteSelection();
     void alignSelection(DiagramScene::Alignment alignType);
-    void toFitVisible();
     void setZoom();
     void loadLayout();
     void saveLayout();

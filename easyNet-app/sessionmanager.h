@@ -97,14 +97,13 @@ public:
     void removeFromExtraNamedItems(QString name);
     QStringList extraNamedItems();
     bool isCopyRequested(QString original);
-    bool isModelStageCompleted() {return m_isModelStageUpdated;}
+    bool isModelStageCompleted() {return m_isModelStageCompleted;}
     QDomDocument *description(QString name);
     QString visibility(QString name);
     LazyNutJob *createDataViewJob(QString name, QString prettyName, QString subtype, QString Type,
                                           QMap<QString,QString> settings=QMap<QString,QString>());
     void setEasyNetUserHome(QString dir);
     QIcon viewIcon(int type, int state);
-    void beforeRunCommands();
 
     ObjectCache *descriptionCache;
     ObjectCache *dataframeCache;
@@ -132,8 +131,7 @@ signals:
     void dotsExpect(int);
     void lazyNutMacroStarted();
     void lazyNutMacroFinished();
-    void maybeLoadingModel();
-    void maybeModelLoaded();
+    void modelStageCompleted();
     void recentlyCreated(QDomDocument*);
     void recentlyModified(QDomDocument*);
     void recentlyDestroyed(QStringList);
@@ -240,8 +238,7 @@ private:
     ObjectCacheFilter *m_enabledObservers;
     bool        m_suspendingObservers;
     bool        killingLazyNut;
-    bool        m_isModelStageUpdated;
-    bool        m_maybeLoadingModel;
+    bool        m_isModelStageCompleted;
 
     ObjectNameValidator *validator;
     QStringList m_extraNamedItems;

@@ -42,6 +42,7 @@ private:
     ObjectCache *objectCache;
     QString m_command;
     bool m_dependencies;
+    bool m_awake;
 };
 
 #endif // DESCRIPTIONUPDATER_H

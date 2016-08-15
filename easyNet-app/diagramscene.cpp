@@ -71,7 +71,7 @@ Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
 DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent)
-    : QGraphicsScene(parent), m_boxType(box_type), m_arrowType(arrow_type), awake(false), m_layoutFile(""),
+    : QGraphicsScene(parent), m_boxType(box_type), m_arrowType(arrow_type), awake(true), m_layoutFile(""),
       m_newModelLoaded(false)
 {
     selectedObject = "";
@@ -118,22 +118,23 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent
     modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
             modelFilter, SLOT(setName(QString)));
-    connect(modelFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
-            this, SLOT(goToSleep()));
+//    connect(modelFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
+//            this, SLOT(goToSleep()));
     modelDescriptionUpdater = new ObjectUpdater(this);
     modelDescriptionUpdater->setProxyModel(modelFilter);
     connect(modelDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(setLayoutFile(QDomDocument*)));
-    connect(modelDescriptionUpdater, &ObjectUpdater::objectUpdated, [=]()
+    connect(modelFilter, &ObjectCacheFilter::objectDestroyed, [=]()
     {
-        if (!awake && SessionManager::instance()->isModelStageCompleted())
-        {
-            setNewModelLoaded(true);
-            wakeUp();
-        }
+        m_layoutFile = "";
+//        setNewModelLoaded(false);
     });
 
-
+    connect(SessionManager::instance(), &SessionManager::modelStageCompleted, [=]()
+    {
+        setNewModelLoaded(true);
+        render();
+    });
 
     boxFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
     boxFilter->setType(m_boxType);
@@ -155,7 +156,15 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent
     //connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 
     // default state is wake up
-    wakeUp();
+    connect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+            this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
+    connect(boxFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+    connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+            this, SLOT(removeObject(QString)));
+
+
+//    wakeUp();
     QPixmap zebpix(150,200);
 
     zebpix.load(":/images/zebra.png");
@@ -398,31 +407,34 @@ qDebug()<<"analyzing";
 
 void DiagramScene::wakeUp()
 {
-    if (!awake)
-    {
-        connect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
-                this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
-        connect(boxFilter, SIGNAL(objectDestroyed(QString)),
-                this, SLOT(removeObject(QString)));
-        connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
-                this, SLOT(removeObject(QString)));
+//    if (!awake)
+//    {
+        qDebug() << Q_FUNC_INFO << "OBSOLETE";
+         awake = true;
+//        connect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+//                this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
+//        connect(boxFilter, SIGNAL(objectDestroyed(QString)),
+//                this, SLOT(removeObject(QString)));
+//        connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+//                this, SLOT(removeObject(QString)));
         boxDescriptionUpdater->wakeUpUpdate();
         arrowDescriptionUpdater->wakeUpUpdate();
         syncToObjCatalogue();
-        awake = true;
-    }
+
+//    }
 }
 
 void DiagramScene::goToSleep()
 {
     if (awake)
     {
-        disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
-                   this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
-        disconnect(boxFilter, SIGNAL(objectDestroyed(QString)),
-                   this, SLOT(removeObject(QString)));
-        disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
-                   this, SLOT(removeObject(QString)));
+        qDebug() << Q_FUNC_INFO  << "OBSOLETE";
+//        disconnect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
+//                   this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
+//        disconnect(boxFilter, SIGNAL(objectDestroyed(QString)),
+//                   this, SLOT(removeObject(QString)));
+//        disconnect(arrowFilter, SIGNAL(objectDestroyed(QString)),
+//                   this, SLOT(removeObject(QString)));
         boxDescriptionUpdater->goToSleep();
         arrowDescriptionUpdater->goToSleep();
         awake = false;
@@ -467,7 +479,9 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
     // layers are placed on the scene before arrows
     Q_UNUSED(domDoc)
     Q_UNUSED(subtype)
-      if (type == m_boxType)
+    if (!awake)
+        return;
+    if (type == m_boxType)
     {
         Box *box = new Box();
         connect(box, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString, QString>,bool)),
@@ -508,6 +522,8 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
 
 void DiagramScene::removeObject(QString name)
 {
+    if (!awake)
+        return;
    QGraphicsItem* item = itemHash.value(name);
     if (!item)
         return;
@@ -528,7 +544,7 @@ void DiagramScene::renderObject(QDomDocument *domDoc)
     // wait until all descriptions of recently_* objects have arrived
     renderList.append(domDoc);
     // HACK to allow visualisation of conversions and representations even when missing 'ghost' objects are present
-    if ((boxFilter->isAllValid() && arrowFilter->isAllValid()) || boxType() == "representation")
+//    if ((boxFilter->isAllValid() && arrowFilter->isAllValid()) || boxType() == "representation")
         render();
 }
 
@@ -544,20 +560,16 @@ void DiagramScene::setLayoutFile(QDomDocument *domDoc)
                     .arg(SessionManager::instance()->currentModel());
         if (QFileInfo(m_layoutFile).isRelative())
             m_layoutFile.prepend(SessionManager::instance()->easyNetDataHome()+"/");
-//        qDebug() << Q_FUNC_INFO << m_layoutFile;
+        render();
     }
 }
 
 
 void DiagramScene::render()
 {
-    // layers don't need any rendering and they are already in itemHash
-    // connections need rendering since they need their source and dest layers, if present,
-    // and are not in itemHash
-//    QFile file(boxType+QString("connections.txt"));
-//    file.open(QIODevice::Append | QIODevice::Text);
-//    QTextStream out( &file );
-
+    if (!(boxFilter->isAllValid() && arrowFilter->isAllValid() &&
+          ((!layoutFile().isEmpty() && SessionManager::instance()->isModelStageCompleted()) != SessionManager::instance()->currentModel().isEmpty()) ))
+        return;
     foreach(QDomDocument* domDoc, renderList)
     {
         if (!domDoc)
@@ -648,7 +660,6 @@ void DiagramScene::render()
         setNewModelLoaded(false);
         emit initArrangement();
     }
-
 }
 
 
@@ -669,6 +680,7 @@ bool DiagramScene::isItemChange(int type)
 
 void DiagramScene::syncToObjCatalogue()
 {
+    qDebug() << Q_FUNC_INFO << "OBSOLETE";
     QString name;
     QString subtype;
     // display new layers, hold new connections in a list
