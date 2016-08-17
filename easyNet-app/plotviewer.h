@@ -47,7 +47,10 @@ public slots:
 protected slots:
     virtual void destroyItem_impl(QString name) Q_DECL_OVERRIDE;
     void resizeTimeout();
+    void resize();
     void setupFullScreen();
+    void zoomIn(QRect selectionRect);
+    void zoomOut();
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     void sendPlotCmd();
     void displaySVG(QByteArray byteArray, QString cmd);
@@ -89,7 +92,9 @@ protected:
 
 
     QAction *       fullScreenAct;
+    QAction *       zoomOutAct;
     bool            fullScreen;
+    bool            m_zoomIn;
     QSize           fullScreenSize;
     double          fullScreenAspectRatio;
 

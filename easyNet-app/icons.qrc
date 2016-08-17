@@ -234,5 +234,6 @@
         <file>images/home.png</file>
         <file>images/glasses-256.png</file>
         <file>images/ltrs_4slot.png</file>
+        <file>images/zoom-out.png</file>
     </qresource>
 </RCC>

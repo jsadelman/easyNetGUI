@@ -109,7 +109,7 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
     else
         lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
 
-    if (rect.contains(viewport()->rect()))
+    if (rect.contains(viewport()->selectionRect()))
         updateLineNumberAreaWidth(0);
 }
 

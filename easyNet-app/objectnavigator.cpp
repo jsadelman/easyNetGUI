@@ -67,8 +67,8 @@ void ObjectNavigator::setObject(QString name)
         if (parentWidget() && firstShow)
         {
             move(parentWidget()->window()->frameGeometry().topLeft() +
-                 parentWidget()->window()->rect().center() -
-                 rect().center());
+                 parentWidget()->window()->selectionRect().center() -
+                 selectionRect().center());
             firstShow = false;
         }
         raise();

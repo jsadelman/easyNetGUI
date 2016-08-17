@@ -124,7 +124,8 @@ SOURCES +=  \
     parametersmodel.cpp \
     parametersviewer.cpp \
     hidefromlistmodel.cpp \
-    errormsgdialog.cpp
+    errormsgdialog.cpp \
+    fixedratiorubberbandgraphicsview.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -232,7 +233,8 @@ HEADERS  += \
     parametersviewer.h \
     hidefromlistmodel.h \
     errormsgdialog.h \
-    defaultdirs.h
+    defaultdirs.h \
+    fixedratiorubberbandgraphicsview.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

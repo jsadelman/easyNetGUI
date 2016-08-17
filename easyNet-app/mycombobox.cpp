@@ -20,7 +20,7 @@ void myComboBox::dragEnterEvent(QDragEnterEvent *event)
 {
     event->setDropAction(Qt::MoveAction);
     QRect widgetRect = this->geometry();
-    if (this->rect().contains(this->mapFromGlobal(QCursor::pos())))
+    if (this->selectionRect().contains(this->mapFromGlobal(QCursor::pos())))
     {
         if (!(this->currentText().isEmpty()))
             savedComboBoxText=this->currentText(); // save the text before clearing box in case user changes mind
