@@ -264,16 +264,23 @@ void PlotViewer::zoomIn(QRect selectionRect)
 
 void PlotViewer::zoomOut()
 {
-    FixedRatioRubberBandGraphicsView* view = qobject_cast<FixedRatioRubberBandGraphicsView*>(ui->currentView());
-    if (view || view->scene() || view->scene()->items().length() > 0)
+    QString name = ui->currentItemName();
+    m_zoomIn = false;
+    if (plotIsUpToDate.value(name) && plotLastRatio.value(name, plotAspectRatio) == plotAspectRatio)
     {
-        QGraphicsItem *item = view->scene()->items().first();
-        if (!item)
-            return;
-        view->fitInView(item, Qt::KeepAspectRatio);
-        resize();
-        m_zoomIn = false;
-//        zoomOutAct->setEnabled(false);
+        FixedRatioRubberBandGraphicsView* view = qobject_cast<FixedRatioRubberBandGraphicsView*>(ui->currentView());
+        if (view || view->scene() || view->scene()->items().length() > 0)
+        {
+            QGraphicsItem *item = view->scene()->items().first();
+            if (!item)
+                return;
+            view->fitInView(item, Qt::KeepAspectRatio);
+        }
+    }
+    else
+    {
+        plotIsUpToDate[name] = false;
+        updateActivePlots();
     }
 }
 
