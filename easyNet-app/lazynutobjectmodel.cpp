@@ -101,6 +101,22 @@ QVariant LazyNutObjectModel::data(const QModelIndex &index, int role) const
         default:
             return false;
         }
+    case HyperlinkRole:
+        switch (index.column())
+        {
+        case 0:
+            break;
+        case 1:
+        {
+            if (XMLelem.isObject() || (XMLelem.isCommand() && XMLelem.attribute("expand_to_fill") == "true"))
+                return true;
+
+            break;
+        }
+        default:
+            break;
+        }
+        return false;
     default:
         return QVariant();
     }

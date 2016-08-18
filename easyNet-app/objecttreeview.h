@@ -18,10 +18,17 @@ public:
     ObjectTreeView(QWidget *parent);
     virtual void setModel(QAbstractItemModel *_objectModel) Q_DECL_OVERRIDE;
     virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    virtual bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
 
 public slots:
      void doFillList(QDomDocument*dom);
-     void triggerFillList(QAbstractItemModel*,const QModelIndex& ind, QString name) ;
+     void triggerFillList(QAbstractItemModel*,const QModelIndex& ind, QString name);
+
+protected:
+     virtual void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
+
+private slots:
+     void changeCursor(QModelIndex index);
 
 private:
     LazyNutObjectModel *objectModel;

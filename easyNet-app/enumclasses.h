@@ -11,7 +11,7 @@ class AsLazyNutObject;
 typedef QHash<QString,AsLazyNutObject*> LazyNutObjectCatalogue;
 
 // model/view data roles
-enum : unsigned int {ExpandToFillRole = Qt::UserRole};
+enum : unsigned int {ExpandToFillRole = Qt::UserRole, HyperlinkRole};
 enum : unsigned int {NameRole = Qt::UserRole, PrettyNameRole};
 enum : unsigned int {ViewType_Table = 0, ViewType_Plot};
 enum : unsigned int {ViewState_Static = 0, ViewState_Stale, ViewState_Fresh};

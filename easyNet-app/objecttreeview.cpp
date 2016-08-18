@@ -18,6 +18,10 @@ ObjectTreeView::ObjectTreeView(QWidget *parent)
     setItemDelegateForColumn(1, expandToFillButton);
     connect(expandToFillButton, SIGNAL(expandToFill(QAbstractItemModel*,const QModelIndex&,QString)),
             this, SLOT(triggerFillList(QAbstractItemModel*,const QModelIndex&,QString)));
+    setMouseTracking(true);
+    connect(this, SIGNAL(entered(QModelIndex)), this, SLOT(changeCursor(QModelIndex)));
+    header()->setMouseTracking(true);
+    header()->installEventFilter(this);
 
 }
 
@@ -45,6 +49,13 @@ QSize ObjectTreeView::minimumSizeHint() const
     return QSize(qApp->desktop()->screenGeometry().width()/2, qApp->desktop()->screenGeometry().height()/2 );
 }
 
+bool ObjectTreeView::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == header() && event->type() == QEvent::Enter)
+        qApp->restoreOverrideCursor();
+    return false;
+}
+
 void ObjectTreeView::doFillList(QDomDocument *dom)
 {
     if (objectModel)
@@ -58,4 +69,18 @@ void ObjectTreeView::triggerFillList(QAbstractItemModel *, const QModelIndex &in
     job->cmdList = QStringList({QString("xml %1 description").arg(name)});
     job->setAnswerReceiver(this, SLOT(doFillList(QDomDocument*)), AnswerFormatterType::XML);
     SessionManager::instance()->submitJobs(job);
+}
+
+void ObjectTreeView::leaveEvent(QEvent *event)
+{
+    Q_UNUSED(event)
+    qApp->restoreOverrideCursor();
+}
+
+void ObjectTreeView::changeCursor(QModelIndex index)
+{
+    if (objectModel->data(index, HyperlinkRole).toBool())
+        qApp->setOverrideCursor(Qt::PointingHandCursor);
+    else
+        qApp->restoreOverrideCursor();
 }
