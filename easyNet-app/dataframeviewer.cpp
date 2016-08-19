@@ -224,8 +224,6 @@ void DataframeViewer::updateDataframe(QDomDocument *domDoc, QString name)
             dragDropHeader->setTableName(name);
             connect(dragDropHeader, SIGNAL(columnDropped(QString)),
                     MainWindow::instance()->trialWidget, SLOT(showSetLabel(QString)));
-            connect(dragDropHeader, SIGNAL(restoreComboBoxText()),
-                    MainWindow::instance()->trialWidget, SLOT(restoreComboBoxText()));
         }
         view->setEditTriggers(QAbstractItemView::NoEditTriggers);
     }

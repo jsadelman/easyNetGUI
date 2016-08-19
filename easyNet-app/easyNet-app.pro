@@ -69,7 +69,6 @@ SOURCES +=  \
     textedit.cpp \
     helpwindow.cpp \
     trialwidget.cpp \
-    mycombobox.cpp \
     commandlog.cpp \
     scripteditor.cpp \
     console.cpp \
@@ -125,7 +124,8 @@ SOURCES +=  \
     parametersviewer.cpp \
     hidefromlistmodel.cpp \
     errormsgdialog.cpp \
-    fixedratiorubberbandgraphicsview.cpp
+    fixedratiorubberbandgraphicsview.cpp \
+    droplineedit.cpp
 
 HEADERS  += \
     treeitem.h \
@@ -176,7 +176,6 @@ HEADERS  += \
     textedit.h \
     helpwindow.h \
     trialwidget.h \
-    mycombobox.h \
     commandlog.h \
     scripteditor.h \
     console.h \
@@ -234,7 +233,8 @@ HEADERS  += \
     hidefromlistmodel.h \
     errormsgdialog.h \
     defaultdirs.h \
-    fixedratiorubberbandgraphicsview.h
+    fixedratiorubberbandgraphicsview.h \
+    droplineedit.h
 
 RESOURCES   =	diagramscene.qrc \
     icons.qrc \

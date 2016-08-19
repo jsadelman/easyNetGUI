@@ -121,8 +121,6 @@ void DataFrameHeader::performDrag()
     {
         emit columnDropped(tableName);
     }
-    else // may need a condition here to check if there has been a drop already?
-        emit restoreComboBoxText();
 }
 
 void DataFrameHeader::setTableName(QString name)

@@ -16,7 +16,6 @@ class ObjectUpdater;
 class QDomDocument;
 class QAction;
 class QToolButton;
-class myComboBox;
 class LazyNutJob;
 class QMessageBox;
 class QCheckBox;
@@ -51,8 +50,6 @@ private slots:
     void hideSetComboBox();
     void showSetComboBox();
     void showSetLabel(QString set);
-    void restoreComboBoxText();
-    void argWasChanged(QString arg);
     void clearArgumentBoxes();
     void clearDollarArgumentBoxes();
     void insertArgumentsInBoxes();
@@ -83,7 +80,7 @@ private:
     QString currentParamExplore;
 
     QMap <QString, QLabel*> labelMap;
-    QMap <QString, myComboBox*> comboMap;
+    QMap <QString, QComboBox*> comboMap;
     QStringList argList;
 
     QComboBox*      setComboBox;
@@ -100,17 +97,14 @@ private:
     QAction*        runAction;
     QToolButton*    runButton;
     QAction*        hideSetComboBoxAction;
-    QString         argChanged;
     QMessageBox *disableObserversMsg;
     QCheckBox *dontAskAgainDisableObserverCheckBox;
     bool        askDisableObserver;
     bool        suspendingObservers;
 
-
     QMap<QString,QString>     defs;
     int trialRunMode;
     bool isStochastic;
-
 
 };
 

@@ -2,7 +2,6 @@
 #include "objectcachefilter.h"
 #include "objectupdater.h"
 #include "xmlelement.h"
-#include "mycombobox.h"
 #include "sessionmanager.h"
 #include "easyNetMainWindow.h"
 #include "lazynutjob.h"
@@ -11,6 +10,7 @@
 #include "dataframeviewer.h"
 #include "enumclasses.h"
 #include "dataframemodel.h"
+#include "droplineedit.h"
 
 #include <QComboBox>
 #include <QLabel>
@@ -156,13 +156,13 @@ void TrialWidget::execBuildComboBoxes(QStringList args)
         }
         if (!comboMap.contains(arg))
         {
-            comboMap[arg] = new myComboBox(this);
-            comboMap[arg]->setArg(arg);
+            comboMap[arg] = new QComboBox(this);
+
             comboMap[arg]->setEditable(true);
+            comboMap[arg]->setLineEdit(new DropLineEdit(comboMap[arg]));
             comboMap[arg]->setSizeAdjustPolicy(QComboBox::AdjustToContents);
             comboMap[arg]->setMinimumSize(100, comboMap[arg]->minimumHeight());
             connect(comboMap[arg], SIGNAL(editTextChanged(QString)),this,SLOT(setRunButtonIcon()));
-            connect(comboMap[arg], SIGNAL(argWasChanged(QString)),this,SLOT(argWasChanged(QString)));
         }
         else
         {
@@ -204,10 +204,6 @@ void TrialWidget::execBuildComboBoxes(QStringList args)
     }
 }
 
-void TrialWidget::argWasChanged(QString arg)
-{
-    argChanged = arg;
-}
 
 void TrialWidget::clearLayout(QLayout *layout)
 {
@@ -370,13 +366,13 @@ QSharedPointer<QDomDocument> TrialWidget::createTrialRunInfo()
     rootElem.appendChild(dataframeElem);
     QDomElement valuesElem = trialRunInfo->createElement("map");
     valuesElem.setAttribute("label", "Values");
-    QMapIterator<QString, myComboBox*> argumentMap_it(comboMap);
+    QMapIterator<QString, QComboBox*> argumentMap_it(comboMap);
     while(argumentMap_it.hasNext())
     {
         argumentMap_it.next();
         QDomElement valueElem = trialRunInfo->createElement("string");
         valueElem.setAttribute("label", argumentMap_it.key());
-        valueElem.setAttribute("value", static_cast<myComboBox*>(comboMap[argumentMap_it.key()])->currentText());
+        valueElem.setAttribute("value", comboMap[argumentMap_it.key()]->currentText());
         valuesElem.appendChild(valueElem);
     }
     rootElem.appendChild(valuesElem);
@@ -426,24 +422,24 @@ bool TrialWidget::checkIfReadyToRun()
 
 void TrialWidget::clearArgumentBoxes()
 {
-    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
+    QMap<QString, QComboBox*>::const_iterator i = comboMap.constBegin();
 
     while (i != comboMap.constEnd())
     {
-        static_cast<myComboBox*>(comboMap[i.key()])->clearEditText();
-        static_cast<myComboBox*>(comboMap[i.key()])->setCurrentText(defs[i.key()]);
+        comboMap[i.key()]->clearEditText();
+        comboMap[i.key()]->setCurrentText(defs[i.key()]);
         i++;
     }
 }
 
 void TrialWidget::clearDollarArgumentBoxes()
 {
-    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
+    QMap<QString, QComboBox*>::const_iterator i = comboMap.constBegin();
     while (i != comboMap.constEnd())
     {
-        if (static_cast<myComboBox*>(comboMap[i.key()])->currentText().startsWith('$'))
+        if (comboMap[i.key()]->currentText().startsWith('$'))
         {
-            static_cast<myComboBox*>(comboMap[i.key()])->clearEditText();
+            comboMap[i.key()]->clearEditText();
         }
         i++;
     }
@@ -451,7 +447,7 @@ void TrialWidget::clearDollarArgumentBoxes()
 
 void TrialWidget::insertArgumentsInBoxes()
 {
-    QMap<QString, myComboBox*>::const_iterator i = comboMap.constBegin();
+    QMap<QString, QComboBox*>::const_iterator i = comboMap.constBegin();
     while (i != comboMap.constEnd())
     {
         QString argument = comboMap[i.key()]->currentText();
@@ -709,16 +705,6 @@ void TrialWidget::showSetLabel(QString set)
     SessionManager::instance()->setCurrentSet(set);
 }
 
-void TrialWidget::restoreComboBoxText()
-{
-    if (argChanged.isEmpty())
-        return;
-    if (comboMap.isEmpty())
-        return;
-    myComboBox* box = static_cast<myComboBox*>(comboMap[argChanged]);
-    box->restoreComboBoxText();
-
-}
 
 QString TrialWidget::getStimulusSet()
 {

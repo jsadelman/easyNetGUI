@@ -74,7 +74,6 @@ public slots:
         void setTableName(QString name);
 signals:
         void columnDropped(QString set);
-        void restoreComboBoxText();
 protected:
         void mouseMoveEvent(QMouseEvent *event);
 private:
