@@ -779,7 +779,7 @@ void SessionManager::updateModelStageCompleted(QDomDocument *domDoc)
     QList<int> scriptList;
     foreach(QString s, XMLelement(*domDoc)["scripts"].listLabels())
         scriptList << s.toInt();
-    bool completed = !scriptList.isEmpty() &&
+    bool completed = scriptList.isEmpty() ||
             XMLelement(*domDoc)["staging"]().toInt() > *std::max_element(scriptList.begin(), scriptList.end());
 
     if (!m_isModelStageCompleted && completed)
