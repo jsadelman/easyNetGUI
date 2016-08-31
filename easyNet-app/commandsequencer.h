@@ -22,7 +22,7 @@ class CommandSequencer: public QObject
 public:
     CommandSequencer(LazyNut* lazyNut, QObject *parent=0);
     bool echoInterpreter(QString cmd);
-
+    unsigned int logMode;
 
 public slots:
     void runCommands(QStringList commands, bool _getAnswer, unsigned int mode);
@@ -59,7 +59,7 @@ private:
 
 
     bool getAnswer;
-    unsigned int logMode;
+
     bool ready;
     bool on;
     LazyNut* lazyNut;

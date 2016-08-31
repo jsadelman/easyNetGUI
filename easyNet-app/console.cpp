@@ -28,7 +28,7 @@ Console::Console(QWidget *parent)
     setStyleSheet("QToolBar {background-color : gray; color : black}");
     textEdit->setReadOnly(true);
     textEdit->setStyleSheet("background-color : black; color : white;");
-    QFont qf("Courier");
+    QFont qf("Consolas");
     textEdit->setFont(qf);
 
     createStatusBar();
@@ -62,7 +62,7 @@ void Console::createStatusBar()
 //            SessionManager::instance(),SLOT(runCmd(QString)));
     connect(inputCmdLine, &InputCmdLine::commandReady, [=](QString cmd)
     {
-        SessionManager::instance()->runCmd(cmd, ECHO_INTERPRETER);
+        SessionManager::instance()->runCmd(cmd, ECHO_INTERPRETER | FROM_CONSOLE);
     });
 
     connect(inputCmdLine,SIGNAL(historyKey(int, QString)),
@@ -99,6 +99,6 @@ void Console::coreDump(QString fileName)
 void Console::setConsoleFontSize(int size)
 {
     int jamesMiniaturisationFactor = 1; // 0.6
-    textEdit->setFont(QFont("Courier",size * jamesMiniaturisationFactor));
-    inputCmdLine->setFont(QFont("Courier",size * jamesMiniaturisationFactor));
+    textEdit->setFont(QFont("Consolas",size * jamesMiniaturisationFactor));
+    inputCmdLine->setFont(QFont("Consolas",size * jamesMiniaturisationFactor));
 }

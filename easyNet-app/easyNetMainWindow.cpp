@@ -421,11 +421,9 @@ void MainWindow::connectSignalsAndSlots()
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString cmd, QString error)
     {
         errorLog->addText(QString("COMMAND: %1\nERROR: %2\n").arg(cmd).arg(error));
+        if (!(SessionManager::instance()->currentLogMode() & FROM_CONSOLE))
+            storeErrorMsg(cmd, error);
     });
-    connect(SessionManager::instance(), SIGNAL(cmdError(QString,QString)),
-            this, SLOT(storeErrorMsg(QString,QString)));
-
-
 
     connect(SessionManager::instance(), &SessionManager::cmdR, [=](QString /*cmd*/, QStringList rList)
     {

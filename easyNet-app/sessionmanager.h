@@ -104,6 +104,7 @@ public:
                                           QMap<QString,QString> settings=QMap<QString,QString>());
     void setEasyNetUserHome(QString dir);
     QIcon viewIcon(int type, int state);
+    unsigned int currentLogMode();
 
     ObjectCache *descriptionCache;
     ObjectCache *dataframeCache;

@@ -325,6 +325,11 @@ QIcon SessionManager::viewIcon(int type, int state)
     return viewIconMap.value(type).value(state, QIcon());
 }
 
+unsigned int SessionManager::currentLogMode()
+{
+    return commandSequencer ? commandSequencer->logMode : 0;
+}
+
 void SessionManager::setEasyNetDir(QString env, QString dir)
 {
     if (env == "easyNetHome")

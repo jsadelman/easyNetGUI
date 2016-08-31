@@ -22,6 +22,7 @@ enum : unsigned int {ViewState_Static = 0, ViewState_Stale, ViewState_Fresh};
 enum : unsigned int
 {
     ECHO_INTERPRETER    = 0x01,
+    FROM_CONSOLE        = 0x02,
 };
 
 enum class AnswerFormatterType
