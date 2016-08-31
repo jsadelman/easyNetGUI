@@ -738,6 +738,8 @@ void SessionManager::startCommandSequencer()
             this, SIGNAL(cmdR(QString,QStringList)));
     connect(commandSequencer, SIGNAL(commandExecuted(QString,QString)),
             this, SIGNAL(commandExecuted(QString,QString)));
+    connect(commandSequencer, SIGNAL(cmdProcessingStarted(QString)),
+            this, SIGNAL(cmdProcessingStarted(QString)));
     connect(commandSequencer, SIGNAL(commandSent(QString)),
             this, SIGNAL(commandSent(QString)));
     connect(commandSequencer, SIGNAL(logCommand(QString)),

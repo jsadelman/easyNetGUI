@@ -147,6 +147,7 @@ void CommandSequencer::processLazyNutLine()
     {
         beginLine=lazyNutLines.size()-1;
         currentCmd=commandList.first();
+        emit cmdProcessingStarted(currentCmd);
     }
     else if(beginLine>=0 && line.startsWith("END:"))
     {

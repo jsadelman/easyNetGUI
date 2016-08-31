@@ -41,6 +41,7 @@ signals:
     void commandExecuted(QString,QString);
     void logCommand(QString);
     void commandSent(QString);
+    void cmdProcessingStarted(QString);
     void answerReady(QString, QString);
     void userLazyNutOutputReady(const QString&);
     // states

@@ -1971,9 +1971,8 @@ void MainWindow::createStatusBar()
     lazyNutCmdLabel->setFixedWidth(qApp->fontMetrics().width("LAST COMMAND: a very very very very long lazyNut command"));
     lazyNutCmdLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     statusBar()->addWidget(lazyNutCmdLabel, 1);
-    connect(SessionManager::instance(), SIGNAL(commandExecuted(QString,QString)),
-            this, SLOT(showCmdOnStatusBar(QString)));
-
+    connect(SessionManager::instance(), SIGNAL(cmdProcessingStarted(QString)),
+            this, SLOT(showCurrentCmdOnStatusBar(QString)));
     connect(SessionManager::instance(), &SessionManager::cmdError, [=](QString /*cmd*/, QString error)
     {
         statusBar()->showMessage(error, 4000);
@@ -2025,9 +2024,9 @@ void MainWindow::clearErrorOnStatusBar()
     lazyNutErrorBox->setCurrentText("");
 }
 
-void MainWindow::showCmdOnStatusBar(QString cmd)
+void MainWindow::showCurrentCmdOnStatusBar(QString cmd)
 {
-    static QString format=QString("LAST COMMAND: %1");
+    static QString format=QString("COMMAND: %1");
     lazyNutCmdLabel->setText(format.arg(cmd));
 }
 

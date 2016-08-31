@@ -125,6 +125,7 @@ signals:
     void commandExecuted(QString, QString);
     void jobExecuted();
     void commandSent(QString);
+    void cmdProcessingStarted(QString);
     void logCommand(QString);
     void commandsInJob(int);
     void dotsCount(int);

@@ -144,7 +144,7 @@ private slots:
 
     void showErrorOnStatusBar(QString  /*cmd*/, QStringList errorList);
     void clearErrorOnStatusBar();
-    void showCmdOnStatusBar(QString cmd);
+    void showCurrentCmdOnStatusBar(QString cmd);
     void addOneToLazyNutProgressBar();
 
 
