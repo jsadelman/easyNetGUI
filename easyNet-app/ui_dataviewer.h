@@ -38,6 +38,8 @@ public:
     bool usePrettyNames() {return m_usePrettyNames;}
     void setUsePrettyNames(bool prettyNamesEnabled) {m_usePrettyNames = prettyNamesEnabled; emit usePrettyNamesChanged(prettyNamesEnabled);}
     void addHistoryWidget(QDockWidget *historyWidget);
+    virtual QSize frame()=0;
+
 
     QAction *openAct;
     QAction *saveAct;

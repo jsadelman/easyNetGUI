@@ -29,23 +29,34 @@
 FullScreenSvgDialog::FullScreenSvgDialog(QWidget *parent)
     :QDialog(parent, Qt::FramelessWindowHint)
 {
-    svg = new QSvgWidget(this);
+    view = new FixedRatioRubberBandGraphicsView(this);
+    QGraphicsScene *scene = new QGraphicsScene(view);
+    view->setScene(scene);
+    view->setDragMode(QGraphicsView::RubberBandDrag);
+    connect(view, SIGNAL(selectionRequested(QRect)), this, SLOT(zoomIn(QRect)));
+    renderer = new QSvgRenderer(view);
     QVBoxLayout *layout = new QVBoxLayout;
-    QPushButton *closeBtn = new QPushButton("Close");
-    QHBoxLayout *hlayout = new QHBoxLayout;
-    QSpacerItem *item = new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-    hlayout->addSpacerItem(item);
-    hlayout->addWidget(closeBtn);
 
-    layout->addLayout(hlayout);
-    layout->addWidget(svg);
+    zoomOutAct = new QAction(QIcon(":/images/zoom-out.png"), "Zoom Out", this);
+    connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
+    zoomOutAct->setEnabled(false);
+
+    closeAct = new QAction(QIcon(":/images/delete-icon.png"), "Close", this);
+    connect(closeAct, SIGNAL(triggered()), this, SLOT(close()));
+
+    toolbar = new QToolBar(this);
+    toolbar->addAction(zoomOutAct);
+    toolbar->addAction(closeAct);
+
+    layout->addWidget(toolbar);
+    layout->addWidget(view);
     setLayout(layout);
-    connect (closeBtn, SIGNAL(clicked()),this,SLOT(close()));
 }
 
 void FullScreenSvgDialog::loadByteArray(QByteArray byteArray)
 {
-    svg->load(byteArray);
+    renderer->load(byteArray);
+    zoomOut();
 }
 
 void FullScreenSvgDialog::clearSvg()
@@ -54,12 +65,40 @@ void FullScreenSvgDialog::clearSvg()
     loadByteArray(byteArray);
 }
 
+qreal FullScreenSvgDialog::ratio()
+{
+    // best approx
+    QSize s(size().width(), size().height() - toolbar->height());
+    return (qreal)s.width()/s.height();
+}
+
+void FullScreenSvgDialog::zoomIn(QRect selectionRect)
+{
+    if (selectionRect.height() == 0)
+        return;
+    qreal scale = (qreal)view->geometry().height() / selectionRect.height();
+    QPointF centerPoint = view->mapToScene(selectionRect.center());
+    view->scale(scale, scale);
+    view->centerOn(centerPoint);
+    zoomOutAct->setEnabled(true);
+}
+
+void FullScreenSvgDialog::zoomOut()
+{
+    QGraphicsSvgItem *item = new QGraphicsSvgItem();
+    item->setSharedRenderer(renderer);
+    view->scene()->clear();
+    view->scene()->addItem(item);
+    view->fitInView(item);
+    zoomOutAct->setEnabled(false);
+}
+
 
 
 
 PlotViewer::PlotViewer(Ui_DataViewer *ui, QWidget *parent)
     : DataViewer(ui, parent), pend(false), fullScreen(false),
-      plotAspectRatio(1), m_zoomIn(false)
+      plotAspectRatio(1)
 {
     connect(descriptionUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument*, QString name)
     {
@@ -76,7 +115,6 @@ PlotViewer::PlotViewer(Ui_DataViewer *ui, QWidget *parent)
     fullScreenSvgDialog = new FullScreenSvgDialog(this);
     auto temp=QApplication::desktop()->availableGeometry();
     fullScreenSize = QSize(temp.width(),temp.height());
-    fullScreenAspectRatio = double(temp.width())/temp.height();
     fullScreenSvgDialog->resize(fullScreenSize);
 
     connect(ui->mainWidget, SIGNAL(resizeEventOccured(QResizeEvent*)), this, SLOT(restartTimer()));
@@ -93,7 +131,8 @@ void PlotViewer::sendPlotCmd(QString name)
         eNerror << "name is empty or does not exist:" << name;
         return;
     }
-    plotLastRatio[name] = fullScreen ? fullScreenAspectRatio : plotAspectRatio;
+
+    plotLastRatio[name] = fullScreen ? fullScreenSvgDialog->ratio() : plotAspectRatio;
     LazyNutJob *job = new LazyNutJob;
     job->cmdList = QStringList({QString("%1 get %2").arg(name).arg(plotLastRatio[name])});
     job->setAnswerReceiver(this, SLOT(displaySVG(QByteArray, QString)), AnswerFormatterType::SVG);
@@ -219,13 +258,13 @@ void PlotViewer::resizeTimeout()
 
 void PlotViewer::resize()
 {
-    QSize size = ui->centralWidget()->size();
-    double ratio = double(size.width())/size.height();
-    if (ratio/plotAspectRatio < 0.9 || ratio/plotAspectRatio > 1.1)
+    qreal r = ratio();
+    if (!ui || !ui->currentView())
+        plotAspectRatio = r;
+    else if (r/plotAspectRatio < 0.9 || r/plotAspectRatio > 1.1)
     {
-        plotAspectRatio = ratio;
-        if (!m_zoomIn)
-            updateAllActivePlots();
+        plotAspectRatio = r;
+        updateAllActivePlots();
     }
 }
 
@@ -249,40 +288,6 @@ void PlotViewer::setupFullScreen()
     fullScreen = false;
 }
 
-void PlotViewer::zoomIn(QRect selectionRect)
-{
-    FixedRatioRubberBandGraphicsView* view = qobject_cast<FixedRatioRubberBandGraphicsView*>(ui->currentView());
-    if (!view)
-        return;
-    int scale = view->geometry().height() / selectionRect.height();
-    QPointF centerPoint = view->mapToScene(selectionRect.center());
-    view->scale(scale, scale);
-    view->centerOn(centerPoint);
-    zoomOutAct->setEnabled(true);
-    m_zoomIn = true;
-}
-
-void PlotViewer::zoomOut()
-{
-    QString name = ui->currentItemName();
-    m_zoomIn = false;
-    if (plotIsUpToDate.value(name) && plotLastRatio.value(name, plotAspectRatio) == plotAspectRatio)
-    {
-        FixedRatioRubberBandGraphicsView* view = qobject_cast<FixedRatioRubberBandGraphicsView*>(ui->currentView());
-        if (view || view->scene() || view->scene()->items().length() > 0)
-        {
-            QGraphicsItem *item = view->scene()->items().first();
-            if (!item)
-                return;
-            view->fitInView(item, Qt::KeepAspectRatio);
-        }
-    }
-    else
-    {
-        plotIsUpToDate[name] = false;
-        updateActivePlots();
-    }
-}
 
 void PlotViewer::enableActions(bool enable)
 {
@@ -294,7 +299,6 @@ bool PlotViewer::setCurrentItem(QString name)
 {
     if (!DataViewer::setCurrentItem(name))
         return false;
-    m_zoomIn = false;
     if (plotIsUpToDate.value(name) && plotLastRatio.value(name, plotAspectRatio) == plotAspectRatio)
     {
         displaySVG(plotByteArray.value(name, QByteArray()), name);
@@ -304,8 +308,6 @@ bool PlotViewer::setCurrentItem(QString name)
         plotIsUpToDate[name] = false;
         updateActivePlots();
     }
-//    if (infoVisible)
-    //        showInfo(svg);
 }
 
 
@@ -330,17 +332,12 @@ void PlotViewer::displaySVG(QByteArray byteArray, QString cmd)
         fullScreenSvgDialog->loadByteArray(byteArray);
     else
     {
-        FixedRatioRubberBandGraphicsView* view = qobject_cast<FixedRatioRubberBandGraphicsView*>(ui->view(name));
-        if (view)
+        QSvgWidget* svg = qobject_cast<QSvgWidget*>(ui->view(name));
+        if (svg)
         {
             plotIsUpToDate[name] = true;
             plotByteArray[name] = byteArray;
-            QSvgRenderer *renderer = new QSvgRenderer(byteArray, view);
-            QGraphicsSvgItem *item = new QGraphicsSvgItem();
-            item->setSharedRenderer(renderer);
-            view->scene()->clear();
-            view->scene()->addItem(item);
-            view->fitInView(item, Qt::KeepAspectRatio);
+            svg->load(byteArray);
         }
     }
 }
@@ -431,12 +428,7 @@ QWidget *PlotViewer::makeView(QString name)
 {
     plotIsActive[name] = SessionManager::instance()->exists(name);
     plotIsUpToDate[name] = true;
-    FixedRatioRubberBandGraphicsView *view = new FixedRatioRubberBandGraphicsView(this);
-    QGraphicsScene *scene = new QGraphicsScene(view);
-    view->setScene(scene);
-    view->setDragMode(QGraphicsView::RubberBandDrag);
-    connect(view, SIGNAL(selectionRequested(QRect)), this, SLOT(zoomIn(QRect)));
-    return view;
+    return new QSvgWidget(this);
 }
 
 
@@ -488,11 +480,6 @@ void PlotViewer::addExtraActions()
     connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(setupFullScreen()));
     fullScreenAct->setEnabled(false);
     ui->editToolBar[this]->addAction(fullScreenAct);
-
-    zoomOutAct = new QAction(QIcon(":/images/zoom-out.png"), "Zoom Out", this);
-    connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
-    zoomOutAct->setEnabled(true);
-    ui->editToolBar[this]->addAction(zoomOutAct);
 }
 
 
@@ -510,5 +497,14 @@ void PlotViewer::resizeEvent(QResizeEvent *)
 {
     resizeTimer->stop();
     resizeTimer->start(250);
+}
+
+qreal PlotViewer::ratio()
+{
+    if (!ui)
+        return 1;
+    QSize frame = ui->frame();
+//    QSize size = ui->centralWidget()->size();
+    return (double)frame.width()/frame.height();
 }
 

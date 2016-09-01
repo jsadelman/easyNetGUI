@@ -11,7 +11,9 @@ class QSvgWidget;
 class QMessageBox;
 class QTimer;
 class ObjectUpdater;
-
+class QSvgRenderer;
+class FixedRatioRubberBandGraphicsView;
+class QToolBar;
 
 class FullScreenSvgDialog: public QDialog
 {
@@ -20,9 +22,19 @@ public:
     FullScreenSvgDialog(QWidget *parent = 0);
     void loadByteArray(QByteArray byteArray);
     void clearSvg();
+    qreal ratio();
+
+private slots:
+    void zoomIn(QRect selectionRect);
+    void zoomOut();
 
 private:
-    QSvgWidget *svg;
+
+    FixedRatioRubberBandGraphicsView* view;
+    QSvgRenderer *renderer;
+    QToolBar *toolbar;
+    QAction *zoomOutAct;
+    QAction *closeAct;
 };
 
 class PlotViewer: public DataViewer
@@ -49,8 +61,6 @@ protected slots:
     void resizeTimeout();
     void resize();
     void setupFullScreen();
-    void zoomIn(QRect selectionRect);
-    void zoomOut();
     virtual void enableActions(bool enable) Q_DECL_OVERRIDE;
     void sendPlotCmd();
     void displaySVG(QByteArray byteArray, QString cmd);
@@ -79,6 +89,7 @@ protected:
      void addExtraActions();
      void paintEvent(QPaintEvent * event);
      void resizeEvent(QResizeEvent*);
+     qreal ratio();
 
     bool            pend;
     double          plotAspectRatio;
@@ -87,16 +98,13 @@ protected:
     QMap <QString, bool> plotIsActive;
     QMap <QString, bool> plotIsUpToDate;
     QMap <QString, QByteArray> plotByteArray;
-     QMap <QString, double> plotLastRatio;
-     QByteArray copyByteArray;
+    QMap <QString, double> plotLastRatio;
+    QByteArray copyByteArray;
 
 
     QAction *       fullScreenAct;
-    QAction *       zoomOutAct;
     bool            fullScreen;
-    bool            m_zoomIn;
     QSize           fullScreenSize;
-    double          fullScreenAspectRatio;
 
     FullScreenSvgDialog *fullScreenSvgDialog;
 

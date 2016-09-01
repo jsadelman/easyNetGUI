@@ -34,6 +34,24 @@ QWidget *Ui_DataTabsViewer::currentView()
     return tabWidget->currentWidget();
 }
 
+QSize Ui_DataTabsViewer::frame()
+{
+
+    if (!tabWidget)
+        return QSize();
+    QWidget *dummy = Q_NULLPTR;
+    if (tabWidget->count() == 0)
+    {
+        dummy = new QWidget();
+        tabWidget->addTab(dummy, "");
+        tabWidget->setCurrentWidget(dummy);
+    }
+    QSize s = tabWidget->size() - QSize(0,tabWidget->tabBar()->sizeHint().height());
+    tabWidget->removeTab(tabWidget->indexOf(dummy));
+    return s;
+
+}
+
 
 void Ui_DataTabsViewer::addView(QString name, QWidget *view)
 {

@@ -17,6 +17,7 @@ public:
     virtual QString currentItemName();
     virtual QWidget *currentView() Q_DECL_OVERRIDE;
     void setTabsClosable(bool closeable) {tabsClosable = closeable;}
+    virtual QSize frame();
 
 
 public slots:

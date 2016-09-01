@@ -15,6 +15,7 @@ public:
     ~Ui_DataComboViewer();
     virtual QString currentItemName() Q_DECL_OVERRIDE;
     virtual QWidget *currentView() Q_DECL_OVERRIDE;
+    virtual QSize frame() {return size();}
 
 public slots:
     virtual void addView(QString name, QWidget *view) Q_DECL_OVERRIDE;
