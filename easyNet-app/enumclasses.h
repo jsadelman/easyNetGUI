@@ -52,6 +52,63 @@ static QMap<int, QString> trialRunModeName
     {TrialRunMode_List, "list trial"}
 };
 
+namespace dataViews {
+enum {Tables=0, Plots};
+enum {lazyNut=0, plain, Plain, hint};
+
+static  QMap<int, QMap<int, QString> > tableTerms
+{
+    {Tables, {
+            {lazyNut, "dataframe_view"},
+            {plain, "tables"},
+            {Plain, "Tables"},
+            {hint, "dataframe_view_type"}
+        }},
+    {Plots, {
+            {lazyNut, "rplot"},
+            {plain, "plots"},
+            {Plain, "Plots"},
+            {hint, "plot_type"}
+ }}};
+
+static int viewType(QString term)
+{
+    if (tableTerms.value(Tables).values().contains(term))
+        return Tables;
+    else if (tableTerms.value(Plots).values().contains(term))
+        return Plots;
+    else
+        return -1;
+}
+}
+
+static QString dataView_lazyNut(QString term)
+{
+    using namespace dataViews;
+    int type = viewType(term);
+    return type > -1 ? tableTerms.value(type).value(lazyNut) : QString();
+}
+
+static QString dataView_plain(QString term)
+{
+    using namespace dataViews;
+    int type = viewType(term);
+    return type > -1 ? tableTerms.value(type).value(plain) : QString();
+}
+
+static QString dataView_Plain(QString term)
+{
+    using namespace dataViews;
+    int type = viewType(term);
+    return type > -1 ? tableTerms.value(type).value(Plain) : QString();
+}
+
+static QString dataView_hint(QString term)
+{
+    using namespace dataViews;
+    int type = viewType(term);
+    return type > -1 ? tableTerms.value(type).value(hint) : QString();
+}
 
 #ifdef __APPLE__
   #define EN_FONT "Helvetica Neue"

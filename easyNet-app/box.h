@@ -70,12 +70,10 @@ public:
 //        myCenter=p;
     }
     QPointF centrePos()const{return center();}
-    QStringList defaultPlotTypes();
     qreal height()const{return size().height();}
     qreal width()const{return size().width();}
     qreal autoWidth();
     void autoFontSize();
-//    QSet<Box *> neighbours();
     void setFillColour(QColor);
     void setDashedStroke(bool);
     void cmd_setSize(QSizeF f){myheight=f.height();mywidth=f.width(); setGeometry();}
@@ -91,24 +89,19 @@ signals:
     void propertiesRequested();
     void focusOnPlotRequested(QString name);
 
-
-
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
 
 private slots:
-//    void sendCreateNewPlotOfType();
     void setupDefaultObserverFilter();
-    void cacheFromDescription(QDomDocument* description, QString name);
-
-//    void updateObservedState();
 
 private:
     void enableObserver(QString observer, bool enable);
     void lesionBox(bool lesion);
-
+    QStringList dataViewTypesPath(QString dataView, QString port = "");
+    QString layerTransfer();
 
     QString m_name,m_label;
     QString m_lazyNutType;
@@ -122,19 +115,11 @@ private:
     ObjectUpdater     *defaultObserverUpdater;
     QMap<QString, bool> defaultObservers; // <name, enabled>
     QSet<QString>     enabledObserverSet;
-    ObjectCacheFilter *plotFilter;
-    QMap <QString, QString> observerOfPlot;
-
+    ObjectCacheFilter *dataViewFilter;
+    QMap <QString, QString> observerOfDataView;
     ObjectCacheFilter *defaultDataframesFilter;
-//    ObjectCacheFilter   *layerFilter;
-//    ObjectUpdater       *layerUpdater;
-
     QMap <QString, QString> m_ports;
     QRegExp default_input_observer_Rex;
-    QStringList m_defaultPlotTypes;
-    QString m_layerTransfer;
-
- //  static QPointF defaultPosition;
 };
 
 extern const QColor layerCol;

@@ -26,7 +26,12 @@ void XMLelement::setDomElement(QDomElement domElem)
     domElement = domElem;
     tag = domElement.tagName();
 //    if (!(isString() || isInteger() || isReal() || isObject() || isCommand() || isMap() || isList()))
-//        qDebug() << "error: xml tag name not recognised: " << type;
+    //        qDebug() << "error: xml tag name not recognised: " << type;
+}
+
+bool XMLelement::hasChildren()
+{
+    return domElement.hasChildNodes();
 }
 
 XMLelement XMLelement::firstChild(QString childTag)
@@ -133,7 +138,6 @@ QString XMLelement::operator ()()
 
 XMLelement XMLelement::operator [](QString label)
 {
-    // if isMap()
     QDomElement element = domElement.firstChildElement();
     while (!element.isNull())
     {

@@ -26,6 +26,7 @@ public:
     bool isList() {return tag == "list";}
     bool isENelements() {return tag == "eNelements";}
     bool isParameter() {return tag == "parameter";}
+    bool hasChildren();
     XMLelement firstChild(QString childTag = QString());
     XMLelement nextSibling(QString siblingTag = QString());
     QString attribute(QString attr);

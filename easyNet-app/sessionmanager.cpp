@@ -453,6 +453,16 @@ void SessionManager::createDataView(QString name, QString prettyName, QString su
     SessionManager::instance()->submitJobs(jobs);
 }
 
+void SessionManager::createTable(QString name, QString prettyName, QString Type, QMap<QString, QString> settings)
+{
+    createDataView(name, prettyName, "dataframe_view", Type, settings);
+}
+
+void SessionManager::createPlot(QString name, QString prettyName, QString Type, QMap<QString, QString> settings)
+{
+    createDataView(name, prettyName, "rplot", Type, settings);
+}
+
 
 
 QString SessionManager::makeValidObjectName(QString name)

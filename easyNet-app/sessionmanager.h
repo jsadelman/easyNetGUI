@@ -182,6 +182,8 @@ public slots:
     void clearCopyRequested(QString original = "");
     void createDataView(QString name, QString prettyName, QString subtype, QString Type,
                         QMap<QString,QString> settings=QMap<QString,QString>());
+    void createTable(QString name, QString prettyName, QString Type, QMap<QString,QString> settings=QMap<QString,QString>());
+    void createPlot(QString name, QString prettyName, QString Type, QMap<QString,QString> settings=QMap<QString,QString>());
     void setShowHint(QString name, QString show);
 
 
