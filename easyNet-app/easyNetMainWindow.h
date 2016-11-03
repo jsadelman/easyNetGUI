@@ -128,6 +128,8 @@ private slots:
 //    void showViewMode(int viewModeInt);
     void newScriptFile();
     void newLogFile();
+    void loadModule();
+    void loadModule(QString fileName);
     void loadScript();
     void setLazyNutIsReady(bool isReady);
     //bool save();
@@ -433,6 +435,7 @@ public:
     QAction         *loadTrialAct;
     QAction         *loadAddOnAct;
     QAction         *loadStimulusSetAct;
+    QAction         *loadModuleAct;
     QAction         *importDataFrameAct;
     QAction         *runTestAct;
 //    QAction         *saveAct;

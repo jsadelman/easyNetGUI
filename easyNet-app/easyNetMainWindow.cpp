@@ -1080,6 +1080,13 @@ void MainWindow::modelConfigNeeded()
     LazyNutJob *job = new LazyNutJob;
     job->cmdList << QString("xml %1 list_settings").arg(SessionManager::instance()->currentModel());
     job->setAnswerReceiver(this, SLOT(createModelSettingsDialog(QDomDocument*)), AnswerFormatterType::XML);
+    QString moduleName = SessionManager::instance()->getDataFromJob(sender(), "moduleName").toString();
+    if (!moduleName.isEmpty())
+    {
+        QMap<QString, QVariant> jobData;
+        jobData.insert("moduleName", moduleName);
+        job->data = jobData;
+    }
     SessionManager::instance()->submitJobs(job);
 }
 
@@ -1090,6 +1097,9 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
     form->setUseRFormat(false);
     SettingsFormDialog dialog(domDoc, form, QString("Configure model %1").arg(SessionManager::instance()->currentModel()), this);
     dialog.build();
+    QString moduleName = SessionManager::instance()->getDataFromJob(sender(), "moduleName").toString();
+    if (!moduleName.isEmpty())
+        form->setCurrentTab(moduleName);
     int result = dialog.exec();
     if (result == QDialog::Accepted)
     {
@@ -1372,6 +1382,32 @@ void MainWindow::newScriptFile()
 void MainWindow::newLogFile()
 {
     newFile(commandLog);
+}
+
+void MainWindow::loadModule()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open module"),
+                                                    SessionManager::instance()->defaultLocation("modulesDir"),
+                                                    tr("Module Files (*.eNm)"));
+    if (!fileName.isEmpty())
+        loadModule(fileName);
+}
+
+void MainWindow::loadModule(QString fileName)
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("%1 include %2").arg(quietMode)
+                    .arg(QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName));
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << job
+                                << SessionManager::instance()->updateObjectCacheJobs();
+    jobs.last()->appendEndOfJobReceiver(this, SLOT(modelConfigNeeded()));
+    QMap<QString, QVariant> jobData;
+    QFileInfo fi(fileName);
+    jobData.insert("moduleName", fi.baseName());
+    jobs.last()->data = jobData;
+    SessionManager::instance()->submitJobs(jobs);
 }
 
 void MainWindow::newFile(EditWindow* window)
@@ -1722,6 +1758,10 @@ void MainWindow::createActions()
     loadStimulusSetAct->setStatusTip(tr("Load a stimulus set"));
     connect(loadStimulusSetAct, SIGNAL(triggered()), this, SLOT(loadStimulusSet()));
 
+    loadModuleAct = new QAction(QIcon(":/images/cog-2x.png"), tr("&Load module"), this);
+    loadModuleAct->setStatusTip(tr("Load a module"));
+    connect(loadModuleAct, SIGNAL(triggered()), this, SLOT(loadModule()));
+
     loadScriptAct = new QAction(QIcon(":/images/code-2x.png"), tr("&Open a script"), this);
 //    loadScriptAct->setShortcuts(QKeySequence::Open);
     loadScriptAct->setStatusTip(tr("Open an existing lazyNut script"));
@@ -1866,6 +1906,7 @@ void MainWindow::createMenus()
     fileSubMenu->addAction(modelFinalizeAct);
     fileSubMenu->addAction(loadTrialAct);
     fileSubMenu->addAction(loadAddOnAct);
+    fileSubMenu->addAction(loadModuleAct);
     fileSubMenu->addAction(loadStimulusSetAct);
     fileSubMenu->addAction(loadScriptAct);
     fileSubMenu->addAction(importDataFrameAct);

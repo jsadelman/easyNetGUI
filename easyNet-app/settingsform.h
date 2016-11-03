@@ -29,6 +29,7 @@ public:
     QString value(QString label);
     QStringList listLabels() {return XMLAccessor::listLabels(rootElement);}
     void setSetting(QString setting, QString value);
+    void setCurrentTab(QString name);
 
     // setters and getters
     bool useRFormat() {return m_useRFormat;}

@@ -33,6 +33,7 @@ class Box: public QObject, public DiagramItem//QGraphicsPolygonItem
 {
     Q_OBJECT
     Q_PROPERTY (QString name READ name WRITE setName)
+    Q_PROPERTY (QString colour READ colour WRITE setColour)
     Q_PROPERTY (QString lazyNutType READ lazyNutType WRITE setLazyNutType NOTIFY lazyNutTypeChanged)
     // graphical parameters
     Q_PROPERTY(int labelPointSize READ labelPointSize WRITE setLabelPointSize)
@@ -44,6 +45,8 @@ public:
     Box();
     virtual QString name(void) const {return m_name;}
     virtual void setName(const QString& name) {m_name = name;/* setLabel();*/}
+    virtual QString colour(void) const {return m_colour;}
+    virtual void setColour(const QString& colour);
     virtual QString lazyNutType(void) const {return m_lazyNutType;}
     virtual void setLazyNutType(const QString& lazyNutType);
     virtual int labelPointSize(void) const {return m_labelPointSize;}
@@ -103,7 +106,8 @@ private:
     QStringList dataViewTypesPath(QString dataView, QString port = "");
     QString layerTransfer();
 
-    QString m_name,m_label;
+    QString m_name,m_label,m_colour;
+    QColor m_qColor;
     QString m_lazyNutType;
     int m_labelPointSize;
     QFont labelFont;

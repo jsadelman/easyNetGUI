@@ -581,8 +581,12 @@ void DiagramScene::render()
             foreach (QString label, XMLelement(*domDoc)["Ports"].listLabels())
                 ports[label] = XMLelement(*domDoc)["Ports"][label]();
             QString pname = XMLelement(*domDoc)["pretty name"]();
+            QString boxColor = XMLelement(*domDoc)["hints"]["color"]();
+
             static_cast<Box*>(itemHash.value(name))->setPorts(ports);
             static_cast<Box*>(itemHash.value(name))->setLabel(pname);
+            if (!boxColor.isEmpty())
+                static_cast<Box*>(itemHash.value(name))->setColour(boxColor);
         }
         else if (AsLazyNutObject(*domDoc).type() == m_arrowType)
         {

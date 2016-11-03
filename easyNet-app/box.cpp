@@ -25,7 +25,8 @@ Box::Box()
       m_widthMarginProportionToLongestLabel(0.1),
       m_labelPointSize(9),
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
-      enabledObserverSet()
+      enabledObserverSet(),
+      m_qColor(layerCol)
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemIsMovable);
@@ -35,6 +36,14 @@ Box::Box()
     m_ports.clear();
     setZValue(10);
     autoFontSize();
+    setFillColour(m_qColor);
+}
+
+void Box::setColour(const QString &colour)
+{
+     m_colour = colour;
+     m_qColor = QColor(m_colour);
+     setFillColour(m_qColor);
 }
 
 void Box::setLazyNutType(const QString &lazyNutType)
@@ -42,7 +51,7 @@ void Box::setLazyNutType(const QString &lazyNutType)
     m_lazyNutType = lazyNutType;
     if (m_lazyNutType == "layer")
     {
-        setFillColour(layerCol);
+        m_qColor = m_colour.isEmpty() ? layerCol : QColor(m_colour);
 //        layerFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
 //        layerUpdater = new ObjectUpdater(this);
 //        layerUpdater->setProxyModel(layerFilter);
@@ -60,7 +69,10 @@ void Box::setLazyNutType(const QString &lazyNutType)
     }
 
     else if (m_lazyNutType == "representation")
-        setFillColour(representationCol);
+    {
+        m_qColor = m_colour.isEmpty() ? representationCol : QColor(m_colour);
+    }
+    setFillColour(m_qColor);
 
     emit lazyNutTypeChanged();
 }
@@ -316,7 +328,7 @@ void Box::setupDefaultObserverFilter()
             if (anyEnabled)
                 setFillColour(observedCol);
             else
-                setFillColour(layerCol);
+                setFillColour(m_qColor);
         });
         for (int row = 0; row < defaultObserverFilter->rowCount(); ++row)
         {

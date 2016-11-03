@@ -250,6 +250,13 @@ void SettingsForm::setSetting(QString setting, QString value)
 
 }
 
+void SettingsForm::setCurrentTab(QString name)
+{
+    QWidget *widget = twidgetMap.value(name, nullptr);
+    if (widget)
+        setCurrentWidget(widget);
+}
+
 bool SettingsForm::allIsSet()
 {
     bool result = true;
