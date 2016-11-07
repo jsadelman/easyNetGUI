@@ -582,11 +582,13 @@ void DiagramScene::render()
                 ports[label] = XMLelement(*domDoc)["Ports"][label]();
             QString pname = XMLelement(*domDoc)["pretty name"]();
             QString boxColor = XMLelement(*domDoc)["hints"]["color"]();
+            Box* box = static_cast<Box*>(itemHash.value(name));
 
-            static_cast<Box*>(itemHash.value(name))->setPorts(ports);
-            static_cast<Box*>(itemHash.value(name))->setLabel(pname);
+            box->setDashedStroke(AsLazyNutObject(*domDoc).lesioned());
+            box->setPorts(ports);
+            box->setLabel(pname);
             if (!boxColor.isEmpty())
-                static_cast<Box*>(itemHash.value(name))->setColour(boxColor);
+                box->setColour(boxColor);
         }
         else if (AsLazyNutObject(*domDoc).type() == m_arrowType)
         {
@@ -642,15 +644,14 @@ void DiagramScene::render()
                     arrow->setNewEndpoint(Arrow::DSTPT, endItem->centrePos(), endItem, Arrow::CENTRE_CONNECTION_PIN);
                 }
             }
-#if 0
-            arrow->setDirected(true);
-#endif
+
             if (!itemHash.contains(name))
             {
                 addItem(arrow);
                 auto ptr=dynamic_cast<QGraphicsItem*>(arrow);
                 itemHash.insert(name,ptr);
             }
+            arrow->setDashedStroke(AsLazyNutObject(*domDoc).lesioned());
         }
     }
     renderList.clear();

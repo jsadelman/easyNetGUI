@@ -14,7 +14,17 @@ AsLazyNutObject::AsLazyNutObject(QDomDocument domDoc)
         qDebug () << "LazyNutObject: object description has empty name";
     if ((*this)["type"]().isEmpty())
         qDebug () << "LazyNutObject: object description has empty type";
-        // TODO: check type is admissible
+    // TODO: check type is admissible
+}
+
+bool AsLazyNutObject::lesioned()
+{
+    if (type() == "layer")
+        return (*this)["subtype"]["layer_transfer"]() == "lesion_transfer";
+    else if (type() == "connection")
+        return (*this)["subtype"]() == "lesioned_connection";
+    else
+        return false;
 }
 
 

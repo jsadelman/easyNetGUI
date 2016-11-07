@@ -102,7 +102,7 @@ private slots:
 
 private:
     void enableObserver(QString observer, bool enable);
-    void lesionBox(bool lesion);
+    void setLesioned(bool lesion);
     QStringList dataViewTypesPath(QString dataView, QString port = "");
     QString layerTransfer();
 

@@ -8,6 +8,7 @@
 #include "easyNetMainWindow.h"
 #include "trialwidget.h"
 #include "xmlelement.h"
+#include "lazynutobject.h"
 
 #include <QPainter>
 #include <QDebug>
@@ -245,11 +246,12 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
             }
         }
     }
-    QString transfer = layerTransfer();
+    QDomDocument *description = SessionManager::instance()->description(m_name);
+    bool lesioned = description ? AsLazyNutObject(*description).lesioned() : false;
     QAction *lesionAct = menu.addAction(tr("Lesion layer"));
-    lesionAct->setVisible(transfer != "lesion_transfer");
+    lesionAct->setVisible(!lesioned);
     QAction *unlesionAct = menu.addAction(tr("Unlesion layer"));
-    unlesionAct->setVisible(transfer == "lesion_transfer");
+    unlesionAct->setVisible(lesioned);
 
     menu.addAction("Properties", this, SIGNAL(propertiesRequested()));
 
@@ -291,10 +293,10 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     }
 
     else if (action == lesionAct)
-        lesionBox(true);
+        setLesioned(true);
 
     else if (action == unlesionAct)
-        lesionBox(false);
+        setLesioned(false);
 }
 
 void Box::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
@@ -369,15 +371,15 @@ void Box::enableObserver(QString observer, bool enable)
 }
 
 
-void Box::lesionBox(bool lesion)
+void Box::setLesioned(bool lesion)
 {
+    // identical to Arrow::setLesioned(bool lesion), calls for common base class
     LazyNutJob *job = new LazyNutJob;
     job->cmdList << QString("%1 %2").arg(m_name).arg(lesion ? "lesion" : "unlesion");
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << job
                                 << SessionManager::instance()->recentlyModifiedJob();
     SessionManager::instance()->submitJobs(jobs);
-    setDashedStroke(lesion);
 }
 
 QStringList Box::dataViewTypesPath(QString dataView, QString port)
@@ -410,6 +412,7 @@ QStringList Box::dataViewTypesPath(QString dataView, QString port)
 
 QString Box::layerTransfer()
 {
+    qDebug() << Q_FUNC_INFO << "OBSOLETE: use AsLazyNutObject(*domDoc).lesioned()";
     QDomDocument *description = SessionManager::instance()->description(m_name);
     return description ? XMLelement(*description)["subtype"]["layer_transfer"]() : QString();
 }

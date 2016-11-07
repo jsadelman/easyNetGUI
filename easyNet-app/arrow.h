@@ -48,10 +48,12 @@ protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
+
     void lesion();
     void unlesion();
 
 private:
+    void setLesioned(bool lesion);
     void setArrowType(ArrowType p);
     QString m_name;
     QString m_lazyNutType;

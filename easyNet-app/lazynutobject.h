@@ -12,7 +12,7 @@ public:
     AsLazyNutObject(QDomDocument domDoc);
     QString name() {return value();}
     QString type() {return (*this)["type"]();}
-
+    bool lesioned();
 };
 
 

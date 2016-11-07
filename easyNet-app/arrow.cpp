@@ -3,6 +3,10 @@
 #include "xmlelement.h"
 #include "objectcache.h"
 #include "box.h"
+#include "lazynutobject.h"
+#include "lazynutjob.h"
+
+
 #include <QDebug>
 #include <QMenu>
 #include <QApplication>
@@ -256,8 +260,9 @@ void Arrow::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         return;
 
     QMenu menu;
-    QString subtype = SessionManager::instance()->descriptionCache->subtype(name());
-    if (subtype == "lesioned_connection")
+    QDomDocument *description = SessionManager::instance()->description(m_name);
+    bool lesioned = description ? AsLazyNutObject(*description).lesioned() : false;
+    if (lesioned)
         menu.addAction("Unlesion connection", this, SLOT(unlesion()));
     else
         menu.addAction("Lesion connection", this, SLOT(lesion()));
@@ -269,19 +274,23 @@ void Arrow::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 void Arrow::lesion()
 {
-    QString cmd = QString("%1 lesion").arg(m_name);
-    SessionManager::instance()->runCmd(cmd);
-    // basic version (should check if cmd was executed succesfully)
-    setDashedStroke(true);
-
+    setLesioned(true);
 }
 
 
 void Arrow::unlesion()
 {
-    QString cmd = QString("%1 unlesion").arg(m_name);
-    SessionManager::instance()->runCmd(cmd);
-    // basic version (should check if cmd was executed succesfully)
-    setDashedStroke(false);
+    setLesioned(false);
+}
+
+void Arrow::setLesioned(bool lesion)
+{
+    // identical to Box::setLesioned(bool lesion), calls for common base class
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("%1 %2").arg(m_name).arg(lesion ? "lesion" : "unlesion");
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << job
+                                << SessionManager::instance()->recentlyModifiedJob();
+    SessionManager::instance()->submitJobs(jobs);
 }
 
