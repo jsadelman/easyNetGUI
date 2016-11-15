@@ -27,7 +27,8 @@ Box::Box()
       m_labelPointSize(9),
       default_input_observer_Rex("input_channel ([^)]*)\\) default_observer\\)"),
       enabledObserverSet(),
-      m_qColor(layerCol)
+      m_qColor(layerCol),
+      anyEnabled(false)
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemIsMovable);
@@ -160,6 +161,15 @@ void Box::autoSize()
 //   qreal autoWidth = (1.0 + 2.0 * m_widthMarginProportionToLongestLabel) * fm.width(m_longNameToDisplayIntact);
    qreal autoHeigth = autoWidth() / m_widthOverHeight;
    cmd_setSize(QSizeF(autoWidth(), autoHeigth));
+}
+
+void Box::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    m_pen.setColor(
+                isSelected()?
+                    Qt::blue:
+                    (anyEnabled ? Qt::red : Qt::black));
+    DiagramItem::paint(painter, option, widget);
 }
 
 void Box::paintLabel(QPainter *painter)
@@ -324,13 +334,14 @@ void Box::setupDefaultObserverFilter()
         connect(defaultObserverUpdater, &ObjectUpdater::objectUpdated, [=](QDomDocument* domDoc, QString observer)
         {
             defaultObservers[observer] = XMLelement(*domDoc)["Enabled"]() == "1";
-            bool anyEnabled = false;
+            anyEnabled = false;
             foreach(bool enabled, defaultObservers.values())
                 anyEnabled |= enabled;
-            if (anyEnabled)
-                setFillColour(observedCol);
-            else
-                setFillColour(m_qColor);
+            update();
+//            if (anyEnabled)
+//                setFillColour(observedCol);
+//            else
+//                setFillColour(m_qColor);
         });
         for (int row = 0; row < defaultObserverFilter->rowCount(); ++row)
         {

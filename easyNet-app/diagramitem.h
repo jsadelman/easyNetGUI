@@ -96,7 +96,7 @@ public:
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
 
-    void paint(QPainter *painter,
+    virtual void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual void paintLabel(QPainter *painter);
     void updatePosition();

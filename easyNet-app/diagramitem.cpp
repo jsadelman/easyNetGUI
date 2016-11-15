@@ -600,10 +600,7 @@ void DiagramItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 //        mywidth = minBoundingRect->width() + 2 * BOUNDINGRECTPADDING;
         setGeometry();
     }
-    m_pen.setColor(
-                isSelected()?
-                    Qt::blue:
-                    Qt::black);
+
 
     m_pen.setWidth(penWidth);
 

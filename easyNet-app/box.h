@@ -64,6 +64,8 @@ public:
     void read(const QJsonObject &json, qreal boxWidth=0);
     void write(QJsonObject &json) const;
     void autoSize();
+    virtual void paint(QPainter *painter,
+               const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual void paintLabel(QPainter *painter);
     virtual QRectF labelBoundingRect(void) const;
     void setCentrePos(const QPointF&p)
@@ -105,6 +107,7 @@ private:
     void setLesioned(bool lesion);
     QStringList dataViewTypesPath(QString dataView, QString port = "");
     QString layerTransfer();
+    bool anyEnabled;
 
     QString m_name,m_label,m_colour;
     QColor m_qColor;
