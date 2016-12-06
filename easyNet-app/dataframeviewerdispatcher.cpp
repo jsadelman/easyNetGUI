@@ -222,7 +222,8 @@ void DataframeViewerDispatcher::enableActions(bool enable)
 {
     DataViewerDispatcher::enableActions(enable);
     clearMenuAct->setEnabled(enable);
-    mergeAct->setEnabled(enable);
+    mergeAct->setEnabled(enable &&
+                         SessionManager::instance()->descriptionCache->subtype(host->currentItemName()) == "dataframe_for_trials");
 }
 
 QDomDocument *DataframeViewerDispatcher::makePreferencesDomDoc()
