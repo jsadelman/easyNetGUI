@@ -9,6 +9,9 @@ QT      += core gui xml
 QT      += svg
 QT      += sql
 
+macx {
+QMAKE_MAC_SDK = macosx10.11
+}
 
 DEPENDPATH =  .. .
 
