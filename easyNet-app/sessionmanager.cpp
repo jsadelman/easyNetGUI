@@ -729,7 +729,7 @@ void SessionManager::startOOB(QString code)
     connect(oob,SIGNAL(outputReady(QString)),sessionManager,SIGNAL(oobOutputReady(QString)));
     if (!oob->waitForStarted())
         eNerror << "OOB did not start:";
-    lazyNut->write("#\n#\n");
+//    lazyNut->write("#\n#\n");
 }
 
 void SessionManager::startCommandSequencer()
