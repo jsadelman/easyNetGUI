@@ -287,7 +287,7 @@ public:
     QList<modelInfo> modelList;
     int fontSize;
 
-    Console        *lazyNutConsole;
+    Console        *lazyNutConsole,*oobConsole;
     ObjExplorer      *objExplorer;
     ObjectNavigator  *objNavigator;
     QDockWidget     *dockWelcome;

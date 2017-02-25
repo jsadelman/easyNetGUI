@@ -18,7 +18,7 @@ class Console : public EditWindow
     friend class MainWindow;
 
 public:
-    Console(QWidget *parent = 0);
+    Console(QWidget *parent = 0,bool oob=false);
     ~Console();
 public slots:
     void setConsoleFontSize(int size);
@@ -36,7 +36,7 @@ private:
     QAction *coreDumpAct;
 
 
-    void createStatusBar();
+    void createStatusBar(bool=false);
 };
 
 #endif // CONSOLE_H

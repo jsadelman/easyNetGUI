@@ -34,6 +34,7 @@ public slots:
 
     void processLazyNutOutput(QString lazyNutOutput);
 
+    void processOOBOutput(QString OOBOutput);
 signals:
     // send output to editor
     void commandsInJob(int);

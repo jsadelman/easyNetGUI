@@ -73,6 +73,11 @@ void CommandSequencer::runCommand(QString command, bool _getAnswer, unsigned int
     runCommands(QStringList{command}, _getAnswer, mode);
 }
 
+void CommandSequencer::processOOBOutput(QString OOBOutput)
+{
+//  qDebug()<<"OOB: "<<OOBOutput;
+}
+
 void CommandSequencer::processLazyNutOutput(QString lazyNutOutput)
 {
   if (commandList.isEmpty() || echoInterpreter(commandList.first()) || (logMode & ECHO_INTERPRETER))

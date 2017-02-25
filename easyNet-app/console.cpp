@@ -12,7 +12,7 @@
 #include <QAction>
 #include <QDateTime>
 
-Console::Console(QWidget *parent)
+Console::Console(QWidget *parent,bool oob)
     : EditWindow(parent, true)
 {
 //    fileToolBar->removeAction(newAct);
@@ -31,7 +31,7 @@ Console::Console(QWidget *parent)
     QFont qf("Consolas");
     textEdit->setFont(qf);
 
-    createStatusBar();
+    createStatusBar(oob);
     statusBar()->show();
 
 //    connect(SessionManager::instance(), SIGNAL(lazyNutCrash()), this, SLOT(coreDump()));
@@ -52,7 +52,7 @@ void Console::addText(QString txt)
 }
 
 
-void Console::createStatusBar()
+void Console::createStatusBar(bool oob)
 {
     statusBar()->setStyleSheet("background-color : black; color : white;");
 
@@ -60,10 +60,20 @@ void Console::createStatusBar()
     inputCmdLine = new InputCmdLine(this);
 //    connect(inputCmdLine,SIGNAL(commandReady(QString)),
 //            SessionManager::instance(),SLOT(runCmd(QString)));
-    connect(inputCmdLine, &InputCmdLine::commandReady, [=](QString cmd)
+    if(!oob)
     {
-        SessionManager::instance()->runCmd(cmd, ECHO_INTERPRETER | FROM_CONSOLE);
-    });
+        connect(inputCmdLine, &InputCmdLine::commandReady, [=](QString cmd)
+        {
+            SessionManager::instance()->runCmd(cmd, ECHO_INTERPRETER | FROM_CONSOLE);
+        });
+    }
+    else
+    {
+        connect(inputCmdLine, &InputCmdLine::commandReady, [=](QString cmd)
+        {
+            SessionManager::instance()->runOobCmd(cmd);
+        });
+    }
 
     connect(inputCmdLine,SIGNAL(historyKey(int, QString)),
             this,SIGNAL(historyKey(int, QString)));

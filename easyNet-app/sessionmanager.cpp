@@ -721,12 +721,15 @@ void SessionManager::startOOB(QString code)
     if (code.isEmpty())
         code = OOBsecret;
     delete oob;
-    oob = new QProcess(this);
+    oob = new LazyNut(this);
     oob->setProgram(QString("%1/%2").arg(QFileInfo(defaultLocation("lazyNutBat")).absolutePath()).arg(oobBaseName));
     oob->setArguments({code});
     oob->start();
+    connect(oob,SIGNAL(outputReady(QString)),commandSequencer,SLOT(processOOBOutput(QString)));
+    connect(oob,SIGNAL(outputReady(QString)),sessionManager,SIGNAL(oobOutputReady(QString)));
     if (!oob->waitForStarted())
         eNerror << "OOB did not start:";
+    lazyNut->write("#\n#\n");
 }
 
 void SessionManager::startCommandSequencer()
@@ -891,7 +894,9 @@ void SessionManager::reset()
 void SessionManager::oobStop()
 {
     if (oob)
-        oob->write(qPrintable("stop\n"));
+    {
+        oob->write("stop\n");
+    }
     jobQueue->clear();
     submitJobs(updateObjectCacheJobs());
 }
@@ -907,6 +912,12 @@ bool SessionManager::isOn()
     return commandSequencer->isOn();
 }
 
+
+void SessionManager::runOobCmd(QString cmd, unsigned int logMode)
+{
+//    qDebug()<<"axed to run oob: "+cmd;
+    oob->write(qPrintable(cmd+"\n"));
+}
 
 void SessionManager::runCmd(QString cmd, unsigned int logMode)
 {

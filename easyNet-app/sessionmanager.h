@@ -116,6 +116,7 @@ signals:
 
     // send output to editor
     void userLazyNutOutputReady(const QString&);
+    void oobOutputReady(const QString&);
 
     void lazyNutStarted();
     void lazyNutKilled();
@@ -167,6 +168,7 @@ public slots:
     void reset();
     void oobStop();
     void runCmd(QString cmd, unsigned int logMode = 0);
+    void runOobCmd(QString cmd, unsigned int logMode = 0);
     void runCmd(QStringList cmd, unsigned int logMode = 0);
     void restartLazyNut();
     void setCurrentModel(QString name);
@@ -231,7 +233,7 @@ private:
     LazyNutJobQueue *jobQueue;
     CommandSequencer *commandSequencer;
     LazyNut* lazyNut;
-    QProcess *oob;
+    LazyNut* oob;
     QString lazyNutOutput;
     QStringList commandList;
     QString lazyNutHeaderBuffer;

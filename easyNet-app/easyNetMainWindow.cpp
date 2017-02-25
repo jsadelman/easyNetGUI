@@ -151,7 +151,7 @@ void MainWindow::constructForms()
     /* CONSTRUCT ALL THE INDIVIDUAL FORMS */
 
     lazyNutConsole = new Console(this);
-
+    oobConsole = new Console(this,true);
     objExplorer = new ObjExplorer(this);
     objNavigator = new ObjectNavigator(this);
     objNavigator->hide();
@@ -291,6 +291,8 @@ void MainWindow::constructForms()
 
     lazynutPanel->addTab(lazyNutConsole, tr("Console"));
     lazynutPanel->addTab(commandLog, tr("History"));
+    lazynutPanel->addTab(oobConsole, tr("OOB"));
+
     lazynutPanel->addTab(errorLog, tr("Errors"));
     lazynutPanel->addTab(rLog, tr("R"));
     testsTabIdx = lazynutPanel->addTab(testViewer, tr("Tests"));
@@ -352,6 +354,8 @@ void MainWindow::connectSignalsAndSlots()
     connect(scriptEdit,SIGNAL(runCmdRequested(QStringList)),SessionManager::instance(),SLOT(runCmd(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole,SLOT(addText(QString)));
+    connect(SessionManager::instance(),SIGNAL(oobOutputReady(QString)),
+            oobConsole,SLOT(addText(QString)));
     connect(lazyNutConsole,SIGNAL(historyKey(int, QString)),
             this,SLOT(processHistoryKey(int, QString)));
     connect(this,SIGNAL(showHistory(QString)),
