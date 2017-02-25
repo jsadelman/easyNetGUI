@@ -255,10 +255,10 @@ void PlotSettingsBaseWidget::setValue(QString val)
     }
 }
 
-bool PlotSettingsBaseWidget::isDataframe()
+bool PlotSettingsBaseWidget::isObject()
 {
-    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
-    return XMLAccessor::value(typeElement) == "dataframe";
+    QDomElement defaultElement = XMLAccessor::childElement(settingsElement, "default");
+    return XMLAccessor::type(defaultElement) == "object";
 }
 
 bool PlotSettingsBaseWidget::isValueSet()
@@ -292,8 +292,7 @@ QString PlotSettingsBaseWidget::value()
 
 QString PlotSettingsBaseWidget::settingMethod()
 {
-    QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
-    return XMLAccessor::value(typeElement) == "dataframe" ? "setting_object" : "setting";
+    return isObject() ? "setting_object" : "setting";
 }
 
 void PlotSettingsBaseWidget::updateWidget(QDomElement &xml)

@@ -115,16 +115,18 @@ PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement &domElement)
     // TODO: implement this with a factory
     QDomElement typeElement = XMLAccessor::childElement(domElement, "type");
     QDomElement choiceElement = XMLAccessor::childElement(domElement, "choice");
+    QDomElement defaultElement = XMLAccessor::childElement(domElement, "default");
     QString type = XMLAccessor::value(typeElement);
     QString choice = XMLAccessor::value(choiceElement);
+    bool isObject = XMLAccessor::type(defaultElement)=="object";
     PlotSettingsBaseWidget *widget;
     if (type == "numeric")
         widget = new PlotSettingsNumericWidget(domElement, m_useRFormat);
 
-    else if ((type == "dataframe" || type == "factor") && choice == "single")
+    else if ((isObject || type == "factor") && choice == "single")
         widget = new PlotSettingsSingleChoiceWidget(domElement, m_useRFormat);
 
-    else if ((type == "dataframe" || type == "factor") && choice == "multiple")
+    else if ((isObject || type == "factor") && choice == "multiple")
         widget = new PlotSettingsMultipleChoiceWidget(domElement, m_useRFormat);
 
     else if (type == "filename")
@@ -206,9 +208,10 @@ QString SettingsForm::getSettingCmdLine(QString setting)
 {
     QDomElement settingsElement = XMLAccessor::childElement(rootElement, setting);
     QDomElement typeElement = XMLAccessor::childElement(settingsElement, "type");
+    QDomElement defaultElement = XMLAccessor::childElement(settingsElement, "default");
     return QString("%1 %2 %3 %4")
             .arg(m_name)
-            .arg(XMLAccessor::value(typeElement) == "dataframe" ? "setting_object" : "setting")
+            .arg(XMLAccessor::type(defaultElement) == "object" ? "setting_object" : "setting")
             .arg(setting)
             .arg(widgetMap[setting]->value());
 }

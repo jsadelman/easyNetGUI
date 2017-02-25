@@ -51,7 +51,7 @@ public:
     virtual QString settingMethod();
     virtual void updateWidget(QDomElement& xml);
     void setValue(QString val);
-    bool isDataframe();
+    bool isObject();
 
 public slots:
     void setValueSetTrue() {valueSet = true;}
