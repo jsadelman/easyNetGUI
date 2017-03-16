@@ -747,7 +747,7 @@ void MainWindow::loadModel(QString fileName,bool complete)
         return;
     }
     // spawn another GUI if a model already exists
-    if (!SessionManager::instance()->currentModel().isEmpty())
+    if (false ) //!SessionManager::instance()->currentModel().isEmpty())
     {
         QStringList args;
         if(!complete) args<<"--no-stage";
@@ -769,12 +769,15 @@ void MainWindow::loadModel(QString fileName,bool complete)
 
     // show info page, if there is one
     QString page = QFileInfo(fileName).dir().filePath(QFileInfo(fileName).completeBaseName());
+    QString base = QFileInfo(fileName).baseName();
     page.append(".html");
 //    if (QFileInfo(page).exists())
 //        infoWindow->showInfo(page);
 
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList << QString("%1 include %2").arg(quietMode)
+    job->cmdList << QString("create model %1").arg(base)
+                 << QString("%1 %2 load %3").arg(quietMode)
+                    .arg(base)
                     .arg(QDir(SessionManager::instance()->easyNetDataHome()).relativeFilePath(fileName));
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << job
