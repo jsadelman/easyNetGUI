@@ -89,6 +89,7 @@ void Box::setLabelPointSize(int labelPointSize)
 void Box::read(const QJsonObject &json, qreal boxWidth)
 {
     m_name = json["name"].toString();
+    m_name.replace(QRegExp(".*::"),"");
     m_lazyNutType = json["lazyNutType"].toString();
     QPointF position(json["x"].toDouble(),json["y"].toDouble());
 //    if (boxWidth != 0)
@@ -100,7 +101,9 @@ void Box::read(const QJsonObject &json, qreal boxWidth)
 
 void Box::write(QJsonObject &json) const
 {
-    json["name"] = m_name;
+    QString n=m_name;
+    n.replace(QRegExp(".*::"),"");
+    json["name"] = n;
     json["lazyNutType"] = m_lazyNutType;
     QPointF position = centrePos();
     json["x"] = position.x();
@@ -213,6 +216,9 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     if (m_lazyNutType != "layer")
         return;
 
+    QString strippedname=m_name;
+    strippedname.replace(QRegExp(".*::"),"");
+
     QMap<QString, QString> portPrettyName;
     QMap<QString, QString> dataViewNameStub;
     foreach (QString observer, defaultObservers.keys())
@@ -221,12 +227,12 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         {
             default_input_observer_Rex.indexIn(observer);
             portPrettyName[observer] = default_input_observer_Rex.cap(1);
-            dataViewNameStub[observer] = QString("%1.%2").arg(m_name).arg(portPrettyName[observer]);
+            dataViewNameStub[observer] = QString("%1.%2").arg(strippedname).arg(portPrettyName[observer]);
         }
         else if (observer.contains("default_observer"))
         {
             portPrettyName[observer] = "state";
-            dataViewNameStub[observer] = QString("%1.state").arg(m_name);
+            dataViewNameStub[observer] = QString("%1.state").arg(strippedname);
         }
     }
 

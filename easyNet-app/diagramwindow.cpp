@@ -48,6 +48,7 @@ void DiagramWindow::arrange(bool ignoreEdges)
 
 void DiagramWindow::initArrangement(DiagramScene *scene)
 {
+    qDebug()<<"DW inita";
     fitVisibleAct->setChecked(true);
      if (QFileInfo(scene->layoutFile()).exists())
     {

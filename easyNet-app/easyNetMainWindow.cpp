@@ -103,8 +103,6 @@ void MainWindow::build()
 
     /* INITIAL DISPLAY AT STARTUP */
     //diagramDock->raise();
-    diagramPanel->setCurrentIndex(modelTabIdx);
-    diagramSceneTabChanged(modelTabIdx);
     setQuietMode(true);
     SessionManager::instance()->startLazyNut();
 
@@ -261,21 +259,7 @@ void MainWindow::constructForms()
 
     /* ADD TABS */
 
-    modelTabIdx = diagramPanel->newDiagramScene(tr("Model"), "layer", "connection");
-    modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
-    connect(modelScene,SIGNAL(animationFinished()),this,SLOT(initialLayout()));
-    connect(modelScene, &DiagramScene::animationFinished, [=]()
-    {
-        diagramWindow->toFitVisible(modelScene);
-    });
 
-
-//    diagramPanel->hide();
-    diagramPanel->show();
-
-    //    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
-//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
-//    conversionPage = diagramPanel->widget(conversionTabIdx);
 
     stimSetTabIdx = methodsPanel->addTab(stimSetViewer, tr("Stimuli"));
     trialFormTabIdx = methodsPanel->addTab(trialEditor, tr("Trial")); //textEdit1
@@ -314,6 +298,35 @@ void MainWindow::constructForms()
     // http://www.qtcentre.org/threads/61403-SOLVED-Detachable-QDockWidget-tabs
 }
 
+void MainWindow::setupDiagramPanel(QString name)
+{
+
+    modelTabIdx = diagramPanel->newDiagramScene(name, "layer", "connection");
+    modelScene = diagramPanel->diagramSceneAt(modelTabIdx);
+    connect(modelScene, &DiagramScene::animationFinished, [=]()
+    {
+        qDebug()<<"mark";
+        initialLayout();
+        diagramWindow->toFitVisible(modelScene);
+        qDebug()<<"matthew";
+    });
+    diagramPanel->setCurrentIndex(modelTabIdx);
+    diagramSceneTabChanged(modelTabIdx);
+
+
+//    diagramPanel->hide();
+    diagramPanel->show();
+    connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
+
+    //    conversionTabIdx = diagramPanel->newDiagramScene(tr("Conversions"), "representation", "conversion");
+//    conversionScene = diagramPanel->diagramSceneAt(conversionTabIdx);
+//    conversionPage = diagramPanel->widget(conversionTabIdx);
+
+    connect(modelScene,SIGNAL(propertiesRequested(QString)), objNavigator, SLOT(setObject(QString)));
+    connect(modelScene,SIGNAL(focusOnPlotRequested(QString)), ui_dataframeResultsViewer, SLOT(setCurrentItem(QString)));
+    connect(modelScene,SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>, bool)),
+            dataViewSettingsWidget,SLOT(newForm(QString,QString,QString,QMap<QString,QString>, bool)));
+}
 
 void MainWindow::reset()
 {
@@ -350,7 +363,6 @@ void MainWindow::connectSignalsAndSlots()
     connect(ui_dataframeResultsViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
     connect(ui_stimSetViewer, SIGNAL(currentItemChanged(QString)), this, SLOT(setFormInSettingsWidget(QString)));
     connect(resultsDock, SIGNAL(visibilityChanged(bool)), this, SLOT(switchFormInSettingsWidget(bool)));
-    connect(diagramPanel, SIGNAL(currentChanged(int)), this, SLOT(diagramSceneTabChanged(int)));
     connect(scriptEdit,SIGNAL(runCmdRequested(QStringList)),SessionManager::instance(),SLOT(runCmd(QStringList)));
     connect(SessionManager::instance(),SIGNAL(userLazyNutOutputReady(QString)),
             lazyNutConsole,SLOT(addText(QString)));
@@ -364,12 +376,8 @@ void MainWindow::connectSignalsAndSlots()
             this, SLOT(coreDump()));
     connect(trialComboBox,SIGNAL(currentIndexChanged(QString)),
             SessionManager::instance(), SLOT(setCurrentTrial(QString)));
-    connect(modelScene,SIGNAL(propertiesRequested(QString)), objNavigator, SLOT(setObject(QString)));
-    connect(modelScene,SIGNAL(focusOnPlotRequested(QString)), ui_dataframeResultsViewer, SLOT(setCurrentItem(QString)));
     connect(objExplorer, SIGNAL(objectSelected(QString)), objNavigator, SLOT(setObject(QString)));
 
-    connect(modelScene,SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>, bool)),
-            dataViewSettingsWidget,SLOT(newForm(QString,QString,QString,QMap<QString,QString>, bool)));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
             dataframeResultsViewer, SLOT(preDispatch(QSharedPointer<QDomDocument> )));
     connect(trialWidget, SIGNAL(aboutToRunTrial(QSharedPointer<QDomDocument> )),
@@ -385,13 +393,6 @@ void MainWindow::connectSignalsAndSlots()
     connect(diagramWindow,SIGNAL(showParameterSettingsSignal()), this,SLOT(showParameterSettings()));
     connect(diagramWindow, SIGNAL(loadModelSignal()), this, SLOT(loadModel()));
     connect(diagramWindow, SIGNAL(loadModelFileSignal()), this, SLOT(loadModelFromFileDialog()));
-    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), diagramWindow, SLOT(setModelName(QString)));
-    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), this, SLOT(setWindowTitle(QString)));
-    connect(SessionManager::instance(), &SessionManager::currentModelChanged, [=](QString name)
-    {
-        if (!name.isEmpty())
-            diagramPanel->useFake(modelTabIdx, true);
-    });
 
     connect(trialEditor, SIGNAL(loadTrialSignal()), this, SLOT(loadTrial()));
     connect(dataViewSettingsWidget, SIGNAL(settingsApplied(QString)), this, SLOT(showResultsViewer(QString)));
@@ -436,6 +437,13 @@ void MainWindow::connectSignalsAndSlots()
     });
 
     connect(SessionManager::instance(), SIGNAL(dotsCount(int)), this, SLOT(updateTrialRunListCount(int)));
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), diagramWindow, SLOT(setModelName(QString)));
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), this, SLOT(setWindowTitle(QString)));
+    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)), this, SLOT(setDefaultModel(const QString&)));
+    connect(SessionManager::instance(), &SessionManager::currentModelChanged, [=](QString name)
+    {
+            diagramPanel->switchTo(name);
+    });
 }
 
 void MainWindow::showExplorer()
@@ -1120,8 +1128,10 @@ void MainWindow::createModelSettingsDialog(QDomDocument *domDoc)
 
 void MainWindow::afterModelConfig()
 {
+    QString modelname=SessionManager::instance()->currentModel();
+    setupDiagramPanel(modelname);
     LazyNutJob *job = new LazyNutJob;
-    job->cmdList << QString("%1%2 stage").arg(quietMode).arg(SessionManager::instance()->currentModel());
+    job->cmdList << QString("%1%2 stage").arg(quietMode).arg(modelname);
     QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
                                 << job
                                 << SessionManager::instance()->updateObjectCacheJobs();
@@ -1142,7 +1152,8 @@ void MainWindow::initialLayout()
 {
     qDebug()<<"initialLayout";
     diagramPanel->show();
-    diagramPanel->useFake(modelTabIdx,false);
+//    diagramPanel->adjustSize();
+//    diagramPanel->useFake(modelTabIdx,false);
 
 }
 
@@ -1255,6 +1266,17 @@ void MainWindow::loadFile(const QString &fileName)
     setCurrentFile(scriptEdit,fileName); // assuming that this is called by scriptEdit
 
     //statusBar()->showMessage(tr("File loaded"), 2000);
+}
+
+void MainWindow::setDefaultModel(QString nm)
+{
+    LazyNutJob *job = new LazyNutJob;
+    job->cmdList << QString("set_default_model %1").arg(nm);
+    QList<LazyNutJob *> jobs =  QList<LazyNutJob *> ()
+                                << job
+                                << SessionManager::instance()->updateObjectCacheJobs();
+    SessionManager::instance()->submitJobs(jobs);
+
 }
 
 void MainWindow::readSettings()

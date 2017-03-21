@@ -79,7 +79,7 @@ class DiagramScene : public QGraphicsScene
 public:
 //    enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
-    explicit DiagramScene(QString box_type, QString arrow_type, QObject *parent = Q_NULLPTR);
+    explicit DiagramScene(QString modelname,QString box_type, QString arrow_type, QObject *parent = Q_NULLPTR);
     QString boxType() {return m_boxType;}
     QString arrowType() {return m_arrowType;}
     QString layoutFile() {return m_layoutFile;}
@@ -148,8 +148,10 @@ protected:
 
 private slots:
     void positionObject(QString name, QString type, QString subtype, QDomDocument* domDoc);
+    void considerPositionObject(QString name, QString type, QString subtype, QDomDocument* domDoc);
     void removeObject(QString name);
     void renderObject(QDomDocument* domDoc);
+    void setMembers(QDomDocument* domDoc);
     void setLayoutFile(QDomDocument* domDoc);
     void setAnalyzedLocations(QDomDocument*);
 
@@ -218,6 +220,7 @@ private:
     QUndoStack* m_undoStack;
     QGraphicsItem *zeb;
     QImage *zebimage;
+    QString m_modelname;
 
     friend class DiagramWindow; // dunnart::Canvas has lots of friends, this is the same idea.
 };

@@ -23,8 +23,9 @@ public:
     DiagramView *diagramViewAt(int index);
     DiagramScene *currentCanvas(){return currentDiagramScene();}
     DiagramView *currentCanvasView(){return currentDiagramView();}
-    void useFake(int idx,bool yn);
+//    void useFake(int idx,bool yn);
 
+    void switchTo(QString name){setCurrentIndex(modelIndex[name]);};
     void poke();
 signals:
     void currentDiagramSceneChanged(DiagramScene *scene);
@@ -37,7 +38,8 @@ private slots:
     QAction *m_action_delete,    *m_action_undo,    *m_action_redo;
     QUndoGroup *m_undo_group;
     QMap<int,QWidget*> held;
-    DiagramScene*emptyScene;
+    QMap<QString,int> modelIndex;
+//    DiagramScene*emptyScene;
 };
 
 #endif // DIAGRAMSCENESTACKEDWIDGET_H

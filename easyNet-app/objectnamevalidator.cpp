@@ -9,7 +9,8 @@ ObjectNameValidator::ObjectNameValidator(QObject *parent, QStringList lazyNutkey
     QStringList forbiddenNames = lazyNutkeywords
                       << ""
                       << "\\s+.*"
-                      << "[#(0-9].*";
+                      << "[#(0-9].*"
+                      << ".*::.*";
     forbiddenRex = QRegExp(QString("^(%1)$").arg(forbiddenNames.join("|")));
 }
 
@@ -34,8 +35,10 @@ bool ObjectNameValidator::isValid(QString name)
 
 QString ObjectNameValidator::makeValid(QString name)
 {
+    qDebug()<<"will make valid "<<name;
     // first eliminate brackets and spaces
     name = normalisedName(name);
+
     QRegExp startsWithForbiddenRex("^[#(0-9]+");
     if (startsWithForbiddenRex.indexIn(name) >= 0)
         name.prepend("_");

@@ -70,9 +70,9 @@
 Q_DECLARE_METATYPE(QDomDocument*)
 
 //! [0]
-DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent)
+DiagramScene::DiagramScene(QString modeln,QString box_type, QString arrow_type, QObject *parent)
     : QGraphicsScene(parent), m_boxType(box_type), m_arrowType(arrow_type), awake(true), m_layoutFile(""),
-      m_newModelLoaded(false)
+      m_newModelLoaded(false),m_modelname(modeln)
 {
     selectedObject = "";
 //    myItemMenu = itemMenu;
@@ -116,12 +116,15 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent
     arrowOffset = QPointF(50,0);
 
     modelFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
-            modelFilter, SLOT(setName(QString)));
+//    connect(SessionManager::instance(), SIGNAL(currentModelChanged(QString)),
+//            modelFilter, SLOT(setName(QString)));
 //    connect(modelFilter, SIGNAL(objectCreated(QString,QString,QString,QDomDocument*)),
 //            this, SLOT(goToSleep()));
+    modelFilter->setName(m_modelname);
     modelDescriptionUpdater = new ObjectUpdater(this);
     modelDescriptionUpdater->setProxyModel(modelFilter);
+    connect(modelDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
+            this, SLOT(setMembers(QDomDocument*)));
     connect(modelDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*,QString)),
             this, SLOT(setLayoutFile(QDomDocument*)));
     connect(modelFilter, &ObjectCacheFilter::objectDestroyed, [=]()
@@ -134,13 +137,12 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent
     {
         setNewModelLoaded(true);
         render();
+        qDebug()<<"RR";
     });
 
     boxFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    boxFilter->setType(m_boxType);
 
     arrowFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
-    arrowFilter->setType(m_arrowType);
 
     boxDescriptionUpdater = new ObjectUpdater(this);
     boxDescriptionUpdater->setProxyModel(boxFilter);
@@ -155,9 +157,8 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent
             this, SLOT(renderObject(QDomDocument*)));
     //connect(m_animation_group, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 
+//    syncToObjCatalogue();
     // default state is wake up
-    connect(boxFilter, SIGNAL(objectCreated(QString, QString, QString, QDomDocument*)),
-            this, SLOT(positionObject(QString, QString, QString, QDomDocument*)));
     connect(boxFilter, SIGNAL(objectDestroyed(QString)),
             this, SLOT(removeObject(QString)));
     connect(arrowFilter, SIGNAL(objectDestroyed(QString)),
@@ -168,7 +169,7 @@ DiagramScene::DiagramScene(QString box_type, QString arrow_type, QObject *parent
     QPixmap zebpix(150,200);
 
     zebpix.load(":/images/zebra.png");
-
+qDebug()<<"ZEB";
 }
 
 void DiagramScene::drawBackground(QPainter *painter, const QRectF &rect)
@@ -240,7 +241,7 @@ void DiagramScene::updateConnectorsForLayout()
 
 void DiagramScene::read(const QJsonObject &json)
 {
-    qDebug()<<"jsonread";
+    qDebug()<<"jsonread "<<m_layoutFile<<" vs "<<itemHash.size();
     qreal boxWidth = json["boxWidth"].toDouble();
     QJsonArray itemArray = json["QGraphicsItems"].toArray();
 
@@ -248,9 +249,17 @@ void DiagramScene::read(const QJsonObject &json)
     {
         QJsonObject itemObject = itemArray[itemIndex].toObject();
         QString name = itemObject["name"].toString();
-        if (itemHash.contains(name))
+        auto i=itemHash.keyBegin();
+        QString k;
+        for(;i!=itemHash.keyEnd();++i)
         {
-            Box * box = dynamic_cast<Box*>(itemHash.value(name));
+            auto x=(*i);
+            x.replace(QRegExp(".*::"),"");
+            if(x==name) break;
+        }
+        if (i!=itemHash.keyEnd())
+        {
+            Box * box = dynamic_cast<Box*>(itemHash.value(*i));
             if (box)
                 box->read(itemObject, boxWidth);
         }
@@ -260,13 +269,22 @@ void DiagramScene::read(const QJsonObject &json)
     {
         QJsonObject itemObject = itemArray2[itemIndex].toObject();
         QString name = itemObject["name"].toString();
-        if (itemHash.contains(name))
+        auto i=itemHash.keyBegin();
+        QString k;
+        for(;i!=itemHash.keyEnd();++i)
         {
-            Box * box = dynamic_cast<Box*>(itemHash.value(name));
+            auto x=k=(*i);
+            x.replace(QRegExp(".*::"),"");
+            if(x==name) break;
+        }
+        if (i!=itemHash.keyEnd())
+        {
+            Box * box = dynamic_cast<Box*>(itemHash.value(k));
             if (box)
                 box->read(itemObject, boxWidth);
         }
     }
+    qDebug()<<"b";
     emit animationFinished();
 
 }
@@ -401,7 +419,7 @@ qDebug()<<"analyzing";
     layout()->initialise();
 #endif
     updateConnectorsForLayout();
-
+qDebug()<<"A";
     emit animationFinished();
 }
 
@@ -474,10 +492,20 @@ void DiagramScene::savedLayoutToBeLoaded(QString _savedLayout)
 //    }
 //}
 
+void DiagramScene::considerPositionObject(QString name, QString type, QString subtype, QDomDocument *domDoc)
+{
+    if(name.startsWith(m_modelname+"::"))
+    {
+        boxFilter->addName(name);
+        positionObject(name,type,subtype,domDoc);
+    }
+}
+
 void DiagramScene::positionObject(QString name, QString type, QString subtype, QDomDocument *domDoc)
 {
+    qDebug()<<"position "<<name<<type<<subtype<<domDoc;
     // layers are placed on the scene before arrows
-    Q_UNUSED(domDoc)
+   // Q_UNUSED(domDoc)
     Q_UNUSED(subtype)
     if (!awake)
         return;
@@ -486,15 +514,16 @@ void DiagramScene::positionObject(QString name, QString type, QString subtype, Q
         Box *box = new Box();
         connect(box, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString, QString>,bool)),
                 this, SIGNAL(createDataViewRequested(QString,QString,QString,QMap<QString,QString>,bool)));
-        connect(box, &Box::propertiesRequested, [=]()
-        {
-            emit propertiesRequested(box->name());
-        });
-        connect(box, SIGNAL(focusOnPlotRequested(QString)), this, SIGNAL(focusOnPlotRequested(QString)));
 
         addItem(box);
         box->setName(name); // set name before type, otherwise defaultDataframesFilter won't get properly set for layers
         box->setLazyNutType(m_boxType);
+        connect(box, &Box::propertiesRequested, [=]()
+        {
+            qDebug()<<"pr"<<box->name();
+            emit propertiesRequested(box->name());
+        });
+        connect(box, SIGNAL(focusOnPlotRequested(QString)), this, SIGNAL(focusOnPlotRequested(QString)));
         connect(box, SIGNAL(plotDestroyed(QString)), this, SIGNAL(plotDestroyed(QString)));
 //        if (m_boxType == "layer")
 //            connect(boxDescriptionUpdater, SIGNAL(objectUpdated(QDomDocument*, QString)),
@@ -541,11 +570,25 @@ void DiagramScene::removeObject(QString name)
 
 void DiagramScene::renderObject(QDomDocument *domDoc)
 {
+    QString name=AsLazyNutObject(*domDoc).name();
+    if(itemHash.find(name)==itemHash.end())
+    {
+        QString type=AsLazyNutObject(*domDoc).type();
+        QString subtype=AsLazyNutObject(*domDoc).subtype();
+        positionObject(name,type,subtype,domDoc);
+    }
+
     // wait until all descriptions of recently_* objects have arrived
     renderList.append(domDoc);
     // HACK to allow visualisation of conversions and representations even when missing 'ghost' objects are present
 //    if ((boxFilter->isAllValid() && arrowFilter->isAllValid()) || boxType() == "representation")
-        render();
+    render();
+}
+
+void DiagramScene::setMembers(QDomDocument *domDoc)
+{
+    boxFilter->setNameList(AsLazyNutObject(*domDoc)["members"][m_boxType+"s"].listValues());
+    arrowFilter->setNameList(AsLazyNutObject(*domDoc)["members"][m_arrowType+"s"].listValues());
 }
 
 void DiagramScene::setLayoutFile(QDomDocument *domDoc)
@@ -554,29 +597,39 @@ void DiagramScene::setLayoutFile(QDomDocument *domDoc)
     if (domDoc && m_boxType == "layer")
     {
         m_layoutFile = XMLelement(*domDoc)["hints"]["json"]();
+        qDebug()<<"layout "<<m_layoutFile;
         if (m_layoutFile.isEmpty())
             m_layoutFile = QString("%1/Models/%2/%2.layer.json")
                     .arg(SessionManager::instance()->easyNetDataHome())
                     .arg(SessionManager::instance()->currentModel());
         if (QFileInfo(m_layoutFile).isRelative())
             m_layoutFile.prepend(SessionManager::instance()->easyNetDataHome()+"/");
-        render();
+//        render();
     }
 }
 
 
 void DiagramScene::render()
 {
-    if (!(boxFilter->isAllValid() && arrowFilter->isAllValid() &&
-          ((!layoutFile().isEmpty() && SessionManager::instance()->isModelStageCompleted()) != SessionManager::instance()->currentModel().isEmpty()) ))
+    if(itemHash.empty())return;
+    if (!(boxFilter->isAllValid() &&
+          arrowFilter->isAllValid()
+          &&
+          ((!layoutFile().isEmpty() && SessionManager::instance()->isModelStageCompleted()) != SessionManager::instance()->currentModel().isEmpty())
+          )
+        )
         return;
     foreach(QDomDocument* domDoc, renderList)
     {
         if (!domDoc)
+        {
+            qDebug()<<"render 0";
             continue;
+        }
         if (AsLazyNutObject(*domDoc).type() == m_boxType)
         {
             QString name = AsLazyNutObject(*domDoc).name();
+            qDebug()<<"render box "<<name;
             QMap <QString, QString> ports;
             foreach (QString label, XMLelement(*domDoc)["Ports"].listLabels())
                 ports[label] = XMLelement(*domDoc)["Ports"][label]();
@@ -663,6 +716,7 @@ void DiagramScene::render()
     if (newModelLoaded())
     {
         setNewModelLoaded(false);
+        qDebug()<<"newmodelpath";
         emit initArrangement();
     }
 }

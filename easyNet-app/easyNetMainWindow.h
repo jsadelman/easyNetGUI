@@ -126,6 +126,7 @@ private slots:
 //    void updateTableView(QString text);
 
 //    void showViewMode(int viewModeInt);
+    void setDefaultModel(QString);
     void newScriptFile();
     void newLogFile();
     void loadModule();
@@ -473,6 +474,7 @@ public:
 
     std::list<int> dotDenom,dotUse;
     int dotLast;
+    void setupDiagramPanel(QString name);
 };
 
 #endif // NMCONSOLE_H
