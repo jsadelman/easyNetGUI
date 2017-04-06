@@ -88,8 +88,8 @@ void Box::setLabelPointSize(int labelPointSize)
 
 void Box::read(const QJsonObject &json, qreal boxWidth)
 {
-    m_name = json["name"].toString();
-    m_name.replace(QRegExp(".*::"),"");
+//    m_name = json["name"].toString();
+//    m_name.replace(QRegExp(".*::"),"");
     m_lazyNutType = json["lazyNutType"].toString();
     QPointF position(json["x"].toDouble(),json["y"].toDouble());
 //    if (boxWidth != 0)
@@ -198,6 +198,7 @@ void Box::setLabel(QString label)
     {
         label = name();
         label.replace("_", " ");
+        label.replace(QRegExp(".*::"),"");
     }
     m_label = label;
 //    m_label = limitString(label, m_longNameToDisplayIntact.length());
@@ -221,8 +222,10 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
     QMap<QString, QString> portPrettyName;
     QMap<QString, QString> dataViewNameStub;
+    qDebug()<<"CME"<<m_name;
     foreach (QString observer, defaultObservers.keys())
     {
+        qDebug()<<"observer is " <<observer;
         if (observer.contains("input_channel"))
         {
             default_input_observer_Rex.indexIn(observer);
@@ -243,9 +246,11 @@ void Box::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         QMenu *dataViewMenu = menu.addMenu(dataView);
         foreach (QString observer, defaultObservers.keys())
         {
+            qDebug()<<"observer is " <<observer;
             QMenu *portMenu = dataViewMenu->addMenu(portPrettyName[observer]);
             foreach(QString dataViewTypePath, dataViewTypesPath(dataView, portPrettyName[observer]))
             {
+                qDebug() << dataViewTypePath;
                 QString dataViewType = QFileInfo(dataViewTypePath).baseName();
                 QMap <QString, QVariant> dataViewData;
                 dataViewData["dataView"] = dataView_lazyNut(dataView);
@@ -328,6 +333,7 @@ void Box::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void Box::setupDefaultObserverFilter()
 {
+    qDebug()<<m_name<<" setupDefaultObserverFilter";
     if (m_lazyNutType == "layer")
     {
         defaultObserverFilter = new ObjectCacheFilter(SessionManager::instance()->descriptionCache, this);
@@ -423,7 +429,8 @@ QStringList Box::dataViewTypesPath(QString dataView, QString port)
                 listElem = listElem.nextSibling("string");
             }
         }
-    }
+    }else
+        qDebug()<<"missing description";
     return list;
 }
 
