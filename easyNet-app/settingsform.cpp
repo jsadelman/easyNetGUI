@@ -122,15 +122,17 @@ PlotSettingsBaseWidget *SettingsForm::createWidget(QDomElement &domElement)
     PlotSettingsBaseWidget *widget;
     if (type == "numeric")
         widget = new PlotSettingsNumericWidget(domElement, m_useRFormat);
-
-    else if ((isObject || type == "factor") && choice == "single")
-        widget = new PlotSettingsSingleChoiceWidget(domElement, m_useRFormat);
-
-    else if ((isObject || type == "factor") && choice == "multiple")
-        widget = new PlotSettingsMultipleChoiceWidget(domElement, m_useRFormat);
-
     else if (type == "filename")
         widget = new PlotSettingsFilenameWidget(domElement, m_useRFormat);
+
+    else if (type == "")
+        widget = new PlotSettingsBaseWidget(domElement, m_useRFormat);
+
+    else if (choice == "single")
+        widget = new PlotSettingsSingleChoiceWidget(domElement, m_useRFormat);
+
+    else if (choice == "multiple")
+        widget = new PlotSettingsMultipleChoiceWidget(domElement, m_useRFormat);
 
     else
         widget = new PlotSettingsBaseWidget(domElement, m_useRFormat);
