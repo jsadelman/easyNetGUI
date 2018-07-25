@@ -192,6 +192,7 @@ static QString normalisedName(QString name)
     name.replace(QRegExp("[()]"), "");
     name = name.simplified();
     name.replace(" ", "_");
+    name.replace("::", "__");
     return name;
 }
 
