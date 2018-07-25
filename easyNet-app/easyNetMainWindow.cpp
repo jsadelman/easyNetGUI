@@ -843,9 +843,9 @@ void MainWindow::buildModelChooser()
     modelList<< modelInfo("Spatial Coding 2010","Models/scm/SCM.eNm",":images/SCM.png");
     modelList<< modelInfo("Spatial Coding Demo","Models/scm.demo/SCM.eNm",":images/SCM.png");
     modelList<< modelInfo("Relative Position","Models/rpm-ia/rpm-ia.eNm",":images/rpm-ia.png");
-    modelList<< modelInfo("LTRS (simplified)","Models/ltrs/ltrs_4slot.eNm",":images/ltrs_4slot.png");
-    modelList<< modelInfo("LTRS","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
-    modelList<< modelInfo("PMSP (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
+    modelList<< modelInfo("LTRS (simplified: 4 slots)","Models/ltrs/ltrs_4slot.eNm",":images/ltrs_4slot.png");
+    modelList<< modelInfo("LTRS (incomplete)","Models/ltrs/ltrs_regex.eNm",":images/ltrs.png");
+    modelList<< modelInfo("PMSP #3 (recurrent)","Models/pmsp/PMSP_3_recurrent.eNm",":images/PMSP_3_recurrent.png");
     modelList<< modelInfo("DRC","Models/drc/drc.eNm",":images/drc.png");
     modelList<< modelInfo("Overlap Open Bigram","Models/oob-ia/oob-ia.eNm",":images/custom.png");
     modelList<< modelInfo("Test Plotting","Scripts/plot_test.eNs",":images/graph-8x.png");
