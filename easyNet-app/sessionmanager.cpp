@@ -60,7 +60,7 @@ SessionManager::SessionManager()
       oobBaseName("lazyNut_oob"),
       #elif defined(_WIN32)
       lazyNutExt("bat"),
-      binDir("bin"),
+      binDir("bin-win64"),
       oobBaseName("lazyNut_oob.exe"),
       #endif
       lazyNut(nullptr),
