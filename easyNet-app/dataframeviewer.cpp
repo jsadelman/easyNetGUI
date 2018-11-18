@@ -421,6 +421,7 @@ QString DataframeViewer::sendNewDataViewRequest(QString dataViewScript, QString 
             << job
             << SessionManager::instance()->updateObjectCacheJobs();
     QMap<QString, QVariant> jobData;
+    dataViewName = QString("%1::%2").arg(SessionManager::instance()->currentModel()).arg(dataViewName);
     jobData.insert("name", dataViewName);
     jobs.last()->data = jobData;
     if (setForm)
